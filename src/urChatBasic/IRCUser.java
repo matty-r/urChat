@@ -2,7 +2,8 @@ package urChatBasic;
 
 public class IRCUser implements Comparable<IRCUser>{
 	private String name;
-
+	private String userStatus = "";
+	
 	public IRCUser(String name){
 		this.name = name;
 	}
@@ -17,6 +18,14 @@ public class IRCUser implements Comparable<IRCUser>{
 	
 	public String toString(){
 		return this.name;
+	}
+	
+	public String getUserStatus(){
+		return this.userStatus;
+	}
+	
+	public void setUserStatus(String c){
+		userStatus = c;
 	}
 	
 	@Override

@@ -297,7 +297,7 @@ public class IRCChannel extends JPanel implements Runnable {
    public IRCUser getCreatedUsers(String userName){
 	   //for(int x = 0; x < createdChannels.size(); x++)
 	   for(IRCUser tempUser : usersArray)
-		   if(tempUser.getName().matches(userName))
+		   if(tempUser.getName().replace(tempUser.getUserStatus(), "").matches(userName))
 			   return tempUser;
 	   return null;
    }
@@ -311,14 +311,17 @@ public class IRCChannel extends JPanel implements Runnable {
 		if(gui.getChannelHistory())
 			channelHistory.add(line);
 
-		if(getCreatedUsers(fromUser).getName().matches(Connection.myNick)){
+		if(Connection.myNick.equals(getCreatedUsers(fromUser).getName())){
 		    StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
 	    	Style style = doc.addStyle("StyleName", null);
 
 	        StyleConstants.setItalic(style, true);
 
 	        try {
-				doc.insertString(doc.getLength(), line+"\n", style);
+	        	line = line+"\n";
+	        	for(int x = 0; x < line.length(); x++)
+	        		doc.insertString(doc.getLength(), line.substring(x, x+1), style);
+				
 			} catch (BadLocationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -381,6 +384,9 @@ public class IRCChannel extends JPanel implements Runnable {
 							usersArray.add(new IRCUser(users[x].substring(1)));
 						} else
 							usersArray.add(new IRCUser(users[x]));
+						
+						if(users[x].startsWith("@"))
+							getCreatedUsers(users[x]).setUserStatus("@");
 						usersList.setSelectedIndex(0);
 					}
 				}
@@ -397,6 +403,8 @@ public class IRCChannel extends JPanel implements Runnable {
 						if(user.startsWith(":"))
 							thisUser = user.substring(1);
 						
+						if(thisUser.startsWith("@"))
+							getCreatedUsers(thisUser).setUserStatus("@");
 						//usersArray.addElement(thisUser);
 						usersArray.add(new IRCUser(thisUser));
 						usersList.setSelectedIndex(0);

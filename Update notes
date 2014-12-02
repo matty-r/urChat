@@ -5,14 +5,16 @@ TODO List:
 - Limit the number of lines in the history
 - Create a Low Resource mode
 	- No event ticker
-	- No user sorting
-	- 
+	- No user sorting 
+- Do single character word wrap for main text area
 
 =alpha 09 (30 NOV 14)
 
 * Added ticker slows down on mouse over
 * Changed text area to a JTextPane
 * Added text formatting based on who sends it. Need to adjust formatting later
+* Fixed receiving text from a channel mod with @ in front of their name
+* Added IRCUser now has a character modifier to identify if they are a mod or not
 
 =alpha 08 (26 NOV 14)
 
