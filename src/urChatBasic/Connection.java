@@ -3,6 +3,7 @@ package urChatBasic;
 import java.awt.Toolkit;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 
 public class Connection implements Runnable{
 
@@ -40,14 +41,14 @@ public class Connection implements Runnable{
     	
     	
         
-        DriverGUI.gui.printText("Server","Attempting to connect to "+server);
+        DriverGUI.gui.printText("Server","Attempting to connect to "+server,"Server");
         mySocket = new Socket(server, 6667);
         receivedFromServer("Server","Connected.");
         
 		writer = new BufferedWriter(
                 new OutputStreamWriter(mySocket.getOutputStream( )));
         reader = new BufferedReader(
-                new InputStreamReader(mySocket.getInputStream( )));
+                new InputStreamReader(mySocket.getInputStream( ),StandardCharsets.UTF_8));
 
         // Log on to the server.
         writer.write("NICK " + myNick + "\r\n");
@@ -69,7 +70,7 @@ public class Connection implements Runnable{
         // Join the channel.
         writer.write("JOIN " + firstChannel + "\r\n");
         writer.flush();
-        gui.printText("Server", "Connecting to channel "+firstChannel); 
+        gui.printText("Server", "Connecting to channel "+firstChannel,"Server"); 
         
         // Keep reading lines from the server.
         while ((line = reader.readLine()) != null) {
@@ -78,7 +79,7 @@ public class Connection implements Runnable{
         }
         
         mySocket.close();
-    	gui.printText("Server", "Socket has closed.");
+    	gui.printText("Server", "Socket has closed.","Server");
     }
 	
 	public static void setNick(String newNick){
@@ -92,6 +93,7 @@ public class Connection implements Runnable{
 	public static void sendClientText(String clientText,String fromChannel) throws IOException{
 		String[] tempTextArray = null;
 		String tempText = "";
+		
 		if(clientText != ""){
 			if(clientText.startsWith("/join")){
 				writer.write("JOIN " + clientText.replace("/join ","") +"\r\n");
@@ -106,9 +108,11 @@ public class Connection implements Runnable{
 				writer.write("PRIVMSG " + tempTextArray[1] + " :"+tempText.substring(0, tempText.length()-1) +"\r\n");
 			} else if(clientText.startsWith("/quit")){
 					writer.write("QUIT :" + clientText.replace("/quit ","") +"\r\n");
+			} else if(clientText.startsWith("/me")){
+				writer.write("PRIVMSG " + fromChannel + " :  ACTION " + clientText.replace("/me ","") +"  \r\n");
 			} else {
 				writer.write("PRIVMSG " + fromChannel + " :"+clientText+"\r\n");
-				DriverGUI.gui.printText(fromChannel, "<"+myNick+"> "+clientText);
+				DriverGUI.gui.printText(fromChannel, "<"+myNick+"> "+clientText,myNick);
 			}
 		writer.flush();
 		}
@@ -134,7 +138,7 @@ public class Connection implements Runnable{
 	        	 switch(tempTextArray[1]){
 	        	 	//005 = Server change
 		        	case "005" :server = tempTextArray[0].substring(1);
-		        				DriverGUI.gui.printText("Server",">> Changed your server to "+server);
+		        				DriverGUI.gui.printText("Server",">> Changed your server to "+server,"Server");
 		        	 			break;
     	 			//332 = Channel Topic
 		        	case "332" :String incomingTopic = "";
@@ -152,15 +156,15 @@ public class Connection implements Runnable{
     							break;
 					//473 = Cannot join channel 
 		        	case "473" :gui.setCurrentTab(1);
-		        				gui.printText(channel,"!! "+myNick+" unable to join channel.");
+		        				gui.printText(channel,"!! "+myNick+" unable to join channel.",myNick);
 		        				Toolkit.getDefaultToolkit().beep();
 		        				break;
 					//433 = Nickname already in use
-		        	case "433" :gui.printText(channel,"!! "+myNick+" is already in use.");
+		        	case "433" :gui.printText(channel,"!! "+myNick+" is already in use.",myNick);
 		        				Toolkit.getDefaultToolkit().beep();
 		        				break;
 		        	//432 = Nickname is invalid.
-		        	case "432" :gui.printText(channel,"!! "+myNick+" is invalid.");
+		        	case "432" :gui.printText(channel,"!! "+myNick+" is invalid.",myNick);
 		        				Toolkit.getDefaultToolkit().beep();
     							break;
 		        	//JOIN = When a user joins a channel
@@ -174,12 +178,13 @@ public class Connection implements Runnable{
 		        				for(int x = 3; x < tempTextArray.length; x++)
 		        					incomingMessage += " "+tempTextArray[x];
 		        				if(!tempTextArray[2].contains(myNick)){
-		        					gui.printText(tempTextArray[2],"<"+tempTextArray[0].substring(1, tempTextArray[0].indexOf("!"))+"> "+incomingMessage.substring(2));
+		        						gui.printText(tempTextArray[2],"<"+extractNick(tempTextArray[0])+"> "+incomingMessage.substring(2),extractNick(tempTextArray[0]));
+		        						
 		        					//if my nick was mentioned in a message, make a noise
 		        					if(incomingMessage.contains(myNick))
 		        						Toolkit.getDefaultToolkit().beep();
 		        				} else{
-		        					gui.printText("Server","{"+tempTextArray[0].substring(1, tempTextArray[0].indexOf("!"))+"} "+incomingMessage.substring(2));
+		        					gui.printText("Server","{"+extractNick(tempTextArray[0])+"} "+incomingMessage.substring(2),extractNick(tempTextArray[0]));
 		        					Toolkit.getDefaultToolkit().beep();
 		        				}
 		        				break;
@@ -192,19 +197,19 @@ public class Connection implements Runnable{
     								gui.removeFromUsersList(channel, tempTextArray[0].substring(0, tempTextArray[0].indexOf("!")));
     							break;
 		        	case "NICK":if(!(tempTextArray[0].contains(myNick)))
-									gui.renameUserUsersList(channel, tempTextArray[0].substring(0, tempTextArray[0].indexOf("!")), tempTextArray[tempTextArray.length-1].substring(1));
+									gui.renameUser(channel, tempTextArray[0].substring(0, tempTextArray[0].indexOf("!")), tempTextArray[tempTextArray.length-1].substring(1));
 		    					break;
-		        	case "NOTICE":gui.printText(channel, serverText);
+		        	case "NOTICE":gui.printText(channel, serverText,channel);
 		    					break;
 		        	case ":Closing": gui.quitChannels();
 		        					 gui.serverDisconnect();
-		        					 gui.printText(channel,"Quit server.");
+		        					 gui.printText(channel,"Quit server.",channel);
 		        				break;
-		        	default: gui.printText(channel,serverText);
+		        	default: gui.printText(channel,serverText,channel);
 		        	 			break;
 	        	 }
         	 else
-        		 gui.printText(channel,serverText);
+        		 gui.printText(channel,serverText,channel);
          }
 	}
 

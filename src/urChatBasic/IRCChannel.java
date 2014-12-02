@@ -8,10 +8,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.*;
 import java.util.*;
-import java.util.List;
 
 import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 public class IRCChannel extends JPanel implements Runnable {
 	/**
@@ -33,12 +37,11 @@ public class IRCChannel extends JPanel implements Runnable {
 	 //GUI ELEMENTS//
 	////////////////
 	//channel Text Area
-	private JTextArea channelTextArea = new JTextArea();
+	private JTextPane channelTextArea = new JTextPane();
 	private JScrollPane channelScroll = new JScrollPane(channelTextArea);
-	private Font channelFont = new Font("Verdana", Font.BOLD, 12);
+	private Font channelFont = new Font("Consolas", Font.PLAIN, 12);
 
 	//Users list area
-	//public DefaultListModel<String> usersArray = new DefaultListModel<String>();
 	private ArrayList<IRCUser> usersArray = new ArrayList<IRCUser>();
 	private UsersListModel usersListModel = new UsersListModel(usersArray);
 	@SuppressWarnings("unchecked")
@@ -65,6 +68,7 @@ public class IRCChannel extends JPanel implements Runnable {
 	private final int EVENT_VELOCITY = 1;
 	private Timer eventTickerTimer = new Timer(0, new eventTickerAction());
 	private JPanel tickerPanel = new JPanel();
+	private TickerListener eventTickerListener = new TickerListener();
 	private final int EVENT_BUFFER = 20;
 	
 	//Repaints the window, delayed by EVENT_DELAY
@@ -72,7 +76,6 @@ public class IRCChannel extends JPanel implements Runnable {
 	{
 		public void actionPerformed (ActionEvent event)
 		{
-	     eventTickerTimer.setDelay(gui.getEventTickerDelay());
 	     for(JLabel tempLabel : eventLabels){
 	    	tempLabel.setLocation(tempLabel.getX()-EVENT_VELOCITY, 0);
 	    	if(tempLabel.getX()+tempLabel.getWidth() < 0){
@@ -133,11 +136,11 @@ public class IRCChannel extends JPanel implements Runnable {
 	        	 
 	        	 //If usersArray and clientText isn't empty.
 	        	 ArrayList<String> matches = new ArrayList<String>();
-	        	 if(usersArray.getSize() > 0 && clientTextBox.getText().length() > 0){
-	        		 for(int x=0; x < usersArray.getSize()-1; x++){
+	        	 if(usersArray.size() > 0 && clientTextBox.getText().length() > 0){
+	        		 for(int x=0; x < usersArray.size()-1; x++){
 	        			 //For each matching word put it in the matches array
-	        			 if(usersArray.getElementAt(x).toLowerCase().replace("@","").startsWith(startingCharacters))
-	        				 matches.add(usersArray.getElementAt(x));
+	        			 if(usersArray.get(x).getName().toLowerCase().replace("@","").startsWith(startingCharacters))
+	        				 matches.add(usersArray.get(x).getName());
 	        		 }
 	        		 //If the matches arean't already in autoCompleteNames
 	        		 if(!matches.isEmpty()){
@@ -214,9 +217,34 @@ public class IRCChannel extends JPanel implements Runnable {
    private void setupTickerPanel(){
 	   tickerPanel.setBackground(Color.LIGHT_GRAY);
 	   tickerPanel.setLayout(null);
+	   tickerPanel.addMouseListener(eventTickerListener);
+   }
+   
+   private class TickerListener extends MouseInputAdapter {
+	   public void mouseEntered(MouseEvent e) {
+	       eventTickerTimer.setDelay(gui.getEventTickerDelay()*10);
+	    }
+	   
+	   public void mouseExited(MouseEvent e){
+		   eventTickerTimer.setDelay(gui.getEventTickerDelay());
+	   }
+   }
+   
+   public class IRCAlert extends JLabel{
+	   /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	AlertType type;
+	   
+	   IRCAlert(AlertType type){
+		   this.type = type;
+	   }
+
    }
    
    public void tickerPanelAddEventLabel(String eventText){
+	   eventTickerTimer.setDelay(gui.getEventTickerDelay());
 	  if(gui.getJoinsQuitsTicker()){
 	   JLabel tempLabel = new JLabel(eventText);
 	   int tempX = 0;
@@ -261,7 +289,20 @@ public class IRCChannel extends JPanel implements Runnable {
 		clientTextBox.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,Collections.EMPTY_SET);
 	}
 	
-	public void printText(String line){
+   /**
+    * Return the appropriate created IRC User
+    * @param channelName
+    * @return IRCChannel
+    */
+   public IRCUser getCreatedUsers(String userName){
+	   //for(int x = 0; x < createdChannels.size(); x++)
+	   for(IRCUser tempUser : usersArray)
+		   if(tempUser.getName().matches(userName))
+			   return tempUser;
+	   return null;
+   }
+	
+	public void printText(String line, String fromUser){
 		DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
 		Date chatDate = new Date();
 		
@@ -269,14 +310,36 @@ public class IRCChannel extends JPanel implements Runnable {
 			line = "["+chatDateFormat.format(chatDate)+"] " + line;
 		if(gui.getChannelHistory())
 			channelHistory.add(line);
-		channelTextArea.append(line+"\n");
+
+		if(getCreatedUsers(fromUser).getName().matches(Connection.myNick)){
+		    StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
+	    	Style style = doc.addStyle("StyleName", null);
+
+	        StyleConstants.setItalic(style, true);
+
+	        try {
+				doc.insertString(doc.getLength(), line+"\n", style);
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
+			Style style = doc.addStyle("StyleName", null);
+
+			try {
+				doc.insertString(doc.getLength(), line+"\n", style);
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
 		channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
 	}
 	
 	private void setupMainTextArea(){
 		channelScroll.setPreferredSize(new Dimension(MAIN_WIDTH-USER_LIST_WIDTH,MAIN_HEIGHT-BOTTOM_HEIGHT));
 		channelScroll.setLocation(0, 0);
-		channelTextArea.setLineWrap(true);
 		channelTextArea.setEditable(false);
 		channelTextArea.setFont(channelFont);
 	}
@@ -315,13 +378,13 @@ public class IRCChannel extends JPanel implements Runnable {
 				if(users.length >= 5){
 					for(int x = 5; x < users.length; x++){
 						if(users[x].startsWith(":")){
-							usersArray.addElement(users[x].substring(1));
+							usersArray.add(new IRCUser(users[x].substring(1)));
 						} else
-							usersArray.addElement(users[x]);
+							usersArray.add(new IRCUser(users[x]));
 						usersList.setSelectedIndex(0);
 					}
 				}
-				sortUsersList();
+				usersListModel.sort();
 			}
 		});
 	}
@@ -334,35 +397,17 @@ public class IRCChannel extends JPanel implements Runnable {
 						if(user.startsWith(":"))
 							thisUser = user.substring(1);
 						
-						usersArray.addElement(thisUser);
+						//usersArray.addElement(thisUser);
+						usersArray.add(new IRCUser(thisUser));
 						usersList.setSelectedIndex(0);
 						tickerPanelAddEventLabel("++ "+thisUser+" has entered "+channel);
-						sortUsersList();
+						usersListModel.sort();
 					}
 		});
 	}
-
-	private void sortUsersList(){
-		for(int y = 0; y < usersArray.size()-1; y++){
-			for(int x = y+1; x <  usersArray.size(); x++){
-				String largerName = usersArray.getElementAt(y); 
-				String smallerName = usersArray.getElementAt(x);
-				if(largerName.toLowerCase().charAt(0) > smallerName.toLowerCase().charAt(0)){
-					usersArray.setElementAt(largerName, x);
-					usersArray.setElementAt(smallerName, y);
-				} else if(largerName.toLowerCase().charAt(0) == smallerName.toLowerCase().charAt(0)){
-					if( getLargerElement(y,x,largerName,smallerName) == y){
-						usersArray.setElementAt(largerName, x);
-						usersArray.setElementAt(smallerName, y);
-					}
-				}
-					
-			}
-		}
-	}
 	
 
-	private int getLargerElement(int y, int x,String firstElement, String secondElement){
+	/**private int getLargerElement(int y, int x,String firstElement, String secondElement){
 		int maximumAccuracy = firstElement.length();
 
 		if(firstElement.length() <= secondElement.length())
@@ -378,7 +423,7 @@ public class IRCChannel extends JPanel implements Runnable {
 					
 		
 		return 0;
-	}
+	}*/
 	
 	/**
 	 * Removes a single user, good for when a user joins the channel
@@ -394,43 +439,39 @@ public class IRCChannel extends JPanel implements Runnable {
 
 						for(int x =0; x < usersArray.size();x++)
 						{
-							if(usersArray.getElementAt(x).matches(thisUser)){
-								usersArray.removeElementAt(x);
+							if(usersArray.get(x).getName().matches(thisUser)){
+								usersArray.remove(x);
 							usersList.setSelectedIndex(0);
 							tickerPanelAddEventLabel("-- "+thisUser+" has quit "+channel);
 							}
 						}
-						
+						usersListModel.sort();
 					}
 		});
 	}
 
 	/**Rename user by removing old name and inserting new name.*/
-	public void renameUserUsersList(String channel,String oldUser,String newUser){
+	public void renameUserUsersList(String channel,String oldUserName,String newUserName){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
-				String thisoldUser = oldUser;
-				String thisnewUser = newUser;
-						if(oldUser.startsWith(":"))
-							thisoldUser = oldUser.substring(1);
+				String thisoldUser = oldUserName;
+				String thisnewUser = newUserName;
+						if(oldUserName.startsWith(":"))
+							thisoldUser = oldUserName.substring(1);
 
-						for(int x =0; x < usersArray.size();x++)
-						{
-							if(usersArray.getElementAt(x).matches(thisoldUser)){
-								usersArray.removeElementAt(x);
-								usersArray.insertElementAt(thisnewUser,x);
-								usersList.setSelectedIndex(0);
+								for(IRCUser tempUser : usersArray)
+						    		if(tempUser.getName().equals(oldUserName)){
+						    			tempUser.setName(newUserName);
+						    			break;
+						    		}
 								tickerPanelAddEventLabel("!! "+thisoldUser+" changed name to "+thisnewUser);
-							}
-						}
-
 					}
 		});
 	}
 	
 	/**Clear the users list*/
 	public void clearUsersList(String channel){
-		usersArray.removeAllElements();
+		usersArray.clear();
 	}
 
 	@Override

@@ -13,6 +13,10 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 public class UserGUI extends JPanel implements Runnable{
 	/**
@@ -24,7 +28,7 @@ public class UserGUI extends JPanel implements Runnable{
 	final private int MAIN_HEIGHT = 600;
 	
 	//Server Text Area
-	private JTextArea serverTextArea = new JTextArea();
+	private JTextPane serverTextArea = new JTextPane();
 	private JScrollPane serverTextScroll = new JScrollPane(serverTextArea);
 	//private static Font serverTextFont = new Font("Verdana", Font.BOLD, 12);
 	
@@ -168,12 +172,26 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @param channelName
 	 * @param line
 	 */
-	public void printText(String channelName, String line){
+	public void printText(String channelName, String line, String fromUser){
 		if(channelName == "Server"){
-			serverTextArea.append(line+"\n");
+			//serverTextArea.append(line+"\n");
+			//serverTextArea.setText(serverTextArea.getText()+line+"\n");
+			if(fromUser == "Server"){
+			    StyledDocument doc = (StyledDocument) serverTextArea.getDocument();
+		    	Style style = doc.addStyle("StyleName", null);
+
+		        StyleConstants.setItalic(style, true);
+
+		        try {
+					doc.insertString(doc.getLength(), line+"\n", style);
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 			serverTextArea.setCaretPosition(serverTextArea.getDocument().getLength());
 		} else
-			getCreatedChannels(channelName).printText(line);
+			getCreatedChannels(channelName).printText(line,fromUser);
 	}
 	
 	public void printEventTicker(String channelName, String eventText){
@@ -513,13 +531,13 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @param user
 	 * @param newUser
 	 */
-	public void renameUserUsersList(String channelName,String oldUser,String newUser){
+	public void renameUser(String channelName,String oldUserName,String newUserName){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
-				String thisoldUser = oldUser;
-				String thisnewUser = newUser;
-						if(oldUser.startsWith(":"))
-							thisoldUser = oldUser.substring(1);
+				String thisoldUser = oldUserName;
+				String thisnewUser = newUserName;
+						if(oldUserName.startsWith(":"))
+							thisoldUser = oldUserName.substring(1);
 						
 						if(channelName == "Server"){
 							for(IRCChannel tempChannel : createdChannels){

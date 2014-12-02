@@ -2,9 +2,10 @@ package urChatBasic;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import javax.swing.AbstractListModel;
+import javax.swing.DefaultListModel;
 
-public class UsersListModel extends AbstractListModel{
+@SuppressWarnings("rawtypes")
+public class UsersListModel extends DefaultListModel{
     /**
 	 * 
 	 */
@@ -19,8 +20,8 @@ public class UsersListModel extends AbstractListModel{
         return users.size();
     }
 
-    public Object getElementAt(int index){
-        return (IRCUser)users.get(index);
+    public IRCUser getElementAt(int index){
+        return users.get(index);
     }
 
     public ArrayList<IRCUser> getSongList(){
@@ -34,5 +35,10 @@ public class UsersListModel extends AbstractListModel{
     public void getSortedList(ArrayList<IRCUser> array){
         Collections.sort(array);
         users = array;
+    }
+    
+    public void sort(){
+        Collections.sort(users);
+        fireContentsChanged(this, 0, users.size());
     }
 }

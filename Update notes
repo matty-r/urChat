@@ -1,23 +1,26 @@
 TODO List:
-- Change from TextArea to other thing that allows fonts and highlighting and stuff
 - Right-Click options for users in the list (whois,query,private message)
 - Clickable HTTP when someone sends a message
-- Slow down ticker on mouse over
 - Save history in real time
 - Limit the number of lines in the history
-- Create a method to insert a user when they join instead of resorting the entire list
 - Create a Low Resource mode
 	- No event ticker
 	- No user sorting
 	- 
 
+=alpha 09 (30 NOV 14)
+
+* Added ticker slows down on mouse over
+* Changed text area to a JTextPane
+* Added text formatting based on who sends it. Need to adjust formatting later
+
 =alpha 08 (26 NOV 14)
 
-* Fixed user list sorting, it wasn't sorting the last name
-* Fixed user list sorting, it now sorts by every letter in the name (Eg: AAAA will come before AAAB)
-	- This currently spikes the CPU usage when you join a room for the first time, might need to limit to 3 characters only.
 * Added icons on the Server Tab- Go, Wait and Stop. Changes icon depending on server status
 * Fixed Server tab status to only show disconnected when the server responds to the Quit command.
+* Fixed list sorting ... People that join the channel are now an IRCUser object and users exist
+	in a UsersListModel which implements AbstractListModel. Collections.sort();
+* Fixed Renaming users to work with the new IRCUser Object.
 
 =alpha 07 (24 NOV 14)
 

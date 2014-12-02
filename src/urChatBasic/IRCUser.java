@@ -15,6 +15,10 @@ public class IRCUser implements Comparable<IRCUser>{
 		return this.name;
 	}
 	
+	public String toString(){
+		return this.name;
+	}
+	
 	@Override
 	public int compareTo(IRCUser comparison) {
 		return name.compareTo(comparison.getName());
