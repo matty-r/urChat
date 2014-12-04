@@ -45,5 +45,6 @@ public class DriverGUI
 
 	public static void startConnection(){
 		chatSession =  new Connection();
+		
 	}
 }

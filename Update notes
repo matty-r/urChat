@@ -6,12 +6,18 @@ TODO List:
 - Create a Low Resource mode
 	- No event ticker
 	- No user sorting 
+- Setup Alert Types
 
 =Update (4 DEC 14)
 
 * Fixed words not wrapping correctly if there is no space.
 * Fixed the alert of someone changing their name displaying in all Channels.
 	Now only shows in the Channel where the user was located.
+* Added a Server class
+* Improved the parsing of server messages - won't lose any detail from splitting by a blank space.
+* Added text box to server window so that it's possible to send messages through the server console
+	instead of in a channel. This allows you to change nick or identify without worry about sending
+	text to server.
 
 =Update (30 NOV 14)
 

@@ -10,13 +10,8 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.event.*;
+import javax.swing.text.*;
 
 public class UserGUI extends JPanel implements Runnable{
 	/**
@@ -27,20 +22,9 @@ public class UserGUI extends JPanel implements Runnable{
 	final private int MAIN_WIDTH = 800;
 	final private int MAIN_HEIGHT = 600;
 	
-	//Server Text Area
-	private JTextPane serverTextArea = new JTextPane();
-	private JScrollPane serverTextScroll = new JScrollPane(serverTextArea);
-	//private static Font serverTextFont = new Font("Verdana", Font.BOLD, 12);
-	
 	//Tabs
 	private JTabbedPane tabbedPane = new JTabbedPane();
-	private final int SERVER_INDEX = 1;
 	private final int OPTIONS_INDEX = 0;
-	//Icons
-	private ImageIcon iconGo;
-	private ImageIcon iconWait;
-	private ImageIcon iconStop;
-	
 	
 	//Options Panel
 	private JPanel optionsMainPanel = new JPanel();
@@ -64,10 +48,18 @@ public class UserGUI extends JPanel implements Runnable{
 	private Preferences clientSettings;
 	
 	//Server Panel
-	private JPanel serverPanel = new JPanel();
+	//private JPanel serverPanel = new JPanel();
+	//Server panel is now created per server
+	//Icons
+	private ImageIcon iconGo;
+	private ImageIcon iconWait;
+	private ImageIcon iconStop;
 	
 	//Created channels/tabs
 	private ArrayList<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
+	
+	//Created Servers/Tabs
+	private ArrayList<IRCServer> createdServers = new ArrayList<IRCServer>();
  
 	/**
 	 * Sets the tab to the index number
@@ -122,7 +114,7 @@ public class UserGUI extends JPanel implements Runnable{
 		}
 		if(!createdChannels.isEmpty()){
 			createdChannels.clear();
-			tabbedPane.setTitleAt(SERVER_INDEX, "Server (Disconnected)");		
+			//tabbedPane.setTitleAt(SERVER_INDEX, "Server (Disconnected)");		
 		}
 	}
 	
@@ -134,8 +126,21 @@ public class UserGUI extends JPanel implements Runnable{
    public IRCChannel getCreatedChannels(String channelName){
 	   //for(int x = 0; x < createdChannels.size(); x++)
 	   for(IRCChannel tempChannel : createdChannels)
-		   if(tempChannel.getName().matches(channelName))
+		   if(tempChannel.getName().equals(channelName))
 			   return tempChannel;
+	   return null;
+   }
+   
+   /**
+    * Return the appropriate created server
+    * @param serverName
+    * @return IRCServer
+    */
+   public IRCServer getCreatedServers(String serverName){
+	   //for(int x = 0; x < createdChannels.size(); x++)
+	   for(IRCServer tempServer : createdServers)
+		   if(tempServer.getName().equals(serverName))
+			   return tempServer;
 	   return null;
    }
    
@@ -167,41 +172,39 @@ public class UserGUI extends JPanel implements Runnable{
 	   }
    }
    
+   /**
+    * Creates a new server based on name
+    * @param serverName
+    */
+   public void addCreatedServers(String serverName){
+	   
+	   if(getCreatedServers(serverName) == null){
+		IRCServer tempServer = new IRCServer(serverName);
+	   	createdServers.add(tempServer);
+	   	tabbedPane.addTab(serverName, iconGo, tempServer);
+	   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempServer));
+	   	tempServer.serverTextBox.requestFocus();
+	   }
+   }
+   
 	/**
 	 * Prints the text to the appropriate channels main text window.
 	 * @param channelName
 	 * @param line
 	 */
-	public void printText(String channelName, String line, String fromUser){
-		if(channelName == "Server"){
-			//serverTextArea.append(line+"\n");
-			//serverTextArea.setText(serverTextArea.getText()+line+"\n");
-			if(fromUser == "Server"){
-			    StyledDocument doc = (StyledDocument) serverTextArea.getDocument();
-		    	Style style = doc.addStyle("StyleName", null);
-
-		        StyleConstants.setItalic(style, true);
-
-		        try {
-					doc.insertString(doc.getLength(), line+"\n", style);
-				} catch (BadLocationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			serverTextArea.setCaretPosition(serverTextArea.getDocument().getLength());
-		} else
+	public void printChannelText(String channelName, String line, String fromUser){
 			getCreatedChannels(channelName).printText(line,fromUser);
+	}
+	
+	public void printServerText(String serverName, String line){
+		getCreatedServers(serverName).printText(line);
 	}
 	
 	public void printEventTicker(String channelName, String eventText){
 		getCreatedChannels(channelName).tickerPanelAddEventLabel(eventText);
 	}
 	
-	private void setupServerPanel(){
-		serverPanel.setLayout(new BorderLayout());
-		serverPanel.add(serverTextScroll, BorderLayout.CENTER);
-	}
+
 	
 	private void setupRightOptionsPanel(){
 		ListSelectionModel listSelectionModel = optionsList.getSelectionModel();
@@ -269,9 +272,9 @@ public class UserGUI extends JPanel implements Runnable{
 					try {
 						Connection.sendClientText("/quit Goodbye cruel world", "Server");
 						connectButton.setText("Wait...");
-						tabbedPane.setTitleAt(SERVER_INDEX, "Server (Wait...)");
+						//tabbedPane.setTitleAt(SERVER_INDEX, "Server (Wait...)");
 						connectButton.setEnabled(false);
-						tabbedPane.setIconAt(SERVER_INDEX, iconWait);
+						//tabbedPane.setIconAt(SERVER_INDEX, iconWait);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -287,25 +290,25 @@ public class UserGUI extends JPanel implements Runnable{
 		Connection.login =  usernameTextField.getText();
 		Connection.firstChannel = firstChannelTextField.getText();
 		
+		//addCreatedServers();
 		
 		new Thread(new Runnable() {
 			   public void run() {
 				  // DriverGUI.chatSession =  new Connection();
+				   
 				   DriverGUI.startConnection();
 			   }
 			}).start();
-		
-		tabbedPane.setSelectedIndex(SERVER_INDEX);
-		tabbedPane.setTitleAt(SERVER_INDEX, "Server (Connected)");
-		connectButton.setText("Disconnect");
-		tabbedPane.setIconAt(SERVER_INDEX, iconGo);
 	}
 	
 	public void serverDisconnect(){
 		connectButton.setEnabled(true);
 		connectButton.setText("Connect");
-		tabbedPane.setTitleAt(SERVER_INDEX, "Server (Disconnected");
-		tabbedPane.setIconAt(SERVER_INDEX, iconStop);
+		for(IRCServer tempServer : createdServers){
+			int serverIndex = getTabIndex(tempServer.getName());
+			tabbedPane.setTitleAt(serverIndex, "Server (Disconnected");
+			tabbedPane.setIconAt(serverIndex, iconStop);
+		}
 	}
 	
 	private void setupLeftOptionsPanel(){
@@ -378,7 +381,7 @@ public class UserGUI extends JPanel implements Runnable{
 		tabbedPane.addChangeListener(new mainTabbedPanel_changeAdapter(this));
 		setupOptionsPanel();
 		tabbedPane.addTab("Options",optionsMainPanel);
-		setupServerPanel();
+		
 		Image tempStop = null;
 		Image tempWait = null;
 		Image tempGo = null;
@@ -393,7 +396,7 @@ public class UserGUI extends JPanel implements Runnable{
 		iconGo = new ImageIcon(tempGo);
 		iconWait = new ImageIcon(tempWait);
 		iconStop = new ImageIcon(tempStop);
-		tabbedPane.addTab("Server (Disconnected)", iconStop,serverPanel);
+		
 	}
 	
 	//Sets focus to the clientTextBox when tab is changed to a channel

@@ -2,30 +2,14 @@ package urChatBasic;
 
 import java.awt.event.*;
 import java.awt.*;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.text.*;
 import java.util.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.BoxView;
-import javax.swing.text.ComponentView;
-import javax.swing.text.Element;
-import javax.swing.text.IconView;
-import javax.swing.text.LabelView;
-import javax.swing.text.ParagraphView;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.StyledEditorKit;
-import javax.swing.text.View;
-import javax.swing.text.ViewFactory;
+import javax.swing.text.*;
 
 public class IRCChannel extends JPanel implements Runnable {
 	/**
@@ -447,8 +431,8 @@ public IRCUser getCreatedUsers(String userName){
 	public void addToUsersList(String channel,String[] users){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
-				if(users.length >= 5){
-					for(int x = 5; x < users.length; x++){
+				if(users.length >= 0){
+					for(int x = 0; x < users.length; x++){
 						String tempUser = users[x];
 						if(users[x].startsWith(":"))
 							tempUser = tempUser.substring(1);
