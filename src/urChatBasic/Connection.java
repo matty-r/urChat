@@ -148,6 +148,7 @@ public class Connection implements Runnable{
 			    					gui.setChannelTopic(tempTextArray[3], incomingTopic.substring(1));
 		        				break;
 		        	//353 = User List
+					//:barjavel.freenode.net 353 matty_r @ #testingonly :@matty_r
 		        	case "353" :gui.addToUsersList(tempTextArray[4], tempTextArray);
 		        		 		break;
     		 		//470 = Forwarding to another channel
@@ -169,9 +170,9 @@ public class Connection implements Runnable{
     							break;
 		        	//JOIN = When a user joins a channel
 		        	case "JOIN":if(extractNick(tempTextArray[0]).equals(myNick)){
-		        					gui.addCreatedChannels(tempTextArray[2].replace(":", ""));
-		        					gui.printEventTicker(tempTextArray[2].replace(":",""), "You have joined "+tempTextArray[2]);
-					        	} else
+					        		gui.addCreatedChannels(tempTextArray[2]);
+			    					gui.printEventTicker(tempTextArray[2], "You have joined "+tempTextArray[2]);
+					        	} else 
 		        					gui.addToUsersList(tempTextArray[2], tempTextArray[0].substring(0, tempTextArray[0].indexOf("!")));
 		        				break;
 		        	case "PRIVMSG": String incomingMessage = "";

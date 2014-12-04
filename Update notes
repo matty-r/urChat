@@ -6,9 +6,14 @@ TODO List:
 - Create a Low Resource mode
 	- No event ticker
 	- No user sorting 
-- Do single character word wrap for main text area
 
-=alpha 09 (30 NOV 14)
+=Update (4 DEC 14)
+
+* Fixed words not wrapping correctly if there is no space.
+* Fixed the alert of someone changing their name displaying in all Channels.
+	Now only shows in the Channel where the user was located.
+
+=Update (30 NOV 14)
 
 * Added ticker slows down on mouse over
 * Changed text area to a JTextPane
@@ -16,7 +21,7 @@ TODO List:
 * Fixed receiving text from a channel mod with @ in front of their name
 * Added IRCUser now has a character modifier to identify if they are a mod or not
 
-=alpha 08 (26 NOV 14)
+=Update (26 NOV 14)
 
 * Added icons on the Server Tab- Go, Wait and Stop. Changes icon depending on server status
 * Fixed Server tab status to only show disconnected when the server responds to the Quit command.
@@ -24,7 +29,7 @@ TODO List:
 	in a UsersListModel which implements AbstractListModel. Collections.sort();
 * Fixed Renaming users to work with the new IRCUser Object.
 
-=alpha 07 (24 NOV 14)
+=Update (24 NOV 14)
 
 * Added event ticker delay slider
 * Added saving of settings using the preferences api
@@ -34,7 +39,7 @@ TODO List:
 * Fixed Event Ticker alerts not showing up fast enough, remove super.width as buffer, alerts can now
 	chain together.
 
-=alpha 06 (23 NOV 14)
+=Update (23 NOV 14)
 
 * Fixed Options panel layouts
 * Removed Show Joins/Quits in the chat window checkbox, I want ticker only at the moment
@@ -47,7 +52,7 @@ TODO List:
 * Added timestamp checkbox
 * Added save chat history to working directory on disconnect.
 
-=alpha 05 (22 NOV 14)
+=Update (22 NOV 14)
 
 * Fixed tab complete for user names, works mid sentence also, and will rotate through all available matches
 * Added focus in the chat text box when you change the tab to a channel
@@ -56,14 +61,14 @@ TODO List:
 * Added Connect button to options panel, only connects to server when you press connect.
 * Added press escape to clear the client text box
 
-=alpha 04 (21 NOV 14)
+=Update (21 NOV 14)
 
 * Added Tabs for each channel that you join, tabs are automatically created
 * Added channel specific alerts to only display in that tab i.e Join/Quit
 * Fixed the UserGUI to redirect channel specific calls to the IRCChannel correctly
 * Added news ticker style events of people joining a channel
 
-=alpha 03 (20 NOV 14)
+=Update (20 NOV 14)
 
 * Added alert when user quits channel, removes user from user list
 * Added sorting of names alphabetical in users list (Took me ages to get this working correctly)
@@ -71,7 +76,7 @@ TODO List:
 * Fixed the tab layout by using BorderLayout.
 * Added tab complete to the client text box (Currently only works if the name is the first word in the text box)
 
-=alpha 02 (18 NOV 14)
+=Update (18 NOV 14)
 
 * Added List for clients connected to channel (Only when you join the channel though)
 * Added when a user joins the channel user list will now also update
@@ -79,13 +84,13 @@ TODO List:
 * Changed font of channel text area, it's now a bit more readable
 * Fixed the invokeLater for the GUI and connection threads
 
-=alpha 01 (16 NOV 14)
+=Update (16 NOV 14)
 
 * Added a text box to send messages
 * Added main text area to show server messages
 * Added parse /join,/msg and /nick commands from client
 * Fixed auto-response to ping server messages
 
-=alpha origin (7 NOV 14)
+=Update (7 NOV 14)
 
 * Connect to IRC server and receive server text via console

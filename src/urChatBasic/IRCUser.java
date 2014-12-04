@@ -16,6 +16,7 @@ public class IRCUser implements Comparable<IRCUser>{
 		return this.name;
 	}
 	
+	@Override
 	public String toString(){
 		return this.name;
 	}
@@ -27,6 +28,8 @@ public class IRCUser implements Comparable<IRCUser>{
 	public void setUserStatus(String c){
 		userStatus = c;
 	}
+	
+
 	
 	@Override
 	public int compareTo(IRCUser comparison) {

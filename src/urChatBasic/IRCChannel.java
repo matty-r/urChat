@@ -12,10 +12,20 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.BoxView;
+import javax.swing.text.ComponentView;
+import javax.swing.text.Element;
+import javax.swing.text.IconView;
+import javax.swing.text.LabelView;
+import javax.swing.text.ParagraphView;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.StyledEditorKit;
+import javax.swing.text.View;
+import javax.swing.text.ViewFactory;
 
 public class IRCChannel extends JPanel implements Runnable {
 	/**
@@ -294,11 +304,15 @@ public class IRCChannel extends JPanel implements Runnable {
     * @param channelName
     * @return IRCChannel
     */
-   public IRCUser getCreatedUsers(String userName){
-	   //for(int x = 0; x < createdChannels.size(); x++)
-	   for(IRCUser tempUser : usersArray)
-		   if(tempUser.getName().replace(tempUser.getUserStatus(), "").matches(userName))
-			   return tempUser;
+
+public IRCUser getCreatedUsers(String userName){
+	   try{
+		   for(IRCUser tempUser : usersArray)
+			   if(tempUser.getName().replace(tempUser.getUserStatus(), "").matches(userName))
+				   return tempUser;
+	   } catch(Exception e) {
+		   printText(e.getMessage(), "Server");
+	   } 
 	   return null;
    }
 	
@@ -311,7 +325,7 @@ public class IRCChannel extends JPanel implements Runnable {
 		if(gui.getChannelHistory())
 			channelHistory.add(line);
 
-		if(Connection.myNick.equals(getCreatedUsers(fromUser).getName())){
+		if(Connection.myNick.equals(getCreatedUsers(fromUser))){
 		    StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
 	    	Style style = doc.addStyle("StyleName", null);
 
@@ -343,9 +357,64 @@ public class IRCChannel extends JPanel implements Runnable {
 	private void setupMainTextArea(){
 		channelScroll.setPreferredSize(new Dimension(MAIN_WIDTH-USER_LIST_WIDTH,MAIN_HEIGHT-BOTTOM_HEIGHT));
 		channelScroll.setLocation(0, 0);
+		channelScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
 		channelTextArea.setEditable(false);
 		channelTextArea.setFont(channelFont);
+		channelTextArea.setEditorKit(new WrapEditorKit());
 	}
+	
+	
+	
+  class WrapEditorKit extends StyledEditorKit {
+        /**
+	 * 
+	 */
+	private static final long serialVersionUID = 980393121518733188L;
+		ViewFactory defaultFactory=new WrapColumnFactory();
+        public ViewFactory getViewFactory() {
+            return defaultFactory;
+        }
+
+    }
+
+    class WrapColumnFactory implements ViewFactory {
+        public View create(Element elem) {
+            String kind = elem.getName();
+            if (kind != null) {
+                if (kind.equals(AbstractDocument.ContentElementName)) {
+                    return new WrapLabelView(elem);
+                } else if (kind.equals(AbstractDocument.ParagraphElementName)) {
+                    return new ParagraphView(elem);
+                } else if (kind.equals(AbstractDocument.SectionElementName)) {
+                    return new BoxView(elem, View.Y_AXIS);
+                } else if (kind.equals(StyleConstants.ComponentElementName)) {
+                    return new ComponentView(elem);
+                } else if (kind.equals(StyleConstants.IconElementName)) {
+                    return new IconView(elem);
+                }
+            }
+
+            // default to text display
+            return new LabelView(elem);
+        }
+    }
+
+    class WrapLabelView extends LabelView {
+    public WrapLabelView(Element elem) {
+        super(elem);
+    }
+
+    public float getMinimumSpan(int axis) {
+        switch (axis) {
+            case View.X_AXIS:
+                return 0;
+            case View.Y_AXIS:
+                return super.getMinimumSpan(axis);
+            default:
+                throw new IllegalArgumentException("Invalid axis: " + axis);
+        }
+    }
+    }
 	
 	private void setupMainPanel(){
 		mainPanel.setLayout( new BorderLayout());
@@ -380,14 +449,14 @@ public class IRCChannel extends JPanel implements Runnable {
 			public void run(){
 				if(users.length >= 5){
 					for(int x = 5; x < users.length; x++){
-						if(users[x].startsWith(":")){
-							usersArray.add(new IRCUser(users[x].substring(1)));
-						} else
-							usersArray.add(new IRCUser(users[x]));
+						String tempUser = users[x];
+						if(users[x].startsWith(":"))
+							tempUser = tempUser.substring(1);
+
+						usersArray.add(new IRCUser(tempUser));
 						
-						if(users[x].startsWith("@"))
-							getCreatedUsers(users[x]).setUserStatus("@");
-						usersList.setSelectedIndex(0);
+						if(tempUser.startsWith("@"))
+							getCreatedUsers(tempUser).setUserStatus("@");
 					}
 				}
 				usersListModel.sort();
@@ -402,10 +471,10 @@ public class IRCChannel extends JPanel implements Runnable {
 				String thisUser = user;
 						if(user.startsWith(":"))
 							thisUser = user.substring(1);
-						
+
 						if(thisUser.startsWith("@"))
 							getCreatedUsers(thisUser).setUserStatus("@");
-						//usersArray.addElement(thisUser);
+
 						usersArray.add(new IRCUser(thisUser));
 						usersList.setSelectedIndex(0);
 						tickerPanelAddEventLabel("++ "+thisUser+" has entered "+channel);
@@ -413,25 +482,6 @@ public class IRCChannel extends JPanel implements Runnable {
 					}
 		});
 	}
-	
-
-	/**private int getLargerElement(int y, int x,String firstElement, String secondElement){
-		int maximumAccuracy = firstElement.length();
-
-		if(firstElement.length() <= secondElement.length())
-			maximumAccuracy = firstElement.length();
-		else 
-			maximumAccuracy = secondElement.length();
-		
-		for(int z = 1; z < maximumAccuracy; z ++)
-			if(firstElement.toLowerCase().charAt(z) > secondElement.toLowerCase().charAt(z))
-				return y;
-			else if(firstElement.toLowerCase().charAt(z) < secondElement.toLowerCase().charAt(z))
-				return x;	
-					
-		
-		return 0;
-	}*/
 	
 	/**
 	 * Removes a single user, good for when a user joins the channel
@@ -466,13 +516,14 @@ public class IRCChannel extends JPanel implements Runnable {
 				String thisnewUser = newUserName;
 						if(oldUserName.startsWith(":"))
 							thisoldUser = oldUserName.substring(1);
+								//Check to make sure 
+								
+								IRCUser tempUser = getCreatedUsers(oldUserName);
 
-								for(IRCUser tempUser : usersArray)
-						    		if(tempUser.getName().equals(oldUserName)){
+						    		if(tempUser != null){
+						    			tickerPanelAddEventLabel("!! "+thisoldUser+" changed name to "+thisnewUser);
 						    			tempUser.setName(newUserName);
-						    			break;
 						    		}
-								tickerPanelAddEventLabel("!! "+thisoldUser+" changed name to "+thisnewUser);
 					}
 		});
 	}

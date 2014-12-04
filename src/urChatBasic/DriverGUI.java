@@ -20,7 +20,7 @@ public class DriverGUI
 		gui = new UserGUI();
 		new Thread(gui).start();
  
-		JFrame frame = new JFrame ("irc client alpha 09");
+		JFrame frame = new JFrame ("urChat: Last Updated 04 DEC 14");
 		
 		
 		frame.setDefaultCloseOperation (JFrame.DISPOSE_ON_CLOSE);
