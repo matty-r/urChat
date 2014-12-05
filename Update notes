@@ -1,12 +1,30 @@
 TODO List:
 - Right-Click options for users in the list (whois,query,private message)
 - Clickable HTTP when someone sends a message
-- Save history in real time
 - Limit the number of lines in the history
 - Create a Low Resource mode
 	- No event ticker
 	- No user sorting 
 - Setup Alert Types
+- Add ability to quit a channel
+- Fix the Connect/Disconnect button, it only connects right now
+- Save channels as favourites, this will save the server name and channel
+- Allow for an Autoconnect list, automatically connect to servers listed
+	\ this will also allow to retry connections until you're identified with the server
+- Handle :401, 366, 333 ,328, 470
+
+
+=Update (5 DEC 14)
+
+* Added server message logging, saves messages to a text file and has an alert to show if a message
+	was not handled.
+* Fixed handling of NICK, some how I must have removed it.. whoops :)
+* Fixed /quit command, now correctly quits all channels and servers, also removing their appropriate
+	tab
+* Added focus automatically goes to text box in server tab
+* Added colourful icons per tab so that you know what type of tab it is
+* Added Create a private message channel tab when I receive a private message
+* Added Save history in real time
 
 =Update (4 DEC 14)
 

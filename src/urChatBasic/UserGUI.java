@@ -50,16 +50,16 @@ public class UserGUI extends JPanel implements Runnable{
 	//Server Panel
 	//private JPanel serverPanel = new JPanel();
 	//Server panel is now created per server
-	//Icons
-	private ImageIcon iconGo;
-	private ImageIcon iconWait;
-	private ImageIcon iconStop;
+	
 	
 	//Created channels/tabs
 	private ArrayList<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
 	
 	//Created Servers/Tabs
 	private ArrayList<IRCServer> createdServers = new ArrayList<IRCServer>();
+	
+	//Created Private Rooms/Tabs
+	private ArrayList<IRCPrivate> createdPrivateRooms = new ArrayList<IRCPrivate>();
  
 	/**
 	 * Sets the tab to the index number
@@ -105,16 +105,22 @@ public class UserGUI extends JPanel implements Runnable{
 	public void quitChannels(){
 		for(IRCChannel tempChannel : createdChannels){
 			tabbedPane.remove(getTabIndex(tempChannel.getName()));
-			try {
-				tempChannel.writeHistoryFile();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		if(!createdChannels.isEmpty()){
 			createdChannels.clear();
 			//tabbedPane.setTitleAt(SERVER_INDEX, "Server (Disconnected)");		
+		}
+	}
+	
+	/**
+	 * Closes and removes all private rooms that have been created.
+	 */
+	public void quitPrivateRooms(){
+		for(IRCPrivate tempPrivateRoom : createdPrivateRooms){
+			tabbedPane.remove(getTabIndex(tempPrivateRoom.getName()));
+		}
+		if(!createdPrivateRooms.isEmpty()){
+			createdPrivateRooms.clear();	
 		}
 	}
 	
@@ -145,6 +151,19 @@ public class UserGUI extends JPanel implements Runnable{
    }
    
    /**
+    * Return the appropriate created server
+    * @param serverName
+    * @return IRCServer
+    */
+   public IRCPrivate getCreatedPrivateRooms(String privateRoom){
+	   //for(int x = 0; x < createdChannels.size(); x++)
+	   for(IRCPrivate tempPrivate : createdPrivateRooms)
+		   if(tempPrivate.getName().equals(privateRoom))
+			   return tempPrivate;
+	   return null;
+   }
+   
+   /**
     * Check to see if there are any channels at all.
     * @param channelName
     * @return IRCChannel
@@ -156,6 +175,12 @@ public class UserGUI extends JPanel implements Runnable{
 	   return false;
    }
    
+   public IRCUser getIRCUser(String userName){
+	   for(IRCChannel tempChannel : createdChannels)
+		   return tempChannel.getCreatedUsers(userName);
+		   
+	   return null;
+   }
    
    /**
     * Creates a new channel based on name
@@ -166,7 +191,7 @@ public class UserGUI extends JPanel implements Runnable{
 	   if(getCreatedChannels(channelName) == null){
 		IRCChannel tempChannel = new IRCChannel(channelName);
 	   	createdChannels.add(tempChannel);
-	   	tabbedPane.addTab(channelName, tempChannel);
+	   	tabbedPane.addTab(channelName, tempChannel.icon ,tempChannel);
 	   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempChannel));
 	   	tempChannel.clientTextBox.requestFocus();
 	   }
@@ -181,9 +206,23 @@ public class UserGUI extends JPanel implements Runnable{
 	   if(getCreatedServers(serverName) == null){
 		IRCServer tempServer = new IRCServer(serverName);
 	   	createdServers.add(tempServer);
-	   	tabbedPane.addTab(serverName, iconGo, tempServer);
+	   	tabbedPane.addTab(serverName, tempServer.icon,tempServer);
 	   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempServer));
 	   	tempServer.serverTextBox.requestFocus();
+	   }
+   }
+   
+   /**
+    * Creates a new server based on name
+    * @param serverName
+    */
+   public void addPrivateRooms(String privateRoom){
+	   if(getCreatedPrivateRooms(privateRoom) == null){
+			IRCPrivate tempPrivateRoom = new IRCPrivate(getIRCUser(privateRoom));
+		   	createdPrivateRooms.add(tempPrivateRoom);
+		   	tabbedPane.addTab(privateRoom, tempPrivateRoom.icon,tempPrivateRoom);
+		   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempPrivateRoom));
+		   	tempPrivateRoom.privateTextBox.requestFocus();
 	   }
    }
    
@@ -193,6 +232,10 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @param line
 	 */
 	public void printChannelText(String channelName, String line, String fromUser){
+		if(channelName.equals(fromUser)){
+			addPrivateRooms(channelName);
+			getCreatedPrivateRooms(channelName).printText(line);
+		} else
 			getCreatedChannels(channelName).printText(line,fromUser);
 	}
 	
@@ -302,13 +345,11 @@ public class UserGUI extends JPanel implements Runnable{
 	}
 	
 	public void serverDisconnect(){
-		connectButton.setEnabled(true);
-		connectButton.setText("Connect");
-		for(IRCServer tempServer : createdServers){
-			int serverIndex = getTabIndex(tempServer.getName());
-			tabbedPane.setTitleAt(serverIndex, "Server (Disconnected");
-			tabbedPane.setIconAt(serverIndex, iconStop);
-		}
+		for(IRCServer tempServer : createdServers)
+			tabbedPane.remove(getTabIndex(tempServer.getName()));
+		
+		if(!createdServers.isEmpty())
+			createdServers.clear();
 	}
 	
 	private void setupLeftOptionsPanel(){
@@ -382,21 +423,6 @@ public class UserGUI extends JPanel implements Runnable{
 		setupOptionsPanel();
 		tabbedPane.addTab("Options",optionsMainPanel);
 		
-		Image tempStop = null;
-		Image tempWait = null;
-		Image tempGo = null;
-		try {
-			tempStop = ImageIO.read(new File("Stop.png"));
-			tempWait = ImageIO.read(new File("Wait.png"));
-			tempGo = ImageIO.read(new File("Go.png"));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		iconGo = new ImageIcon(tempGo);
-		iconWait = new ImageIcon(tempWait);
-		iconStop = new ImageIcon(tempStop);
-		
 	}
 	
 	//Sets focus to the clientTextBox when tab is changed to a channel
@@ -405,6 +431,9 @@ public class UserGUI extends JPanel implements Runnable{
 	    String tab = tabSource.getTitleAt(tabSource.getSelectedIndex());
 	    if(getCreatedChannels(tab) != null)
 	    	getCreatedChannels(tab).clientTextBox.requestFocus();
+	    
+	    if(getCreatedServers(tab) != null)
+	    	getCreatedServers(tab).serverTextBox.requestFocus();
 	  }
 	
 	class mainTabbedPanel_changeAdapter implements javax.swing.event.ChangeListener {

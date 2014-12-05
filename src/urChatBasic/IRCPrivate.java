@@ -18,35 +18,34 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-public class IRCServer extends JPanel implements Runnable {
+public class IRCPrivate extends JPanel implements Runnable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -4685985875752613136L;
+	private static final long serialVersionUID = -7861645386733494089L;
 	  ////////////////
 	 //GUI ELEMENTS//
 	////////////////
 	//Icons
 	public ImageIcon icon;
-	
-	//Server Properties
+	//Private Properties
 
-	//Server Text Area
-	private JTextPane serverTextArea = new JTextPane();
-	private JScrollPane serverTextScroll = new JScrollPane(serverTextArea);
-	public JTextField serverTextBox = new JTextField();
+	//Private Text Area
+	private JTextPane privateTextArea = new JTextPane();
+	private JScrollPane privateTextScroll = new JScrollPane(privateTextArea);
+	public JTextField privateTextBox = new JTextField();
 	private String name; 
 	
-	public IRCServer(String serverName){
+	public IRCPrivate(IRCUser user){
 		this.setLayout(new BorderLayout());
-		this.add(serverTextScroll, BorderLayout.CENTER);
-		this.add(serverTextBox, BorderLayout.PAGE_END);
-		serverTextBox.addActionListener(new sendServerText());
-		this.name = serverName;
+		this.add(privateTextScroll, BorderLayout.CENTER);
+		this.add(privateTextBox, BorderLayout.PAGE_END);
+		privateTextBox.addActionListener(new sendPrivateText());
+		setName(user.getName());
 		
 		Image tempIcon = null;
 		try {
-			tempIcon = ImageIO.read(new File("Server.png"));
+			tempIcon = ImageIO.read(new File("User.png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -54,30 +53,31 @@ public class IRCServer extends JPanel implements Runnable {
 		icon = new ImageIcon(tempIcon);
 	}
 	
-	public void setName(String serverName){
-		this.name = serverName;
+	public void setName(String userName){	
+		this.name = userName;
 	}
 	
 	public String getName(){
 		return this.name;
 	}
 
-	private class sendServerText implements ActionListener
+	private class sendPrivateText implements ActionListener
 	   {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-					Connection.sendClientText(serverTextBox.getText(),getName());
+					String messagePrefix = "/msg "+getName()+" ";
+					Connection.sendClientText(messagePrefix+privateTextBox.getText(),getName());
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				serverTextBox.setText("");
+				privateTextBox.setText("");
 			}
 	   }
 	
 	public void printText(String line){
-		StyledDocument doc = (StyledDocument) serverTextArea.getDocument();
+		StyledDocument doc = (StyledDocument) privateTextArea.getDocument();
 		Style style = doc.addStyle("StyleName", null);
 	
 	    StyleConstants.setItalic(style, true);
@@ -89,7 +89,7 @@ public class IRCServer extends JPanel implements Runnable {
 			e.printStackTrace();
 		}
 	
-		serverTextArea.setCaretPosition(serverTextArea.getDocument().getLength());
+	    privateTextArea.setCaretPosition(privateTextArea.getDocument().getLength());
 	}
 	
 	

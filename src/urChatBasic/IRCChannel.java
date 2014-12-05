@@ -6,6 +6,7 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
@@ -19,9 +20,10 @@ public class IRCChannel extends JPanel implements Runnable {
 
 	private UserGUI gui = DriverGUI.gui;
 	
-	private DateFormat historyDateFormat = new SimpleDateFormat("HHmm ddMMyyyy");
+	private DateFormat historyDateFormat = new SimpleDateFormat("ddMMyyyy");
 	private Date todayDate = new Date();
 	private String channelName;
+	private String serverName;
 	private final int USER_LIST_WIDTH = 100;
 	private ArrayList<String> channelHistory = new ArrayList<String>();
 	private ArrayList<String> userHistory = new ArrayList<String>();
@@ -30,6 +32,9 @@ public class IRCChannel extends JPanel implements Runnable {
 	  ////////////////
 	 //GUI ELEMENTS//
 	////////////////
+	//Icons
+	public ImageIcon icon;
+		
 	//channel Text Area
 	private JTextPane channelTextArea = new JTextPane();
 	private JScrollPane channelScroll = new JScrollPane(channelTextArea);
@@ -84,6 +89,9 @@ public class IRCChannel extends JPanel implements Runnable {
 		}
 	}
 	
+	public String getServer(){
+		return this.serverName;
+	}
 	
 	public String getName(){
 		return this.channelName;
@@ -306,9 +314,14 @@ public IRCUser getCreatedUsers(String userName){
 		
 		if(gui.getTimeStamp())
 			line = "["+chatDateFormat.format(chatDate)+"] " + line;
-		if(gui.getChannelHistory())
-			channelHistory.add(line);
-
+		if(gui.getChannelHistory()){
+			try {
+				writeHistoryFile(line);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		if(Connection.myNick.equals(getCreatedUsers(fromUser))){
 		    StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
 	    	Style style = doc.addStyle("StyleName", null);
@@ -424,6 +437,16 @@ public IRCUser getCreatedUsers(String userName){
 		this.setLayout(new BorderLayout());
 		this.add(mainPanel,BorderLayout.CENTER);
 		historyFileName = historyDateFormat.format(todayDate)+" "+this.channelName+".log";
+		
+		
+		Image tempIcon = null;
+		try {
+			tempIcon = ImageIO.read(new File("Room.png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		icon = new ImageIcon(tempIcon);
 	 }
 
 
@@ -532,13 +555,12 @@ public IRCUser getCreatedUsers(String userName){
 	}
 	
 	/** Write all competitors to the competitors.txt file */
-	public void writeHistoryFile() throws IOException{
+	public void writeHistoryFile(String line) throws IOException{
 		if(gui.saveChannelHistory()){
-			FileWriter fw = new FileWriter (historyFileName);
+			FileWriter fw = new FileWriter (historyFileName, true);
 			BufferedWriter bw = new BufferedWriter (fw);
 			PrintWriter outFile = new PrintWriter (bw);
-			for(String eachLine : channelHistory)
-				outFile.println(eachLine);
+			outFile.println(line);
 			outFile.close();
 		}
 	}
