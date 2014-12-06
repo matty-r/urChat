@@ -67,7 +67,8 @@ public class IRCServer extends JPanel implements Runnable {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-					Connection.sendClientText(serverTextBox.getText(),getName());
+					if(!serverTextBox.getText().trim().isEmpty())
+						Connection.sendClientText(serverTextBox.getText(),getName());
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

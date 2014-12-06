@@ -107,9 +107,11 @@ public class IRCChannel extends JPanel implements Runnable {
 			public void actionPerformed(ActionEvent arg0) {
 				
 				try {
+					if(!clientTextBox.getText().trim().isEmpty()){
 					Connection.sendClientText(clientTextBox.getText(),getName());
-					if(gui.getClientHistory())
-						userHistory.add(clientTextBox.getText());
+						if(gui.getClientHistory())
+							userHistory.add(clientTextBox.getText());
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -300,7 +302,7 @@ public class IRCChannel extends JPanel implements Runnable {
 public IRCUser getCreatedUsers(String userName){
 	   try{
 		   for(IRCUser tempUser : usersArray)
-			   if(tempUser.getName().replace(tempUser.getUserStatus(), "").matches(userName))
+			   if(tempUser.getName().replace(tempUser.getUserStatus(), "").equals(userName))
 				   return tempUser;
 	   } catch(Exception e) {
 		   printText(e.getMessage(), "Server");

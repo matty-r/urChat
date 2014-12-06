@@ -13,7 +13,7 @@ public class IRCUser implements Comparable<IRCUser>{
 	}
 	
 	public String getName(){
-		return this.name;
+		return this.name.replace(userStatus,"");
 	}
 	
 	@Override

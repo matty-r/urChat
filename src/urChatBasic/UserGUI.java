@@ -4,6 +4,7 @@ import java.awt.*;
 import java.util.prefs.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -107,8 +108,17 @@ public class UserGUI extends JPanel implements Runnable{
 			tabbedPane.remove(getTabIndex(tempChannel.getName()));
 		}
 		if(!createdChannels.isEmpty()){
-			createdChannels.clear();
-			//tabbedPane.setTitleAt(SERVER_INDEX, "Server (Disconnected)");		
+			createdChannels.clear();	
+		}
+	}
+	
+	/**
+	 * Closes and removes all channels that have been created.
+	 */
+	public void quitChannels(String channelName){
+		if(getCreatedChannels(channelName) != null){
+			createdChannels.remove(getCreatedChannels(channelName));
+			tabbedPane.remove(getTabIndex(channelName));
 		}
 	}
 	
@@ -121,6 +131,16 @@ public class UserGUI extends JPanel implements Runnable{
 		}
 		if(!createdPrivateRooms.isEmpty()){
 			createdPrivateRooms.clear();	
+		}
+	}
+	
+	/**
+	 * Closes and removes a selected private room that have been created.
+	 */
+	public void quitPrivateRooms(String roomName){
+		if(getCreatedPrivateRooms(roomName) != null){
+			createdPrivateRooms.remove(getCreatedPrivateRooms(roomName));
+			tabbedPane.remove(getTabIndex(roomName));
 		}
 	}
 	
@@ -220,7 +240,21 @@ public class UserGUI extends JPanel implements Runnable{
 	   if(getCreatedPrivateRooms(privateRoom) == null){
 			IRCPrivate tempPrivateRoom = new IRCPrivate(getIRCUser(privateRoom));
 		   	createdPrivateRooms.add(tempPrivateRoom);
-		   	tabbedPane.addTab(privateRoom, tempPrivateRoom.icon,tempPrivateRoom);
+		   	tabbedPane.addTab(tempPrivateRoom.getName(), tempPrivateRoom.icon,tempPrivateRoom);
+		   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempPrivateRoom));
+		   	tempPrivateRoom.privateTextBox.requestFocus();
+	   }
+   }
+   
+   /**
+    * Creates a new server based on IRCUser
+    * @param serverName
+    */
+   public void addPrivateRooms(IRCUser privateRoom){
+	   if(getCreatedPrivateRooms(privateRoom.getName()) == null){
+			IRCPrivate tempPrivateRoom = new IRCPrivate(privateRoom);
+		   	createdPrivateRooms.add(tempPrivateRoom);
+		   	tabbedPane.addTab(tempPrivateRoom.getName(), tempPrivateRoom.icon,tempPrivateRoom);
 		   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempPrivateRoom));
 		   	tempPrivateRoom.privateTextBox.requestFocus();
 	   }
@@ -239,8 +273,22 @@ public class UserGUI extends JPanel implements Runnable{
 			getCreatedChannels(channelName).printText(line,fromUser);
 	}
 	
+	/**
+	 * Prints the text to the appropriate channels main text window.
+	 * @param channelName
+	 * @param line
+	 */
+	public void printPrivateText(String userName, String line){
+			addPrivateRooms(new IRCUser(userName));
+			getCreatedPrivateRooms(userName).printText(line);
+	}
+	
 	public void printServerText(String serverName, String line){
+		try{
 		getCreatedServers(serverName).printText(line);
+		} catch(Exception e){
+			//TODO something here
+		}
 	}
 	
 	public void printEventTicker(String channelName, String eventText){
@@ -420,10 +468,31 @@ public class UserGUI extends JPanel implements Runnable{
 	
 	private void setupTabbedPane(){
 		tabbedPane.addChangeListener(new mainTabbedPanel_changeAdapter(this));
+		tabbedPane.addMouseListener(new TabbedMouseListener());
 		setupOptionsPanel();
 		tabbedPane.addTab("Options",optionsMainPanel);
 		
 	}
+	
+   private class TabbedMouseListener extends MouseInputAdapter {
+	   public void mouseClicked(MouseEvent e) {
+		   String tabName = tabbedPane.getSelectedComponent().getName();
+	       if(e.getButton() == MouseEvent.BUTTON3){
+	    	   if(getCreatedChannels(tabName) != null)
+					try {
+						Connection.sendClientText("/part i'm outta here", tabName);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+	    	   else
+	    		   if(getCreatedPrivateRooms(tabName) != null)
+						quitPrivateRooms(tabName);
+	       }
+	    }
+	   
+
+   }
 	
 	//Sets focus to the clientTextBox when tab is changed to a channel
 	private void mainTabbedPanel_stateChanged(ChangeEvent e) {
@@ -513,7 +582,10 @@ public class UserGUI extends JPanel implements Runnable{
 					} else {
 						IRCChannel tempChannel = getCreatedChannels(channelName);
 						if(tempChannel != null)
-							tempChannel.removeFromUsersList(channelName, thisUser);
+							if(thisUser.equals(Connection.myNick))
+								quitChannels(channelName);
+							else
+								tempChannel.removeFromUsersList(channelName, thisUser);
 					}
 				}
 		});

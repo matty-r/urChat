@@ -32,6 +32,9 @@ public class DriverGUI
 							try {
 								if(!gui.isCreatedChannelsEmpty())
 									Connection.sendClientText("/quit Goodbye cruel world", "Server");
+									gui.quitChannels();
+			        				gui.quitPrivateRooms();
+			        				gui.serverDisconnect();
 							} catch (IOException x) {
 								// TODO Auto-generated catch block
 								x.printStackTrace();

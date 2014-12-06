@@ -120,8 +120,11 @@ public class Connection implements Runnable{
 					tempText += tempTextArray[x] + " ";
 				}
 				writer.write("PRIVMSG " + tempTextArray[1] + " :"+tempText.substring(0, tempText.length()-1) +"\r\n");
+				gui.printPrivateText(tempTextArray[1], "<"+myNick+"> "+tempText.substring(0, tempText.length()-1));
 			} else if(clientText.startsWith("/quit")){
 					writer.write("QUIT :" + clientText.replace("/quit ","") +"\r\n");
+			} else if(clientText.startsWith("/part")){
+				writer.write("PART " + fromChannel + " :" + clientText.replace("/part  ","") +"\r\n");
 			} else if(clientText.startsWith("/me")){
 				writer.write("PRIVMSG " + fromChannel + " :  ACTION " + clientText.replace("/me ","") +"  \r\n");
 			} else {
@@ -257,6 +260,11 @@ public class Connection implements Runnable{
 		        	case "PART":if(!(extractNick(receivedOptions[0]).equals(myNick))){
 		        					for(String tempChannel : receivedOptions[2].split(","))
 		        						gui.removeFromUsersList(tempChannel, extractNick(receivedOptions[0]));
+		        				} else {
+		        					for(String tempChannel : receivedOptions[2].split(",")){
+		        						gui.removeFromUsersList(tempChannel, myNick);
+		        						gui.printServerText(mySocket.getInetAddress().getHostName(), "You quit "+tempChannel);
+	        						}
 		        				}
 		        				break;
     				//:macabre_!~ibtjw@23-114-59-64.lightspeed.austtx.sbcglobal.net QUIT :Ping timeout: 252 seconds

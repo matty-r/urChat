@@ -12,7 +12,7 @@ TODO List:
 - Allow for an Autoconnect list, automatically connect to servers listed
 	\ this will also allow to retry connections until you're identified with the server
 - Handle :401, 366, 333 ,328, 470
-
+- Hangs on exit
 
 =Update (5 DEC 14)
 
@@ -25,6 +25,7 @@ TODO List:
 * Added colourful icons per tab so that you know what type of tab it is
 * Added Create a private message channel tab when I receive a private message
 * Added Save history in real time
+* Improved handling of private messages
 
 =Update (4 DEC 14)
 
