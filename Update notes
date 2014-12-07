@@ -17,8 +17,10 @@ TODO List:
 
 * Added a right click menu to users - controlled within IRCUser
 * Added NickServ response gets it's own private room (As per a user)
-* Fixed hangs on exit bug
+* Fixed hangs on exit bug (Hopefully)
 * Added right click on tab to quit channel/room
+* Added open private room when right click on someones name and select Private Message
+
 
 =Update (6 DEC 14)
 

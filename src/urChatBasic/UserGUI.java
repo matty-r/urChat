@@ -276,9 +276,9 @@ public class UserGUI extends JPanel implements Runnable{
 	public void printChannelText(String channelName, String line, String fromUser){
 		if(channelName.equals(fromUser)){
 			addPrivateRooms(channelName);
-			getCreatedPrivateRooms(channelName).printText(line);
+			getCreatedPrivateRooms(channelName).printText(addTimeStamp(), line);
 		} else
-			getCreatedChannels(channelName).printText(line,fromUser);
+			getCreatedChannels(channelName).printText(addTimeStamp(),line,fromUser);
 	}
 	
 	/**
@@ -288,12 +288,12 @@ public class UserGUI extends JPanel implements Runnable{
 	 */
 	public void printPrivateText(String userName, String line){
 			addPrivateRooms(new IRCUser(userName));
-			getCreatedPrivateRooms(userName).printText(line);
+			getCreatedPrivateRooms(userName).printText(addTimeStamp(),line);
 	}
 	
 	public void printServerText(String serverName, String line){
 		try{
-		getCreatedServers(serverName).printText(line);
+		getCreatedServers(serverName).printText(addTimeStamp(),line);
 		} catch(Exception e){
 			//TODO something here
 		}
@@ -669,7 +669,7 @@ public class UserGUI extends JPanel implements Runnable{
 		return false;
 	}
 	
-	public Boolean getTimeStamp(){
+	public Boolean addTimeStamp(){
 		if(enableTimeStamps.isSelected())
 			return true;
 		

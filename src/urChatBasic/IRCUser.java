@@ -1,5 +1,8 @@
 package urChatBasic;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 
@@ -36,22 +39,37 @@ public class IRCUser implements Comparable<IRCUser>{
 	
 	
    class ListPopUp extends JPopupMenu {
-		/**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -4268923922705929184L;
-		JMenuItem anItem;
+		JMenuItem nameItem;
+		JMenuItem sendMessageItem;
 	    public ListPopUp(){
-	        anItem = new JMenuItem(IRCUser.this.getName());
-	        add(anItem);
+	    	nameItem = new JMenuItem(IRCUser.this.getName());
+	        add(nameItem);
+	        addSeparator();
+	        sendMessageItem = new JMenuItem("Private Message");
+	        sendMessageItem.addActionListener(new ClickPopUpItem());
+	        add(sendMessageItem);
 	    }
 	}
+   
+	private class ClickPopUpItem implements ActionListener
+	{
+
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			DriverGUI.gui.addPrivateRooms(IRCUser.this);
+		}
+	   
+	   
+   }
 	
 
 	/**
-	 * Leave this to compare to the name directly. This
-	 * will allow channel ops to be sorted to the top 
-	 * correctly.
+	 * Leave this to compare to the name directly (not with getName()). This
+	 * will allow channel ops to be sorted to the top correctly.
 	 */
 	@Override
 	public int compareTo(IRCUser comparison) {

@@ -6,6 +6,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -80,12 +83,16 @@ public class IRCPrivate extends JPanel implements Runnable {
 			}
 	   }
 	
-	public void printText(String line){
+	public void printText(Boolean dateTime, String line){
 		StyledDocument doc = (StyledDocument) privateTextArea.getDocument();
 		Style style = doc.addStyle("StyleName", null);
 	
 	    StyleConstants.setItalic(style, true);
-	
+		DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
+		Date chatDate = new Date();
+		
+		if(dateTime)
+			line = "["+chatDateFormat.format(chatDate)+"] " + line;
 	    try {
 			doc.insertString(doc.getLength(), line+"\n", style);
 		} catch (BadLocationException e) {

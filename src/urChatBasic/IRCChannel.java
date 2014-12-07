@@ -334,16 +334,16 @@ public IRCUser getCreatedUsers(String userName){
 			   if(tempUser.getName().replace(tempUser.getUserStatus(), "").equals(userName))
 				   return tempUser;
 	   } catch(Exception e) {
-		   printText(e.getMessage(), "Server");
+		   //TODO a meaningful error
 	   } 
 	   return null;
    }
 	
-	public void printText(String line, String fromUser){
+	public void printText(Boolean dateTime, String line, String fromUser){
 		DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
 		Date chatDate = new Date();
 		
-		if(gui.getTimeStamp())
+		if(dateTime)
 			line = "["+chatDateFormat.format(chatDate)+"] " + line;
 		if(gui.getChannelHistory()){
 			try {
