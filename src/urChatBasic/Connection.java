@@ -92,8 +92,9 @@ public class Connection implements Runnable{
         	serverMessage(line);
         }
         
-        mySocket.close();
-    	//gui.printServerText("Server", "Socket has closed.","Server");
+		writer.close();
+		reader.close();
+		mySocket.close();
     }
 	
 	public static void setNick(String newNick){
@@ -105,34 +106,34 @@ public class Connection implements Runnable{
 	}
 	
 	public static void sendClientText(String clientText,String fromChannel) throws IOException{
-		String[] tempTextArray = null;
-		String tempText = "";
-		
-		if(clientText != ""){
-			if(clientText.startsWith("/join")){
-				writer.write("JOIN " + clientText.replace("/join ","") +"\r\n");
-			} else if(clientText.startsWith("/nick")){
-					writer.write("NICK " + clientText.replace("/nick ","") +"\r\n");
-					myNick = clientText.replace("/nick ","");
-			} else if(clientText.startsWith("/msg")){
-				tempTextArray = clientText.split(" ");
-				for(int x = 2; x < tempTextArray.length; x++){
-					tempText += tempTextArray[x] + " ";
+			String[] tempTextArray = null;
+			String tempText = "";
+			
+			if(clientText != ""){
+				if(clientText.startsWith("/join")){
+					writer.write("JOIN " + clientText.replace("/join ","") +"\r\n");
+				} else if(clientText.startsWith("/nick")){
+						writer.write("NICK " + clientText.replace("/nick ","") +"\r\n");
+						myNick = clientText.replace("/nick ","");
+				} else if(clientText.startsWith("/msg")){
+					tempTextArray = clientText.split(" ");
+					for(int x = 2; x < tempTextArray.length; x++){
+						tempText += tempTextArray[x] + " ";
+					}
+					writer.write("PRIVMSG " + tempTextArray[1] + " :"+tempText.substring(0, tempText.length()-1) +"\r\n");
+					gui.printPrivateText(tempTextArray[1], "<"+myNick+"> "+tempText.substring(0, tempText.length()-1));
+				} else if(clientText.startsWith("/quit")){
+						writer.write("QUIT :" + clientText.replace("/quit ","") +"\r\n");
+				} else if(clientText.startsWith("/part")){
+					writer.write("PART " + fromChannel + " :" + clientText.replace("/part  ","") +"\r\n");
+				} else if(clientText.startsWith("/me")){
+					writer.write("PRIVMSG " + fromChannel + " :  ACTION " + clientText.replace("/me ","") +"  \r\n");
+				} else {
+					writer.write("PRIVMSG " + fromChannel + " :"+clientText+"\r\n");
+					gui.printChannelText(fromChannel, "<"+myNick+"> "+clientText,myNick);
 				}
-				writer.write("PRIVMSG " + tempTextArray[1] + " :"+tempText.substring(0, tempText.length()-1) +"\r\n");
-				gui.printPrivateText(tempTextArray[1], "<"+myNick+"> "+tempText.substring(0, tempText.length()-1));
-			} else if(clientText.startsWith("/quit")){
-					writer.write("QUIT :" + clientText.replace("/quit ","") +"\r\n");
-			} else if(clientText.startsWith("/part")){
-				writer.write("PART " + fromChannel + " :" + clientText.replace("/part  ","") +"\r\n");
-			} else if(clientText.startsWith("/me")){
-				writer.write("PRIVMSG " + fromChannel + " :  ACTION " + clientText.replace("/me ","") +"  \r\n");
-			} else {
-				writer.write("PRIVMSG " + fromChannel + " :"+clientText+"\r\n");
-				gui.printChannelText(fromChannel, "<"+myNick+"> "+clientText,myNick);
+			writer.flush();
 			}
-		writer.flush();
-		}
 	}
 
 	private void localMessage(String message){
@@ -173,9 +174,10 @@ public class Connection implements Runnable{
 		String[] receivedOptions;
 		String message = "";
 
-		if(isBetween(receivedText,":","!~","@"))
+		if(isBetween(receivedText,":","!~","@")){
 			receivedOptions = receivedText.split(" ");
-		else			
+			receivedText = receivedText.replace(receivedOptions[0], ":");
+		}else			
 			receivedOptions = receivedText.substring(nthOccurrence(receivedText, ':', 1)+1, nthOccurrence(receivedText, ':', 2)).split(" ");
 
 		
@@ -271,11 +273,13 @@ public class Connection implements Runnable{
 		        	case "QUIT":if(!(extractNick(receivedOptions[0]).equals(myNick)))
 			    						gui.removeFromUsersList("Server", extractNick(receivedOptions[0]));
 			    				break;
-		        	case "NOTICE":gui.printServerText(server, message);
+    				//:NickServ!NickServ@services. NOTICE matty_r :You are now identified for matty_r.
+		        	case "NOTICE":if(extractNick(receivedOptions[0]) != null && extractNick(receivedOptions[0]).equals("NickServ"))
+		        					gui.printPrivateText(extractNick(receivedOptions[0]), message);
+		        				else
+		        					gui.printServerText(server, message);
 		    					break;
-		        	case "Link":gui.quitChannels();
-		        				gui.quitPrivateRooms();
-		        				gui.serverDisconnect();
+		        	case "Link":gui.shutdownAll();
 		        				break;
 		        	default:gui.printServerText(server,message);
 		        			writeDebugFile("!!!!!!!!!!!!Not Handled!!!!!!!!!!!!");
@@ -299,10 +303,13 @@ public class Connection implements Runnable{
 	}
 	
 	private String extractNick(String textString){
-		if(textString.startsWith(":"))
-			return textString.substring(1, textString.indexOf("!"));
+		if(textString.indexOf("!") > -1)
+			if(textString.startsWith(":"))
+				return textString.substring(1, textString.indexOf("!"));
+			else
+				return textString.substring(0, textString.indexOf("!"));
 		
-		return textString.substring(0, textString.indexOf("!"));
+		return null;
 	}
 	
 	@Override

@@ -28,7 +28,7 @@ public class IRCServer extends JPanel implements Runnable {
 	////////////////
 	//Icons
 	public ImageIcon icon;
-	
+
 	//Server Properties
 
 	//Server Text Area

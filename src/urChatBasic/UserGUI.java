@@ -5,14 +5,11 @@ import java.util.prefs.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.text.*;
 
 public class UserGUI extends JPanel implements Runnable{
 	/**
@@ -47,6 +44,7 @@ public class UserGUI extends JPanel implements Runnable{
 	private JTextField firstChannelTextField = new JTextField("");
 	private JButton saveSettings = new JButton("Save Settings");
 	private Preferences clientSettings;
+	public static Connection myConnection = DriverGUI.chatSession;
 	
 	//Server Panel
 	//private JPanel serverPanel = new JPanel();
@@ -104,11 +102,10 @@ public class UserGUI extends JPanel implements Runnable{
 	 * Closes and removes all channels that have been created.
 	 */
 	public void quitChannels(){
-		for(IRCChannel tempChannel : createdChannels){
-			tabbedPane.remove(getTabIndex(tempChannel.getName()));
-		}
-		if(!createdChannels.isEmpty()){
-			createdChannels.clear();	
+		while(createdChannels.iterator().hasNext()){
+			IRCChannel tempChannel = createdChannels.iterator().next();
+			createdChannels.remove(tempChannel);
+			tabbedPane.remove(tempChannel);
 		}
 	}
 	
@@ -126,11 +123,10 @@ public class UserGUI extends JPanel implements Runnable{
 	 * Closes and removes all private rooms that have been created.
 	 */
 	public void quitPrivateRooms(){
-		for(IRCPrivate tempPrivateRoom : createdPrivateRooms){
-			tabbedPane.remove(getTabIndex(tempPrivateRoom.getName()));
-		}
-		if(!createdPrivateRooms.isEmpty()){
-			createdPrivateRooms.clear();	
+		while(createdPrivateRooms.iterator().hasNext()){
+			IRCPrivate tempPrivateRoom = createdPrivateRooms.iterator().next();
+			tabbedPane.remove(tempPrivateRoom);
+			createdPrivateRooms.remove(tempPrivateRoom);
 		}
 	}
 	
@@ -190,6 +186,18 @@ public class UserGUI extends JPanel implements Runnable{
     */
    public Boolean isCreatedChannelsEmpty(){
 	   if(createdChannels.isEmpty())
+		   return true;
+	   
+	   return false;
+   }
+   
+   /**
+    * Check to see if there are any Servers at all.
+    * @param channelName
+    * @return IRCChannel
+    */
+   public Boolean isCreatedServersEmpty(){
+	   if(createdServers.isEmpty())
 		   return true;
 	   
 	   return false;
@@ -354,27 +362,32 @@ public class UserGUI extends JPanel implements Runnable{
         optionsRightPanel.add(clientPanel, "Client");
 	}
 	
+	/**
+	 * Used to initiate server connection
+	 * @author Matt
+	 *
+	 */
 	private class connectPressed implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			if(connectButton.getText() == "Connect"){
 				serverConnect();
+				connectButton.setText("Disconnect");
 				} else {
 					try {
 						Connection.sendClientText("/quit Goodbye cruel world", "Server");
-						connectButton.setText("Wait...");
-						//tabbedPane.setTitleAt(SERVER_INDEX, "Server (Wait...)");
-						connectButton.setEnabled(false);
-						//tabbedPane.setIconAt(SERVER_INDEX, iconWait);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					//buttonDisconnect();
 				}
 		}
 	}
 	
+	/**
+	 * Saves all the information from the text boxes to the connection
+	 * 
+	 */
 	public void serverConnect(){
 		Connection.server = servernameTextField.getText();
 		Connection.myNick =  usernameTextField.getText();
@@ -392,14 +405,32 @@ public class UserGUI extends JPanel implements Runnable{
 			}).start();
 	}
 	
-	public void serverDisconnect(){
-		for(IRCServer tempServer : createdServers)
-			tabbedPane.remove(getTabIndex(tempServer.getName()));
-		
-		if(!createdServers.isEmpty())
-			createdServers.clear();
+	/**
+	 * Remove and disconnect all private rooms, channels and servers
+	 */
+	public void shutdownAll(){
+		if(!isCreatedServersEmpty()){
+			quitChannels();
+			quitPrivateRooms();
+			quitServers();
+			connectButton.setText("Connect");
+		}
 	}
 	
+	/**
+	 * Loops through all servers and disconnects
+	 * and deletes the tab
+	 */
+	public void quitServers(){
+		while(createdServers.iterator().hasNext()){
+			IRCServer tempServer = createdServers.iterator().next();
+			tabbedPane.remove(tempServer);
+			createdServers.remove(tempServer);
+		}
+	}
+	/**
+	 * Houses the options list
+	 */
 	private void setupLeftOptionsPanel(){
 		optionsLeftPanel.setBackground(Color.RED);
 		optionsLeftPanel.setPreferredSize(new Dimension(100,0));
@@ -408,6 +439,9 @@ public class UserGUI extends JPanel implements Runnable{
 		optionsLeftPanel.add(optionsList);
 	}
 	
+	/**
+	 * Saves the settings into the registry/Settings API
+	 */
 	private void setClientSettings(){
 		clientSettings.put("FIRST_CHANNEL", firstChannelTextField.getText());
 		clientSettings.put("SERVER_NAME", servernameTextField.getText());
@@ -419,6 +453,9 @@ public class UserGUI extends JPanel implements Runnable{
 		clientSettings.putInt("EVENT_TICKER_DELAY", eventTickerDelay.getValue());
 	}
 	
+	/**
+	 * Loads the settings from the registry/Settings API
+	 */
 	private void getClientSettings(){
 		firstChannelTextField.setText(clientSettings.get("FIRST_CHANNEL",""));
 		servernameTextField.setText(clientSettings.get("SERVER_NAME", ""));
@@ -430,10 +467,17 @@ public class UserGUI extends JPanel implements Runnable{
 		eventTickerDelay.setValue(clientSettings.getInt("EVENT_TICKER_DELAY", 0));
 	}
 	
+	
 	public int getEventTickerDelay(){
 		return eventTickerDelay.getValue();
 	}
 	
+	/**
+	 * Useds to change which panel to show when you choose an option
+	 * Client or Server item in the list
+	 * @author Matt
+	 *
+	 */
     class SharedListSelectionHandler implements ListSelectionListener {
         public void valueChanged(ListSelectionEvent e) {
             ListSelectionModel lsm = (ListSelectionModel)e.getSource();
@@ -473,10 +517,16 @@ public class UserGUI extends JPanel implements Runnable{
 		tabbedPane.addTab("Options",optionsMainPanel);
 		
 	}
-	
+	/**
+	 * Used to listen to the right click on the tabs so and determine
+	 * what type we clicked on and exit it.
+	 * @author Matt
+	 *
+	 */
    private class TabbedMouseListener extends MouseInputAdapter {
 	   public void mouseClicked(MouseEvent e) {
 		   String tabName = tabbedPane.getSelectedComponent().getName();
+		   //BUTTON3 is right-click
 	       if(e.getButton() == MouseEvent.BUTTON3){
 	    	   if(getCreatedChannels(tabName) != null)
 					try {
@@ -488,6 +538,15 @@ public class UserGUI extends JPanel implements Runnable{
 	    	   else
 	    		   if(getCreatedPrivateRooms(tabName) != null)
 						quitPrivateRooms(tabName);
+	    		   else
+	    			   if(getCreatedServers(tabName) != null){
+	    				   try {
+							Connection.sendClientText("/quit", tabName);
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+	    			   }
 	       }
 	    }
 	   
@@ -497,12 +556,17 @@ public class UserGUI extends JPanel implements Runnable{
 	//Sets focus to the clientTextBox when tab is changed to a channel
 	private void mainTabbedPanel_stateChanged(ChangeEvent e) {
 	    JTabbedPane tabSource = (JTabbedPane) e.getSource();
-	    String tab = tabSource.getTitleAt(tabSource.getSelectedIndex());
-	    if(getCreatedChannels(tab) != null)
-	    	getCreatedChannels(tab).clientTextBox.requestFocus();
-	    
-	    if(getCreatedServers(tab) != null)
-	    	getCreatedServers(tab).serverTextBox.requestFocus();
+	    if(tabSource.getSelectedIndex() > -1){
+		    String tab = tabSource.getTitleAt(tabSource.getSelectedIndex());
+		    if(getCreatedChannels(tab) != null)
+		    	getCreatedChannels(tab).clientTextBox.requestFocus();
+		    else
+		    if(getCreatedServers(tab) != null)
+		    	getCreatedServers(tab).serverTextBox.requestFocus();
+		    else
+	    	if(getCreatedPrivateRooms(tab) != null)
+	    		getCreatedPrivateRooms(tab).privateTextBox.requestFocus();
+	    }
 	  }
 	
 	class mainTabbedPanel_changeAdapter implements javax.swing.event.ChangeListener {

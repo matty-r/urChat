@@ -214,9 +214,38 @@ public class IRCChannel extends JPanel implements Runnable {
 	   usersList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 	   usersList.setLayoutOrientation(JList.VERTICAL);
 	   usersList.setVisibleRowCount(-1);
+	   usersList.addMouseListener(new PopClickListener());
 	   userScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	   userScroller.setPreferredSize(new Dimension(USER_LIST_WIDTH, MAIN_HEIGHT-BOTTOM_HEIGHT)); 
    }
+   
+
+   
+   class PopClickListener extends MouseAdapter {
+	    public void mousePressed(MouseEvent e){
+	        if (e.isPopupTrigger()){
+	            int row = usersList.locationToIndex(e.getPoint());
+	            if(row > -1){
+		            usersList.setSelectedIndex(row);
+		        	doPop(e);
+	            }
+	        }
+	    }
+
+	    public void mouseReleased(MouseEvent e){
+	        if (e.isPopupTrigger()){
+	        	int row = usersList.locationToIndex(e.getPoint());
+	        	if(row > -1){
+		            usersList.setSelectedIndex(row);
+		            doPop(e);
+	        	}
+	        }
+	    }
+
+	    private void doPop(MouseEvent e){
+	        usersList.getSelectedValue().myMenu.show(e.getComponent(), e.getX(), e.getY());
+	    }
+	}
    
    private void setupTickerPanel(){
 	   tickerPanel.setBackground(Color.LIGHT_GRAY);
@@ -483,7 +512,6 @@ public IRCUser getCreatedUsers(String userName){
 
 						if(thisUser.startsWith("@"))
 							getCreatedUsers(thisUser).setUserStatus("@");
-
 						usersArray.add(new IRCUser(thisUser));
 						usersList.setSelectedIndex(0);
 						tickerPanelAddEventLabel("++ "+thisUser+" has entered "+channel);
@@ -493,7 +521,7 @@ public IRCUser getCreatedUsers(String userName){
 	}
 	
 	/**
-	 * Removes a single user, good for when a user joins the channel
+	 * Removes a single user, good for when a user leaves the channel
 	 * @param channel
 	 * @param user
 	 **/
@@ -508,7 +536,8 @@ public IRCUser getCreatedUsers(String userName){
 						{
 							if(usersArray.get(x).getName().matches(thisUser)){
 								usersArray.remove(x);
-							usersList.setSelectedIndex(0);
+								
+								
 							tickerPanelAddEventLabel("-- "+thisUser+" has quit "+channel);
 							}
 						}

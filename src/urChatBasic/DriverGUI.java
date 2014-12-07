@@ -19,8 +19,9 @@ public class DriverGUI
 	public void startGUI(){
 		gui = new UserGUI();
 		new Thread(gui).start();
- 
-		JFrame frame = new JFrame ("urChat: Last Updated 05 DEC 14");
+		
+		
+		JFrame frame = new JFrame ("urChat: Last Updated 07 DEC 14");
 		
 		
 		frame.setDefaultCloseOperation (JFrame.DISPOSE_ON_CLOSE);
@@ -30,11 +31,9 @@ public class DriverGUI
 		frame.addWindowListener(new WindowAdapter() {
 			  public void windowClosing(WindowEvent e) {
 							try {
-								if(!gui.isCreatedChannelsEmpty())
+								if(!gui.isCreatedServersEmpty())
 									Connection.sendClientText("/quit Goodbye cruel world", "Server");
-									gui.quitChannels();
-			        				gui.quitPrivateRooms();
-			        				gui.serverDisconnect();
+								
 							} catch (IOException x) {
 								// TODO Auto-generated catch block
 								x.printStackTrace();

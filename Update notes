@@ -6,13 +6,23 @@ TODO List:
 	- No event ticker
 	- No user sorting 
 - Setup Alert Types
-- Add ability to quit a channel
 - Fix the Connect/Disconnect button, it only connects right now
 - Save channels as favourites, this will save the server name and channel
 - Allow for an Autoconnect list, automatically connect to servers listed
 	\ this will also allow to retry connections until you're identified with the server
 - Handle :401, 366, 333 ,328, 470
 - Hangs on exit
+
+=Update (7 DEC 14)
+
+* Added a right click menu to users - controlled within IRCUser
+* Added NickServ response gets it's own private room (As per a user)
+* Fixed hangs on exit bug
+* Added right click on tab to quit channel/room
+
+=Update (6 DEC 14)
+
+* Fixed sorting of user list
 
 =Update (5 DEC 14)
 

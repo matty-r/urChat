@@ -67,7 +67,9 @@ public class IRCPrivate extends JPanel implements Runnable {
 			public void actionPerformed(ActionEvent arg0) {
 				try {
 					if(!privateTextBox.getText().trim().isEmpty()){
-					String messagePrefix = "/msg "+getName()+" ";
+						 String messagePrefix = "";
+						if(!privateTextBox.getText().startsWith("/"))
+							messagePrefix = "/msg "+getName()+" ";
 					Connection.sendClientText(messagePrefix+privateTextBox.getText(),getName());
 					}
 				} catch (IOException e) {
