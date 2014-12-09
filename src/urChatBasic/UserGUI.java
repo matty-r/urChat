@@ -99,7 +99,7 @@ public class UserGUI extends JPanel implements Runnable{
 	}
 	
 	public Boolean saveServerHistory(){
-		return logServerActivity.isSelected()
+		return logServerActivity.isSelected();
 	}
 	
 	/**
