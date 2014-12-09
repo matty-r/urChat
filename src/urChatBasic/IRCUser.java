@@ -2,6 +2,7 @@ package urChatBasic;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -44,27 +45,42 @@ public class IRCUser implements Comparable<IRCUser>{
 	 */
 	private static final long serialVersionUID = -4268923922705929184L;
 		JMenuItem nameItem;
-		JMenuItem sendMessageItem;
+		JMenuItem privateMessageItem;
+		JMenuItem whoIsItem;
 	    public ListPopUp(){
 	    	nameItem = new JMenuItem(IRCUser.this.getName());
 	        add(nameItem);
 	        addSeparator();
-	        sendMessageItem = new JMenuItem("Private Message");
-	        sendMessageItem.addActionListener(new ClickPopUpItem());
-	        add(sendMessageItem);
+	        privateMessageItem = new JMenuItem("Private Message");
+	        privateMessageItem.addActionListener(new StartPrivateMessage());
+	        add(privateMessageItem);
+	        whoIsItem = new JMenuItem("Whois");
+	        whoIsItem.addActionListener(new StartWhoIsQuery());
+	        add(whoIsItem);
 	    }
 	}
    
-	private class ClickPopUpItem implements ActionListener
+	private class StartPrivateMessage implements ActionListener
 	{
-
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			DriverGUI.gui.addPrivateRooms(IRCUser.this);
-		}
-	   
-	   
+			DriverGUI.gui.addToPrivateRooms(IRCUser.this);
+		}   
    }
+	
+	private class StartWhoIsQuery implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			try {
+				Connection.sendClientText("/whois "+IRCUser.this, "Server");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}   
+   }
+	
 	
 
 	/**

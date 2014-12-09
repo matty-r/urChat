@@ -1,6 +1,7 @@
 package urChatBasic;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,6 +21,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.Utilities;
 
 public class IRCServer extends JPanel implements Runnable {
 	/**
@@ -32,6 +34,8 @@ public class IRCServer extends JPanel implements Runnable {
 	//Icons
 	public ImageIcon icon;
 
+	private UserGUI gui = DriverGUI.gui;
+	
 	//Server Properties
 
 	//Server Text Area
@@ -45,6 +49,7 @@ public class IRCServer extends JPanel implements Runnable {
 		this.add(serverTextScroll, BorderLayout.CENTER);
 		this.add(serverTextBox, BorderLayout.PAGE_END);
 		serverTextBox.addActionListener(new sendServerText());
+		serverTextArea.setFont(gui.getFont());
 		this.name = serverName;
 		
 		Image tempIcon = null;
@@ -80,11 +85,25 @@ public class IRCServer extends JPanel implements Runnable {
 			}
 	   }
 	
+	public void doLimitLines(){
+		if(gui.isLimitedServerActivity()){
+			String[] tempText = serverTextArea.getText().split("\n");
+			int linesCount = tempText.length;
+			
+			if(linesCount >= gui.getLimitServerLinesCount()){
+				String newText =  serverTextArea.getText().replace(tempText[0]+"\n", "");
+				serverTextArea.setText(newText);
+			}
+		}
+	}
+	
 	public void printText(Boolean dateTime, String line){
+		doLimitLines();
+		
 		StyledDocument doc = (StyledDocument) serverTextArea.getDocument();
 		Style style = doc.addStyle("StyleName", null);
 	
-	    StyleConstants.setItalic(style, true);
+	   // StyleConstants.setItalic(style, true);
 		DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
 		Date chatDate = new Date();
 		

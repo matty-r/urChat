@@ -26,7 +26,8 @@ public class IRCChannel extends JPanel implements Runnable {
 	private String channelName;
 	private String serverName;
 	private final int USER_LIST_WIDTH = 100;
-	private List<String> channelHistory = new ArrayList<String>();
+	//Deprecated. Was used to save history, but is now done line.
+	//private List<String> channelHistory = new ArrayList<String>();
 	private List<String> userHistory = new ArrayList<String>();
 	private String channelTopic;
 	private String historyFileName;
@@ -39,7 +40,7 @@ public class IRCChannel extends JPanel implements Runnable {
 	//channel Text Area
 	private JTextPane channelTextArea = new JTextPane();
 	private JScrollPane channelScroll = new JScrollPane(channelTextArea);
-	private Font channelFont = new Font("Consolas", Font.PLAIN, 12);
+	//private Font channelFont = new Font("Consolas", Font.PLAIN, 12);
 
 	//Users list area
 	private List<IRCUser> usersArray = new ArrayList<IRCUser>();
@@ -110,7 +111,7 @@ public class IRCChannel extends JPanel implements Runnable {
 				try {
 					if(!clientTextBox.getText().trim().isEmpty()){
 					Connection.sendClientText(clientTextBox.getText(),getName());
-						if(gui.getClientHistory())
+						if(gui.isClientHistoryEnabled())
 							userHistory.add(clientTextBox.getText());
 					}
 				} catch (IOException e) {
@@ -279,7 +280,7 @@ public class IRCChannel extends JPanel implements Runnable {
    
    public void createEvent(String eventText){
 	   eventTickerTimer.setDelay(gui.getEventTickerDelay());
-	  if(gui.getJoinsQuitsTicker()){
+	  if(gui.isJoinsQuitsTickerEnabled()){
 	   JLabel tempLabel = new JLabel(eventText);
 	   int tempX = 0;
 	   if(!(eventLabels.isEmpty())){
@@ -307,8 +308,8 @@ public class IRCChannel extends JPanel implements Runnable {
 		   eventTickerTimer.start();
 	  }
 	  
-	  if(gui.getJoinsQuitsMain())
-		  printText(gui.isTimeStamped(), eventText, "Event::");
+	  if(gui.isJoinsQuitsMainEnabled())
+		  printText(gui.isTimeStampsEnabled(), eventText, "Event::");
    }
    
 	@SuppressWarnings("unchecked")
@@ -343,13 +344,26 @@ public IRCUser getCreatedUsers(String userName){
 	   return null;
    }
 	
+	public void doLimitLines(){
+		if(gui.isLimitedChannelActivity()){
+			String[] tempText = channelTextArea.getText().split("\n");
+			int linesCount = tempText.length;
+			
+			if(linesCount >= gui.getLimitChannelLinesCount()){
+				String newText =  channelTextArea.getText().replace(tempText[0]+"\n", "");
+				channelTextArea.setText(newText);
+			}
+		}
+	}
+
 	public void printText(Boolean dateTime, String line, String fromUser){
+		
 		DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
 		Date chatDate = new Date();
 		
 		if(dateTime)
 			line = "["+chatDateFormat.format(chatDate)+"] " + line;
-		if(gui.getChannelHistory()){
+		if(gui.isChannelHistoryEnabled()){
 			try {
 				writeHistoryFile(line);
 			} catch (IOException e) {
@@ -391,7 +405,7 @@ public IRCUser getCreatedUsers(String userName){
 		channelScroll.setLocation(0, 0);
 		channelScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
 		channelTextArea.setEditable(false);
-		channelTextArea.setFont(channelFont);
+		channelTextArea.setFont(gui.getFont());
 		channelTextArea.setEditorKit(new WrapEditorKit());
 	}
 	
@@ -450,9 +464,6 @@ public IRCUser getCreatedUsers(String userName){
 	
 	private void setupMainPanel(){
 		mainPanel.setLayout( new BorderLayout());
-		
-		//mainPanel.setPreferredSize (new Dimension(MAIN_WIDTH, MAIN_HEIGHT));
-		//mainPanel.setLocation(0,0);
 		setupMainTextArea();
 	    mainPanel.add(channelScroll,BorderLayout.CENTER);
 		setupUsersList();

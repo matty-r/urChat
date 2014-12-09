@@ -50,7 +50,7 @@ public class Connection implements Runnable{
     }
     
     private void startUp() throws IOException{
-    	gui.addCreatedServers(server);
+    	gui.addToCreatedServers(server);
         localMessage("Attempting to connect to "+server);
         mySocket = new Socket(server, 6667);
         
@@ -120,10 +120,20 @@ public class Connection implements Runnable{
 					for(int x = 2; x < tempTextArray.length; x++){
 						tempText += tempTextArray[x] + " ";
 					}
-					//TODO add a check to make sure there is actual text to send
+
 					if(tempTextArray.length > -1){
 						writer.write("PRIVMSG " + tempTextArray[1] + " :"+tempText.substring(0, tempText.length()-1) +"\r\n");
 						gui.printPrivateText(tempTextArray[1], "<"+myNick+"> "+tempText.substring(0, tempText.length()-1));
+						gui.setCurrentTab(tempTextArray[1]);
+					}
+				} else if(clientText.startsWith("/whois")){
+					tempTextArray = clientText.split(" ");
+					for(int x = 2; x < tempTextArray.length; x++){
+						tempText += tempTextArray[x] + " ";
+					}
+
+					if(tempTextArray.length > -1){
+						writer.write("WHOIS " + tempTextArray[1] +"\r\n");
 					}
 				} else if(clientText.startsWith("/quit")){
 						writer.write("QUIT :" + clientText.replace("/quit ","") +"\r\n");
@@ -244,7 +254,7 @@ public class Connection implements Runnable{
     							break;
 		        	//JOIN = When a user joins a channel
 		        	case "JOIN":if(extractNick(receivedOptions[0]).equals(myNick)){
-					        		gui.addCreatedChannels(receivedOptions[2]);
+					        		gui.addToCreatedChannels(receivedOptions[2]);
 			    					gui.printEventTicker(receivedOptions[2], "You have joined "+receivedOptions[2]);
 					        	} else 
 		        					gui.addToUsersList(receivedOptions[2], receivedOptions[0].substring(0, receivedOptions[0].indexOf("!")));
@@ -260,6 +270,21 @@ public class Connection implements Runnable{
 			        					Toolkit.getDefaultToolkit().beep();
 			        				}
 		        				break;
+    				//311 = Whois response
+		        	case "311":	gui.printPrivateText(receivedOptions[3],message);
+        						break;
+					//319 = Whois response
+		        	case "319":	gui.printPrivateText(receivedOptions[3],message);
+								break;
+					//312 = Whois response
+		        	case "312":	gui.printPrivateText(receivedOptions[3],message);
+								break;
+					//330 = Whois response
+		        	case "330":	gui.printPrivateText(receivedOptions[3],message);
+								break;
+					//318 = Whois response
+		        	case "318":	gui.printPrivateText(receivedOptions[3],message);
+								break;
 		        	case "NICK":if(!(extractNick(receivedOptions[0]).equals(myNick)))
 									gui.renameUser("Server", extractNick(receivedOptions[0]), message);
 		    					break;

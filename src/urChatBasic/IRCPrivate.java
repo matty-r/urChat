@@ -39,11 +39,15 @@ public class IRCPrivate extends JPanel implements Runnable {
 	public JTextField privateTextBox = new JTextField();
 	private String name; 
 	
+	private UserGUI gui = DriverGUI.gui;
+	
+	
 	public IRCPrivate(IRCUser user){
 		this.setLayout(new BorderLayout());
 		this.add(privateTextScroll, BorderLayout.CENTER);
 		this.add(privateTextBox, BorderLayout.PAGE_END);
 		privateTextBox.addActionListener(new sendPrivateText());
+		privateTextArea.setFont(gui.getFont());
 		setName(user.getName());
 		
 		Image tempIcon = null;
@@ -87,7 +91,7 @@ public class IRCPrivate extends JPanel implements Runnable {
 		StyledDocument doc = (StyledDocument) privateTextArea.getDocument();
 		Style style = doc.addStyle("StyleName", null);
 	
-	    StyleConstants.setItalic(style, true);
+	    //StyleConstants.setItalic(style, true);
 		DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
 		Date chatDate = new Date();
 		
