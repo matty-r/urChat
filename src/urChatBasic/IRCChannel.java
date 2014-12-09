@@ -5,6 +5,7 @@ import java.awt.*;
 import java.io.*;
 import java.text.*;
 import java.util.*;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -25,8 +26,8 @@ public class IRCChannel extends JPanel implements Runnable {
 	private String channelName;
 	private String serverName;
 	private final int USER_LIST_WIDTH = 100;
-	private ArrayList<String> channelHistory = new ArrayList<String>();
-	private ArrayList<String> userHistory = new ArrayList<String>();
+	private List<String> channelHistory = new ArrayList<String>();
+	private List<String> userHistory = new ArrayList<String>();
 	private String channelTopic;
 	private String historyFileName;
 	  ////////////////
@@ -41,7 +42,7 @@ public class IRCChannel extends JPanel implements Runnable {
 	private Font channelFont = new Font("Consolas", Font.PLAIN, 12);
 
 	//Users list area
-	private ArrayList<IRCUser> usersArray = new ArrayList<IRCUser>();
+	private List<IRCUser> usersArray = new ArrayList<IRCUser>();
 	private UsersListModel usersListModel = new UsersListModel(usersArray);
 	@SuppressWarnings("unchecked")
 	private JList<IRCUser> usersList = new JList<IRCUser>(usersListModel);
@@ -60,10 +61,10 @@ public class IRCChannel extends JPanel implements Runnable {
 	//AutoCompleteWord
 	private String startingCharacters = null;
 	private String lastUserToComplete = null;
-	private ArrayList<String> autoCompleteNames = new ArrayList<String>();
+	private List<String> autoCompleteNames = new ArrayList<String>();
 	
 	//Event Ticker stuff
-	private ArrayList<JLabel> eventLabels = new ArrayList<JLabel>();
+	private List<JLabel> eventLabels = new ArrayList<JLabel>();
 	private final int EVENT_VELOCITY = 1;
 	private Timer eventTickerTimer = new Timer(0, new eventTickerAction());
 	private JPanel tickerPanel = new JPanel();
@@ -276,7 +277,7 @@ public class IRCChannel extends JPanel implements Runnable {
 
    }
    
-   public void tickerPanelAddEventLabel(String eventText){
+   public void createEvent(String eventText){
 	   eventTickerTimer.setDelay(gui.getEventTickerDelay());
 	  if(gui.getJoinsQuitsTicker()){
 	   JLabel tempLabel = new JLabel(eventText);
@@ -305,6 +306,9 @@ public class IRCChannel extends JPanel implements Runnable {
 	   if(!(eventTickerTimer.isRunning()))
 		   eventTickerTimer.start();
 	  }
+	  
+	  if(gui.getJoinsQuitsMain())
+		  printText(gui.isTimeStamped(), eventText, "Event::");
    }
    
 	@SuppressWarnings("unchecked")
@@ -469,10 +473,9 @@ public IRCUser getCreatedUsers(String userName){
 		this.add(mainPanel,BorderLayout.CENTER);
 		historyFileName = historyDateFormat.format(todayDate)+" "+this.channelName+".log";
 		
-		
 		Image tempIcon = null;
 		try {
-			tempIcon = ImageIO.read(new File("Room.png"));
+			tempIcon = ImageIO.read(new File("Resources\\Room.png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -514,7 +517,7 @@ public IRCUser getCreatedUsers(String userName){
 							getCreatedUsers(thisUser).setUserStatus("@");
 						usersArray.add(new IRCUser(thisUser));
 						usersList.setSelectedIndex(0);
-						tickerPanelAddEventLabel("++ "+thisUser+" has entered "+channel);
+						createEvent("++ "+thisUser+" has entered "+channel);
 						usersListModel.sort();
 					}
 		});
@@ -538,7 +541,7 @@ public IRCUser getCreatedUsers(String userName){
 								usersArray.remove(x);
 								
 								
-							tickerPanelAddEventLabel("-- "+thisUser+" has quit "+channel);
+								createEvent("-- "+thisUser+" has quit "+channel);
 							}
 						}
 						usersListModel.sort();
@@ -559,7 +562,7 @@ public IRCUser getCreatedUsers(String userName){
 								IRCUser tempUser = getCreatedUsers(oldUserName);
 
 						    		if(tempUser != null){
-						    			tickerPanelAddEventLabel("!! "+thisoldUser+" changed name to "+thisnewUser);
+						    			createEvent("!! "+thisoldUser+" changed name to "+thisnewUser);
 						    			tempUser.setName(newUserName);
 						    		}
 					}
@@ -582,7 +585,7 @@ public IRCUser getCreatedUsers(String userName){
 
 	public void setChannelTopic(String channelTopic) {
 		this.channelTopic = channelTopic;
-		this.tickerPanelAddEventLabel(channelTopic);
+		this.createEvent(channelTopic);
 	}
 	
 	/** Write all competitors to the competitors.txt file */

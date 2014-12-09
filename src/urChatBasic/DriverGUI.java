@@ -5,6 +5,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 import javax.swing.JFrame;
+import javax.swing.UIManager;
 
 public class DriverGUI
 {
@@ -12,6 +13,12 @@ public class DriverGUI
 	public static UserGUI gui = null;
 	
 	public static void main(String[] args) throws IOException{
+		try {
+		    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+		    //TODO something meaningful
+		}
+		
 		DriverGUI driver = new DriverGUI();	
 		driver.startGUI();
 	}

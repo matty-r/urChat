@@ -1,7 +1,9 @@
 package urChatBasic;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
+
 import javax.swing.DefaultListModel;
 
 @SuppressWarnings("rawtypes")
@@ -10,9 +12,10 @@ public class UsersListModel extends DefaultListModel{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	ArrayList<IRCUser> users;
+	//ArrayList<IRCUser> users;
+	List users = new ArrayList<IRCUser>();
 
-    public UsersListModel(ArrayList<IRCUser> array){
+    public UsersListModel(List<IRCUser> array){
     	users = array;
     }
 
@@ -21,10 +24,10 @@ public class UsersListModel extends DefaultListModel{
     }
 
     public IRCUser getElementAt(int index){
-        return users.get(index);
+        return (IRCUser) users.get(index);
     }
 
-    public ArrayList<IRCUser> getSongList(){
+    public List<IRCUser> getUsersList(){
         return users;
     }
 

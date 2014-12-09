@@ -49,7 +49,7 @@ public class IRCServer extends JPanel implements Runnable {
 		
 		Image tempIcon = null;
 		try {
-			tempIcon = ImageIO.read(new File("Server.png"));
+			tempIcon = ImageIO.read(new File("Resources\\Server.png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

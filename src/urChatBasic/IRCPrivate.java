@@ -48,7 +48,7 @@ public class IRCPrivate extends JPanel implements Runnable {
 		
 		Image tempIcon = null;
 		try {
-			tempIcon = ImageIO.read(new File("User.png"));
+			tempIcon = ImageIO.read(new File("Resources\\User.png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

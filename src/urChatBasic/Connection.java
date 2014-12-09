@@ -38,7 +38,7 @@ public class Connection implements Runnable{
 			}
 	}
     
-    public Boolean getConnected(){
+    public Boolean isConnected(){
     	if(mySocket == null)
     		return false;
     	if(server == null)
@@ -120,8 +120,11 @@ public class Connection implements Runnable{
 					for(int x = 2; x < tempTextArray.length; x++){
 						tempText += tempTextArray[x] + " ";
 					}
-					writer.write("PRIVMSG " + tempTextArray[1] + " :"+tempText.substring(0, tempText.length()-1) +"\r\n");
-					gui.printPrivateText(tempTextArray[1], "<"+myNick+"> "+tempText.substring(0, tempText.length()-1));
+					//TODO add a check to make sure there is actual text to send
+					if(tempTextArray.length > -1){
+						writer.write("PRIVMSG " + tempTextArray[1] + " :"+tempText.substring(0, tempText.length()-1) +"\r\n");
+						gui.printPrivateText(tempTextArray[1], "<"+myNick+"> "+tempText.substring(0, tempText.length()-1));
+					}
 				} else if(clientText.startsWith("/quit")){
 						writer.write("QUIT :" + clientText.replace("/quit ","") +"\r\n");
 				} else if(clientText.startsWith("/part")){
@@ -170,14 +173,15 @@ public class Connection implements Runnable{
 	 
 	//TODO Create private room on privmsg
 	private void serverMessage(String receivedText) throws IOException{
-		writeDebugFile(receivedText);
+		if(gui.saveServerHistory())
+			writeDebugFile(receivedText);
 		String[] receivedOptions;
 		String message = "";
 
 		if(isBetween(receivedText,":","!~","@")){
 			receivedOptions = receivedText.split(" ");
 			receivedText = receivedText.replace(receivedOptions[0], ":");
-		}else			
+		} else			
 			receivedOptions = receivedText.substring(nthOccurrence(receivedText, ':', 1)+1, nthOccurrence(receivedText, ':', 2)).split(" ");
 
 		
@@ -282,19 +286,21 @@ public class Connection implements Runnable{
 		        	case "Link":gui.shutdownAll();
 		        				break;
 		        	default:gui.printServerText(server,message);
-		        			writeDebugFile("!!!!!!!!!!!!Not Handled!!!!!!!!!!!!");
+		        			if(gui.saveServerHistory())
+		        				writeDebugFile("!!!!!!!!!!!!Not Handled!!!!!!!!!!!!");
 	        	 			break;
 	        	 } else {
 	        		gui.printServerText(server,message);
-        		 	writeDebugFile("!!!!!!!!!!!!Not Handled!!!!!!!!!!!!");
+	        		if(gui.saveServerHistory())
+	        			writeDebugFile("!!!!!!!!!!!!Not Handled!!!!!!!!!!!!");
 	        	 }
          }
 	}
 	
 	
-	/** Write all messages to the debug.txt file */
+	/** Write a line to the debug.txt file */
 	public void writeDebugFile(String message) throws IOException{
-		debugFile = debugDateFormat.format(todayDate)+" "+this.server+".log";
+		debugFile = debugDateFormat.format(todayDate)+" "+server+".log";
 		FileWriter fw = new FileWriter (debugFile, true);
 		BufferedWriter bw = new BufferedWriter (fw);
 		PrintWriter outFile = new PrintWriter (bw);

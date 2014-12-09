@@ -6,12 +6,21 @@ TODO List:
 	- No event ticker
 	- No user sorting 
 - Setup Alert Types
-- Fix the Connect/Disconnect button, it only connects right now
 - Save channels as favourites, this will save the server name and channel
 - Allow for an Autoconnect list, automatically connect to servers listed
 	\ this will also allow to retry connections until you're identified with the server
 - Handle :401, 366, 333 ,328, 470
 - Hangs on exit
+- Allow hiding the event ticker
+- Allow moving the event ticker to the top of the screen instead
+
+=Update (9 DEC 14)
+
+* Added showing events (Joins/Quits) in the main text window, I forgot that I removed it ages ago
+* Changed all ArrayLists in IRCChannel to List<> and instead I instantiate it as an ArrayList<>
+* Added toggle for the saving of the entire server history
+* Added a Resources folder so that nothing was stored in the root path of the program
+* Changed the Look and Feel to systemLookandFeel()
 
 =Update (7 DEC 14)
 
@@ -20,7 +29,6 @@ TODO List:
 * Fixed hangs on exit bug (Hopefully)
 * Added right click on tab to quit channel/room
 * Added open private room when right click on someones name and select Private Message
-
 
 =Update (6 DEC 14)
 

@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -31,7 +32,9 @@ public class UserGUI extends JPanel implements Runnable{
 	private DefaultListModel<String> optionsArray = new DefaultListModel<String>();
 	private JList<String> optionsList = new JList<String>(optionsArray);
 	private JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
+	private JCheckBox showJoinsQuitsMainWindow = new JCheckBox("Show Joins/Quits in the Chat Window");
 	private JCheckBox logChannelText = new JCheckBox("Save and log all channel text");
+	private JCheckBox logServerActivity = new JCheckBox("Save and log all Server activity");
 	private JCheckBox logClientText = new JCheckBox("Log client text (Allows up or down history)");
 	private JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
 	private JButton connectButton = new JButton("Connect");
@@ -52,13 +55,13 @@ public class UserGUI extends JPanel implements Runnable{
 	
 	
 	//Created channels/tabs
-	private ArrayList<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
+	private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
 	
 	//Created Servers/Tabs
-	private ArrayList<IRCServer> createdServers = new ArrayList<IRCServer>();
+	private List<IRCServer> createdServers = new ArrayList<IRCServer>();
 	
 	//Created Private Rooms/Tabs
-	private ArrayList<IRCPrivate> createdPrivateRooms = new ArrayList<IRCPrivate>();
+	private List<IRCPrivate> createdPrivateRooms = new ArrayList<IRCPrivate>();
  
 	/**
 	 * Sets the tab to the index number
@@ -93,6 +96,13 @@ public class UserGUI extends JPanel implements Runnable{
 	
 	public Boolean saveChannelHistory(){
 		if(logChannelText.isSelected())
+			return true;
+		
+		return false;
+	}
+	
+	public Boolean saveServerHistory(){
+		if(logServerActivity.isSelected())
 			return true;
 		
 		return false;
@@ -276,9 +286,9 @@ public class UserGUI extends JPanel implements Runnable{
 	public void printChannelText(String channelName, String line, String fromUser){
 		if(channelName.equals(fromUser)){
 			addPrivateRooms(channelName);
-			getCreatedPrivateRooms(channelName).printText(addTimeStamp(), line);
+			getCreatedPrivateRooms(channelName).printText(isTimeStamped(), line);
 		} else
-			getCreatedChannels(channelName).printText(addTimeStamp(),line,fromUser);
+			getCreatedChannels(channelName).printText(isTimeStamped(),line,fromUser);
 	}
 	
 	/**
@@ -288,22 +298,20 @@ public class UserGUI extends JPanel implements Runnable{
 	 */
 	public void printPrivateText(String userName, String line){
 			addPrivateRooms(new IRCUser(userName));
-			getCreatedPrivateRooms(userName).printText(addTimeStamp(),line);
+			getCreatedPrivateRooms(userName).printText(isTimeStamped(),line);
 	}
 	
 	public void printServerText(String serverName, String line){
 		try{
-		getCreatedServers(serverName).printText(addTimeStamp(),line);
+		getCreatedServers(serverName).printText(isTimeStamped(),line);
 		} catch(Exception e){
 			//TODO something here
 		}
 	}
 	
 	public void printEventTicker(String channelName, String eventText){
-		getCreatedChannels(channelName).tickerPanelAddEventLabel(eventText);
+		getCreatedChannels(channelName).createEvent(eventText);
 	}
-	
-
 	
 	private void setupRightOptionsPanel(){
 		ListSelectionModel listSelectionModel = optionsList.getSelectionModel();
@@ -332,14 +340,16 @@ public class UserGUI extends JPanel implements Runnable{
 						
         JPanel clientPanel = new JPanel();
         clientPanel.setLayout(new BoxLayout(clientPanel,BoxLayout.PAGE_AXIS));
+        
+        //Settings for these are loaded with the settings API
+        //found in getClientSettings()
         clientPanel.add(showJoinsQuitsEventTicker);
-        showJoinsQuitsEventTicker.setSelected(true);
+        clientPanel.add(showJoinsQuitsMainWindow);
         clientPanel.add(logChannelText);
-        logChannelText.setSelected(true);
+        clientPanel.add(logServerActivity);
         clientPanel.add(logClientText);
-        logClientText.setSelected(true);
         clientPanel.add(enableTimeStamps);
-        enableTimeStamps.setSelected(true);
+
         //Turn on labels at major tick marks.
         eventTickerDelay.setMajorTickSpacing(10);
         eventTickerDelay.setMinorTickSpacing(1);
@@ -448,7 +458,9 @@ public class UserGUI extends JPanel implements Runnable{
 		clientSettings.put("NICK_NAME", usernameTextField.getText());
 		clientSettings.putBoolean("TIME_STAMPS", enableTimeStamps.isSelected());
 		clientSettings.putBoolean("EVENT_TICKER_JOINS_QUITS", showJoinsQuitsEventTicker.isSelected());
+		clientSettings.putBoolean("MAIN_WINDOW_JOINS_QUITS", showJoinsQuitsMainWindow.isSelected());
 		clientSettings.putBoolean("LOG_CHANNEL_HISTORY", logChannelText.isSelected());
+		clientSettings.putBoolean("LOG_SERVER_ACTIVITY", logServerActivity.isSelected());
 		clientSettings.putBoolean("LOG_CLIENT_TEXT", logClientText.isSelected());
 		clientSettings.putInt("EVENT_TICKER_DELAY", eventTickerDelay.getValue());
 	}
@@ -462,7 +474,9 @@ public class UserGUI extends JPanel implements Runnable{
 		usernameTextField.setText(clientSettings.get("NICK_NAME", ""));
 		enableTimeStamps.setSelected(clientSettings.getBoolean("TIME_STAMPS", false));
 		showJoinsQuitsEventTicker.setSelected(clientSettings.getBoolean("EVENT_TICKER_JOINS_QUITS", false));
+		showJoinsQuitsMainWindow.setSelected(clientSettings.getBoolean("MAIN_WINDOW_JOINS_QUITS", false));
 		logChannelText.setSelected(clientSettings.getBoolean("LOG_CHANNEL_HISTORY", false));
+		logServerActivity.setSelected(clientSettings.getBoolean("LOG_SERVER_ACTIVITY", false));
 		logClientText.setSelected(clientSettings.getBoolean("LOG_CLIENT_TEXT", false));
 		eventTickerDelay.setValue(clientSettings.getInt("EVENT_TICKER_DELAY", 0));
 	}
@@ -473,7 +487,7 @@ public class UserGUI extends JPanel implements Runnable{
 	}
 	
 	/**
-	 * Useds to change which panel to show when you choose an option
+	 * Used to change which panel to show when you choose an option
 	 * Client or Server item in the list
 	 * @author Matt
 	 *
@@ -501,6 +515,7 @@ public class UserGUI extends JPanel implements Runnable{
 		
 		optionsArray.addElement("Server");
 		optionsArray.addElement("Client");
+		//TODO Add channel favourites option?
 		
 		setupLeftOptionsPanel();
 		setupRightOptionsPanel();
@@ -511,7 +526,7 @@ public class UserGUI extends JPanel implements Runnable{
 	}
 	
 	private void setupTabbedPane(){
-		tabbedPane.addChangeListener(new mainTabbedPanel_changeAdapter(this));
+		tabbedPane.addChangeListener(new MainTabbedPanel_changeAdapter(this));
 		tabbedPane.addMouseListener(new TabbedMouseListener());
 		setupOptionsPanel();
 		tabbedPane.addTab("Options",optionsMainPanel);
@@ -569,9 +584,9 @@ public class UserGUI extends JPanel implements Runnable{
 	    }
 	  }
 	
-	class mainTabbedPanel_changeAdapter implements javax.swing.event.ChangeListener {
+	class MainTabbedPanel_changeAdapter implements javax.swing.event.ChangeListener {
 		  UserGUI adaptee;
-		  mainTabbedPanel_changeAdapter(UserGUI adaptee) {
+		  MainTabbedPanel_changeAdapter(UserGUI adaptee) {
 		    this.adaptee = adaptee;
 		  }
 		  public void stateChanged(ChangeEvent e) {
@@ -655,6 +670,10 @@ public class UserGUI extends JPanel implements Runnable{
 		});
 	}
 
+	/**
+	 * Show joins/quits in the event ticker?
+	 * @return Boolean
+	 */
 	public Boolean getJoinsQuitsTicker(){
 		if(showJoinsQuitsEventTicker.isSelected())
 			return true;
@@ -662,6 +681,21 @@ public class UserGUI extends JPanel implements Runnable{
 		return false;
 	}
 	
+	/**
+	 * Show joins/quits in the main window?
+	 * @return Boolean
+	 */
+	public Boolean getJoinsQuitsMain(){
+		if(showJoinsQuitsMainWindow.isSelected())
+			return true;
+		
+		return false;
+	}
+	
+	/**
+	 * Save channel chat history?
+	 * @return Boolean
+	 */
 	public Boolean getChannelHistory(){
 		if(logChannelText.isSelected())
 			return true;
@@ -669,13 +703,21 @@ public class UserGUI extends JPanel implements Runnable{
 		return false;
 	}
 	
-	public Boolean addTimeStamp(){
+	/**
+	 * Add timestamp to chat text?
+	 * @return Boolean
+	 */
+	public Boolean isTimeStamped(){
 		if(enableTimeStamps.isSelected())
 			return true;
 		
 		return false;
 	}
 	
+	/**
+	 * Save text that I type, this allows using the up and down arrows to repeat text.
+	 * @return
+	 */
 	public Boolean getClientHistory(){
 		if(logClientText.isSelected())
 			return true;
@@ -683,11 +725,12 @@ public class UserGUI extends JPanel implements Runnable{
 		return false;
 	}
 	
-	
+	//TODO Double check I need this here, should be part of the IRCChannel class?
 	public String getChannelTopic(String channelName) {
 		return getCreatedChannels(channelName).getChannelTopic();
 	}
 
+	//TODO Double check I need this here, should be part of the IRCChannel class?
 	public void setChannelTopic(String channelName,String channelTopic) {
 		getCreatedChannels(channelName).setChannelTopic(channelTopic);
 	}
