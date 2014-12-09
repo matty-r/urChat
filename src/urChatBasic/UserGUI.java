@@ -95,17 +95,11 @@ public class UserGUI extends JPanel implements Runnable{
 	}
 	
 	public Boolean saveChannelHistory(){
-		if(logChannelText.isSelected())
-			return true;
-		
-		return false;
+		return logChannelText.isSelected();
 	}
 	
 	public Boolean saveServerHistory(){
-		if(logServerActivity.isSelected())
-			return true;
-		
-		return false;
+		return logServerActivity.isSelected()
 	}
 	
 	/**
@@ -195,10 +189,7 @@ public class UserGUI extends JPanel implements Runnable{
     * @return IRCChannel
     */
    public Boolean isCreatedChannelsEmpty(){
-	   if(createdChannels.isEmpty())
-		   return true;
-	   
-	   return false;
+	   return createdChannels.isEmpty();
    }
    
    /**
@@ -207,10 +198,7 @@ public class UserGUI extends JPanel implements Runnable{
     * @return IRCChannel
     */
    public Boolean isCreatedServersEmpty(){
-	   if(createdServers.isEmpty())
-		   return true;
-	   
-	   return false;
+	   return createdServers.isEmpty();
    }
    
    public IRCUser getIRCUser(String userName){
@@ -719,10 +707,7 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @return
 	 */
 	public Boolean getClientHistory(){
-		if(logClientText.isSelected())
-			return true;
-		
-		return false;
+		return logClientText.isSelected();
 	}
 	
 	//TODO Double check I need this here, should be part of the IRCChannel class?
