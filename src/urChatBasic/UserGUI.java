@@ -121,17 +121,11 @@ public class UserGUI extends JPanel implements Runnable{
 	}
 	
 	public Boolean saveChannelHistory(){
-		if(logChannelText.isSelected())
-			return true;
-		
-		return false;
+		return logChannelText.isSelected();
 	}
 	
 	public Boolean saveServerHistory(){
-		if(logServerActivity.isSelected())
-			return true;
-		
-		return false;
+		return logServerActivity.isSelected();
 	}
 	
 	/**
@@ -222,10 +216,7 @@ public class UserGUI extends JPanel implements Runnable{
     * @return IRCChannel
     */
    public Boolean isCreatedChannelsEmpty(){
-	   if(createdChannels.isEmpty())
-		   return true;
-	   
-	   return false;
+	   return createdChannels.isEmpty();
    }
    
    /**
@@ -234,10 +225,7 @@ public class UserGUI extends JPanel implements Runnable{
     * @return IRCChannel
     */
    public Boolean isCreatedServersEmpty(){
-	   if(createdServers.isEmpty())
-		   return true;
-	   
-	   return false;
+	   return createdServers.isEmpty();
    }
    
    public IRCUser getIRCUser(String userName){
@@ -717,10 +705,7 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @return Boolean
 	 */
 	public Boolean isJoinsQuitsTickerEnabled(){
-		if(showJoinsQuitsEventTicker.isSelected())
-			return true;
-		
-		return false;
+		return showJoinsQuitsEventTicker.isSelected();
 	}
 	
 	/**
@@ -728,10 +713,7 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @return Boolean
 	 */
 	public Boolean isJoinsQuitsMainEnabled(){
-		if(showJoinsQuitsMainWindow.isSelected())
-			return true;
-		
-		return false;
+		return showJoinsQuitsMainWindow.isSelected();
 	}
 	
 	/**
@@ -739,10 +721,7 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @return Boolean
 	 */
 	public Boolean isChannelHistoryEnabled(){
-		if(logChannelText.isSelected())
-			return true;
-		
-		return false;
+		return logChannelText.isSelected();
 	}
 	
 	/**
@@ -750,10 +729,7 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @return Boolean
 	 */
 	public Boolean isLimitedServerActivity(){
-		if(limitServerLines.isSelected())
-			return true;
-		
-		return false;
+		return limitServerLines.isSelected();
 	}
 	
 	/**
@@ -761,10 +737,7 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @return Boolean
 	 */
 	public Boolean isLimitedChannelActivity(){
-		if(limitChannelLines.isSelected())
-			return true;
-		
-		return false;
+		return limitChannelLines.isSelected();
 	}
 	
 	/**
@@ -772,10 +745,7 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @return Boolean
 	 */
 	public Boolean isTimeStampsEnabled(){
-		if(enableTimeStamps.isSelected())
-			return true;
-		
-		return false;
+		return enableTimeStamps.isSelected();
 	}
 	
 	/**
@@ -783,10 +753,8 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @return
 	 */
 	public Boolean isClientHistoryEnabled(){
-		if(logClientText.isSelected())
-			return true;
-		
-		return false;
+		return logClientText.isSelected();
+
 	}
 	
 	//TODO Double check I need this here, should be part of the IRCChannel class?
