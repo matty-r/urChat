@@ -9,10 +9,10 @@ TODO List:
 	\ this will also allow to retry connections until you're identified with the server
 - Handle :401, 366, 333 ,328, 470
 - Hangs on exit
-- Allow hiding the event ticker
 - Allow moving the event ticker to the top of the screen instead
 - Server\Channel and Private classes are very similar.. might be able to stop doubling up on some code
 - Allow resizing of users lists (Double click to hide?)
+- Allow change font for all channels
 
 - Channel right click options
 	-Hide\Show users list 
@@ -27,6 +27,15 @@ TODO List:
 =Update (10 DEC 14)
 
 * Added right click menu to channel tab
+* Added Quit to tab right click menu
+* Added Show/hide users list to tab right click menu
+* Added Show/hide event ticker
+* Changed Ticker height to 35
+* Fixed removal of ticker labels from the ticker panel. It was only removing it from the eventLabels array, and not
+	\ removing it from the actual panel.
+* Added Hiding the Event Ticker will remove all labels and stop the timer.
+* Added global control of show or hide
+* Added setting the Hide event ticker/users list overrides the global control.
 
 =Update (9 DEC 14)
 

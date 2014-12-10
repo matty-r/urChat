@@ -52,11 +52,12 @@ public class IRCChannel extends JPanel implements Runnable {
 	@SuppressWarnings("unchecked")
 	private JList<IRCUser> usersList = new JList<IRCUser>(usersListModel);
 	private JScrollPane userScroller = new JScrollPane(usersList);
+	private Boolean usersListShown = null;
 	
 	//bottomPanel
 	private JPanel bottomPanel = new JPanel();
 	public JTextField clientTextBox = new JTextField();
-	private int BOTTOM_HEIGHT = 40;
+	private int BOTTOM_HEIGHT = 35;
 	
 	//Main Panel
 	private JPanel mainPanel = new JPanel();
@@ -71,27 +72,40 @@ public class IRCChannel extends JPanel implements Runnable {
 	//Event Ticker stuff
 	private List<JLabel> eventLabels = new ArrayList<JLabel>();
 	private final int EVENT_VELOCITY = 1;
-	private Timer eventTickerTimer = new Timer(0, new eventTickerAction());
+	private Timer eventTickerTimer = new Timer(0, new TickerAction());
 	private JPanel tickerPanel = new JPanel();
 	private TickerListener eventTickerListener = new TickerListener();
 	private final int EVENT_BUFFER = 20;
+	private Boolean eventTickerShown = null;
 	
 	//Repaints the window, delayed by EVENT_DELAY
-	private class eventTickerAction implements ActionListener
+	private class TickerAction implements ActionListener
 	{
 		public void actionPerformed (ActionEvent event)
 		{
-	     for(JLabel tempLabel : eventLabels){
-	    	tempLabel.setLocation(tempLabel.getX()-EVENT_VELOCITY, 0);
-	    	if(tempLabel.getX()+tempLabel.getWidth() < 0){
-	    		eventLabels.remove(tempLabel);
-	    		break;
-	    	}
-	     }
-	     
-	     if(eventLabels.isEmpty())
-	    	 eventTickerTimer.stop();
-	     repaint();
+			if(IRCChannel.this.tickerPanel.isVisible()){
+			     for(JLabel tempLabel : eventLabels){
+			    	tempLabel.setLocation(tempLabel.getX()-EVENT_VELOCITY, 0);
+			    	if(tempLabel.getX()+tempLabel.getWidth() < 0){
+			    		tickerPanel.remove(tempLabel);
+			    		eventLabels.remove(tempLabel);
+			    		break;
+			    	}
+			     }
+			     
+			     if(eventLabels.isEmpty())
+			    	 eventTickerTimer.stop();
+			    
+			     repaint();
+			} else {
+				while(eventLabels.iterator().hasNext()){
+					JLabel tempLabel = eventLabels.iterator().next();
+					tickerPanel.remove(tempLabel);
+					eventLabels.remove(tempLabel);
+				}
+				
+				eventTickerTimer.stop();
+			}
 		}
 	}
 	
@@ -254,6 +268,7 @@ public class IRCChannel extends JPanel implements Runnable {
 	}
    
    private void setupTickerPanel(){
+	   tickerPanel.setPreferredSize(clientTextBox.getPreferredSize());
 	   tickerPanel.setBackground(Color.LIGHT_GRAY);
 	   tickerPanel.setLayout(null);
 	   tickerPanel.addMouseListener(eventTickerListener);
@@ -319,12 +334,12 @@ public class IRCChannel extends JPanel implements Runnable {
 	@SuppressWarnings("unchecked")
 	private void setupBottomPanel(){
 		setupTickerPanel();
-		bottomPanel.setLayout(new GridLayout(2,1));
+		bottomPanel.setLayout(new BorderLayout());
 	    //Set initial sizes and colours
 		bottomPanel.setPreferredSize(new Dimension(MAIN_WIDTH,BOTTOM_HEIGHT));
-		bottomPanel.setBackground(Color.yellow);
+		bottomPanel.setBackground(Color.BLACK);
 		bottomPanel.setLocation(0,MAIN_HEIGHT-BOTTOM_HEIGHT);
-		bottomPanel.add(clientTextBox);
+		bottomPanel.add(clientTextBox,BorderLayout.NORTH);
 		bottomPanel.add(tickerPanel);
 		clientTextBox.addActionListener(new SendTextListener());
 		clientTextBox.addKeyListener(new ChannelKeyListener());
@@ -333,14 +348,94 @@ public class IRCChannel extends JPanel implements Runnable {
 	
 	
 	class ChannelPopUp extends JPopupMenu{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 640768684923757684L;
 		JMenuItem nameItem;
+		JMenuItem quitItem;
+		JMenuItem hideUsersItem;
+		JMenuItem hideTickerItem;
 		public ChannelPopUp(){
-			nameItem = new JMenuItem("Test");
+			nameItem = new JMenuItem(IRCChannel.this.getName());
 	        add(nameItem);
 	        addSeparator();
+	        quitItem = new JMenuItem("Quit");
+	        add(quitItem);
+	        quitItem.addActionListener(new QuitItem());
+	        hideUsersItem = new JMenuItem("Toggle Users List");
+	        add(hideUsersItem);
+	        hideUsersItem.addActionListener(new ToggleHideUsersListItem());
+	        hideTickerItem = new JMenuItem("Toggle Event Ticker");
+	        add(hideTickerItem);
+	        hideTickerItem.addActionListener(new ToggleHideTickerListItem());
 		}
 	}
 	
+	private class QuitItem implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+	        try {
+				Connection.sendClientText("/part i'm outta here", IRCChannel.this.getName());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}   
+   }
+	/**
+	 * Used by the PopUpMenu to Toggle the Ticker
+	 * @author Matt
+	 *
+	 */
+	private class ToggleHideUsersListItem implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			usersListShown = !IRCChannel.this.userScroller.isVisible();	
+			showUsersList(!IRCChannel.this.userScroller.isVisible());
+		}   
+   }
+	/**
+	 * First checks to make sure the user hasn't set it manually for this channel.
+	 * usersListShown is only set by the pop up menu, so unless you've changed it,
+	 * it won't care about the global setting 
+	 * @param showIt
+	 */
+	public void showUsersList(Boolean showIt){
+		if(usersListShown == showIt || usersListShown == null)
+			IRCChannel.this.userScroller.setVisible(showIt);
+	}
+	
+	/**
+	 * Used by the PopUpMenu to Toggle the Ticker
+	 * @author Matt
+	 *
+	 */
+	private class ToggleHideTickerListItem implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			eventTickerShown = !IRCChannel.this.tickerPanel.isVisible();
+        	showEventTicker(!IRCChannel.this.tickerPanel.isVisible());
+		}   
+   }
+	/**
+	 * First checks to make sure the user hasn't set it manually for this channel.
+	 * eventTickerShown is only set by the pop up menu, so unless you've changed it,
+	 * it won't care about the global setting 
+	 * @param showIt
+	 */
+	public void showEventTicker(Boolean showIt){
+		if(eventTickerShown == showIt || eventTickerShown == null){
+			IRCChannel.this.tickerPanel.setVisible(showIt);
+	    	if(IRCChannel.this.tickerPanel.isVisible())
+	    		IRCChannel.this.bottomPanel.setPreferredSize(new Dimension(IRCChannel.this.getWidth(),BOTTOM_HEIGHT));
+	    	else 
+	    		IRCChannel.this.bottomPanel.setPreferredSize(IRCChannel.this.clientTextBox.getPreferredSize());
+		}
+	}
 	
    /**
     * Return the appropriate created IRC User
@@ -351,7 +446,7 @@ public class IRCChannel extends JPanel implements Runnable {
 public IRCUser getCreatedUsers(String userName){
 	   try{
 		   for(IRCUser tempUser : usersArray)
-			   if(tempUser.getName().replace(tempUser.getUserStatus(), "").equals(userName))
+			   if(tempUser.getName().toLowerCase().equals(userName.toLowerCase()))
 				   return tempUser;
 	   } catch(Exception e) {
 		   //TODO a meaningful error
@@ -485,7 +580,7 @@ public IRCUser getCreatedUsers(String userName){
 		mainPanel.add(userScroller,BorderLayout.LINE_END);
 	    mainPanel.setBackground(Color.black);
 	    setupBottomPanel();
-	    mainPanel.add(bottomPanel,BorderLayout.PAGE_END);
+	    mainPanel.add(bottomPanel,BorderLayout.SOUTH);
 	}
 
 	public IRCChannel(String channelName){

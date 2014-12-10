@@ -31,6 +31,8 @@ public class UserGUI extends JPanel implements Runnable{
 	private JPanel optionsRightPanel = new JPanel();
 	private DefaultListModel<String> optionsArray = new DefaultListModel<String>();
 	private JList<String> optionsList = new JList<String>(optionsArray);
+	private JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
+	private JCheckBox showUsersList = new JCheckBox("Show Users List");
 	private JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
 	private JCheckBox showJoinsQuitsMainWindow = new JCheckBox("Show Joins/Quits in the Chat Window");
 	private JCheckBox logChannelText = new JCheckBox("Save and log all channel text");
@@ -225,7 +227,8 @@ public class UserGUI extends JPanel implements Runnable{
    
    public IRCUser getIRCUser(String userName){
 	   for(IRCChannel tempChannel : createdChannels)
-		   return tempChannel.getCreatedUsers(userName);
+		   if(tempChannel.getCreatedUsers(userName) != null)
+		    return tempChannel.getCreatedUsers(userName);
 		   
 	   return null;
    }
@@ -354,6 +357,8 @@ public class UserGUI extends JPanel implements Runnable{
         
         //Settings for these are loaded with the settings API
         //found in getClientSettings()
+        clientPanel.add(showEventTicker);
+        clientPanel.add(showUsersList);
         clientPanel.add(showJoinsQuitsEventTicker);
         clientPanel.add(showJoinsQuitsMainWindow);
         clientPanel.add(logChannelText);
@@ -474,6 +479,8 @@ public class UserGUI extends JPanel implements Runnable{
 		clientSettings.put("SERVER_NAME", servernameTextField.getText());
 		clientSettings.put("NICK_NAME", usernameTextField.getText());
 		clientSettings.putBoolean("TIME_STAMPS", enableTimeStamps.isSelected());
+		clientSettings.putBoolean("EVENT_TICKER_ACTIVE",showEventTicker.isSelected());
+		clientSettings.putBoolean("USERS_LIST_ACTIVE", showUsersList.isSelected());
 		clientSettings.putBoolean("EVENT_TICKER_JOINS_QUITS", showJoinsQuitsEventTicker.isSelected());
 		clientSettings.putBoolean("MAIN_WINDOW_JOINS_QUITS", showJoinsQuitsMainWindow.isSelected());
 		clientSettings.putBoolean("LOG_CHANNEL_HISTORY", logChannelText.isSelected());
@@ -493,17 +500,19 @@ public class UserGUI extends JPanel implements Runnable{
 		firstChannelTextField.setText(clientSettings.get("FIRST_CHANNEL",""));
 		servernameTextField.setText(clientSettings.get("SERVER_NAME", ""));
 		usernameTextField.setText(clientSettings.get("NICK_NAME", ""));
-		enableTimeStamps.setSelected(clientSettings.getBoolean("TIME_STAMPS", false));
-		showJoinsQuitsEventTicker.setSelected(clientSettings.getBoolean("EVENT_TICKER_JOINS_QUITS", false));
+		showUsersList.setSelected(clientSettings.getBoolean("USERS_LIST_ACTIVE", true));
+		showEventTicker.setSelected(clientSettings.getBoolean("EVENT_TICKER_ACTIVE", true));
+		enableTimeStamps.setSelected(clientSettings.getBoolean("TIME_STAMPS", true));
+		showJoinsQuitsEventTicker.setSelected(clientSettings.getBoolean("EVENT_TICKER_JOINS_QUITS", true));
 		showJoinsQuitsMainWindow.setSelected(clientSettings.getBoolean("MAIN_WINDOW_JOINS_QUITS", false));
 		logChannelText.setSelected(clientSettings.getBoolean("LOG_CHANNEL_HISTORY", false));
 		logServerActivity.setSelected(clientSettings.getBoolean("LOG_SERVER_ACTIVITY", false));
-		limitChannelLines.setSelected(clientSettings.getBoolean("LIMIT_CHANNEL_LINES", false));
-		limitChannelLinesCount.setText(clientSettings.get("LIMIT_CHANNEL_LINES_COUNT","1000"));
-		limitServerLines.setSelected(clientSettings.getBoolean("LIMIT_SERVER_LINES", false));
-		limitServerLinesCount.setText(clientSettings.get("LIMIT_SERVER_LINES_COUNT","1000"));
+		limitChannelLines.setSelected(clientSettings.getBoolean("LIMIT_CHANNEL_LINES", true));
+		limitChannelLinesCount.setText(clientSettings.get("LIMIT_CHANNEL_LINES_COUNT","500"));
+		limitServerLines.setSelected(clientSettings.getBoolean("LIMIT_SERVER_LINES", true));
+		limitServerLinesCount.setText(clientSettings.get("LIMIT_SERVER_LINES_COUNT","500"));
 		logClientText.setSelected(clientSettings.getBoolean("LOG_CLIENT_TEXT", false));
-		eventTickerDelay.setValue(clientSettings.getInt("EVENT_TICKER_DELAY", 0));
+		eventTickerDelay.setValue(clientSettings.getInt("EVENT_TICKER_DELAY", 20));
 	}
 	
 	
@@ -566,8 +575,8 @@ public class UserGUI extends JPanel implements Runnable{
    private class TabbedMouseListener extends MouseInputAdapter {
 	   public void mouseClicked(MouseEvent e) {
 		   final int index = tabbedPane.getUI().tabForCoordinate(tabbedPane, e.getX(), e.getY());
+		   if(index > -1){
 		   String tabName = tabbedPane.getTitleAt(index);
-		   final Rectangle tabBounds = tabbedPane.getBoundsAt ( index );
 		   if(SwingUtilities.isRightMouseButton(e))
 			   if(getCreatedChannel(tabName) != null)
 				   getCreatedChannel(tabName).myMenu.show(tabbedPane, e.getX(), e.getY());
@@ -583,41 +592,24 @@ public class UserGUI extends JPanel implements Runnable{
 						e1.printStackTrace();
 					}
 			   }
-		   
-	      /** if(e.getButton() == MouseEvent.BUTTON3){
-	    	   if(getCreatedChannel(tabName) != null)
-					try {
-						Connection.sendClientText("/part i'm outta here", tabName);
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-	    	   else
-	    		   if(getCreatedPrivateRoom(tabName) != null)
-						quitPrivateRooms(tabName);
-	    		   else
-	    			   if(getCreatedServer(tabName) != null){
-	    				   try {
-							Connection.sendClientText("/quit", tabName);
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-	    			   }
-	       }**/
 	    }
-	   
+	   }
 
    }
 	
 	//Sets focus to the clientTextBox when tab is changed to a channel
-	private void mainTabbedPanel_stateChanged(ChangeEvent e) {
+	private void TabbedPanel_stateChanged(ChangeEvent e) {
 	    JTabbedPane tabSource = (JTabbedPane) e.getSource();
 	    if(tabSource.getSelectedIndex() > -1){
 		    String tab = tabSource.getTitleAt(tabSource.getSelectedIndex());
-		    if(getCreatedChannel(tab) != null)
+		    if(getCreatedChannel(tab) != null){
 		    	getCreatedChannel(tab).clientTextBox.requestFocus();
-		    else
+		    	//This means, if you have the showEventTicker ticked then we don't want to hide it
+		    	//so doing !isShowingEventTicker() will be the opposite of what has been ticked
+		    	//meaning it's ticked, which results in false, meaning do not hide it.
+		    	getCreatedChannel(tab).showEventTicker(isShowingEventTicker());
+		    	getCreatedChannel(tab).showUsersList(isShowingUsersList());
+		    } else
 		    if(getCreatedServer(tab) != null)
 		    	getCreatedServer(tab).serverTextBox.requestFocus();
 		    else
@@ -632,7 +624,7 @@ public class UserGUI extends JPanel implements Runnable{
 		    this.adaptee = adaptee;
 		  }
 		  public void stateChanged(ChangeEvent e) {
-		    adaptee.mainTabbedPanel_stateChanged(e);
+		    adaptee.TabbedPanel_stateChanged(e);
 		  }
 		}
 	
@@ -712,6 +704,22 @@ public class UserGUI extends JPanel implements Runnable{
 		});
 	}
 
+	/**
+	 * Show event ticker?
+	 * @return Boolean
+	 */
+	public Boolean isShowingEventTicker(){
+		return showEventTicker.isSelected();
+	}
+	
+	/**
+	 * Show users list?
+	 * @return Boolean
+	 */
+	public Boolean isShowingUsersList(){
+		return showUsersList.isSelected();
+	}
+	
 	/**
 	 * Show joins/quits in the event ticker?
 	 * @return Boolean

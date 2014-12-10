@@ -28,7 +28,7 @@ public class DriverGUI
 		new Thread(gui).start();
 		
 		
-		JFrame frame = new JFrame ("urChat: Last Updated 09 DEC 14");
+		JFrame frame = new JFrame ("urChat");
 		
 		
 		frame.setDefaultCloseOperation (JFrame.DISPOSE_ON_CLOSE);

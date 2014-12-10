@@ -59,11 +59,12 @@ public class IRCPrivate extends JPanel implements Runnable {
 		} 
 		icon = new ImageIcon(tempIcon);
 	}
-	
+	@Override
 	public void setName(String userName){	
 		this.name = userName;
 	}
 	
+	@Override
 	public String getName(){
 		return this.name;
 	}
