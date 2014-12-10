@@ -99,10 +99,8 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @param indexNum
 	 */
 	public void setCurrentTab(String tabName){
-		tabName = tabName.toLowerCase();
-		
 		for(int x = 0; x < tabbedPane.getTabCount(); x++)
-			if(tabbedPane.getTitleAt(x).toLowerCase().equals(tabName))
+			if(tabbedPane.getTitleAt(x).toLowerCase().equals(tabName.toLowerCase()))
 				tabbedPane.setSelectedIndex(x);
 	}
 	/**
@@ -111,10 +109,8 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @return int
 	 */
 	public int getTabIndex(String tabName){
-		tabName = tabName.toLowerCase();
-		
 		for(int x = 0; x < tabbedPane.getTabCount(); x++){
-				if(tabbedPane.getTitleAt(x).toLowerCase().equals(tabName))
+				if(tabbedPane.getTitleAt(x).toLowerCase().equals(tabName.toLowerCase()))
 					return x;
 		}
 		return -1;
@@ -191,7 +187,7 @@ public class UserGUI extends JPanel implements Runnable{
    public IRCServer getCreatedServer(String serverName){
 	   //for(int x = 0; x < createdChannels.size(); x++)
 	   for(IRCServer tempServer : createdServers)
-		   if(tempServer.getName().equals(serverName))
+		   if(tempServer.getName().equals(serverName.toLowerCase()))
 			   return tempServer;
 	   return null;
    }
@@ -203,9 +199,8 @@ public class UserGUI extends JPanel implements Runnable{
     */
    public IRCPrivate getCreatedPrivateRoom(String privateRoom){
 	   //for(int x = 0; x < createdChannels.size(); x++)
-	   privateRoom = privateRoom.toLowerCase();
 	   for(IRCPrivate tempPrivate : createdPrivateRooms)
-		   if(tempPrivate.getName().toLowerCase().equals(privateRoom))
+		   if(tempPrivate.getName().toLowerCase().equals(privateRoom.toLowerCase()))
 			   return tempPrivate;
 	   return null;
    }
@@ -570,9 +565,26 @@ public class UserGUI extends JPanel implements Runnable{
 	 */
    private class TabbedMouseListener extends MouseInputAdapter {
 	   public void mouseClicked(MouseEvent e) {
-		   String tabName = tabbedPane.getSelectedComponent().getName();
-		   //BUTTON3 is right-click
-	       if(e.getButton() == MouseEvent.BUTTON3){
+		   final int index = tabbedPane.getUI().tabForCoordinate(tabbedPane, e.getX(), e.getY());
+		   String tabName = tabbedPane.getTitleAt(index);
+		   final Rectangle tabBounds = tabbedPane.getBoundsAt ( index );
+		   if(SwingUtilities.isRightMouseButton(e))
+			   if(getCreatedChannel(tabName) != null)
+				   getCreatedChannel(tabName).myMenu.show(tabbedPane, e.getX(), e.getY());
+			   else if(getCreatedPrivateRoom(tabName) != null)
+				   //TODO Private room popup
+				   quitPrivateRooms(tabName);
+			   else if(getCreatedServer(tabName) != null){
+				   //TODO server popup
+				   try {
+						Connection.sendClientText("/quit", tabName);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+			   }
+		   
+	      /** if(e.getButton() == MouseEvent.BUTTON3){
 	    	   if(getCreatedChannel(tabName) != null)
 					try {
 						Connection.sendClientText("/part i'm outta here", tabName);
@@ -592,7 +604,7 @@ public class UserGUI extends JPanel implements Runnable{
 							e1.printStackTrace();
 						}
 	    			   }
-	       }
+	       }**/
 	    }
 	   
 

@@ -10,11 +10,11 @@ import javax.swing.JPopupMenu;
 public class IRCUser implements Comparable<IRCUser>{
 	private String name;
 	private String userStatus = "";
-	public ListPopUp myMenu;
+	public UserPopUp myMenu;
 	
 	public IRCUser(String name){
 		this.name = name;
-		this.myMenu = new ListPopUp();
+		this.myMenu = new UserPopUp();
 	}
 	
 	public void setName(String name){
@@ -39,7 +39,7 @@ public class IRCUser implements Comparable<IRCUser>{
 	}
 	
 	
-   class ListPopUp extends JPopupMenu {
+   class UserPopUp extends JPopupMenu {
 	/**
 	 * 
 	 */
@@ -47,7 +47,7 @@ public class IRCUser implements Comparable<IRCUser>{
 		JMenuItem nameItem;
 		JMenuItem privateMessageItem;
 		JMenuItem whoIsItem;
-	    public ListPopUp(){
+	    public UserPopUp(){
 	    	nameItem = new JMenuItem(IRCUser.this.getName());
 	        add(nameItem);
 	        addSeparator();
@@ -64,7 +64,7 @@ public class IRCUser implements Comparable<IRCUser>{
 	{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			DriverGUI.gui.addToPrivateRooms(IRCUser.this);
+			DriverGUI.gui.addToPrivateRooms(IRCUser.this.getName());
 		}   
    }
 	
@@ -73,7 +73,7 @@ public class IRCUser implements Comparable<IRCUser>{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			try {
-				Connection.sendClientText("/whois "+IRCUser.this, "Server");
+				Connection.sendClientText("/whois "+IRCUser.this.getName(), "Server");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

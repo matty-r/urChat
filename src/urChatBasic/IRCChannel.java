@@ -13,6 +13,8 @@ import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.*;
 
+import urChatBasic.IRCUser.UserPopUp;
+
 public class IRCChannel extends JPanel implements Runnable {
 	/**
 	 * 
@@ -36,6 +38,8 @@ public class IRCChannel extends JPanel implements Runnable {
 	////////////////
 	//Icons
 	public ImageIcon icon;
+	
+	public ChannelPopUp myMenu;
 		
 	//channel Text Area
 	private JTextPane channelTextArea = new JTextPane();
@@ -103,7 +107,7 @@ public class IRCChannel extends JPanel implements Runnable {
 		channelName = newName;
 	}
 	
-	private class userChatText implements ActionListener
+	private class SendTextListener implements ActionListener
 	   {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -127,7 +131,7 @@ public class IRCChannel extends JPanel implements Runnable {
     * @author Matt
     *
     */
-   private class myKeyListener implements KeyListener {
+   private class ChannelKeyListener implements KeyListener {
 	      public void keyPressed( KeyEvent e ) {
 	    	  //When the user presses tab
 	         if ( e.getKeyCode() == KeyEvent.VK_TAB ) {
@@ -322,10 +326,21 @@ public class IRCChannel extends JPanel implements Runnable {
 		bottomPanel.setLocation(0,MAIN_HEIGHT-BOTTOM_HEIGHT);
 		bottomPanel.add(clientTextBox);
 		bottomPanel.add(tickerPanel);
-		clientTextBox.addActionListener(new userChatText());
-		clientTextBox.addKeyListener(new myKeyListener());
+		clientTextBox.addActionListener(new SendTextListener());
+		clientTextBox.addKeyListener(new ChannelKeyListener());
 		clientTextBox.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,Collections.EMPTY_SET);
 	}
+	
+	
+	class ChannelPopUp extends JPopupMenu{
+		JMenuItem nameItem;
+		public ChannelPopUp(){
+			nameItem = new JMenuItem("Test");
+	        add(nameItem);
+	        addSeparator();
+		}
+	}
+	
 	
    /**
     * Return the appropriate created IRC User
@@ -483,7 +498,7 @@ public IRCUser getCreatedUsers(String userName){
 		this.setLayout(new BorderLayout());
 		this.add(mainPanel,BorderLayout.CENTER);
 		historyFileName = historyDateFormat.format(todayDate)+" "+this.channelName+".log";
-		
+		this.myMenu = new ChannelPopUp();
 		Image tempIcon = null;
 		try {
 			tempIcon = ImageIO.read(new File("Resources\\Room.png"));
@@ -509,6 +524,8 @@ public IRCUser getCreatedUsers(String userName){
 						
 						if(tempUser.startsWith("@"))
 							getCreatedUsers(tempUser).setUserStatus("@");
+						else if(tempUser.startsWith("+"))
+							getCreatedUsers(tempUser).setUserStatus("+");
 					}
 				}
 				usersListModel.sort();
@@ -526,6 +543,8 @@ public IRCUser getCreatedUsers(String userName){
 
 						if(thisUser.startsWith("@"))
 							getCreatedUsers(thisUser).setUserStatus("@");
+						else if(thisUser.startsWith("+"))
+							getCreatedUsers(thisUser).setUserStatus("+");
 						usersArray.add(new IRCUser(thisUser));
 						usersList.setSelectedIndex(0);
 						createEvent("++ "+thisUser+" has entered "+channel);
