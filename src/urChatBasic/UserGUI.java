@@ -298,21 +298,34 @@ public class UserGUI extends JPanel implements Runnable{
 	 */
 	public void printChannelText(String channelName, String line, String fromUser){
 		if(channelName.equals(fromUser)){
-			addToPrivateRooms(channelName);
-			getCreatedPrivateRoom(channelName).printText(isTimeStampsEnabled(), line);
+			printPrivateText(channelName,line);
+			//addToPrivateRooms(channelName);
+			//getCreatedPrivateRoom(channelName).printText(isTimeStampsEnabled(), line);
 		} else
 			getCreatedChannel(channelName).printText(isTimeStampsEnabled(),line,fromUser);
 	}
 	
 	/**
-	 * Prints the text to the appropriate channels main text window.
+	 * Prints the text to the appropriate channels main text window. Checks the user
+	 * exists first and if they are muted else if they don't exist then just create it
+	 * and print the private text.
 	 * @param channelName
 	 * @param line
 	 */
 	public void printPrivateText(String userName, String line){
+		if(getIRCUser(userName) != null && !getIRCUser(userName).isMuted()){
+			if(getCreatedPrivateRoom(userName) == null)
+				addToPrivateRooms(getIRCUser(userName));
+			getCreatedPrivateRoom(userName).printText(isTimeStampsEnabled(),line);
+			Toolkit.getDefaultToolkit().beep();
+		} else if (getIRCUser(userName) == null){
 			if(getCreatedPrivateRoom(userName) == null)
 				addToPrivateRooms(new IRCUser(userName));
 			getCreatedPrivateRoom(userName).printText(isTimeStampsEnabled(),line);
+			Toolkit.getDefaultToolkit().beep();
+		} else {
+			//Do nothing
+		}
 	}
 	
 	public void printServerText(String serverName, String line){

@@ -11,6 +11,7 @@ public class IRCUser implements Comparable<IRCUser>{
 	private String name;
 	private String userStatus = "";
 	public UserPopUp myMenu;
+	private Boolean muted = false;
 	
 	public IRCUser(String name){
 		this.name = name;
@@ -47,6 +48,7 @@ public class IRCUser implements Comparable<IRCUser>{
 		JMenuItem nameItem;
 		JMenuItem privateMessageItem;
 		JMenuItem whoIsItem;
+		JMenuItem muteItem;
 	    public UserPopUp(){
 	    	nameItem = new JMenuItem(IRCUser.this.getName());
 	        add(nameItem);
@@ -57,6 +59,9 @@ public class IRCUser implements Comparable<IRCUser>{
 	        whoIsItem = new JMenuItem("Whois");
 	        whoIsItem.addActionListener(new StartWhoIsQuery());
 	        add(whoIsItem);
+	        muteItem = new JMenuItem("Toggle Mute");
+	        muteItem.addActionListener(new ToggleMute());
+	        add(muteItem);
 	    }
 	}
    
@@ -64,7 +69,8 @@ public class IRCUser implements Comparable<IRCUser>{
 	{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			DriverGUI.gui.addToPrivateRooms(IRCUser.this.getName());
+			if(!isMuted())
+				DriverGUI.gui.addToPrivateRooms(IRCUser.this.getName());
 		}   
    }
 	
@@ -80,6 +86,21 @@ public class IRCUser implements Comparable<IRCUser>{
 			}
 		}   
    }
+	
+	public Boolean isMuted(){
+		return this.muted;
+	}
+	
+	public void setMuted(Boolean mute){
+		this.muted = mute;
+	}
+	
+	private class ToggleMute implements ActionListener{
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			IRCUser.this.setMuted(!muted);
+		}   
+	}
 	
 	
 

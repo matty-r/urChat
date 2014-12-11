@@ -267,7 +267,6 @@ public class Connection implements Runnable{
 			        				} else{
 			        					//TODO Created a IRCPrivate chat room
 			        					gui.printChannelText(extractNick(receivedOptions[0]),"{"+extractNick(receivedOptions[0])+"} "+message,extractNick(receivedOptions[0]));
-			        					Toolkit.getDefaultToolkit().beep();
 			        				}
 		        				break;
     				//311 = Whois response

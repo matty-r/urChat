@@ -4,8 +4,6 @@ urChat
 Java based IRC Client
 
 
-
-
 TODO List:
 - Clickable HTTP when someone sends a message
 - Create a Low Resource mode
@@ -16,7 +14,6 @@ TODO List:
 - Allow for an Autoconnect list, automatically connect to servers listed
 	\ this will also allow to retry connections until you're identified with the server
 - Handle :401, 366, 333 ,328, 470
-- Hangs on exit
 - Allow moving the event ticker to the top of the screen instead
 - Server\Channel and Private classes are very similar.. might be able to stop doubling up on some code
 - Allow resizing of users lists (Double click to hide?)
@@ -32,6 +29,10 @@ TODO List:
 - User right click options
 	\Mute (Does not display any messages or private messages from user during current session)
 
+=Update (11 DEC 14)
+
+
+* Added mute to right click menu for user, stop receiving message in channel or private messages
 
 =Update (10 DEC 14)
 

@@ -481,33 +481,38 @@ public IRCUser getCreatedUsers(String userName){
 				e.printStackTrace();
 			}
 		}
-		if(Connection.myNick.equals(getCreatedUsers(fromUser))){
-		    StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
-	    	Style style = doc.addStyle("StyleName", null);
-
-	        StyleConstants.setItalic(style, true);
-
-	        try {
-	        	line = line+"\n";
-	        	for(int x = 0; x < line.length(); x++)
-	        		doc.insertString(doc.getLength(), line.substring(x, x+1), style);
-				
-			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} else {
-			StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
-			Style style = doc.addStyle("StyleName", null);
-
-			try {
-				doc.insertString(doc.getLength(), line+"\n", style);
-			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-        }
-		channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
+		
+		
+		//Checks to make sure the user exists and they aren't muted.
+		if(getCreatedUsers(fromUser) != null && !getCreatedUsers(fromUser).isMuted()){
+			if(Connection.myNick.equals(getCreatedUsers(fromUser))){
+			    StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
+		    	Style style = doc.addStyle("StyleName", null);
+	
+		        StyleConstants.setItalic(style, true);
+	
+		        try {
+		        	line = line+"\n";
+		        	for(int x = 0; x < line.length(); x++)
+		        		doc.insertString(doc.getLength(), line.substring(x, x+1), style);
+					
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			} else {
+				StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
+				Style style = doc.addStyle("StyleName", null);
+	
+				try {
+					doc.insertString(doc.getLength(), line+"\n", style);
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	        }
+			channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
+		}
 	}
 	
 	private void setupMainTextArea(){
