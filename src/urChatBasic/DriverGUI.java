@@ -9,7 +9,7 @@ import javax.swing.UIManager;
 
 public class DriverGUI
 {
-	public static Connection chatSession = null;
+	//public static Connection chatSession = null;
 	public static UserGUI gui = null;
 	
 	public static void main(String[] args) throws IOException{
@@ -23,6 +23,13 @@ public class DriverGUI
 		driver.startGUI();
 	}
 	
+	
+	final public static String getMemoryReport() {
+	    final Runtime r = Runtime.getRuntime();
+	    final long mb = 1024 * 1024;
+	    return "max heap size = " + (r.maxMemory() / (mb)) + " MB; current heap size = " + (r.totalMemory() / (mb)) + " MB; space left in heap = " + (r.freeMemory() / (mb)) + " MB";
+	}
+	
 	public void startGUI(){
 		gui = new UserGUI();
 		new Thread(gui).start();
@@ -30,30 +37,18 @@ public class DriverGUI
 		
 		JFrame frame = new JFrame ("urChat");
 		
-		
 		frame.setDefaultCloseOperation (JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().add(gui);
 		frame.pack();
 		frame.setVisible(true); 
 		frame.addWindowListener(new WindowAdapter() {
 			  public void windowClosing(WindowEvent e) {
-							try {
-								if(!gui.isCreatedServersEmpty())
-									Connection.sendClientText("/quit Goodbye cruel world", "Server");
-								
-							} catch (IOException x) {
-								// TODO Auto-generated catch block
-								x.printStackTrace();
-							}
+							if(!gui.isCreatedServersEmpty())
+								gui.sendGlobalMessage("/quit Goodbye cruel world", "Server");
 				  }
 				});
 					
 
-		
-	}
-
-	public static void startConnection(){
-		chatSession =  new Connection();
 		
 	}
 }

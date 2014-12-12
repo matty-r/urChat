@@ -22,7 +22,7 @@ public class UserGUI extends JPanel implements Runnable{
 	final private int MAIN_HEIGHT = 600;
 	
 	//Tabs
-	private JTabbedPane tabbedPane = new JTabbedPane();
+	public JTabbedPane tabbedPane = new JTabbedPane();
 	private final int OPTIONS_INDEX = 0;
 	
 	//Options Panel
@@ -41,8 +41,8 @@ public class UserGUI extends JPanel implements Runnable{
 	private JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
 	private JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
 	private JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
-	private JTextField limitServerLinesCount = new JTextField("1000");
-	private JTextField limitChannelLinesCount = new JTextField("1000");
+	private JTextField limitServerLinesCount = new JTextField();
+	private JTextField limitChannelLinesCount = new JTextField();
 	private JButton connectButton = new JButton("Connect");
 	private static final int TICKER_DELAY_MIN = 1;
 	private static final int TICKER_DELAY_MAX = 30;
@@ -54,18 +54,11 @@ public class UserGUI extends JPanel implements Runnable{
 	private JTextField firstChannelTextField = new JTextField("");
 	private JButton saveSettings = new JButton("Save Settings");
 	private Preferences clientSettings;
-	public static Connection myConnection = DriverGUI.chatSession;
+	//public static Connection myConnection = DriverGUI.chatSession;
 	private Font universalFont = new Font("Consolas", Font.PLAIN, 12);
-	
-	//Created channels/tabs
-	private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
 	
 	//Created Servers/Tabs
 	private List<IRCServer> createdServers = new ArrayList<IRCServer>();
-	
-	//Created Private Rooms/Tabs
-	private List<IRCPrivate> createdPrivateRooms = new ArrayList<IRCPrivate>();
- 
 	
 	public Font getFont(){
 		return universalFont;
@@ -126,61 +119,7 @@ public class UserGUI extends JPanel implements Runnable{
 		return logServerActivity.isSelected();
 	}
 	
-	/**
-	 * Closes and removes all channels that have been created.
-	 */
-	public void quitChannels(){
-		while(createdChannels.iterator().hasNext()){
-			IRCChannel tempChannel = createdChannels.iterator().next();
-			createdChannels.remove(tempChannel);
-			tabbedPane.remove(tempChannel);
-		}
-	}
 	
-	/**
-	 * Closes and removes all channels that have been created.
-	 */
-	public void quitChannel(String channelName){
-		if(getCreatedChannel(channelName) != null){
-			createdChannels.remove(getCreatedChannel(channelName));
-			tabbedPane.remove(getTabIndex(channelName));
-		}
-	}
-	
-	/**
-	 * Closes and removes all private rooms that have been created.
-	 */
-	public void quitPrivateRooms(){
-		while(createdPrivateRooms.iterator().hasNext()){
-			IRCPrivate tempPrivateRoom = createdPrivateRooms.iterator().next();
-			tabbedPane.remove(tempPrivateRoom);
-			createdPrivateRooms.remove(tempPrivateRoom);
-		}
-	}
-	
-	/**
-	 * Closes and removes a selected private room that have been created.
-	 */
-	public void quitPrivateRooms(String roomName){
-		if(getCreatedPrivateRoom(roomName) != null){
-			createdPrivateRooms.remove(getCreatedPrivateRoom(roomName));
-			tabbedPane.remove(getTabIndex(roomName));
-		}
-	}
-	
-   /**
-    * Return the appropriate created channel
-    * @param channelName
-    * @return IRCChannel
-    */
-   public IRCChannel getCreatedChannel(String channelName){
-	   //for(int x = 0; x < createdChannels.size(); x++)
-	   for(IRCChannel tempChannel : createdChannels)
-		   if(tempChannel.getName().equals(channelName))
-			   return tempChannel;
-	   return null;
-   }
-   
    /**
     * Return the appropriate created server
     * @param serverName
@@ -194,60 +133,7 @@ public class UserGUI extends JPanel implements Runnable{
 	   return null;
    }
    
-   /**
-    * Return the appropriate created server
-    * @param serverName
-    * @return IRCServer
-    */
-   public IRCPrivate getCreatedPrivateRoom(String privateRoom){
-	   //for(int x = 0; x < createdChannels.size(); x++)
-	   for(IRCPrivate tempPrivate : createdPrivateRooms)
-		   if(tempPrivate.getName().toLowerCase().equals(privateRoom.toLowerCase()))
-			   return tempPrivate;
-	   return null;
-   }
-   
-   /**
-    * Check to see if there are any channels at all.
-    * @param channelName
-    * @return IRCChannel
-    */
-   public Boolean isCreatedChannelsEmpty(){
-	   return createdChannels.isEmpty();
-   }
-   
-   /**
-    * Check to see if there are any Servers at all.
-    * @param channelName
-    * @return IRCChannel
-    */
-   public Boolean isCreatedServersEmpty(){
-	   return createdServers.isEmpty();
-   }
-   
-   public IRCUser getIRCUser(String userName){
-	   for(IRCChannel tempChannel : createdChannels)
-		   if(tempChannel.getCreatedUsers(userName) != null)
-		    return tempChannel.getCreatedUsers(userName);
-		   
-	   return null;
-   }
-   
-   /**
-    * Creates a new channel based on name
-    * @param channelName
-    */
-   public void addToCreatedChannels(String channelName){
-	   
-	   if(getCreatedChannel(channelName) == null){
-		IRCChannel tempChannel = new IRCChannel(channelName);
-	   	createdChannels.add(tempChannel);
-	   	tabbedPane.addTab(channelName, tempChannel.icon ,tempChannel);
-	   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempChannel));
-	   	tempChannel.clientTextBox.requestFocus();
-	   }
-   }
-   
+
    /**
     * Creates a new server based on name
     * @param serverName
@@ -255,98 +141,98 @@ public class UserGUI extends JPanel implements Runnable{
    public void addToCreatedServers(String serverName){
 	   
 	   if(getCreatedServer(serverName) == null){
-		IRCServer tempServer = new IRCServer(serverName);
+		IRCServer tempServer = new IRCServer(serverName,usernameTextField.getText(),usernameTextField.getText(),firstChannelTextField.getText());
 	   	createdServers.add(tempServer);
 	   	tabbedPane.addTab(serverName, tempServer.icon,tempServer);
 	   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempServer));
 	   	tempServer.serverTextBox.requestFocus();
 	   }
    }
-   
-   /**
-    * Creates a new Private Room based on name
-    * @param serverName
-    */
-   public void addToPrivateRooms(String privateRoom){
-	   if(getCreatedPrivateRoom(privateRoom) == null){
-			IRCPrivate tempPrivateRoom = new IRCPrivate(getIRCUser(privateRoom));
-		   	createdPrivateRooms.add(tempPrivateRoom);
-		   	tabbedPane.addTab(tempPrivateRoom.getName(), tempPrivateRoom.icon,tempPrivateRoom);
-		   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempPrivateRoom));
-		   	tempPrivateRoom.privateTextBox.requestFocus();
-	   }
-   }
-   
-   /**
-    * Creates a new Private Room based on IRCUser
-    * @param serverName
-    */
-   public void addToPrivateRooms(IRCUser privateRoom){
-	   if(getCreatedPrivateRoom(privateRoom.getName()) == null){
-			IRCPrivate tempPrivateRoom = new IRCPrivate(privateRoom);
-		   	createdPrivateRooms.add(tempPrivateRoom);
-		   	tabbedPane.addTab(tempPrivateRoom.getName(), tempPrivateRoom.icon,tempPrivateRoom);
-		   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempPrivateRoom));
-		   	tempPrivateRoom.privateTextBox.requestFocus();
-	   }
-   }
-   
-	/**
-	 * Prints the text to the appropriate channels main text window.
+	   
+	 /**
+	 * Check to see if there are any Servers at all.
 	 * @param channelName
-	 * @param line
+	 * @return IRCChannel
 	 */
-	public void printChannelText(String channelName, String line, String fromUser){
-		if(channelName.equals(fromUser)){
-			printPrivateText(channelName,line);
-			//addToPrivateRooms(channelName);
-			//getCreatedPrivateRoom(channelName).printText(isTimeStampsEnabled(), line);
-		} else
-			getCreatedChannel(channelName).printText(isTimeStampsEnabled(),line,fromUser);
+   public Boolean isCreatedServersEmpty(){
+	    return createdServers.isEmpty();
+   }
+	   
+	
+	/**
+	 * Show event ticker?
+	 * @return Boolean
+	 */
+	public Boolean isShowingEventTicker(){
+		return showEventTicker.isSelected();
 	}
 	
 	/**
-	 * Prints the text to the appropriate channels main text window. Checks the user
-	 * exists first and if they are muted else if they don't exist then just create it
-	 * and print the private text.
-	 * @param channelName
-	 * @param line
+	 * Show users list?
+	 * @return Boolean
 	 */
-	public void printPrivateText(String userName, String line){
-		if(getIRCUser(userName) != null && !getIRCUser(userName).isMuted()){
-			if(getCreatedPrivateRoom(userName) == null)
-				addToPrivateRooms(getIRCUser(userName));
-			getCreatedPrivateRoom(userName).printText(isTimeStampsEnabled(),line);
-			Toolkit.getDefaultToolkit().beep();
-		} else if (getIRCUser(userName) == null){
-			if(getCreatedPrivateRoom(userName) == null)
-				addToPrivateRooms(new IRCUser(userName));
-			getCreatedPrivateRoom(userName).printText(isTimeStampsEnabled(),line);
-			Toolkit.getDefaultToolkit().beep();
-		} else {
-			//Do nothing
-		}
+	public Boolean isShowingUsersList(){
+		return showUsersList.isSelected();
 	}
 	
-	public void printServerText(String serverName, String line){
-		try{
-		getCreatedServer(serverName).printText(isTimeStampsEnabled(),line);
-		} catch(Exception e){
-			//TODO something here
-		}
+	/**
+	 * Show joins/quits in the event ticker?
+	 * @return Boolean
+	 */
+	public Boolean isJoinsQuitsTickerEnabled(){
+		return showJoinsQuitsEventTicker.isSelected();
 	}
 	
-	public void printEventTicker(String channelName, String eventText){
-		getCreatedChannel(channelName).createEvent(eventText);
+	/**
+	 * Show joins/quits in the main window?
+	 * @return Boolean
+	 */
+	public Boolean isJoinsQuitsMainEnabled(){
+		return showJoinsQuitsMainWindow.isSelected();
 	}
 	
-	private void setupRightOptionsPanel(){
-		ListSelectionModel listSelectionModel = optionsList.getSelectionModel();
-	    listSelectionModel.addListSelectionListener(
-	                            new OptionsListSelectionHandler());
-	    
-		optionsRightPanel.setBackground(Color.BLACK);
-		optionsRightPanel.setLayout(new CardLayout());
+	/**
+	 * Save channel chat history?
+	 * @return Boolean
+	 */
+	public Boolean isChannelHistoryEnabled(){
+		return logChannelText.isSelected();
+	}
+	
+	/**
+	 * Limit the number of lines in the server activity window
+	 * @return Boolean
+	 */
+	public Boolean isLimitedServerActivity(){
+		return limitServerLines.isSelected();
+	}
+	
+	/**
+	 * Limit the number of lines in the channel history
+	 * @return Boolean
+	 */
+	public Boolean isLimitedChannelActivity(){
+		return limitChannelLines.isSelected();
+	}
+	
+	/**
+	 * Add timestamp to chat text?
+	 * @return Boolean
+	 */
+	public Boolean isTimeStampsEnabled(){
+		return enableTimeStamps.isSelected();
+	}
+	
+	/**
+	 * Save text that I type, this allows using the up and down arrows to repeat text.
+	 * @return
+	 */
+	public Boolean isClientHistoryEnabled(){
+		return logClientText.isSelected();
+
+	}   
+
+	private void setupServerOptionsPanel(){
 		JPanel serverPanel = new JPanel();
 		serverPanel.setLayout(new BoxLayout(serverPanel, BoxLayout.PAGE_AXIS));
 		serverPanel.add(new JLabel("Nick:"));
@@ -363,9 +249,15 @@ public class UserGUI extends JPanel implements Runnable{
 		serverPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 		serverPanel.add(Box.createRigidArea(new Dimension(0,20)));
 		serverPanel.add(connectButton);
-		connectButton.addActionListener(new connectPressed());
-						
-        JPanel clientPanel = new JPanel();
+		connectButton.addActionListener(new ConnectPressed());
+		
+		optionsRightPanel.add(serverPanel, "Server");
+	
+	}
+	
+	private void setupClientOptionsPanel(){
+		
+		JPanel clientPanel = new JPanel();
         clientPanel.setLayout(new BoxLayout(clientPanel,BoxLayout.PAGE_AXIS));
         
         //Settings for these are loaded with the settings API
@@ -403,8 +295,29 @@ public class UserGUI extends JPanel implements Runnable{
 												setClientSettings();
 											}
 								        });
-        optionsRightPanel.add(serverPanel, "Server");
+        
         optionsRightPanel.add(clientPanel, "Client");
+	}
+	
+	private void setupFavouritesOptionsPanel(){
+		JPanel favouritesPanel = new JPanel();
+		favouritesPanel.setLayout(new BoxLayout(favouritesPanel,BoxLayout.PAGE_AXIS));
+        
+		
+		
+		optionsRightPanel.add(favouritesPanel, "Favourites");
+	}
+	private void setupRightOptionsPanel(){
+		ListSelectionModel listSelectionModel = optionsList.getSelectionModel();
+	    listSelectionModel.addListSelectionListener(
+	                            new OptionsListSelectionHandler());
+	    
+		optionsRightPanel.setBackground(Color.BLACK);
+		optionsRightPanel.setLayout(new CardLayout());
+		
+		setupServerOptionsPanel();
+		setupClientOptionsPanel();
+        setupFavouritesOptionsPanel();
 	}
 	
 	/**
@@ -412,51 +325,30 @@ public class UserGUI extends JPanel implements Runnable{
 	 * @author Matt
 	 *
 	 */
-	private class connectPressed implements ActionListener{
+	private class ConnectPressed implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			if(connectButton.getText() == "Connect"){
-				serverConnect();
-				connectButton.setText("Disconnect");
+				addToCreatedServers(servernameTextField.getText());
+				//connectButton.setText("Disconnect");
 				} else {
-					try {
-						Connection.sendClientText("/quit Goodbye cruel world", "Server");
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					getCreatedServer(servernameTextField.getText()).sendClientText("/quit Goodbye cruel world", "Server");
 				}
 		}
 	}
 	
-	/**
-	 * Saves all the information from the text boxes to the connection
-	 * 
-	 */
-	public void serverConnect(){
-		Connection.server = servernameTextField.getText();
-		Connection.myNick =  usernameTextField.getText();
-		Connection.login =  usernameTextField.getText();
-		Connection.firstChannel = firstChannelTextField.getText();
-		
-		//addCreatedServers();
-		
-		new Thread(new Runnable() {
-			   public void run() {
-				  // DriverGUI.chatSession =  new Connection();
-				   
-				   DriverGUI.startConnection();
-			   }
-			}).start();
+	public void sendGlobalMessage(String message, String sender){
+		for(IRCServer tempServer : createdServers)
+			tempServer.sendClientText(message, sender);
 	}
+	
+	
 	
 	/**
 	 * Remove and disconnect all private rooms, channels and servers
 	 */
 	public void shutdownAll(){
 		if(!isCreatedServersEmpty()){
-			quitChannels();
-			quitPrivateRooms();
 			quitServers();
 			connectButton.setText("Connect");
 		}
@@ -469,6 +361,8 @@ public class UserGUI extends JPanel implements Runnable{
 	public void quitServers(){
 		while(createdServers.iterator().hasNext()){
 			IRCServer tempServer = createdServers.iterator().next();
+			tempServer.quitChannels();
+			tempServer.quitPrivateRooms();
 			tabbedPane.remove(tempServer);
 			createdServers.remove(tempServer);
 		}
@@ -562,7 +456,7 @@ public class UserGUI extends JPanel implements Runnable{
 		
 		optionsArray.addElement("Server");
 		optionsArray.addElement("Client");
-		//TODO Add channel favourites option?
+		optionsArray.addElement("Favourites");
 		
 		setupLeftOptionsPanel();
 		setupRightOptionsPanel();
@@ -591,43 +485,36 @@ public class UserGUI extends JPanel implements Runnable{
 		   if(index > -1){
 		   String tabName = tabbedPane.getTitleAt(index);
 		   if(SwingUtilities.isRightMouseButton(e))
-			   if(getCreatedChannel(tabName) != null)
-				   getCreatedChannel(tabName).myMenu.show(tabbedPane, e.getX(), e.getY());
-			   else if(getCreatedPrivateRoom(tabName) != null)
+			  for(IRCServer tempServer : createdServers)
+			   if(tempServer.getCreatedChannel(tabName) != null)
+				   tempServer.getCreatedChannel(tabName).myMenu.show(tabbedPane, e.getX(), e.getY());
+			   else if(tempServer.getCreatedPrivateRoom(tabName) != null)
 				   //TODO Private room popup
-				   quitPrivateRooms(tabName);
-			   else if(getCreatedServer(tabName) != null){
-				   //TODO server popup
-				   try {
-						Connection.sendClientText("/quit", tabName);
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+				   tempServer.quitPrivateRooms(tabName);
+			else
+				getCreatedServer(tabName).sendClientText("/quit", tabName);
 			   }
 	    }
 	   }
 
-   }
 	
 	//Sets focus to the clientTextBox when tab is changed to a channel
 	private void TabbedPanel_stateChanged(ChangeEvent e) {
 	    JTabbedPane tabSource = (JTabbedPane) e.getSource();
 	    if(tabSource.getSelectedIndex() > -1){
 		    String tab = tabSource.getTitleAt(tabSource.getSelectedIndex());
-		    if(getCreatedChannel(tab) != null){
-		    	getCreatedChannel(tab).clientTextBox.requestFocus();
-		    	//This means, if you have the showEventTicker ticked then we don't want to hide it
-		    	//so doing !isShowingEventTicker() will be the opposite of what has been ticked
-		    	//meaning it's ticked, which results in false, meaning do not hide it.
-		    	getCreatedChannel(tab).showEventTicker(isShowingEventTicker());
-		    	getCreatedChannel(tab).showUsersList(isShowingUsersList());
-		    } else
-		    if(getCreatedServer(tab) != null)
-		    	getCreatedServer(tab).serverTextBox.requestFocus();
-		    else
-	    	if(getCreatedPrivateRoom(tab) != null)
-	    		getCreatedPrivateRoom(tab).privateTextBox.requestFocus();
+		    for(IRCServer tempServer : createdServers)
+			    if(tempServer.getCreatedChannel(tab) != null){
+			    	tempServer.getCreatedChannel(tab).clientTextBox.requestFocus();
+			    	//This means, if you have the showEventTicker ticked then we don't want to hide it
+			    	//so doing !isShowingEventTicker() will be the opposite of what has been ticked
+			    	//meaning it's ticked, which results in false, meaning do not hide it.
+			    	tempServer.getCreatedChannel(tab).showEventTicker(isShowingEventTicker());
+			    	tempServer.getCreatedChannel(tab).showUsersList(isShowingUsersList());
+			    } else if(tempServer.getCreatedPrivateRoom(tab) != null)
+		    		tempServer.getCreatedPrivateRoom(tab).privateTextBox.requestFocus();
+		    	else if(getCreatedServer(tab) != null)
+			    	getCreatedServer(tab).serverTextBox.requestFocus();
 	    }
 	  }
 	
@@ -659,181 +546,6 @@ public class UserGUI extends JPanel implements Runnable{
 		
 	}
 
-	//Adds users to the list in the users array[]
-	public void addToUsersList(String channelName,String[] users){
-		SwingUtilities.invokeLater(new Runnable(){
-			public void run(){
-				if(!channelName.matches("Server")){
-					IRCChannel tempChannel = getCreatedChannel(channelName);
-					if(tempChannel != null)
-						tempChannel.addToUsersList(tempChannel.getName(), users);
-				}
-			}
-		});
-	}
-	
-	//Adds a single user, good for when a user joins the channel
-	public void addToUsersList(String channelName,String user){
-		SwingUtilities.invokeLater(new Runnable(){
-			public void run(){
-				String thisUser = user;
-				if(user.startsWith(":"))
-					thisUser = user.substring(1);
-				
-				IRCChannel tempChannel = getCreatedChannel(channelName);
-				if(tempChannel != null)
-					tempChannel.addToUsersList(tempChannel.getName(), thisUser);
-			}
-		});
-	}
-	
-	/**
-	 * Removes a single user from the specified channel. If the call is from "Server"
-	 * as the channelName it will loop through all createdChannels and remove the user.
-	 * But only if they were in there to begin with.
-	 * @param channelName
-	 * @param user
-	 */
-	public void removeFromUsersList(String channelName,String user){
-		SwingUtilities.invokeLater(new Runnable(){
-			public void run(){
-				String thisUser = user;
-					if(user.startsWith(":"))
-						thisUser = user.substring(1);
-						
-					if(channelName == "Server"){
-						for(IRCChannel tempChannel : createdChannels){
-								tempChannel.removeFromUsersList(tempChannel.getName(), thisUser);
-						}
-					} else {
-						IRCChannel tempChannel = getCreatedChannel(channelName);
-						if(tempChannel != null)
-							if(thisUser.equals(Connection.myNick))
-								quitChannel(channelName);
-							else
-								tempChannel.removeFromUsersList(channelName, thisUser);
-					}
-				}
-		});
-	}
-
-	/**
-	 * Show event ticker?
-	 * @return Boolean
-	 */
-	public Boolean isShowingEventTicker(){
-		return showEventTicker.isSelected();
-	}
-	
-	/**
-	 * Show users list?
-	 * @return Boolean
-	 */
-	public Boolean isShowingUsersList(){
-		return showUsersList.isSelected();
-	}
-	
-	/**
-	 * Show joins/quits in the event ticker?
-	 * @return Boolean
-	 */
-	public Boolean isJoinsQuitsTickerEnabled(){
-		return showJoinsQuitsEventTicker.isSelected();
-	}
-	
-	/**
-	 * Show joins/quits in the main window?
-	 * @return Boolean
-	 */
-	public Boolean isJoinsQuitsMainEnabled(){
-		return showJoinsQuitsMainWindow.isSelected();
-	}
-	
-	/**
-	 * Save channel chat history?
-	 * @return Boolean
-	 */
-	public Boolean isChannelHistoryEnabled(){
-		return logChannelText.isSelected();
-	}
-	
-	/**
-	 * Limit the number of lines in the server activity window
-	 * @return Boolean
-	 */
-	public Boolean isLimitedServerActivity(){
-		return limitServerLines.isSelected();
-	}
-	
-	/**
-	 * Limit the number of lines in the channel history
-	 * @return Boolean
-	 */
-	public Boolean isLimitedChannelActivity(){
-		return limitChannelLines.isSelected();
-	}
-	
-	/**
-	 * Add timestamp to chat text?
-	 * @return Boolean
-	 */
-	public Boolean isTimeStampsEnabled(){
-		return enableTimeStamps.isSelected();
-	}
-	
-	/**
-	 * Save text that I type, this allows using the up and down arrows to repeat text.
-	 * @return
-	 */
-	public Boolean isClientHistoryEnabled(){
-		return logClientText.isSelected();
-
-	}
-	
-	//TODO Double check I need this here, should be part of the IRCChannel class?
-	public String getChannelTopic(String channelName) {
-		return getCreatedChannel(channelName).getChannelTopic();
-	}
-
-	//TODO Double check I need this here, should be part of the IRCChannel class?
-	public void setChannelTopic(String channelName,String channelTopic) {
-		getCreatedChannel(channelName).setChannelTopic(channelTopic);
-	}
-	
-	/**
-	 * This is a forwarding method used to direct the call to the IRCChannel,
-	 * filters through 
-	 * @param channelName
-	 * @param user
-	 * @param newUser
-	 */
-	public void renameUser(String channelName,String oldUserName,String newUserName){
-		SwingUtilities.invokeLater(new Runnable(){
-			public void run(){
-				String thisoldUser = oldUserName;
-				String thisnewUser = newUserName;
-						if(oldUserName.startsWith(":"))
-							thisoldUser = oldUserName.substring(1);
-						
-						if(channelName == "Server"){
-							for(IRCChannel tempChannel : createdChannels){
-								tempChannel.renameUserUsersList(tempChannel.getName(), thisoldUser, thisnewUser);
-							}
-						} else {
-							IRCChannel tempChannel = getCreatedChannel(channelName);
-							if(tempChannel != null)
-								tempChannel.renameUserUsersList(tempChannel.getName(), thisoldUser, thisnewUser);
-						}
-					}
-		});
-	}
-	
-	/**Clear the users list*/
-	public void clearUsersList(String channelName){
-		IRCChannel tempChannel = getCreatedChannel(channelName);
-		if(tempChannel != null)
-			tempChannel.clearUsersList(tempChannel.getName());
-	}
 	
 	@Override
 	public void run() {

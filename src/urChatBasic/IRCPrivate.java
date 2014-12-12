@@ -21,7 +21,7 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-public class IRCPrivate extends JPanel implements Runnable {
+public class IRCPrivate extends JPanel{
 	/**
 	 * 
 	 */
@@ -40,9 +40,11 @@ public class IRCPrivate extends JPanel implements Runnable {
 	private String name; 
 	
 	private UserGUI gui = DriverGUI.gui;
+	private IRCServer myServer;
 	
 	
-	public IRCPrivate(IRCUser user){
+	public IRCPrivate(IRCServer serverName,IRCUser user){
+		this.myServer = serverName;
 		this.setLayout(new BorderLayout());
 		this.add(privateTextScroll, BorderLayout.CENTER);
 		this.add(privateTextBox, BorderLayout.PAGE_END);
@@ -73,16 +75,11 @@ public class IRCPrivate extends JPanel implements Runnable {
 	   {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				try {
-					if(!privateTextBox.getText().trim().isEmpty()){
-						 String messagePrefix = "";
-						if(!privateTextBox.getText().startsWith("/"))
-							messagePrefix = "/msg "+getName()+" ";
-					Connection.sendClientText(messagePrefix+privateTextBox.getText(),getName());
-					}
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if(!privateTextBox.getText().trim().isEmpty()){
+					 String messagePrefix = "";
+					if(!privateTextBox.getText().startsWith("/"))
+						messagePrefix = "/msg "+getName()+" ";
+				myServer.sendClientText(messagePrefix+privateTextBox.getText(),getName());
 				}
 				privateTextBox.setText("");
 			}
@@ -108,11 +105,9 @@ public class IRCPrivate extends JPanel implements Runnable {
 	    privateTextArea.setCaretPosition(privateTextArea.getDocument().getLength());
 	}
 	
-	
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		
+
+	public String getServer() {
+		return myServer.getName();
 	}
 	
 }

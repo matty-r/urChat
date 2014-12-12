@@ -13,8 +13,12 @@ public class IRCUser implements Comparable<IRCUser>{
 	public UserPopUp myMenu;
 	private Boolean muted = false;
 	
-	public IRCUser(String name){
+	//IRCServer (Owner)
+	private IRCServer myServer;
+	
+	public IRCUser(IRCServer serverName,String name){
 		this.name = name;
+		this.myServer = serverName;
 		this.myMenu = new UserPopUp();
 	}
 	
@@ -70,7 +74,7 @@ public class IRCUser implements Comparable<IRCUser>{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			if(!isMuted())
-				DriverGUI.gui.addToPrivateRooms(IRCUser.this.getName());
+				myServer.addToPrivateRooms(IRCUser.this.getName());
 		}   
    }
 	
@@ -78,12 +82,7 @@ public class IRCUser implements Comparable<IRCUser>{
 	{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			try {
-				Connection.sendClientText("/whois "+IRCUser.this.getName(), "Server");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			myServer.sendClientText("/whois "+IRCUser.this.getName(), "Server");
 		}   
    }
 	
@@ -111,6 +110,10 @@ public class IRCUser implements Comparable<IRCUser>{
 	@Override
 	public int compareTo(IRCUser comparison) {
 		return name.compareTo(comparison.name);
+	}
+
+	public String getServer() {
+		return myServer.getName();
 	}
 
 }

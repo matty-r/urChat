@@ -5,34 +5,38 @@ Java based IRC Client
 
 
 TODO List:
-- Clickable HTTP when someone sends a message
-- Create a Low Resource mode
-	- No event ticker
-	- No user sorting 
-- Setup Alert Types
-- Save channels as favourites, this will save the server name and channel
-- Allow for an Autoconnect list, automatically connect to servers listed
-	\ this will also allow to retry connections until you're identified with the server
-- Handle :401, 366, 333 ,328, 470
-- Allow moving the event ticker to the top of the screen instead
-- Server\Channel and Private classes are very similar.. might be able to stop doubling up on some code
-- Allow resizing of users lists (Double click to hide?)
-- Allow change font for all channels
 
-- Channel right click options
-	-Hide\Show users list 
-	-Hide\Show event ticker
-	-Change font
-	-Save as favourite
-	-Leave channel (Instead of just quitting immediately on right click)
-	
-- User right click options
-	\Mute (Does not display any messages or private messages from user during current session)
+* Clickable HTTP when someone sends a message
+* Create a Low Resource mode
+	* No event ticker
+	* No user sorting 
+* Setup Alert Types
+* Save channels as favourites, this will save the server name and channel
+* Allow for an Autoconnect list, automatically connect to servers listed
+	\ this will also allow to retry connections until you're identified with the server
+* Handle :401, 366, 333 ,328, 470
+* Allow moving the event ticker to the top of the screen instead
+* Server\Channel and Private classes are very similar.. might be able to stop doubling up on some code
+* Allow resizing of users lists (Double click to hide?)
+* Allow change font for all channels
+* When creating a private room, put it to the immediate right of the channel that created it/where that user exists
+
+* Channel right click options
+	*Hide\Show users list 
+	*Hide\Show event ticker
+	*Change font
+	*Save as favourite
+	*Leave channel (Instead of just quitting immediately on right click)
+
+=Update (12 DEC 14)
+
+* Changed how connections are handled in order to prep for handling multiple servers.
+	\IRCServer now controls it's own Connection and is contains within it's own thread.
 
 =Update (11 DEC 14)
 
-
 * Added mute to right click menu for user, stop receiving message in channel or private messages
+* Added memory usage method. Will integrate this into the client tab.
 
 =Update (10 DEC 14)
 

@@ -15,7 +15,7 @@ import javax.swing.text.*;
 
 import urChatBasic.IRCUser.UserPopUp;
 
-public class IRCChannel extends JPanel implements Runnable {
+public class IRCChannel extends JPanel implements IRCActions{
 	/**
 	 * 
 	 */
@@ -28,7 +28,7 @@ public class IRCChannel extends JPanel implements Runnable {
 	private String channelName;
 	private String serverName;
 	private final int USER_LIST_WIDTH = 100;
-	//Deprecated. Was used to save history, but is now done line.
+	//Deprecated. Was used to save history, but is now done live.
 	//private List<String> channelHistory = new ArrayList<String>();
 	private List<String> userHistory = new ArrayList<String>();
 	private String channelTopic;
@@ -78,6 +78,9 @@ public class IRCChannel extends JPanel implements Runnable {
 	private final int EVENT_BUFFER = 20;
 	private Boolean eventTickerShown = null;
 	
+	//IRCServer information (Owner of channel)
+	private IRCServer myServer;
+	
 	//Repaints the window, delayed by EVENT_DELAY
 	private class TickerAction implements ActionListener
 	{
@@ -125,18 +128,13 @@ public class IRCChannel extends JPanel implements Runnable {
 	   {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				
-				try {
-					if(!clientTextBox.getText().trim().isEmpty()){
-					Connection.sendClientText(clientTextBox.getText(),getName());
+				if(!clientTextBox.getText().trim().isEmpty()){
+					myServer.sendClientText(clientTextBox.getText(),getName());
 						if(gui.isClientHistoryEnabled())
 							userHistory.add(clientTextBox.getText());
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
 				}
 				  clientTextBox.setText("");
-			}
+				}
 	   }
    
    /**
@@ -376,12 +374,7 @@ public class IRCChannel extends JPanel implements Runnable {
 	{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-	        try {
-				Connection.sendClientText("/part i'm outta here", IRCChannel.this.getName());
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+	        myServer.sendClientText("/part i'm outta here", IRCChannel.this.getName());
 		}   
    }
 	/**
@@ -485,7 +478,7 @@ public IRCUser getCreatedUsers(String userName){
 		
 		//Checks to make sure the user exists and they aren't muted.
 		if(getCreatedUsers(fromUser) != null && !getCreatedUsers(fromUser).isMuted()){
-			if(Connection.myNick.equals(getCreatedUsers(fromUser))){
+			if(myServer.getNick().equals(getCreatedUsers(fromUser))){
 			    StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
 		    	Style style = doc.addStyle("StyleName", null);
 	
@@ -588,7 +581,7 @@ public IRCUser getCreatedUsers(String userName){
 	    mainPanel.add(bottomPanel,BorderLayout.SOUTH);
 	}
 
-	public IRCChannel(String channelName){
+	public IRCChannel(IRCServer serverName,String channelName){
 		//Create the initial size of the panel
 	    //Set size of the overall panel
 		setPreferredSize (new Dimension(MAIN_WIDTH, MAIN_HEIGHT));
@@ -607,6 +600,8 @@ public IRCUser getCreatedUsers(String userName){
 			e.printStackTrace();
 		} 
 		icon = new ImageIcon(tempIcon);
+		
+		myServer = serverName;
 	 }
 
 
@@ -620,7 +615,7 @@ public IRCUser getCreatedUsers(String userName){
 						if(users[x].startsWith(":"))
 							tempUser = tempUser.substring(1);
 
-						usersArray.add(new IRCUser(tempUser));
+						usersArray.add(new IRCUser(myServer,tempUser));
 						
 						if(tempUser.startsWith("@"))
 							getCreatedUsers(tempUser).setUserStatus("@");
@@ -645,12 +640,16 @@ public IRCUser getCreatedUsers(String userName){
 							getCreatedUsers(thisUser).setUserStatus("@");
 						else if(thisUser.startsWith("+"))
 							getCreatedUsers(thisUser).setUserStatus("+");
-						usersArray.add(new IRCUser(thisUser));
+						usersArray.add(new IRCUser(myServer,thisUser));
 						usersList.setSelectedIndex(0);
 						createEvent("++ "+thisUser+" has entered "+channel);
 						usersListModel.sort();
 					}
 		});
+	}
+	
+	public String getChannelTopic(String channelName) {
+		return getChannelTopic();
 	}
 	
 	/**
@@ -678,36 +677,12 @@ public IRCUser getCreatedUsers(String userName){
 					}
 		});
 	}
-
-	/**Rename user by removing old name and inserting new name.*/
-	public void renameUserUsersList(String channel,String oldUserName,String newUserName){
-		SwingUtilities.invokeLater(new Runnable(){
-			public void run(){
-				String thisoldUser = oldUserName;
-				String thisnewUser = newUserName;
-						if(oldUserName.startsWith(":"))
-							thisoldUser = oldUserName.substring(1);
-								//Check to make sure 
-								
-								IRCUser tempUser = getCreatedUsers(oldUserName);
-
-						    		if(tempUser != null){
-						    			createEvent("!! "+thisoldUser+" changed name to "+thisnewUser);
-						    			tempUser.setName(newUserName);
-						    		}
-					}
-		});
-	}
 	
 	/**Clear the users list*/
 	public void clearUsersList(String channel){
 		usersArray.clear();
 	}
 
-	@Override
-	public void run() {
-		// Do I need anything in here?
-	}
 
 	public String getChannelTopic() {
 		return channelTopic;
@@ -727,5 +702,19 @@ public IRCUser getCreatedUsers(String userName){
 			outFile.println(line);
 			outFile.close();
 		}
+	}
+
+	@Override
+	/**Rename user by removing old name and inserting new name.*/
+	public void renameUser(String oldUserName,String newUserName) {
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run(){
+					IRCUser tempUser = getCreatedUsers(oldUserName);
+			    		if(tempUser != null){
+			    			createEvent("!! "+oldUserName+" changed name to "+newUserName);
+			    			tempUser.setName(newUserName);
+			    		}
+					}
+		});
 	}
 }
