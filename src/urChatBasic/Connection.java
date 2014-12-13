@@ -81,7 +81,7 @@ public class Connection implements Runnable{
         	if (line.indexOf("004") >= 0) {
                 //Logged in successfully
         		localMessage("Logged in successfully.");
-        		gui.firstConnect(server);
+        		gui.connectFavourites(server);
                 break;
             } else
             	serverMessage(line);
@@ -248,6 +248,7 @@ public class Connection implements Runnable{
 		        	//case "470" :if(tempTextArray[3] == channel)
 		        					//channel = tempTextArray[4];
     							//break;
+    		 		//477 = :tepper.freenode.net 477 matty_r ##java :Cannot join channel (+r) - you need to be identified with services
 					//473 = Cannot join channel 
 		        	case "473" :gui.setCurrentTab(1);
 		        				printServerText("!! "+myNick+" unable to join channel.");
@@ -311,9 +312,10 @@ public class Connection implements Runnable{
 			    						server.removeFromUsersList("Server", extractNick(receivedOptions[0]));
 			    				break;
     				//:NickServ!NickServ@services. NOTICE matty_r :You are now identified for matty_r.
-		        	case "NOTICE":if(extractNick(receivedOptions[0]) != null && extractNick(receivedOptions[0]).equals("NickServ"))
+		        	case "NOTICE":if(extractNick(receivedOptions[0]) != null && extractNick(receivedOptions[0]).equals("NickServ")){
 		        					printPrivateText(extractNick(receivedOptions[0]), message);
-		        				else
+		        					gui.connectFavourites(server);
+		        				} else
 		        					printServerText( message);
 		    					break;
 		        	case "Link":gui.shutdownAll();

@@ -27,6 +27,7 @@ TODO List:
 * Added Save channels as favourites
 * Added automatically connect to server/channels when you connect for the first time
 * Added save as favourite in the channel right click menu
+* Added automatically attempt to reconnect to favourites when you are identified.
 
 =Update (12 DEC 14)
 

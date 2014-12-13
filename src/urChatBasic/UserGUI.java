@@ -508,7 +508,7 @@ public class UserGUI extends JPanel implements Runnable{
 	 * Used to connect to all the favourites. This gets run from Connection once the socket
 	 * has successfully connected to the initial server.
 	 */
-	public void firstConnect(IRCServer server){
+	public void connectFavourites(IRCServer server){
 
 		server.sendClientText("/join "+firstChannelTextField.getText(),servernameTextField.getText());
 
@@ -517,7 +517,8 @@ public class UserGUI extends JPanel implements Runnable{
 			for(Object tempItem : favouritesListModel.toArray()){
 				castItem = (FavouritesItem) tempItem;
 				if(castItem.server.equals(server.getName()))
-					server.sendClientText("/join "+castItem.channel,castItem.server);
+					if(server.getCreatedChannel(castItem.channel) == null)
+						server.sendClientText("/join "+castItem.channel,castItem.server);
 			}
 		}
 	}
