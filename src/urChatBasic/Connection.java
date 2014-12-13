@@ -18,7 +18,7 @@ public class Connection implements Runnable{
 	public IRCServer server;
 	public String myNick;
 	public String login;
-	public String firstChannel;
+	//public String firstChannel;
 	private Socket mySocket;
 	public static UserGUI gui = DriverGUI.gui;
 	
@@ -31,11 +31,11 @@ public class Connection implements Runnable{
 	
 	
 	
-    public Connection(IRCServer server,String nick,String login,String firstChannel){
+    public Connection(IRCServer server,String nick,String login) throws Exception{
     	this.server =  server;
     	this.myNick = nick;
     	this.login = login;
-    	this.firstChannel = firstChannel;
+    	//this.firstChannel = firstChannel;
 
 	}
     
@@ -56,16 +56,16 @@ public class Connection implements Runnable{
 
     private void startUp() throws IOException{
     	
-        localMessage("Attempting to connect to "+server);
+		localMessage("Attempting to connect to "+server);
         mySocket = new Socket(server.getName(), 6667);
-        
-        
-        localMessage("Connected to "+getServer());
-        
 		writer = new BufferedWriter(
                 new OutputStreamWriter(mySocket.getOutputStream( )));
         reader = new BufferedReader(
                 new InputStreamReader(mySocket.getInputStream( ),StandardCharsets.UTF_8));
+        
+        localMessage("Connected to "+getServer());
+        
+        
         
         String line = null;
         
@@ -81,15 +81,16 @@ public class Connection implements Runnable{
         	if (line.indexOf("004") >= 0) {
                 //Logged in successfully
         		localMessage("Logged in successfully.");
+        		gui.firstConnect(server);
                 break;
             } else
             	serverMessage(line);
         }
 
         // Join the channel.
-        writer.write("JOIN " + firstChannel + "\r\n");
-        writer.flush();
-        localMessage("Connecting to channel "+firstChannel); 
+       // writer.write("JOIN " + firstChannel + "\r\n");
+        //writer.flush();
+        //localMessage("Connecting to channel "+firstChannel); 
         
         // Keep reading lines from the server.
         while ((line = reader.readLine()) != null) {
@@ -151,6 +152,10 @@ public class Connection implements Runnable{
 					server.printChannelText(fromChannel, "<"+myNick+"> "+clientText,myNick);
 				}
 			writer.flush();
+			
+			if(clientText.toLowerCase().startsWith("/msg nickserv"))
+				clientText = "*** HIDDEN NICKSERV IDENTIFY ***";
+			writeDebugFile("Client Text:- "+fromChannel+" "+clientText);
 			}
 	}
 
@@ -258,7 +263,7 @@ public class Connection implements Runnable{
     							break;
 		        	//JOIN = When a user joins a channel
 		        	case "JOIN":if(extractNick(receivedOptions[0]).equals(myNick)){
-					        		server.addToCreatedChannels(getServer(),receivedOptions[2]);
+					        		server.addToCreatedChannels(receivedOptions[2]);
 			    					server.printEventTicker(receivedOptions[2], "You have joined "+receivedOptions[2]);
 					        	} else 
 		        					server.addToUsersList(receivedOptions[2], receivedOptions[0].substring(0, receivedOptions[0].indexOf("!")));
@@ -266,8 +271,8 @@ public class Connection implements Runnable{
 		        	case "PRIVMSG": if(!receivedOptions[2].equals(myNick)){
 		        						server.printChannelText(receivedOptions[2],"<"+extractNick(receivedOptions[0])+"> "+message,extractNick(receivedOptions[0]));
 		        					//if my nick was mentioned in a message, make a noise
-		        					if(message.contains(myNick))
-		        						Toolkit.getDefaultToolkit().beep();
+		        					//if(message.contains(myNick))
+		        						//Toolkit.getDefaultToolkit().beep();
 			        				} else{
 			        					//TODO Created a IRCPrivate chat room
 			        					server.printChannelText(extractNick(receivedOptions[0]),"{"+extractNick(receivedOptions[0])+"} "+message,extractNick(receivedOptions[0]));

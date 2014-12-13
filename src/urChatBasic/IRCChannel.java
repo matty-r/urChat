@@ -13,8 +13,6 @@ import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.*;
 
-import urChatBasic.IRCUser.UserPopUp;
-
 public class IRCChannel extends JPanel implements IRCActions{
 	/**
 	 * 
@@ -80,6 +78,36 @@ public class IRCChannel extends JPanel implements IRCActions{
 	
 	//IRCServer information (Owner of channel)
 	private IRCServer myServer;
+	
+	
+	/**
+	 * Constructor
+	 * @param serverName
+	 * @param channelName
+	 */
+	public IRCChannel(IRCServer serverName,String channelName){
+		//Create the initial size of the panel
+	    //Set size of the overall panel
+		setPreferredSize (new Dimension(MAIN_WIDTH, MAIN_HEIGHT));
+		setBackground(Color.gray);
+		setupMainPanel();
+		setName(channelName);
+		this.setLayout(new BorderLayout());
+		this.add(mainPanel,BorderLayout.CENTER);
+		historyFileName = historyDateFormat.format(todayDate)+" "+this.channelName+".log";
+		this.myMenu = new ChannelPopUp();
+		Image tempIcon = null;
+		try {
+			tempIcon = ImageIO.read(new File("Resources\\Room.png"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		icon = new ImageIcon(tempIcon);
+		
+		myServer = serverName;
+		this.serverName = serverName.getName();
+	 }
 	
 	//Repaints the window, delayed by EVENT_DELAY
 	private class TickerAction implements ActionListener
@@ -232,38 +260,27 @@ public class IRCChannel extends JPanel implements IRCActions{
 	   usersList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 	   usersList.setLayoutOrientation(JList.VERTICAL);
 	   usersList.setVisibleRowCount(-1);
-	   usersList.addMouseListener(new PopClickListener());
+	   usersList.addMouseListener(new UsersMouseListener());
 	   userScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	   userScroller.setPreferredSize(new Dimension(USER_LIST_WIDTH, MAIN_HEIGHT-BOTTOM_HEIGHT)); 
    }
    
 
-   
-   class PopClickListener extends MouseAdapter {
-	    public void mousePressed(MouseEvent e){
-	        if (e.isPopupTrigger()){
-	            int row = usersList.locationToIndex(e.getPoint());
-	            if(row > -1){
-		            usersList.setSelectedIndex(row);
-		        	doPop(e);
-	            }
-	        }
+   /**
+    * Used for when you right click on a user - displays the menu.
+    * @author Matt
+    *
+    */
+   class UsersMouseListener extends MouseInputAdapter{
+	   public void mouseClicked(MouseEvent e) {
+		   final int index = usersList.locationToIndex(e.getPoint());
+		   if(index > -1){
+			   IRCUser userName = usersList.getSelectedValue();
+			   if(SwingUtilities.isRightMouseButton(e))
+				  userName.myMenu.show(e.getComponent(), e.getX(), e.getY());
+		   }
 	    }
-
-	    public void mouseReleased(MouseEvent e){
-	        if (e.isPopupTrigger()){
-	        	int row = usersList.locationToIndex(e.getPoint());
-	        	if(row > -1){
-		            usersList.setSelectedIndex(row);
-		            doPop(e);
-	        	}
-	        }
-	    }
-
-	    private void doPop(MouseEvent e){
-	        usersList.getSelectedValue().myMenu.show(e.getComponent(), e.getX(), e.getY());
-	    }
-	}
+   }
    
    private void setupTickerPanel(){
 	   tickerPanel.setPreferredSize(clientTextBox.getPreferredSize());
@@ -354,6 +371,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 		JMenuItem quitItem;
 		JMenuItem hideUsersItem;
 		JMenuItem hideTickerItem;
+		JMenuItem addAsFavouriteItem;
 		public ChannelPopUp(){
 			nameItem = new JMenuItem(IRCChannel.this.getName());
 	        add(nameItem);
@@ -367,6 +385,9 @@ public class IRCChannel extends JPanel implements IRCActions{
 	        hideTickerItem = new JMenuItem("Toggle Event Ticker");
 	        add(hideTickerItem);
 	        hideTickerItem.addActionListener(new ToggleHideTickerListItem());
+	        addAsFavouriteItem = new JMenuItem("Add as Favourite");
+	        add(addAsFavouriteItem);
+	        addAsFavouriteItem.addActionListener(new AddAsFavourite());
 		}
 	}
 	
@@ -390,6 +411,21 @@ public class IRCChannel extends JPanel implements IRCActions{
 			showUsersList(!IRCChannel.this.userScroller.isVisible());
 		}   
    }
+	
+	private class AddAsFavourite implements ActionListener{
+		
+		@Override
+		public void actionPerformed(ActionEvent arg0){
+			if(!gui.isFavourite(serverName, channelName)){
+				gui.addFavourite(serverName, channelName);
+			} else {
+				gui.removeFavourite(serverName, channelName);
+			}
+		}
+	}
+	
+	
+	
 	/**
 	 * First checks to make sure the user hasn't set it manually for this channel.
 	 * usersListShown is only set by the pop up menu, so unless you've changed it,
@@ -581,29 +617,6 @@ public IRCUser getCreatedUsers(String userName){
 	    mainPanel.add(bottomPanel,BorderLayout.SOUTH);
 	}
 
-	public IRCChannel(IRCServer serverName,String channelName){
-		//Create the initial size of the panel
-	    //Set size of the overall panel
-		setPreferredSize (new Dimension(MAIN_WIDTH, MAIN_HEIGHT));
-		setBackground(Color.gray);
-		setupMainPanel();
-		setName(channelName);
-		this.setLayout(new BorderLayout());
-		this.add(mainPanel,BorderLayout.CENTER);
-		historyFileName = historyDateFormat.format(todayDate)+" "+this.channelName+".log";
-		this.myMenu = new ChannelPopUp();
-		Image tempIcon = null;
-		try {
-			tempIcon = ImageIO.read(new File("Resources\\Room.png"));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-		icon = new ImageIcon(tempIcon);
-		
-		myServer = serverName;
-	 }
-
 
 	//Adds users to the list in the users array[]
 	public void addToUsersList(String channel,String[] users){
@@ -703,7 +716,7 @@ public IRCUser getCreatedUsers(String userName){
 			outFile.close();
 		}
 	}
-
+	
 	@Override
 	/**Rename user by removing old name and inserting new name.*/
 	public void renameUser(String oldUserName,String newUserName) {

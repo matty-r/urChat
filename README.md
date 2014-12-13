@@ -11,27 +11,28 @@ TODO List:
 	* No event ticker
 	* No user sorting 
 * Setup Alert Types
-* Save channels as favourites, this will save the server name and channel
-* Allow for an Autoconnect list, automatically connect to servers listed
-	\ this will also allow to retry connections until you're identified with the server
+* Allow to retry connections until you're identified with the server
 * Handle :401, 366, 333 ,328, 470
 * Allow moving the event ticker to the top of the screen instead
-* Server\Channel and Private classes are very similar.. might be able to stop doubling up on some code
 * Allow resizing of users lists (Double click to hide?)
 * Allow change font for all channels
 * When creating a private room, put it to the immediate right of the channel that created it/where that user exists
 
 * Channel right click options
-	*Hide\Show users list 
-	*Hide\Show event ticker
 	*Change font
-	*Save as favourite
-	*Leave channel (Instead of just quitting immediately on right click)
+
+
+=Update (13 DEC 14)
+
+* Added Save channels as favourites
+* Added automatically connect to server/channels when you connect for the first time
+* Added save as favourite in the channel right click menu
 
 =Update (12 DEC 14)
 
 * Changed how connections are handled in order to prep for handling multiple servers.
-	\IRCServer now controls it's own Connection and is contains within it's own thread.
+	\IRCServer now controls it's own Connection and its contained within it's own thread.
+* Tested connecting to multiple servers, so far it appears to be working fine.
 
 =Update (11 DEC 14)
 

@@ -54,7 +54,7 @@ public class IRCServer extends JPanel implements IRCActions {
 	//Created channels/tabs
 	private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
 	
-	public IRCServer(String serverName,String nick,String login,String firstChannel){
+	public IRCServer(String serverName,String nick,String login){
 		this.setLayout(new BorderLayout());
 		this.add(serverTextScroll, BorderLayout.CENTER);
 		this.add(serverTextBox, BorderLayout.PAGE_END);
@@ -69,11 +69,9 @@ public class IRCServer extends JPanel implements IRCActions {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
-		icon = new ImageIcon(tempIcon);
+		icon = new ImageIcon(tempIcon);	
 		
-
-					serverConnect(nick,login,firstChannel);
-			
+		serverConnect(nick,login);
 	}
 	
 	public String getNick(){
@@ -84,13 +82,14 @@ public class IRCServer extends JPanel implements IRCActions {
 	 * Saves all the information from the text boxes to the connection
 	 * 
 	 */
-	public void serverConnect(String nick,String login,String firstChannel){
-		//addCreatedServers();
-
-				   //DriverGUI.chatSession =  new Connection();
-				  serverConnection = new Connection(IRCServer.this,nick,login,firstChannel);
-				  new Thread(serverConnection).start();
-
+	public void serverConnect(String nick,String login){
+		try {
+			serverConnection = new Connection(IRCServer.this,nick,login);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Thread(serverConnection).start();
 	}
 	
 	@Override
@@ -198,7 +197,7 @@ public class IRCServer extends JPanel implements IRCActions {
     * Creates a new channel based on name
     * @param channelName
     */	
-   public void addToCreatedChannels(IRCServer serverName,String channelName){
+   public void addToCreatedChannels(String channelName){
 	   if(getCreatedChannel(channelName) == null){
 		IRCChannel tempChannel = new IRCChannel(this, channelName);
 	   	createdChannels.add(tempChannel);
@@ -262,14 +261,14 @@ public class IRCServer extends JPanel implements IRCActions {
 			if(getCreatedPrivateRoom(userName) == null)
 				addToPrivateRooms(getIRCUser(userName));
 			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),line);
-			Toolkit.getDefaultToolkit().beep();
+			if(gui.getTabIndex(userName) != gui.tabbedPane.getSelectedIndex())
+				Toolkit.getDefaultToolkit().beep();
 		} else if (getIRCUser(userName) == null){
 			if(getCreatedPrivateRoom(userName) == null)
 				addToPrivateRooms(new IRCUser(this,userName));
 			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),line);
-			Toolkit.getDefaultToolkit().beep();
-		} else {
-			//Do nothing
+			if(gui.getTabIndex(userName) != gui.tabbedPane.getSelectedIndex())
+				Toolkit.getDefaultToolkit().beep();
 		}
 	}
 	
@@ -363,7 +362,8 @@ public class IRCServer extends JPanel implements IRCActions {
 	
 	public void sendClientText(String line,String source){
 		try {
-			serverConnection.sendClientText(line, source);
+			if(serverConnection != null)
+				serverConnection.sendClientText(line, source);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

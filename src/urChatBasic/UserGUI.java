@@ -4,9 +4,10 @@ import java.awt.*;
 import java.util.prefs.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
@@ -28,9 +29,16 @@ public class UserGUI extends JPanel implements Runnable{
 	//Options Panel
 	private JPanel optionsMainPanel = new JPanel();
 	private JPanel optionsLeftPanel = new JPanel();
-	private JPanel optionsRightPanel = new JPanel();
 	private DefaultListModel<String> optionsArray = new DefaultListModel<String>();
 	private JList<String> optionsList = new JList<String>(optionsArray);
+	
+	private JPanel optionsRightPanel = new JPanel();
+	private Preferences clientSettings;
+	
+	
+	
+	//Client Options Panel
+	private JPanel optionsClientPanel = new JPanel();
 	private JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
 	private JCheckBox showUsersList = new JCheckBox("Show Users List");
 	private JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
@@ -41,20 +49,32 @@ public class UserGUI extends JPanel implements Runnable{
 	private JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
 	private JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
 	private JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
+	
 	private JTextField limitServerLinesCount = new JTextField();
 	private JTextField limitChannelLinesCount = new JTextField();
-	private JButton connectButton = new JButton("Connect");
+	
 	private static final int TICKER_DELAY_MIN = 1;
 	private static final int TICKER_DELAY_MAX = 30;
 	private static final int TICKER_DELAY_INIT = 20; 
 	private static final int DEFAULT_LINES_LIMIT = 1000;
 	private JSlider eventTickerDelay = new JSlider(JSlider.HORIZONTAL,TICKER_DELAY_MIN, TICKER_DELAY_MAX, TICKER_DELAY_INIT);
+	
+	private JButton saveSettings = new JButton("Save Settings");
+	
+	//Server Options Panel
+	private JPanel serverOptionsPanel = new JPanel();
 	private JTextField usernameTextField = new JTextField("");
 	private JTextField servernameTextField = new JTextField("");
 	private JTextField firstChannelTextField = new JTextField("");
-	private JButton saveSettings = new JButton("Save Settings");
-	private Preferences clientSettings;
-	//public static Connection myConnection = DriverGUI.chatSession;
+	private JButton connectButton = new JButton("Connect");
+	
+	//Favourites Panel
+	private JPanel optionsFavouritesPanel = new JPanel();
+	private JCheckBox autoConnectToFavourites = new JCheckBox("Automatically connect to favourites");
+	private DefaultListModel<FavouritesItem> favouritesListModel = new DefaultListModel<FavouritesItem>();
+	private JList<FavouritesItem> favouritesList = new JList<FavouritesItem>(favouritesListModel);
+	private JScrollPane favouritesScroller = new JScrollPane(favouritesList);
+	
 	private Font universalFont = new Font("Consolas", Font.PLAIN, 12);
 	
 	//Created Servers/Tabs
@@ -141,7 +161,7 @@ public class UserGUI extends JPanel implements Runnable{
    public void addToCreatedServers(String serverName){
 	   
 	   if(getCreatedServer(serverName) == null){
-		IRCServer tempServer = new IRCServer(serverName,usernameTextField.getText(),usernameTextField.getText(),firstChannelTextField.getText());
+		IRCServer tempServer = new IRCServer(serverName,usernameTextField.getText(),usernameTextField.getText());
 	   	createdServers.add(tempServer);
 	   	tabbedPane.addTab(serverName, tempServer.icon,tempServer);
 	   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempServer));
@@ -233,49 +253,47 @@ public class UserGUI extends JPanel implements Runnable{
 	}   
 
 	private void setupServerOptionsPanel(){
-		JPanel serverPanel = new JPanel();
-		serverPanel.setLayout(new BoxLayout(serverPanel, BoxLayout.PAGE_AXIS));
-		serverPanel.add(new JLabel("Nick:"));
+		serverOptionsPanel.setLayout(new BoxLayout(serverOptionsPanel, BoxLayout.PAGE_AXIS));
+		serverOptionsPanel.add(new JLabel("Nick:"));
 		usernameTextField.setMaximumSize(new Dimension(250,20));
-		serverPanel.add(usernameTextField);
-		serverPanel.add(Box.createRigidArea(new Dimension(0,5)));
-		serverPanel.add(new JLabel("Server name:"));
+		serverOptionsPanel.add(usernameTextField);
+		serverOptionsPanel.add(Box.createRigidArea(new Dimension(0,5)));
+		serverOptionsPanel.add(new JLabel("Server name:"));
 		servernameTextField.setMaximumSize(new Dimension(250,20));
-		serverPanel.add(servernameTextField);
-		serverPanel.add(Box.createRigidArea(new Dimension(0,5)));
-		serverPanel.add(new JLabel("Channel:"));
+		serverOptionsPanel.add(servernameTextField);
+		serverOptionsPanel.add(Box.createRigidArea(new Dimension(0,5)));
+		serverOptionsPanel.add(new JLabel("Channel:"));
 		firstChannelTextField.setMaximumSize(new Dimension(250,20));
-		serverPanel.add(firstChannelTextField);
-		serverPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-		serverPanel.add(Box.createRigidArea(new Dimension(0,20)));
-		serverPanel.add(connectButton);
+		serverOptionsPanel.add(firstChannelTextField);
+		serverOptionsPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+		serverOptionsPanel.add(Box.createRigidArea(new Dimension(0,20)));
+		serverOptionsPanel.add(connectButton);
 		connectButton.addActionListener(new ConnectPressed());
 		
-		optionsRightPanel.add(serverPanel, "Server");
+		optionsRightPanel.add(serverOptionsPanel, "Server");
 	
 	}
 	
 	private void setupClientOptionsPanel(){
-		
-		JPanel clientPanel = new JPanel();
-        clientPanel.setLayout(new BoxLayout(clientPanel,BoxLayout.PAGE_AXIS));
+        optionsClientPanel.setLayout(new BoxLayout(optionsClientPanel,BoxLayout.PAGE_AXIS));
+
         
         //Settings for these are loaded with the settings API
         //found in getClientSettings()
-        clientPanel.add(showEventTicker);
-        clientPanel.add(showUsersList);
-        clientPanel.add(showJoinsQuitsEventTicker);
-        clientPanel.add(showJoinsQuitsMainWindow);
-        clientPanel.add(logChannelText);
-        clientPanel.add(logServerActivity);
-        clientPanel.add(logClientText);
-        clientPanel.add(limitServerLines);
-        clientPanel.add(limitServerLinesCount);
+        optionsClientPanel.add(showEventTicker);
+        optionsClientPanel.add(showUsersList);
+        optionsClientPanel.add(showJoinsQuitsEventTicker);
+        optionsClientPanel.add(showJoinsQuitsMainWindow);
+        optionsClientPanel.add(logChannelText);
+        optionsClientPanel.add(logServerActivity);
+        optionsClientPanel.add(logClientText);
+        optionsClientPanel.add(limitServerLines);
+        optionsClientPanel.add(limitServerLinesCount);
         limitServerLinesCount.setMaximumSize(new Dimension(250,20));
-        clientPanel.add(limitChannelLines);
-        clientPanel.add(limitChannelLinesCount);
+        optionsClientPanel.add(limitChannelLines);
+        optionsClientPanel.add(limitChannelLinesCount);
         limitChannelLinesCount.setMaximumSize(new Dimension(250,20));
-        clientPanel.add(enableTimeStamps);
+        optionsClientPanel.add(enableTimeStamps);
 
         //Turn on labels at major tick marks.
         eventTickerDelay.setMajorTickSpacing(10);
@@ -283,12 +301,12 @@ public class UserGUI extends JPanel implements Runnable{
         eventTickerDelay.setPaintTicks(true);
         eventTickerDelay.setPaintLabels(true);
         eventTickerDelay.setMaximumSize(new Dimension(400,40));
-        clientPanel.add(Box.createRigidArea(new Dimension(0,5)));
-        clientPanel.add(new JLabel("Event Ticker movement delay (Lower is faster)"));
-        clientPanel.add(Box.createRigidArea(new Dimension(0,5)));
-        clientPanel.add(eventTickerDelay);
-        clientPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-        clientPanel.add(saveSettings);
+        optionsClientPanel.add(Box.createRigidArea(new Dimension(0,5)));
+        optionsClientPanel.add(new JLabel("Event Ticker movement delay (Lower is faster)"));
+        optionsClientPanel.add(Box.createRigidArea(new Dimension(0,5)));
+        optionsClientPanel.add(eventTickerDelay);
+        optionsClientPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        optionsClientPanel.add(saveSettings);
         saveSettings.addActionListener( new ActionListener() {
 											@Override
 											public void actionPerformed(ActionEvent arg0) {
@@ -296,17 +314,157 @@ public class UserGUI extends JPanel implements Runnable{
 											}
 								        });
         
-        optionsRightPanel.add(clientPanel, "Client");
+        optionsRightPanel.add(optionsClientPanel, "Client");
 	}
 	
 	private void setupFavouritesOptionsPanel(){
-		JPanel favouritesPanel = new JPanel();
-		favouritesPanel.setLayout(new BoxLayout(favouritesPanel,BoxLayout.PAGE_AXIS));
+		optionsFavouritesPanel.setLayout(new BorderLayout());
+        optionsFavouritesPanel.add(autoConnectToFavourites, BorderLayout.NORTH);
+       // int x = 0;
         
+        //while(x < 99){
+        	//++x;
+        	//favouritesListModel.addElement(new FavouritesItem("Test", "channel "+x));
+        //}
+        
+        favouritesList.addMouseListener(new FavouritesPopClickListener());
+        favouritesScroller.setPreferredSize(new Dimension(autoConnectToFavourites.getPreferredSize().width,0));
+		optionsFavouritesPanel.add(favouritesScroller, BorderLayout.LINE_START);
 		
 		
-		optionsRightPanel.add(favouritesPanel, "Favourites");
+		optionsRightPanel.add(optionsFavouritesPanel, "Favourites");
 	}
+	
+	class FavouritesItem{
+		String server;
+		String channel;
+		FavouritesPopUp myMenu;
+		
+		public FavouritesItem(String server, String channel){
+			this.server = server;
+			this.channel = channel;
+			myMenu = new FavouritesPopUp();
+		}
+		
+		@Override
+		public String toString(){
+			return server +":"+channel;
+		}
+		
+	  private class FavouritesPopUp extends JPopupMenu {
+			/**
+		 * 
+		 */
+		private static final long serialVersionUID = -3599612559330380653L;
+			JMenuItem nameItem;
+			JMenuItem removeItem;
+		    public FavouritesPopUp(){
+		    	nameItem = new JMenuItem(FavouritesItem.this.toString());
+		    	add(nameItem);
+		    	this.addSeparator();
+		    	//nameItem.setEnabled(false);
+		        removeItem = new JMenuItem("Delete");
+		        removeItem.addActionListener(new RemoveFavourite());
+		        add(removeItem);
+		    }
+		   
+	   }
+	   
+		
+		private class RemoveFavourite implements ActionListener
+		{
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				if(favouritesList.getSelectedIndex() > -1){
+					FavouritesItem tempItem = favouritesListModel.elementAt(favouritesList.getSelectedIndex());
+					removeFavourite(tempItem.server,tempItem.channel);
+					clientSettings.node("Favourites").node(server).remove(tempItem.channel);
+				}
+			}
+		}
+	}
+	
+
+	public void addFavourite(String server,String channel){
+		favouritesListModel.addElement(new FavouritesItem(server, channel));
+		clientSettings.node("Favourites").node(server).put(channel, channel);
+	}
+	
+	public Boolean isFavourite(String server,String channel){
+		FavouritesItem castItem;
+		
+		for(Object tempItem : favouritesListModel.toArray()){
+			castItem = (FavouritesItem) tempItem;
+			if(castItem.server.equals(server) && castItem.channel.equals(channel)){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public Boolean isFavourite(IRCChannel channel){
+		FavouritesItem castItem;
+		
+		for(Object tempItem : favouritesListModel.toArray()){
+			castItem = (FavouritesItem) tempItem;
+			if(castItem.server.equals(channel.getServer()) && castItem.channel.equals(channel.getName())){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public void removeFavourite(String server,String channel){
+		FavouritesItem castItem;
+		
+		for(Object tempItem : favouritesListModel.toArray()){
+			castItem = (FavouritesItem) tempItem;
+			if(castItem.server.equals(server) && castItem.channel.equals(channel)){
+				favouritesListModel.removeElement(castItem);
+				break;
+			}
+		}
+	}
+	
+   
+   class FavouritesPopClickListener extends MouseAdapter {
+	    public void mousePressed(MouseEvent e){
+	        if (e.isPopupTrigger()){
+	            int row = favouritesList.locationToIndex(e.getPoint());
+	            if(row > -1){
+	            	favouritesList.setSelectedIndex(row);
+		        	doPop(e);
+	            }
+	        }
+	    }
+
+	    public void mouseReleased(MouseEvent e){
+	        if (e.isPopupTrigger()){
+	        	int row = favouritesList.locationToIndex(e.getPoint());
+	        	if(row > -1){
+	        		favouritesList.setSelectedIndex(row);
+		            doPop(e);
+	        	}
+	        }
+	    }
+
+	    private void doPop(MouseEvent e){
+	    	favouritesList.getSelectedValue().myMenu.show(e.getComponent(), e.getX(), e.getY());
+	    }
+	}
+	/**
+	 * Houses the options list
+	 */
+	private void setupLeftOptionsPanel(){
+		optionsLeftPanel.setBackground(Color.RED);
+		optionsLeftPanel.setPreferredSize(new Dimension(100,0));
+		optionsLeftPanel.setLayout(new BorderLayout());
+		optionsLeftPanel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+		optionsLeftPanel.add(optionsList);
+	}
+	
 	private void setupRightOptionsPanel(){
 		ListSelectionModel listSelectionModel = optionsList.getSelectionModel();
 	    listSelectionModel.addListSelectionListener(
@@ -330,10 +488,15 @@ public class UserGUI extends JPanel implements Runnable{
 		public void actionPerformed(ActionEvent arg0) {
 			if(connectButton.getText() == "Connect"){
 				addToCreatedServers(servernameTextField.getText());
-				//connectButton.setText("Disconnect");
-				} else {
-					getCreatedServer(servernameTextField.getText()).sendClientText("/quit Goodbye cruel world", "Server");
+				
+				if(autoConnectToFavourites.isSelected()){
+					FavouritesItem castItem;
+					for(Object tempItem : favouritesListModel.toArray()){
+						castItem = (FavouritesItem) tempItem;
+						addToCreatedServers(castItem.server);
+					}
 				}
+			}
 		}
 	}
 	
@@ -341,8 +504,23 @@ public class UserGUI extends JPanel implements Runnable{
 		for(IRCServer tempServer : createdServers)
 			tempServer.sendClientText(message, sender);
 	}
-	
-	
+	/**
+	 * Used to connect to all the favourites. This gets run from Connection once the socket
+	 * has successfully connected to the initial server.
+	 */
+	public void firstConnect(IRCServer server){
+
+		server.sendClientText("/join "+firstChannelTextField.getText(),servernameTextField.getText());
+
+		if(autoConnectToFavourites.isSelected()){
+			FavouritesItem castItem;
+			for(Object tempItem : favouritesListModel.toArray()){
+				castItem = (FavouritesItem) tempItem;
+				if(castItem.server.equals(server.getName()))
+					server.sendClientText("/join "+castItem.channel,castItem.server);
+			}
+		}
+	}
 	
 	/**
 	 * Remove and disconnect all private rooms, channels and servers
@@ -367,16 +545,6 @@ public class UserGUI extends JPanel implements Runnable{
 			createdServers.remove(tempServer);
 		}
 	}
-	/**
-	 * Houses the options list
-	 */
-	private void setupLeftOptionsPanel(){
-		optionsLeftPanel.setBackground(Color.RED);
-		optionsLeftPanel.setPreferredSize(new Dimension(100,0));
-		optionsLeftPanel.setLayout(new BorderLayout());
-		optionsLeftPanel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
-		optionsLeftPanel.add(optionsList);
-	}
 	
 	/**
 	 * Saves the settings into the registry/Settings API
@@ -393,6 +561,7 @@ public class UserGUI extends JPanel implements Runnable{
 		clientSettings.putBoolean("LOG_CHANNEL_HISTORY", logChannelText.isSelected());
 		clientSettings.putBoolean("LOG_SERVER_ACTIVITY", logServerActivity.isSelected());
 		clientSettings.putBoolean("LIMIT_CHANNEL_LINES", limitChannelLines.isSelected());
+		clientSettings.putBoolean("AUTO_CONNECT_FAVOURITES", autoConnectToFavourites.isSelected());
 		clientSettings.put("LIMIT_CHANNEL_LINES_COUNT", limitChannelLinesCount.getText());
 		clientSettings.putBoolean("LIMIT_SERVER_LINES", limitServerLines.isSelected());
 		clientSettings.put("LIMIT_SERVER_LINES_COUNT", limitServerLinesCount.getText());
@@ -420,8 +589,22 @@ public class UserGUI extends JPanel implements Runnable{
 		limitServerLinesCount.setText(clientSettings.get("LIMIT_SERVER_LINES_COUNT","500"));
 		logClientText.setSelected(clientSettings.getBoolean("LOG_CLIENT_TEXT", false));
 		eventTickerDelay.setValue(clientSettings.getInt("EVENT_TICKER_DELAY", 20));
+		autoConnectToFavourites.setSelected(clientSettings.getBoolean("AUTO_CONNECT_FAVOURITES", false));
+		
+		
+		try {
+			for(String serverNode : clientSettings.node("Favourites").childrenNames())
+				for(String value : clientSettings.node("Favourites").node(serverNode).keys())
+					favouritesListModel.addElement(new FavouritesItem(serverNode,value));
+		} catch (BackingStoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
+	public void removeClientSetting(String node,String key){
+		clientSettings.node(node).remove(key);
+	}
 	
 	public int getEventTickerDelay(){
 		return eventTickerDelay.getValue();
@@ -474,8 +657,9 @@ public class UserGUI extends JPanel implements Runnable{
 		
 	}
 	/**
-	 * Used to listen to the right click on the tabs so and determine
-	 * what type we clicked on and exit it.
+	 * Used to listen to the right click on the tabs to determine
+	 * what type we clicked on and pop up a menu or exit.
+	 * I will add menus to all types eventually.
 	 * @author Matt
 	 *
 	 */
@@ -486,9 +670,13 @@ public class UserGUI extends JPanel implements Runnable{
 		   String tabName = tabbedPane.getTitleAt(index);
 		   if(SwingUtilities.isRightMouseButton(e))
 			  for(IRCServer tempServer : createdServers)
-			   if(tempServer.getCreatedChannel(tabName) != null)
+			   if(tempServer.getCreatedChannel(tabName) != null){
+				   if(isFavourite(tempServer.getCreatedChannel(tabName)))
+					   tempServer.getCreatedChannel(tabName).myMenu.addAsFavouriteItem.setText("Remove as Favourite");
+				   else 
+					   tempServer.getCreatedChannel(tabName).myMenu.addAsFavouriteItem.setText("Add as Favourite");
 				   tempServer.getCreatedChannel(tabName).myMenu.show(tabbedPane, e.getX(), e.getY());
-			   else if(tempServer.getCreatedPrivateRoom(tabName) != null)
+			   }else if(tempServer.getCreatedPrivateRoom(tabName) != null)
 				   //TODO Private room popup
 				   tempServer.quitPrivateRooms(tabName);
 			else
@@ -506,9 +694,8 @@ public class UserGUI extends JPanel implements Runnable{
 		    for(IRCServer tempServer : createdServers)
 			    if(tempServer.getCreatedChannel(tab) != null){
 			    	tempServer.getCreatedChannel(tab).clientTextBox.requestFocus();
-			    	//This means, if you have the showEventTicker ticked then we don't want to hide it
-			    	//so doing !isShowingEventTicker() will be the opposite of what has been ticked
-			    	//meaning it's ticked, which results in false, meaning do not hide it.
+			    	//Show/hide depending on what the user has selected, does not override
+			    	//individual channel settings.
 			    	tempServer.getCreatedChannel(tab).showEventTicker(isShowingEventTicker());
 			    	tempServer.getCreatedChannel(tab).showUsersList(isShowingUsersList());
 			    } else if(tempServer.getCreatedPrivateRoom(tab) != null)

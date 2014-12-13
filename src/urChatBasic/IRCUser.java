@@ -101,8 +101,6 @@ public class IRCUser implements Comparable<IRCUser>{
 		}   
 	}
 	
-	
-
 	/**
 	 * Leave this to compare to the name directly (not with getName()). This
 	 * will allow channel ops to be sorted to the top correctly.
