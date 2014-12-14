@@ -9,8 +9,9 @@ import javax.swing.UIManager;
 
 public class DriverGUI
 {
-	//public static Connection chatSession = null;
 	public static UserGUI gui = null;
+	public static final String RESOURCES_DIR = "Resources\\";
+	public static String directoryLogs = "Logs\\";
 	
 	public static void main(String[] args) throws IOException{
 		try {

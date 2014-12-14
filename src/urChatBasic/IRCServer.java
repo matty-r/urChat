@@ -64,7 +64,7 @@ public class IRCServer extends JPanel implements IRCActions {
 		
 		Image tempIcon = null;
 		try {
-			tempIcon = ImageIO.read(new File("Resources\\Server.png"));
+			tempIcon = ImageIO.read(new File(DriverGUI.RESOURCES_DIR+"Server.png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -242,7 +242,7 @@ public class IRCServer extends JPanel implements IRCActions {
 	 */
 	public void printChannelText(String channelName, String line, String fromUser){
 		if(channelName.equals(fromUser)){
-			printPrivateText(channelName,line);
+			printPrivateText(channelName,line,fromUser);
 			//addToPrivateRooms(channelName);
 			//getCreatedPrivateRoom(channelName).printText(isTimeStampsEnabled(), line);
 		} else
@@ -256,17 +256,17 @@ public class IRCServer extends JPanel implements IRCActions {
 	 * @param channelName
 	 * @param line
 	 */
-	public void printPrivateText(String userName, String line){
+	public void printPrivateText(String userName, String line,String fromUser){
 		if(getIRCUser(userName) != null && !getIRCUser(userName).isMuted()){
 			if(getCreatedPrivateRoom(userName) == null)
 				addToPrivateRooms(getIRCUser(userName));
-			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),line);
+			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),fromUser,line);
 			if(gui.getTabIndex(userName) != gui.tabbedPane.getSelectedIndex())
 				Toolkit.getDefaultToolkit().beep();
 		} else if (getIRCUser(userName) == null){
 			if(getCreatedPrivateRoom(userName) == null)
 				addToPrivateRooms(new IRCUser(this,userName));
-			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),line);
+			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),fromUser,line);
 			if(gui.getTabIndex(userName) != gui.tabbedPane.getSelectedIndex())
 				Toolkit.getDefaultToolkit().beep();
 		}
@@ -386,20 +386,23 @@ public class IRCServer extends JPanel implements IRCActions {
 		doLimitLines();
 		
 		StyledDocument doc = (StyledDocument) serverTextArea.getDocument();
-		Style style = doc.addStyle("StyleName", null);
-	
-	   // StyleConstants.setItalic(style, true);
+
 		DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
 		Date chatDate = new Date();
 		
+		String timeLine = "";
 		if(dateTime)
-			line = "["+chatDateFormat.format(chatDate)+"] " + line;
-	    try {
-			doc.insertString(doc.getLength(), line+"\n", style);
-		} catch (BadLocationException e) {
+			timeLine = "["+chatDateFormat.format(chatDate)+"]";
+		
+		
+		new LineFormatter(new Font("Segoe UI", Font.PLAIN, 12),getNick()).formattedDocument(doc, timeLine, "", line);
+		
+	    //try {
+			//doc.insertString(doc.getLength(), line+"\n", style);
+		//} catch (BadLocationException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			//e.printStackTrace();
+		//}
 	
 		serverTextArea.setCaretPosition(serverTextArea.getDocument().getLength());
 	}

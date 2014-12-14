@@ -128,8 +128,8 @@ public class Connection implements Runnable{
 					}
 
 					if(tempTextArray.length > -1){
-						writer.write("PRIVMSG " + tempTextArray[1] + " :"+tempText.substring(0, tempText.length()-1) +"\r\n");
-						server.printPrivateText(tempTextArray[1], "<"+myNick+"> "+tempText.substring(0, tempText.length()-1));
+						writer.write("PRIVMSG " + fromChannel + " :"+tempText.substring(0, tempText.length()-1) +"\r\n");
+						server.printPrivateText(fromChannel, tempText.substring(0, tempText.length()-1), myNick);
 						gui.setCurrentTab(tempTextArray[1]);
 					}
 				} else if(clientText.startsWith("/whois")){
@@ -149,7 +149,7 @@ public class Connection implements Runnable{
 					writer.write("PRIVMSG " + fromChannel + " :  ACTION " + clientText.replace("/me ","") +"  \r\n");
 				} else {
 					writer.write("PRIVMSG " + fromChannel + " :"+clientText+"\r\n");
-					server.printChannelText(fromChannel, "<"+myNick+"> "+clientText,myNick);
+					server.printChannelText(fromChannel, clientText,myNick);
 				}
 			writer.flush();
 			
@@ -197,7 +197,7 @@ public class Connection implements Runnable{
 		String[] receivedOptions;
 		String message = "";
 
-		if(isBetween(receivedText,":","!~","@")){
+		if(isBetween(receivedText,":","!","@")){
 			receivedOptions = receivedText.split(" ");
 			receivedText = receivedText.replace(receivedOptions[0], ":");
 		} else			
@@ -270,29 +270,29 @@ public class Connection implements Runnable{
 		        					server.addToUsersList(receivedOptions[2], receivedOptions[0].substring(0, receivedOptions[0].indexOf("!")));
 		        				break;
 		        	case "PRIVMSG": if(!receivedOptions[2].equals(myNick)){
-		        						server.printChannelText(receivedOptions[2],"<"+extractNick(receivedOptions[0])+"> "+message,extractNick(receivedOptions[0]));
+		        						server.printChannelText(receivedOptions[2],message,extractNick(receivedOptions[0]));
 		        					//if my nick was mentioned in a message, make a noise
 		        					//if(message.contains(myNick))
 		        						//Toolkit.getDefaultToolkit().beep();
 			        				} else{
 			        					//TODO Created a IRCPrivate chat room
-			        					server.printChannelText(extractNick(receivedOptions[0]),"{"+extractNick(receivedOptions[0])+"} "+message,extractNick(receivedOptions[0]));
+			        					server.printChannelText(extractNick(receivedOptions[0]),message,extractNick(receivedOptions[0]));
 			        				}
 		        				break;
     				//311 = Whois response
-		        	case "311":	printPrivateText(receivedOptions[3],message);
+		        	case "311":	printPrivateText(receivedOptions[3],message,receivedOptions[3]);
         						break;
 					//319 = Whois response
-		        	case "319":	printPrivateText(receivedOptions[3],message);
+		        	case "319":	printPrivateText(receivedOptions[3],message,receivedOptions[3]);
 								break;
 					//312 = Whois response
-		        	case "312":	printPrivateText(receivedOptions[3],message);
+		        	case "312":	printPrivateText(receivedOptions[3],message,receivedOptions[3]);
 								break;
 					//330 = Whois response
-		        	case "330":	printPrivateText(receivedOptions[3],message);
+		        	case "330":	printPrivateText(receivedOptions[3],message,receivedOptions[3]);
 								break;
 					//318 = Whois response
-		        	case "318":	printPrivateText(receivedOptions[3],message);
+		        	case "318":	printPrivateText(receivedOptions[3],message,receivedOptions[3]);
 								break;
 		        	case "NICK":if(!(extractNick(receivedOptions[0]).equals(myNick)))
 									server.renameUser(extractNick(receivedOptions[0]), message);
@@ -313,7 +313,7 @@ public class Connection implements Runnable{
 			    				break;
     				//:NickServ!NickServ@services. NOTICE matty_r :You are now identified for matty_r.
 		        	case "NOTICE":if(extractNick(receivedOptions[0]) != null && extractNick(receivedOptions[0]).equals("NickServ")){
-		        					printPrivateText(extractNick(receivedOptions[0]), message);
+		        					printPrivateText(extractNick(receivedOptions[0]), message, extractNick(receivedOptions[0]));
 		        					gui.connectFavourites(server);
 		        				} else
 		        					printServerText( message);
@@ -332,8 +332,8 @@ public class Connection implements Runnable{
          }
 	}
 	
-	private void printPrivateText(String userName,String line){
-		server.printPrivateText(userName, line);
+	private void printPrivateText(String userName,String line,String fromUser){
+		server.printPrivateText(userName, line, fromUser);
 	}
 	
 	private void printServerText(String message){
@@ -343,7 +343,7 @@ public class Connection implements Runnable{
 	/** Write a line to the debug.txt file */
 	public void writeDebugFile(String message) throws IOException{
 		debugFile = debugDateFormat.format(todayDate)+" "+server+".log";
-		FileWriter fw = new FileWriter (debugFile, true);
+		FileWriter fw = new FileWriter (DriverGUI.directoryLogs+debugFile, true);
 		BufferedWriter bw = new BufferedWriter (fw);
 		PrintWriter outFile = new PrintWriter (bw);
 		outFile.println(debugTimeFormat.format(todayDate)+"> "+message);

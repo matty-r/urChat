@@ -25,6 +25,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 	private Date todayDate = new Date();
 	private String channelName;
 	private String serverName;
+	public static final String EVENT_USER = "****";
 	private final int USER_LIST_WIDTH = 100;
 	//Deprecated. Was used to save history, but is now done live.
 	//private List<String> channelHistory = new ArrayList<String>();
@@ -98,7 +99,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 		this.myMenu = new ChannelPopUp();
 		Image tempIcon = null;
 		try {
-			tempIcon = ImageIO.read(new File("Resources\\Room.png"));
+			tempIcon = ImageIO.read(new File(DriverGUI.RESOURCES_DIR+"Room.png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -343,7 +344,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 	  }
 	  
 	  if(gui.isJoinsQuitsMainEnabled())
-		  printText(gui.isTimeStampsEnabled(), eventText, "Event::");
+		  printText(gui.isTimeStampsEnabled(), eventText, EVENT_USER);
    }
    
 	@SuppressWarnings("unchecked")
@@ -499,9 +500,10 @@ public IRCUser getCreatedUsers(String userName){
 		
 		DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
 		Date chatDate = new Date();
+		String timeLine = "";
 		
 		if(dateTime)
-			line = "["+chatDateFormat.format(chatDate)+"] " + line;
+			timeLine = "["+chatDateFormat.format(chatDate)+"]";
 		if(gui.isChannelHistoryEnabled()){
 			try {
 				writeHistoryFile(line);
@@ -510,38 +512,18 @@ public IRCUser getCreatedUsers(String userName){
 				e.printStackTrace();
 			}
 		}
-		
-		
+		StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
 		//Checks to make sure the user exists and they aren't muted.
 		if(getCreatedUsers(fromUser) != null && !getCreatedUsers(fromUser).isMuted()){
-			if(myServer.getNick().equals(getCreatedUsers(fromUser))){
-			    StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
-		    	Style style = doc.addStyle("StyleName", null);
-	
-		        StyleConstants.setItalic(style, true);
-	
-		        try {
-		        	line = line+"\n";
-		        	for(int x = 0; x < line.length(); x++)
-		        		doc.insertString(doc.getLength(), line.substring(x, x+1), style);
-					
-				} catch (BadLocationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else {
-				StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
-				Style style = doc.addStyle("StyleName", null);
-	
-				try {
-					doc.insertString(doc.getLength(), line+"\n", style);
-				} catch (BadLocationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-	        }
+				new LineFormatter(new Font("Segoe UI", Font.PLAIN, 12),myServer.getNick()).formattedDocument(doc, timeLine, fromUser, line);
+			
+				channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
+		} else if(fromUser.equals(EVENT_USER)){
+			new LineFormatter(new Font("Segoe UI", Font.PLAIN, 12),myServer.getNick()).formattedDocument(doc, timeLine, fromUser, line);
+			
 			channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
 		}
+			
 	}
 	
 	private void setupMainTextArea(){
@@ -709,7 +691,7 @@ public IRCUser getCreatedUsers(String userName){
 	/** Write all competitors to the competitors.txt file */
 	public void writeHistoryFile(String line) throws IOException{
 		if(gui.saveChannelHistory()){
-			FileWriter fw = new FileWriter (historyFileName, true);
+			FileWriter fw = new FileWriter (DriverGUI.directoryLogs+historyFileName, true);
 			BufferedWriter bw = new BufferedWriter (fw);
 			PrintWriter outFile = new PrintWriter (bw);
 			outFile.println(line);

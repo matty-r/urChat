@@ -1,6 +1,7 @@
 package urChatBasic;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,7 +55,7 @@ public class IRCPrivate extends JPanel{
 		
 		Image tempIcon = null;
 		try {
-			tempIcon = ImageIO.read(new File("Resources\\User.png"));
+			tempIcon = ImageIO.read(new File(DriverGUI.RESOURCES_DIR+"User.png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -85,22 +86,21 @@ public class IRCPrivate extends JPanel{
 			}
 	   }
 	
-	public void printText(Boolean dateTime, String line){
+	public void printText(Boolean dateTime, String fromUser, String line){
 		StyledDocument doc = (StyledDocument) privateTextArea.getDocument();
-		Style style = doc.addStyle("StyleName", null);
+		//Style style = doc.addStyle("StyleName", null);
 	
 	    //StyleConstants.setItalic(style, true);
 		DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
 		Date chatDate = new Date();
+		String timeLine = "";
 		
 		if(dateTime)
-			line = "["+chatDateFormat.format(chatDate)+"] " + line;
-	    try {
-			doc.insertString(doc.getLength(), line+"\n", style);
-		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			timeLine = "["+chatDateFormat.format(chatDate)+"]";
+
+			//doc.insertString(doc.getLength(), line+"\n", style);
+	    	new LineFormatter(new Font("Segoe UI", Font.PLAIN, 12),myServer.getNick()).formattedDocument(doc,timeLine,fromUser,line);
+
 	
 	    privateTextArea.setCaretPosition(privateTextArea.getDocument().getLength());
 	}

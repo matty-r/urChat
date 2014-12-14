@@ -16,11 +16,13 @@ TODO List:
 * Allow moving the event ticker to the top of the screen instead
 * Allow resizing of users lists (Double click to hide?)
 * Allow change font for all channels
-* When creating a private room, put it to the immediate right of the channel that created it/where that user exists
 
 * Channel right click options
 	*Change font
 
+=Update (14 DEC 14)
+
+* Added LineFormatter, does all the formatting and inserting of the strings into the document
 
 =Update (13 DEC 14)
 
