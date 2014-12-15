@@ -21,6 +21,8 @@ TODO List:
 * Java 7 and *nix compatibility - thanks Goofybud16
 * Added change font in the channel right click menu
 * Added change font globally (A bit messy right now)
+* Changed handling of channel messages - if a message is received by someone not in the user list they
+	\are added to the list and then the message is displayed.
 
 =Update (14 DEC 14)
 

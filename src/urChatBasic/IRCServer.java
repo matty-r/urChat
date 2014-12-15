@@ -417,7 +417,7 @@ public class IRCServer extends JPanel implements IRCActions {
 		getCreatedChannel(channelName).setChannelTopic(channelTopic);
 	}
 
-	@Override
+
 	/**
 	 * This is a forwarding method used to direct the call to the IRCChannel,
 	 * filters through 

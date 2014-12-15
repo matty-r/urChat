@@ -1,8 +1,8 @@
 package urChatBasic;
 
 public interface IRCActions {
-	
-	public void renameUser(String oldUserName,String newUserName);
+
+	//Will be used to ensure other classes contain these methods.
 	
 	public String getServer();
 	

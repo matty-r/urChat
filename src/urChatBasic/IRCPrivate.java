@@ -89,20 +89,15 @@ public class IRCPrivate extends JPanel{
 	
 	public void printText(Boolean dateTime, String fromUser, String line){
 		StyledDocument doc = (StyledDocument) privateTextArea.getDocument();
-		//Style style = doc.addStyle("StyleName", null);
-	
-	    //StyleConstants.setItalic(style, true);
+
 		DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
 		Date chatDate = new Date();
 		String timeLine = "";
 		
 		if(dateTime)
 			timeLine = "["+chatDateFormat.format(chatDate)+"]";
-
-			//doc.insertString(doc.getLength(), line+"\n", style);
 	    	new LineFormatter(gui.getFont(),myServer.getNick()).formattedDocument(doc,timeLine,fromUser,line);
 
-	
 	    privateTextArea.setCaretPosition(privateTextArea.getDocument().getLength());
 	}
 	

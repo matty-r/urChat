@@ -539,16 +539,20 @@ public IRCUser getCreatedUsers(String userName){
 			}
 		}
 		StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
-		//Checks to make sure the user exists and they aren't muted.
-		if(getCreatedUsers(fromUser) != null && !getCreatedUsers(fromUser).isMuted()){
+		//If we received a message from a user that isn't in the channel
+		//then add them to the users list.
+		//But don't add them if it's from the Event Ticker
+		if(getCreatedUsers(fromUser) == null){
+			if(!fromUser.equals(EVENT_USER))
+					addToUsersList(this.getName(), fromUser);
+		}
+		
+		
+		if((getCreatedUsers(fromUser) != null && !getCreatedUsers(fromUser).isMuted()) || fromUser.equals(EVENT_USER)){
 				new LineFormatter(this.getFont(),myServer.getNick()).formattedDocument(doc, timeLine, fromUser, line);
 			
 				channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
-		} else if(fromUser.equals(EVENT_USER)){
-			new LineFormatter(this.getFont(),myServer.getNick()).formattedDocument(doc, timeLine, fromUser, line);
-			
-			channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
-		}			
+		}		
 	}
 	
 	private void setupMainTextArea(){
@@ -724,7 +728,6 @@ public IRCUser getCreatedUsers(String userName){
 		}
 	}
 	
-	@Override
 	/**Rename user by removing old name and inserting new name.*/
 	public void renameUser(final String oldUserName,final String newUserName) {
 		SwingUtilities.invokeLater(new Runnable(){
