@@ -286,7 +286,7 @@ public class IRCServer extends JPanel implements IRCActions {
 	
 
 	//Adds users to the list in the users array[]
-	public void addToUsersList(String channelName,String[] users){
+	public void addToUsersList(final String channelName, final String[] users){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				if(!channelName.matches("Server")){
@@ -299,7 +299,7 @@ public class IRCServer extends JPanel implements IRCActions {
 	}
 	
 	//Adds a single user, good for when a user joins the channel
-	public void addToUsersList(String channelName,String user){
+	public void addToUsersList(final String channelName, final String user){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				String thisUser = user;
@@ -321,7 +321,7 @@ public class IRCServer extends JPanel implements IRCActions {
 	 * @param channelName
 	 * @param user
 	 */
-	public void removeFromUsersList(String channelName,String user){
+	public void removeFromUsersList(final String channelName, final String user){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				String thisUser = user;
@@ -424,7 +424,7 @@ public class IRCServer extends JPanel implements IRCActions {
 	 * @param user
 	 * @param newUser
 	 */
-	public void renameUser(String oldUserName,String newUserName){
+	public void renameUser(final String oldUserName,final String newUserName){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 						//if(oldUserName.startsWith(":"))

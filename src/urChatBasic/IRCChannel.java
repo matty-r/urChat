@@ -601,7 +601,7 @@ public IRCUser getCreatedUsers(String userName){
 
 
 	//Adds users to the list in the users array[]
-	public void addToUsersList(String channel,String[] users){
+	public void addToUsersList(String channel, final String[] users){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				if(users.length >= 0){
@@ -624,7 +624,7 @@ public IRCUser getCreatedUsers(String userName){
 	}
 	
 	//Adds a single user, good for when a user joins the channel
-	public void addToUsersList(String channel,String user){
+	public void addToUsersList(final String channel, final String user){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				String thisUser = user;
@@ -652,7 +652,7 @@ public IRCUser getCreatedUsers(String userName){
 	 * @param channel
 	 * @param user
 	 **/
-	public void removeFromUsersList(String channel,String user){
+	public void removeFromUsersList(final String channel,final String user){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				String thisUser = user;
@@ -701,7 +701,7 @@ public IRCUser getCreatedUsers(String userName){
 	
 	@Override
 	/**Rename user by removing old name and inserting new name.*/
-	public void renameUser(String oldUserName,String newUserName) {
+	public void renameUser(final String oldUserName, final String newUserName) {
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 					IRCUser tempUser = getCreatedUsers(oldUserName);
