@@ -11,14 +11,16 @@ TODO List:
 	* No event ticker
 	* No user sorting 
 * Setup Alert Types
-* Allow to retry connections until you're identified with the server
 * Handle :401, 366, 333 ,328, 470
 * Allow moving the event ticker to the top of the screen instead
 * Allow resizing of users lists (Double click to hide?)
-* Allow change font for all channels
 
-* Channel right click options
-	*Change font
+
+=Update (15 DEC 14)
+
+* Java 7 and *nix compatibility - thanks Goofybud16
+* Added change font in the channel right click menu
+* Added change font globally (A bit messy right now)
 
 =Update (14 DEC 14)
 

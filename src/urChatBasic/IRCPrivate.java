@@ -50,6 +50,7 @@ public class IRCPrivate extends JPanel{
 		this.add(privateTextScroll, BorderLayout.CENTER);
 		this.add(privateTextBox, BorderLayout.PAGE_END);
 		privateTextBox.addActionListener(new sendPrivateText());
+		privateTextArea.setEditable(false);
 		privateTextArea.setFont(gui.getFont());
 		setName(user.getName());
 		
@@ -99,7 +100,7 @@ public class IRCPrivate extends JPanel{
 			timeLine = "["+chatDateFormat.format(chatDate)+"]";
 
 			//doc.insertString(doc.getLength(), line+"\n", style);
-	    	new LineFormatter(new Font("Segoe UI", Font.PLAIN, 12),myServer.getNick()).formattedDocument(doc,timeLine,fromUser,line);
+	    	new LineFormatter(gui.getFont(),myServer.getNick()).formattedDocument(doc,timeLine,fromUser,line);
 
 	
 	    privateTextArea.setCaretPosition(privateTextArea.getDocument().getLength());

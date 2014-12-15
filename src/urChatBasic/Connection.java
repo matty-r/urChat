@@ -8,7 +8,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.swing.SwingUtilities;
 
 public class Connection implements Runnable{
 
@@ -58,6 +57,7 @@ public class Connection implements Runnable{
     	
 		localMessage("Attempting to connect to "+server);
         mySocket = new Socket(server.getName(), 6667);
+
 		writer = new BufferedWriter(
                 new OutputStreamWriter(mySocket.getOutputStream( )));
         reader = new BufferedReader(
@@ -271,11 +271,7 @@ public class Connection implements Runnable{
 		        				break;
 		        	case "PRIVMSG": if(!receivedOptions[2].equals(myNick)){
 		        						server.printChannelText(receivedOptions[2],message,extractNick(receivedOptions[0]));
-		        					//if my nick was mentioned in a message, make a noise
-		        					//if(message.contains(myNick))
-		        						//Toolkit.getDefaultToolkit().beep();
 			        				} else{
-			        					//TODO Created a IRCPrivate chat room
 			        					server.printChannelText(extractNick(receivedOptions[0]),message,extractNick(receivedOptions[0]));
 			        				}
 		        				break;
@@ -307,6 +303,9 @@ public class Connection implements Runnable{
 	        						}
 		        				}
 		        				break;
+		        	//1415> :dreamreal!~dreamreal@unaffiliated/dreamreal KICK ##java codecutter :codecutter
+		        	case "KICK":server.removeFromUsersList(receivedOptions[2], message);
+					        	break;
     				//:macabre_!~ibtjw@23-114-59-64.lightspeed.austtx.sbcglobal.net QUIT :Ping timeout: 252 seconds
 		        	case "QUIT":if(!(extractNick(receivedOptions[0]).equals(myNick)))
 			    						server.removeFromUsersList("Server", extractNick(receivedOptions[0]));

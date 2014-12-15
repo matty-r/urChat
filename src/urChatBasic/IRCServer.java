@@ -58,6 +58,7 @@ public class IRCServer extends JPanel implements IRCActions {
 		this.setLayout(new BorderLayout());
 		this.add(serverTextScroll, BorderLayout.CENTER);
 		this.add(serverTextBox, BorderLayout.PAGE_END);
+		serverTextArea.setEditable(false);
 		serverTextBox.addActionListener(new SendServerText());
 		serverTextArea.setFont(gui.getFont());
 		this.name = serverName;
@@ -286,7 +287,7 @@ public class IRCServer extends JPanel implements IRCActions {
 	
 
 	//Adds users to the list in the users array[]
-	public void addToUsersList(final String channelName, final String[] users){
+	public void addToUsersList(final String channelName,final String[] users){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				if(!channelName.matches("Server")){
@@ -299,7 +300,7 @@ public class IRCServer extends JPanel implements IRCActions {
 	}
 	
 	//Adds a single user, good for when a user joins the channel
-	public void addToUsersList(final String channelName, final String user){
+	public void addToUsersList(final String channelName,final String user){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				String thisUser = user;
@@ -321,7 +322,7 @@ public class IRCServer extends JPanel implements IRCActions {
 	 * @param channelName
 	 * @param user
 	 */
-	public void removeFromUsersList(final String channelName, final String user){
+	public void removeFromUsersList(final String channelName,final String user){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				String thisUser = user;
@@ -395,7 +396,7 @@ public class IRCServer extends JPanel implements IRCActions {
 			timeLine = "["+chatDateFormat.format(chatDate)+"]";
 		
 		
-		new LineFormatter(new Font("Segoe UI", Font.PLAIN, 12),getNick()).formattedDocument(doc, timeLine, "", line);
+		new LineFormatter(gui.getFont(),getNick()).formattedDocument(doc, timeLine, "", line);
 		
 	    //try {
 			//doc.insertString(doc.getLength(), line+"\n", style);

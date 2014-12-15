@@ -25,6 +25,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 	private Date todayDate = new Date();
 	private String channelName;
 	private String serverName;
+	//Used to identify a message to be printed from the Event ticker
 	public static final String EVENT_USER = "****";
 	private final int USER_LIST_WIDTH = 100;
 	//Deprecated. Was used to save history, but is now done live.
@@ -35,6 +36,8 @@ public class IRCChannel extends JPanel implements IRCActions{
 	  ////////////////
 	 //GUI ELEMENTS//
 	////////////////
+	private JPanel fontPanel;
+	
 	//Icons
 	public ImageIcon icon;
 	
@@ -43,7 +46,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 	//channel Text Area
 	private JTextPane channelTextArea = new JTextPane();
 	private JScrollPane channelScroll = new JScrollPane(channelTextArea);
-	//private Font channelFont = new Font("Consolas", Font.PLAIN, 12);
+	//private Font channelFont = gui.getFont(); JPanel has it's own Font attribute
 
 	//Users list area
 	private List<IRCUser> usersArray = new ArrayList<IRCUser>();
@@ -97,6 +100,10 @@ public class IRCChannel extends JPanel implements IRCActions{
 		this.add(mainPanel,BorderLayout.CENTER);
 		historyFileName = historyDateFormat.format(todayDate)+" "+this.channelName+".log";
 		this.myMenu = new ChannelPopUp();
+		this.setFont(gui.getFont());
+		fontPanel = new FontPanel(this);
+		mainPanel.add(fontPanel, BorderLayout.NORTH);
+		fontPanel.setVisible(false);
 		Image tempIcon = null;
 		try {
 			tempIcon = ImageIO.read(new File(DriverGUI.RESOURCES_DIR+"Room.png"));
@@ -109,6 +116,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 		myServer = serverName;
 		this.serverName = serverName.getName();
 	 }
+	
 	
 	//Repaints the window, delayed by EVENT_DELAY
 	private class TickerAction implements ActionListener
@@ -258,6 +266,7 @@ public class IRCChannel extends JPanel implements IRCActions{
    }
 
    private void setupUsersList(){
+	   usersList.setFont(getFont());
 	   usersList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 	   usersList.setLayoutOrientation(JList.VERTICAL);
 	   usersList.setVisibleRowCount(-1);
@@ -284,6 +293,7 @@ public class IRCChannel extends JPanel implements IRCActions{
    }
    
    private void setupTickerPanel(){
+	   tickerPanel.setFont(getFont());
 	   tickerPanel.setPreferredSize(clientTextBox.getPreferredSize());
 	   tickerPanel.setBackground(Color.LIGHT_GRAY);
 	   tickerPanel.setLayout(null);
@@ -357,6 +367,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 		bottomPanel.setLocation(0,MAIN_HEIGHT-BOTTOM_HEIGHT);
 		bottomPanel.add(clientTextBox,BorderLayout.NORTH);
 		bottomPanel.add(tickerPanel);
+		clientTextBox.setFont(getFont());
 		clientTextBox.addActionListener(new SendTextListener());
 		clientTextBox.addKeyListener(new ChannelKeyListener());
 		clientTextBox.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,Collections.EMPTY_SET);
@@ -373,22 +384,31 @@ public class IRCChannel extends JPanel implements IRCActions{
 		JMenuItem hideUsersItem;
 		JMenuItem hideTickerItem;
 		JMenuItem addAsFavouriteItem;
+		JMenuItem chooseFont;
 		public ChannelPopUp(){
 			nameItem = new JMenuItem(IRCChannel.this.getName());
 	        add(nameItem);
 	        addSeparator();
+	        //
 	        quitItem = new JMenuItem("Quit");
 	        add(quitItem);
 	        quitItem.addActionListener(new QuitItem());
+	        //
 	        hideUsersItem = new JMenuItem("Toggle Users List");
 	        add(hideUsersItem);
 	        hideUsersItem.addActionListener(new ToggleHideUsersListItem());
+	        //
 	        hideTickerItem = new JMenuItem("Toggle Event Ticker");
 	        add(hideTickerItem);
 	        hideTickerItem.addActionListener(new ToggleHideTickerListItem());
+	        //
 	        addAsFavouriteItem = new JMenuItem("Add as Favourite");
 	        add(addAsFavouriteItem);
 	        addAsFavouriteItem.addActionListener(new AddAsFavourite());
+	        //
+	        chooseFont = new JMenuItem("Toggle Font chooser");
+	        add(chooseFont);
+	        chooseFont.addActionListener(new ChooseFont());
 		}
 	}
 	
@@ -425,7 +445,13 @@ public class IRCChannel extends JPanel implements IRCActions{
 		}
 	}
 	
-	
+	private class ChooseFont implements ActionListener{
+		
+		@Override
+		public void actionPerformed(ActionEvent arg0){
+			fontPanel.setVisible(!fontPanel.isVisible());
+		}
+	}
 	
 	/**
 	 * First checks to make sure the user hasn't set it manually for this channel.
@@ -515,15 +541,14 @@ public IRCUser getCreatedUsers(String userName){
 		StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
 		//Checks to make sure the user exists and they aren't muted.
 		if(getCreatedUsers(fromUser) != null && !getCreatedUsers(fromUser).isMuted()){
-				new LineFormatter(new Font("Segoe UI", Font.PLAIN, 12),myServer.getNick()).formattedDocument(doc, timeLine, fromUser, line);
+				new LineFormatter(this.getFont(),myServer.getNick()).formattedDocument(doc, timeLine, fromUser, line);
 			
 				channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
 		} else if(fromUser.equals(EVENT_USER)){
-			new LineFormatter(new Font("Segoe UI", Font.PLAIN, 12),myServer.getNick()).formattedDocument(doc, timeLine, fromUser, line);
+			new LineFormatter(this.getFont(),myServer.getNick()).formattedDocument(doc, timeLine, fromUser, line);
 			
 			channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
-		}
-			
+		}			
 	}
 	
 	private void setupMainTextArea(){
@@ -601,7 +626,7 @@ public IRCUser getCreatedUsers(String userName){
 
 
 	//Adds users to the list in the users array[]
-	public void addToUsersList(String channel, final String[] users){
+	public void addToUsersList(final String channel,final String[] users){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				if(users.length >= 0){
@@ -624,7 +649,7 @@ public IRCUser getCreatedUsers(String userName){
 	}
 	
 	//Adds a single user, good for when a user joins the channel
-	public void addToUsersList(final String channel, final String user){
+	public void addToUsersList(final String channel,final String user){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				String thisUser = user;
@@ -701,7 +726,7 @@ public IRCUser getCreatedUsers(String userName){
 	
 	@Override
 	/**Rename user by removing old name and inserting new name.*/
-	public void renameUser(final String oldUserName, final String newUserName) {
+	public void renameUser(final String oldUserName,final String newUserName) {
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 					IRCUser tempUser = getCreatedUsers(oldUserName);

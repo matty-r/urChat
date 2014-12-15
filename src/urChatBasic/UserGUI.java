@@ -76,14 +76,10 @@ public class UserGUI extends JPanel implements Runnable{
 	private JList<FavouritesItem> favouritesList = new JList<FavouritesItem>(favouritesListModel);
 	private JScrollPane favouritesScroller = new JScrollPane(favouritesList);
 	
-	private Font universalFont = new Font("Consolas", Font.PLAIN, 12);
+	public static Font universalFont = new Font("Consolas", Font.PLAIN, 12);
 	
 	//Created Servers/Tabs
 	private List<IRCServer> createdServers = new ArrayList<IRCServer>();
-	
-	public Font getFont(){
-		return universalFont;
-	}
 	
 	public int getLimitServerLinesCount(){
 		try{
@@ -251,10 +247,10 @@ public class UserGUI extends JPanel implements Runnable{
 	public Boolean isClientHistoryEnabled(){
 		return logClientText.isSelected();
 
-	}
+	}   
 	
 	/*public Boolean isLinksClickable(){
-		return enableClickableLinks.isSelected();
+	return enableClickableLinks.isSelected();
 	}*/
 
 	private void setupServerOptionsPanel(){
@@ -299,12 +295,12 @@ public class UserGUI extends JPanel implements Runnable{
         optionsClientPanel.add(limitChannelLinesCount);
         limitChannelLinesCount.setMaximumSize(new Dimension(250,20));
         optionsClientPanel.add(enableTimeStamps);
-        //optionsClientPanel.add(enableClickableLinks);
 
         //Turn on labels at major tick marks.
         eventTickerDelay.setMajorTickSpacing(10);
         eventTickerDelay.setMinorTickSpacing(1);
         eventTickerDelay.setPaintTicks(true);
+        //optionsClientPanel.add(enableClickableLinks);
         eventTickerDelay.setPaintLabels(true);
         eventTickerDelay.setMaximumSize(new Dimension(400,40));
         optionsClientPanel.add(Box.createRigidArea(new Dimension(0,5)));
@@ -312,6 +308,9 @@ public class UserGUI extends JPanel implements Runnable{
         optionsClientPanel.add(Box.createRigidArea(new Dimension(0,5)));
         optionsClientPanel.add(eventTickerDelay);
         optionsClientPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+        JPanel fontsPanel =  new FontPanel(this);
+        fontsPanel.setMaximumSize(new Dimension(600,60));
+        optionsClientPanel.add(fontsPanel);
         optionsClientPanel.add(saveSettings);
         saveSettings.addActionListener( new ActionListener() {
 											@Override
@@ -728,6 +727,7 @@ public class UserGUI extends JPanel implements Runnable{
 		setupTabbedPane();
 		this.setLayout(new BorderLayout());
 		this.add(tabbedPane, BorderLayout.CENTER);
+		this.setFont(universalFont);
 	    //Set size of the overall panel
 	    this.setPreferredSize (new Dimension(MAIN_WIDTH, MAIN_HEIGHT));
 	    this.setBackground(Color.gray);
