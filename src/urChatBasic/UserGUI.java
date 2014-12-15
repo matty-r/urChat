@@ -49,7 +49,7 @@ public class UserGUI extends JPanel implements Runnable{
 	private JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
 	private JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
 	private JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
-	private JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
+	//private JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
 	
 	private JTextField limitServerLinesCount = new JTextField();
 	private JTextField limitChannelLinesCount = new JTextField();
@@ -253,9 +253,9 @@ public class UserGUI extends JPanel implements Runnable{
 
 	}
 	
-	public Boolean isLinksClickable(){
+	/*public Boolean isLinksClickable(){
 		return enableClickableLinks.isSelected();
-	}
+	}*/
 
 	private void setupServerOptionsPanel(){
 		serverOptionsPanel.setLayout(new BoxLayout(serverOptionsPanel, BoxLayout.PAGE_AXIS));
@@ -299,7 +299,7 @@ public class UserGUI extends JPanel implements Runnable{
         optionsClientPanel.add(limitChannelLinesCount);
         limitChannelLinesCount.setMaximumSize(new Dimension(250,20));
         optionsClientPanel.add(enableTimeStamps);
-        optionsClientPanel.add(enableClickableLinks);
+        //optionsClientPanel.add(enableClickableLinks);
 
         //Turn on labels at major tick marks.
         eventTickerDelay.setMajorTickSpacing(10);
