@@ -343,7 +343,15 @@ public class Connection implements Runnable{
 	/** Write a line to the debug.txt file */
 	public void writeDebugFile(String message) throws IOException{
 		debugFile = debugDateFormat.format(todayDate)+" "+server+".log";
-		FileWriter fw = new FileWriter (DriverGUI.directoryLogs+debugFile, true);
+		File logDir = new File(DriverGUI.directoryLogs);
+		if(!logDir.exists()){
+			logDir.mkdir();
+		}
+		File logFile = new File(DriverGUI.directoryLogs, debugFile);
+		if(!logFile.exists()){
+			logFile.createNewFile();
+		}
+		FileWriter fw = new FileWriter (logFile, true);
 		BufferedWriter bw = new BufferedWriter (fw);
 		PrintWriter outFile = new PrintWriter (bw);
 		outFile.println(debugTimeFormat.format(todayDate)+"> "+message);
