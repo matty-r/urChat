@@ -1,12 +1,7 @@
 package urChatBasic;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
-
-import javax.swing.JPanel;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.UndoableEditListener;
 import javax.swing.text.*;
 
 public class LineFormatter {

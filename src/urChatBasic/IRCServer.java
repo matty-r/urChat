@@ -1,7 +1,6 @@
 package urChatBasic;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -16,16 +15,14 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.Utilities;
+import javax.swing.text.*;
 
 public class IRCServer extends JPanel implements IRCActions {
 	/**
@@ -49,6 +46,9 @@ public class IRCServer extends JPanel implements IRCActions {
 	public JTextField serverTextBox = new JTextField();
 	private String name; 
 	
+	public ServerPopUp myMenu = new ServerPopUp();
+	private FontPanel fontPanel;
+	
 	//Created Private Rooms/Tabs
 	private List<IRCPrivate> createdPrivateRooms = new ArrayList<IRCPrivate>();
 	//Created channels/tabs
@@ -62,7 +62,9 @@ public class IRCServer extends JPanel implements IRCActions {
 		serverTextBox.addActionListener(new SendServerText());
 		serverTextArea.setFont(gui.getFont());
 		this.name = serverName;
-		
+		fontPanel = new FontPanel(this);
+		this.add(fontPanel, BorderLayout.NORTH);
+		fontPanel.setVisible(false);
 		Image tempIcon = null;
 		try {
 			tempIcon = ImageIO.read(new File(DriverGUI.RESOURCES_DIR+"Server.png"));
@@ -76,7 +78,48 @@ public class IRCServer extends JPanel implements IRCActions {
 	}
 	
 	public String getNick(){
-		return serverConnection.myNick;
+		return serverConnection.getNick();
+	}
+	
+	class ServerPopUp extends JPopupMenu{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 640768684923757684L;
+		JMenuItem nameItem;
+		JMenuItem quitItem;
+		JMenuItem chooseFont;
+		public ServerPopUp(){
+			nameItem = new JMenuItem(IRCServer.this.getName());
+	        add(nameItem);
+	        addSeparator();
+	        //
+	        quitItem = new JMenuItem("Quit");
+	        add(quitItem);
+	        quitItem.addActionListener(new QuitItem());
+	        //
+	        chooseFont = new JMenuItem("Toggle Font chooser");
+	        add(chooseFont);
+	        chooseFont.addActionListener(new ChooseFont());
+		}
+	}
+	
+	
+
+	private class QuitItem implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+	        sendClientText("/quit ", IRCServer.this.getName());
+		}   
+   }
+
+	private class ChooseFont implements ActionListener{
+		
+		@Override
+		public void actionPerformed(ActionEvent arg0){
+			fontPanel.setVisible(!fontPanel.isVisible());
+		}
 	}
 	
 	/**

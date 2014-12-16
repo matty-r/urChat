@@ -1,8 +1,5 @@
 package urChatBasic;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -27,7 +24,7 @@ class FontPanel extends JPanel{
 	private final JCheckBox MAKE_BOLD = new JCheckBox("BOLD");
 	private final JCheckBox MAKE_ITALIC = new JCheckBox("ITALIC");
 	private final JButton SAVE_BUTTON = new JButton("Save Font");
-	private final JButton CANCEL_BUTTON = new JButton("Cancel");
+	//private final JButton CANCEL_BUTTON = new JButton("Cancel");
 	private Font myFont;
 	private Font savedFont;
 	private JPanel myPanel;

@@ -27,7 +27,8 @@ public class UsersListModel extends DefaultListModel{
         return (IRCUser) users.get(index);
     }
 
-    public List<IRCUser> getUsersList(){
+    @SuppressWarnings("unchecked")
+	public List<IRCUser> getUsersList(){
         return users;
     }
 
@@ -40,7 +41,8 @@ public class UsersListModel extends DefaultListModel{
         users = array;
     }
     
-    public void sort(){
+    @SuppressWarnings("unchecked")
+	public void sort(){
         Collections.sort(users);
         fireContentsChanged(this, 0, users.size());
     }

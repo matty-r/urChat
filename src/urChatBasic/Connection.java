@@ -11,15 +11,16 @@ import java.util.Date;
 
 public class Connection implements Runnable{
 
-	private static BufferedWriter writer;
-	private static BufferedReader reader;
+	//This was static.. it was causing silly issues with the reader/writer
+	private BufferedWriter writer;
+	private BufferedReader reader;
 	
-	public IRCServer server;
-	public String myNick;
-	public String login;
+	private IRCServer server;
+	private String myNick;
+	private String login;
 	//public String firstChannel;
 	private Socket mySocket;
-	public static UserGUI gui = DriverGUI.gui;
+	public UserGUI gui = DriverGUI.gui;
 	
 	//Used for Logging messages received by the server
 	//Debug Mode
@@ -27,35 +28,30 @@ public class Connection implements Runnable{
 	private DateFormat debugTimeFormat = new SimpleDateFormat("HHmm");
 	private Date todayDate = new Date();
 	private String debugFile;
-	
-	
-	
+
     public Connection(IRCServer server,String nick,String login) throws Exception{
     	this.server =  server;
     	this.myNick = nick;
     	this.login = login;
     	//this.firstChannel = firstChannel;
-
+    	
 	}
     
     public Boolean isConnected(){
-    	if(mySocket == null)
-    		return false;
-    	if(server == null)
-    		return false;
-    	if(mySocket.isConnected())
+    	if((mySocket != null) && (server != null) && (mySocket.isConnected()))
     		return true;
     	
     	return false;
     }
     
     public IRCServer getServer(){
-    	return server;
+    	return this.server;
     }
 
     private void startUp() throws IOException{
     	
 		localMessage("Attempting to connect to "+server);
+		//TODO must be able to type in the port number instead of having this hard-coded.
         mySocket = new Socket(server.getName(), 6667);
 
 		writer = new BufferedWriter(
@@ -86,15 +82,9 @@ public class Connection implements Runnable{
             } else
             	serverMessage(line);
         }
-
-        // Join the channel.
-       // writer.write("JOIN " + firstChannel + "\r\n");
-        //writer.flush();
-        //localMessage("Connecting to channel "+firstChannel); 
         
         // Keep reading lines from the server.
         while ((line = reader.readLine()) != null) {
-                // Print the raw line received by the bot.
         	serverMessage(line);
         }
         
@@ -112,6 +102,8 @@ public class Connection implements Runnable{
 	}
 	
 	public void sendClientText(String clientText,String fromChannel) throws IOException{
+		if(isConnected()){
+		
 			String[] tempTextArray = null;
 			String tempText = "";
 			
@@ -157,10 +149,17 @@ public class Connection implements Runnable{
 				clientText = "*** HIDDEN NICKSERV IDENTIFY ***";
 			writeDebugFile("Client Text:- "+fromChannel+" "+clientText);
 			}
+		}
 	}
 
 	private void localMessage(String message){
 		server.printServerText(message);
+		try {
+			writeDebugFile("Local Text:-"+message);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -192,8 +191,7 @@ public class Connection implements Runnable{
 	}
 	 
 	private void serverMessage(String receivedText) throws IOException{
-		if(gui.saveServerHistory())
-			writeDebugFile(receivedText);
+		writeDebugFile(receivedText);
 		String[] receivedOptions;
 		String message = "";
 
@@ -231,11 +229,12 @@ public class Connection implements Runnable{
 	        	 	case "251": printServerText(message);
 	        	 				break;
 	        	 	//005 = Server change
-		        	case "005" : String tempServer = receivedOptions[0].substring(1);
+		        	case "005" :String tempServer = receivedOptions[0].substring(1);
 		        				printServerText(">> Changed your server to "+tempServer);
 		        	 			break;
     	 			//332 = Channel Topic
-		        	case "332" :server.setChannelTopic(receivedOptions[3], message);
+		        	case "332" :
+		        				server.setChannelTopic(receivedOptions[3], message);
 		        				break;
     	 			//372 = Server MOTD
 		        	case "372" :printServerText(message);
@@ -318,16 +317,15 @@ public class Connection implements Runnable{
 		        				} else
 		        					printServerText( message);
 		    					break;
-		        	case "Link":gui.shutdownAll();
+		        	case "Link"://gui.shutdownAll();
+		        				gui.quitServer(server);
 		        				break;
 		        	default:printServerText(message);
-		        			if(gui.saveServerHistory())
-		        				writeDebugFile("!!!!!!!!!!!!Not Handled!!!!!!!!!!!!");
+		        			writeDebugFile("!!!!!!!!!!!!Not Handled!!!!!!!!!!!!");
 	        	 			break;
 	        	 } else {
 	        		printServerText(message);
-	        		if(gui.saveServerHistory())
-	        			writeDebugFile("!!!!!!!!!!!!Not Handled!!!!!!!!!!!!");
+	        		writeDebugFile("!!!!!!!!!!!!Not Handled!!!!!!!!!!!!");
 	        	 }
          }
 	}
@@ -340,22 +338,26 @@ public class Connection implements Runnable{
 		server.printServerText(message);
 	}
 	
-	/** Write a line to the debug.txt file */
+	/** Write a line to the server log file - checks to make sure
+	 * the client has enabled saving of the server history.
+	 * */
 	public void writeDebugFile(String message) throws IOException{
-		debugFile = debugDateFormat.format(todayDate)+" "+server+".log";
-		File logDir = new File(DriverGUI.directoryLogs);
-		if(!logDir.exists()){
-			logDir.mkdir();
+		if(gui.saveServerHistory()){
+			debugFile = debugDateFormat.format(todayDate)+" "+server+".log";
+			File logDir = new File(DriverGUI.directoryLogs);
+			if(!logDir.exists()){
+				logDir.mkdir();
+			}
+			File logFile = new File(DriverGUI.directoryLogs, debugFile);
+			if(!logFile.exists()){
+				logFile.createNewFile();
+			}
+			FileWriter fw = new FileWriter (logFile, true);
+			BufferedWriter bw = new BufferedWriter (fw);
+			PrintWriter outFile = new PrintWriter (bw);
+			outFile.println(debugTimeFormat.format(todayDate)+"> "+message);
+			outFile.close();
 		}
-		File logFile = new File(DriverGUI.directoryLogs, debugFile);
-		if(!logFile.exists()){
-			logFile.createNewFile();
-		}
-		FileWriter fw = new FileWriter (logFile, true);
-		BufferedWriter bw = new BufferedWriter (fw);
-		PrintWriter outFile = new PrintWriter (bw);
-		outFile.println(debugTimeFormat.format(todayDate)+"> "+message);
-		outFile.close();
 	}
 	
 	private String extractNick(String textString){

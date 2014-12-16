@@ -2,7 +2,6 @@ package urChatBasic;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -12,8 +11,6 @@ public class IRCUser implements Comparable<IRCUser>{
 	private String userStatus = "";
 	public UserPopUp myMenu;
 	private Boolean muted = false;
-	
-	//IRCServer (Owner)
 	private IRCServer myServer;
 	
 	public IRCUser(IRCServer serverName,String name){

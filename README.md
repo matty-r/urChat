@@ -1,34 +1,34 @@
 urChat
 ======
 
-Java based IRC Client
+urChat is a Java based IRC Client designed around usability and minimal resource impact on your system. 
 
 
-TODO List:
+Contributions
+======
+If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
-* Clickable HTTP when someone sends a message
-* Create a Low Resource mode
-	* No event ticker
-	* No user sorting 
-* Setup Alert Types
-* Handle :401, 366, 333 ,328, 470
-* Allow moving the event ticker to the top of the screen instead
-* Allow resizing of users lists (Double click to hide?)
+
+
+
+
+
 
 =Update(16 DEV 14)
 
 * Changed how user status is set, it's now set through IRCUser in the constructor
-* Changed how the JOIN command is handled, channels will always start with # so use this to find the
-	\ channel name to join to. Also use the extractNick() method to get the appropriate username if it
-	\ isn't me.
+* Changed how the JOIN command is handled, channels will always start with # so use this to find the channel name to join to. Also use the extractNick() method to get the appropriate username if it isn't me.
+* Added check to make sure the Logs directory exists, if not then create it - thanks Goofybud16
+* TODO list is now maintained on GITHUB https://github.com/matty-r/urChat/issues
+* Fixed communication with multiple servers - BufferedReader and BufferedWriter of the connection class were static methods. This was a piece that hadn't been changed over during the transition to enable multiple server connections.
+* Improved the handling of the TabbedMouseListener, it finds out the appropriate class of the selected tab and carries out the correct method. This will stop things with the same name closing incorrectly.
 
 =Update (15 DEC 14)
 
 * Java 7 and *nix compatibility - thanks Goofybud16
 * Added change font in the channel right click menu
 * Added change font globally (A bit messy right now)
-* Changed handling of channel messages - if a message is received by someone not in the user list they
-	\are added to the list and then the message is displayed.
+* Changed handling of channel messages - if a message is received by someone not in the user list they are added to the list and then the message is displayed.
 
 =Update (14 DEC 14)
 
@@ -43,8 +43,7 @@ TODO List:
 
 =Update (12 DEC 14)
 
-* Changed how connections are handled in order to prep for handling multiple servers.
-	\IRCServer now controls it's own Connection and its contained within it's own thread.
+* Changed how connections are handled in order to prep for handling multiple servers. IRCServer now controls it's own Connection and its contained within it's own thread.
 * Tested connecting to multiple servers, so far it appears to be working fine.
 
 =Update (11 DEC 14)
@@ -59,8 +58,7 @@ TODO List:
 * Added Show/hide users list to tab right click menu
 * Added Show/hide event ticker
 * Changed Ticker height to 35
-* Fixed removal of ticker labels from the ticker panel. It was only removing it from the eventLabels array, and not
-	\ removing it from the actual panel.
+* Fixed removal of ticker labels from the ticker panel. It was only removing it from the eventLabels array, and not removing it from the actual panel.
 * Added Hiding the Event Ticker will remove all labels and stop the timer.
 * Added global control of show or hide
 * Added setting the Hide event ticker/users list overrides the global control.
@@ -105,13 +103,10 @@ TODO List:
 =Update (4 DEC 14)
 
 * Fixed words not wrapping correctly if there is no space.
-* Fixed the alert of someone changing their name displaying in all Channels.
-	Now only shows in the Channel where the user was located.
+* Fixed the alert of someone changing their name displaying in all Channels. Now only shows in the Channel where the user was located.
 * Added a Server class
 * Improved the parsing of server messages - won't lose any detail from splitting by a blank space.
-* Added text box to server window so that it's possible to send messages through the server console
-	instead of in a channel. This allows you to change nick or identify without worry about sending
-	text to server.
+* Added text box to server window so that it's possible to send messages through the server console	instead of in a channel. This allows you to change nick or identify without worry about sending	text to server.
 
 =Update (30 NOV 14)
 
@@ -125,8 +120,7 @@ TODO List:
 
 * Added icons on the Server Tab- Go, Wait and Stop. Changes icon depending on server status
 * Fixed Server tab status to only show disconnected when the server responds to the Quit command.
-* Fixed list sorting ... People that join the channel are now an IRCUser object and users exist
-	in a UsersListModel which implements AbstractListModel. Collections.sort();
+* Fixed list sorting ... People that join the channel are now an IRCUser object and users exist	in a UsersListModel which implements AbstractListModel. Collections.sort();
 * Fixed Renaming users to work with the new IRCUser Object.
 
 =Update (24 NOV 14)

@@ -1,7 +1,6 @@
 package urChatBasic;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,9 +16,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 public class IRCPrivate extends JPanel{
@@ -34,7 +30,6 @@ public class IRCPrivate extends JPanel{
 	public ImageIcon icon;
 	//Private Properties
 
-	//Private Text Area
 	private JTextPane privateTextArea = new JTextPane();
 	private JScrollPane privateTextScroll = new JScrollPane(privateTextArea);
 	public JTextField privateTextBox = new JTextField();

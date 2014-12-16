@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -158,7 +157,7 @@ public class UserGUI extends JPanel implements Runnable{
    public void addToCreatedServers(String serverName){
 	   
 	   if(getCreatedServer(serverName) == null){
-		IRCServer tempServer = new IRCServer(serverName,usernameTextField.getText(),usernameTextField.getText());
+		IRCServer tempServer = new IRCServer(serverName.trim(),usernameTextField.getText().trim(),usernameTextField.getText().trim());
 	   	createdServers.add(tempServer);
 	   	tabbedPane.addTab(serverName, tempServer.icon,tempServer);
 	   	tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempServer));
@@ -325,13 +324,6 @@ public class UserGUI extends JPanel implements Runnable{
 	private void setupFavouritesOptionsPanel(){
 		optionsFavouritesPanel.setLayout(new BorderLayout());
         optionsFavouritesPanel.add(autoConnectToFavourites, BorderLayout.NORTH);
-       // int x = 0;
-        
-        //while(x < 99){
-        	//++x;
-        	//favouritesListModel.addElement(new FavouritesItem("Test", "channel "+x));
-        //}
-        
         favouritesList.addMouseListener(new FavouritesPopClickListener());
         favouritesScroller.setPreferredSize(new Dimension(autoConnectToFavourites.getPreferredSize().width,0));
 		optionsFavouritesPanel.add(favouritesScroller, BorderLayout.LINE_START);
@@ -340,6 +332,14 @@ public class UserGUI extends JPanel implements Runnable{
 		optionsRightPanel.add(optionsFavouritesPanel, "Favourites");
 	}
 	
+	
+	/**
+	 * Create an element in the favourites list. Contains a constructor plus a pop up menu
+	 * for the element. 
+	 * @author Matt
+	 * @param String server
+	 * @param String channel
+	 */
 	class FavouritesItem{
 		String server;
 		String channel;
@@ -376,8 +376,7 @@ public class UserGUI extends JPanel implements Runnable{
 	   }
 	   
 		
-		private class RemoveFavourite implements ActionListener
-		{
+		private class RemoveFavourite implements ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				if(favouritesList.getSelectedIndex() > -1){
@@ -387,14 +386,26 @@ public class UserGUI extends JPanel implements Runnable{
 				}
 			}
 		}
+		
 	}
 	
-
+	/**
+	 * Adds the favourite as an element to the favourites list - also adds the item to the
+	 * clientSettings.
+	 * @param server
+	 * @param channel
+	 */
 	public void addFavourite(String server,String channel){
 		favouritesListModel.addElement(new FavouritesItem(server, channel));
 		clientSettings.node("Favourites").node(server).put(channel, channel);
 	}
 	
+	/**
+	 * Used to check if the server&channel is already a favourite from a string
+	 * @param server
+	 * @param channel
+	 * @return Boolean
+	 */
 	public Boolean isFavourite(String server,String channel){
 		FavouritesItem castItem;
 		
@@ -408,6 +419,11 @@ public class UserGUI extends JPanel implements Runnable{
 		return false;
 	}
 	
+	/**
+	 * Used to check if the channel is already a favourite from an IRCChannel
+	 * @param channel
+	 * @return
+	 */
 	public Boolean isFavourite(IRCChannel channel){
 		FavouritesItem castItem;
 		
@@ -492,7 +508,7 @@ public class UserGUI extends JPanel implements Runnable{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			if(connectButton.getText() == "Connect"){
-				addToCreatedServers(servernameTextField.getText());
+				addToCreatedServers(servernameTextField.getText().trim());
 				
 				if(autoConnectToFavourites.isSelected()){
 					FavouritesItem castItem;
@@ -505,17 +521,20 @@ public class UserGUI extends JPanel implements Runnable{
 		}
 	}
 	
+	
 	public void sendGlobalMessage(String message, String sender){
 		for(IRCServer tempServer : createdServers)
 			tempServer.sendClientText(message, sender);
 	}
+	
 	/**
 	 * Used to connect to all the favourites. This gets run from Connection once the socket
 	 * has successfully connected to the initial server.
+	 * @param IRCServer
 	 */
 	public void connectFavourites(IRCServer server){
-
-		server.sendClientText("/join "+firstChannelTextField.getText(),servernameTextField.getText());
+		if(servernameTextField.getText().trim().equals(server.getName()))
+			server.sendClientText("/join "+firstChannelTextField.getText().trim(),servernameTextField.getText().trim());
 
 		if(autoConnectToFavourites.isSelected()){
 			FavouritesItem castItem;
@@ -551,6 +570,19 @@ public class UserGUI extends JPanel implements Runnable{
 			createdServers.remove(tempServer);
 		}
 	}
+	
+	/**
+	 * Loops through all servers and disconnects
+	 * and deletes the tab
+	 */
+	public void quitServer(IRCServer server){
+			server.quitChannels();
+			server.quitPrivateRooms();
+			tabbedPane.remove(server);
+			createdServers.remove(server);
+	}
+	
+	
 	
 	/**
 	 * Saves the settings into the registry/Settings API
@@ -672,24 +704,25 @@ public class UserGUI extends JPanel implements Runnable{
    private class TabbedMouseListener extends MouseInputAdapter {
 	   public void mouseClicked(MouseEvent e) {
 		   final int index = tabbedPane.getUI().tabForCoordinate(tabbedPane, e.getX(), e.getY());
-		   if(index > -1){
+		   if(index > -1){ 
 		   String tabName = tabbedPane.getTitleAt(index);
-		   if(SwingUtilities.isRightMouseButton(e))
-			  for(IRCServer tempServer : createdServers)
-			   if(tempServer.getCreatedChannel(tabName) != null){
+		   if(SwingUtilities.isRightMouseButton(e))			   
+			   if(tabbedPane.getComponentAt(index).getClass() == IRCChannel.class){
+				   IRCServer tempServer = getCreatedServer(((IRCChannel)tabbedPane.getComponentAt(index)).getServer());
 				   if(isFavourite(tempServer.getCreatedChannel(tabName)))
 					   tempServer.getCreatedChannel(tabName).myMenu.addAsFavouriteItem.setText("Remove as Favourite");
 				   else 
 					   tempServer.getCreatedChannel(tabName).myMenu.addAsFavouriteItem.setText("Add as Favourite");
 				   tempServer.getCreatedChannel(tabName).myMenu.show(tabbedPane, e.getX(), e.getY());
-			   }else if(tempServer.getCreatedPrivateRoom(tabName) != null)
-				   //TODO Private room popup
+			   }else if(tabbedPane.getComponentAt(index).getClass() == IRCPrivate.class){
+				   IRCServer tempServer = getCreatedServer(((IRCPrivate)tabbedPane.getComponentAt(index)).getServer());
 				   tempServer.quitPrivateRooms(tabName);
-			else
-				getCreatedServer(tabName).sendClientText("/quit", tabName);
+			   }else if(getCreatedServer(tabName) != null) {
+				   getCreatedServer(tabName).myMenu.show(tabbedPane, e.getX(), e.getY());
 			   }
+		   }
 	    }
-	   }
+   }
 
 	
 	//Sets focus to the clientTextBox when tab is changed to a channel
