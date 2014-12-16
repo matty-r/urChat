@@ -640,11 +640,6 @@ public IRCUser getCreatedUsers(String userName){
 							tempUser = tempUser.substring(1);
 
 						usersArray.add(new IRCUser(myServer,tempUser));
-						
-						if(tempUser.startsWith("@"))
-							getCreatedUsers(tempUser).setUserStatus("@");
-						else if(tempUser.startsWith("+"))
-							getCreatedUsers(tempUser).setUserStatus("+");
 					}
 				}
 				usersListModel.sort();
@@ -660,10 +655,6 @@ public IRCUser getCreatedUsers(String userName){
 						if(user.startsWith(":"))
 							thisUser = user.substring(1);
 
-						if(thisUser.startsWith("@"))
-							getCreatedUsers(thisUser).setUserStatus("@");
-						else if(thisUser.startsWith("+"))
-							getCreatedUsers(thisUser).setUserStatus("+");
 						usersArray.add(new IRCUser(myServer,thisUser));
 						usersList.setSelectedIndex(0);
 						createEvent("++ "+thisUser+" has entered "+channel);

@@ -20,6 +20,15 @@ public class IRCUser implements Comparable<IRCUser>{
 		this.name = name;
 		this.myServer = serverName;
 		this.myMenu = new UserPopUp();
+		
+		if(name.startsWith("@"))
+			setUserStatus("@");
+		else if(name.startsWith("+"))
+			setUserStatus("+");
+		else if(name.startsWith("&"))
+			setUserStatus("&");
+		else if(name.startsWith("%"))
+			setUserStatus("%");
 	}
 	
 	public void setName(String name){

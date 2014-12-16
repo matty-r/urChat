@@ -263,11 +263,12 @@ public class Connection implements Runnable{
 		        				Toolkit.getDefaultToolkit().beep();
     							break;
 		        	//JOIN = When a user joins a channel
-		        	case "JOIN":if(extractNick(receivedOptions[0]).equals(myNick)){
-					        		server.addToCreatedChannels(receivedOptions[2]);
-			    					server.printEventTicker(receivedOptions[2], "You have joined "+receivedOptions[2]);
+		        	case "JOIN":String joinChannel = receivedText.substring(receivedText.indexOf('#'));
+		        				if(extractNick(receivedOptions[0]).equals(myNick)){
+					        		server.addToCreatedChannels(joinChannel);
+			    					server.printEventTicker(joinChannel, "You have joined "+joinChannel);
 					        	} else 
-		        					server.addToUsersList(receivedOptions[2], receivedOptions[0].substring(0, receivedOptions[0].indexOf("!")));
+		        					server.addToUsersList(joinChannel, extractNick(receivedOptions[0]));
 		        				break;
 		        	case "PRIVMSG": if(!receivedOptions[2].equals(myNick)){
 		        						server.printChannelText(receivedOptions[2],message,extractNick(receivedOptions[0]));

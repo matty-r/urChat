@@ -15,6 +15,12 @@ TODO List:
 * Allow moving the event ticker to the top of the screen instead
 * Allow resizing of users lists (Double click to hide?)
 
+=Update(16 DEV 14)
+
+* Changed how user status is set, it's now set through IRCUser in the constructor
+* Changed how the JOIN command is handled, channels will always start with # so use this to find the
+	\ channel name to join to. Also use the extractNick() method to get the appropriate username if it
+	\ isn't me.
 
 =Update (15 DEC 14)
 
