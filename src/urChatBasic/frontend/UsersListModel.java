@@ -1,4 +1,4 @@
-package urChatBasic;
+package urChatBasic.frontend;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package urChatBasic;
+package urChatBasic.frontend;
 
 public interface IRCActions {
 

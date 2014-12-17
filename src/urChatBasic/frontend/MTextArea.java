@@ -1,4 +1,4 @@
-package urChatBasic;
+package urChatBasic.frontend;
 
 import javax.swing.JTextPane;
 

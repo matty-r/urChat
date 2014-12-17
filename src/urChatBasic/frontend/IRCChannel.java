@@ -1,4 +1,4 @@
-package urChatBasic;
+package urChatBasic.frontend;
 
 import java.awt.event.*;
 import java.awt.*;
@@ -12,6 +12,8 @@ import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.*;
+
+import urChatBasic.base.Constants;
 
 public class IRCChannel extends JPanel implements IRCActions{
 	/**
@@ -106,7 +108,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 		fontPanel.setVisible(false);
 		Image tempIcon = null;
 		try {
-			tempIcon = ImageIO.read(new File(DriverGUI.RESOURCES_DIR+"Room.png"));
+			tempIcon = ImageIO.read(new File(Constants.RESOURCES_DIR+"Room.png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -711,7 +713,7 @@ public IRCUser getCreatedUsers(String userName){
 	/** Write all competitors to the competitors.txt file */
 	public void writeHistoryFile(String line) throws IOException{
 		if(gui.saveChannelHistory()){
-			FileWriter fw = new FileWriter (DriverGUI.directoryLogs+historyFileName, true);
+			FileWriter fw = new FileWriter (Constants.directoryLogs+historyFileName, true);
 			BufferedWriter bw = new BufferedWriter (fw);
 			PrintWriter outFile = new PrintWriter (bw);
 			outFile.println(line);

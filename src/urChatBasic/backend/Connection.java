@@ -1,4 +1,4 @@
-package urChatBasic;
+package urChatBasic.backend;
 
 import java.awt.Toolkit;
 import java.io.*;
@@ -8,19 +8,24 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import urChatBasic.base.ConnectionBase;
+import urChatBasic.base.Constants;
+import urChatBasic.base.IRCServerBase;
+import urChatBasic.base.UserGUIBase;
 
-public class Connection implements Runnable{
+
+public class Connection implements ConnectionBase{
 
 	//This was static.. it was causing silly issues with the reader/writer
 	private BufferedWriter writer;
 	private BufferedReader reader;
 	
-	private IRCServer server;
+	private IRCServerBase server;
 	private String myNick;
 	private String login;
 	//public String firstChannel;
 	private Socket mySocket;
-	public UserGUI gui = DriverGUI.gui;
+	public UserGUIBase gui;
 	
 	//Used for Logging messages received by the server
 	//Debug Mode
@@ -29,7 +34,8 @@ public class Connection implements Runnable{
 	private Date todayDate = new Date();
 	private String debugFile;
 
-    public Connection(IRCServer server,String nick,String login) throws Exception{
+    public Connection(IRCServerBase server,String nick,String login, UserGUIBase ugb) throws Exception{
+    	this.gui = ugb;
     	this.server =  server;
     	this.myNick = nick;
     	this.login = login;
@@ -37,14 +43,19 @@ public class Connection implements Runnable{
     	
 	}
     
-    public Boolean isConnected(){
-    	if((mySocket != null) && (server != null) && (mySocket.isConnected()))
-    		return true;
-    	
-    	return false;
+    /* (non-Javadoc)
+	 * @see urChatBasic.backend.ConnectionBase#isConnected()
+	 */
+    @Override
+	public Boolean isConnected(){
+    	return (mySocket != null) && (server != null) && (mySocket.isConnected());
     }
     
-    public IRCServer getServer(){
+    /* (non-Javadoc)
+	 * @see urChatBasic.backend.ConnectionBase#getServer()
+	 */
+    @Override
+	public IRCServerBase getServer(){
     	return this.server;
     }
 
@@ -93,14 +104,26 @@ public class Connection implements Runnable{
 		mySocket.close();
     }
 	
+	/* (non-Javadoc)
+	 * @see urChatBasic.backend.ConnectionBase#setNick(java.lang.String)
+	 */
+	@Override
 	public void setNick(String newNick){
 		myNick = newNick;
 	}
 	
+	/* (non-Javadoc)
+	 * @see urChatBasic.backend.ConnectionBase#getNick()
+	 */
+	@Override
 	public String getNick(){
 		return myNick;
 	}
 	
+	/* (non-Javadoc)
+	 * @see urChatBasic.backend.ConnectionBase#sendClientText(java.lang.String, java.lang.String)
+	 */
+	@Override
 	public void sendClientText(String clientText,String fromChannel) throws IOException{
 		if(isConnected()){
 		
@@ -338,17 +361,18 @@ public class Connection implements Runnable{
 		server.printServerText(message);
 	}
 	
-	/** Write a line to the server log file - checks to make sure
-	 * the client has enabled saving of the server history.
-	 * */
+	/* (non-Javadoc)
+	 * @see urChatBasic.backend.ConnectionBase#writeDebugFile(java.lang.String)
+	 */
+	@Override
 	public void writeDebugFile(String message) throws IOException{
 		if(gui.saveServerHistory()){
 			debugFile = debugDateFormat.format(todayDate)+" "+server+".log";
-			File logDir = new File(DriverGUI.directoryLogs);
+			File logDir = new File(Constants.directoryLogs);
 			if(!logDir.exists()){
 				logDir.mkdir();
 			}
-			File logFile = new File(DriverGUI.directoryLogs, debugFile);
+			File logFile = new File(Constants.directoryLogs, debugFile);
 			if(!logFile.exists()){
 				logFile.createNewFile();
 			}
@@ -370,6 +394,9 @@ public class Connection implements Runnable{
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see urChatBasic.backend.ConnectionBase#run()
+	 */
 	@Override
 	public void run() {
 		try {
