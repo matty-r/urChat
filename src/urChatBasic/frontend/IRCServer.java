@@ -22,9 +22,10 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.*;
+import javax.swing.text.StyledDocument;
 
 import urChatBasic.backend.Connection;
+import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 
@@ -42,7 +43,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	private UserGUI gui = DriverGUI.gui;
 
 	//Server Properties
-	private Connection serverConnection; 
+	private ConnectionBase serverConnection; 
 
 	//Server Text Area
 	private JTextPane serverTextArea = new JTextPane();

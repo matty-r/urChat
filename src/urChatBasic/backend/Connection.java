@@ -14,7 +14,7 @@ import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.UserGUIBase;
 
 
-public class Connection implements Runnable, ConnectionBase{
+public class Connection implements ConnectionBase{
 
 	//This was static.. it was causing silly issues with the reader/writer
 	private BufferedWriter writer;

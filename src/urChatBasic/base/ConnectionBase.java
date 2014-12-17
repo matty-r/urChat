@@ -3,7 +3,7 @@ package urChatBasic.base;
 import java.io.IOException;
 
 
-public interface ConnectionBase {
+public interface ConnectionBase extends Runnable {
 
 	public abstract Boolean isConnected();
 
