@@ -2,7 +2,6 @@ package urChatBasic.frontend;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
@@ -10,8 +9,6 @@ import javax.swing.UIManager;
 public class DriverGUI
 {
 	public static UserGUI gui = null;
-	public static final String RESOURCES_DIR = "Resources" + File.separator;
-	public static String directoryLogs = "Logs" + File.separator;
 	
 	public static void main(String[] args) throws IOException{
 		try {

@@ -18,6 +18,8 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.text.StyledDocument;
 
+import urChatBasic.base.Constants;
+
 public class IRCPrivate extends JPanel{
 	/**
 	 * 
@@ -51,7 +53,7 @@ public class IRCPrivate extends JPanel{
 		
 		Image tempIcon = null;
 		try {
-			tempIcon = ImageIO.read(new File(DriverGUI.RESOURCES_DIR+"User.png"));
+			tempIcon = ImageIO.read(new File(Constants.RESOURCES_DIR+"User.png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
