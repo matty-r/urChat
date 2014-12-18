@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -25,7 +26,6 @@ import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 
-import urChatBasic.backend.Connection;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
@@ -76,8 +76,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 		try {
 			tempIcon = ImageIO.read(new File(Constants.RESOURCES_DIR+"Server.png"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Constants.LOGGER.log(Level.SEVERE, "COULD NOT LOAD Server.png " + e.getLocalizedMessage());
 		} 
 		icon = new ImageIcon(tempIcon);	
 
@@ -146,8 +145,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 				serverConnection = (ConnectionBase) temp;
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Constants.LOGGER.log(Level.SEVERE, "Failed to create backend! " + e.getLocalizedMessage());
 		}
 		new Thread(serverConnection).start();
 	}
@@ -348,11 +346,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 */
 	@Override
 	public void printServerText(String line){
-		try{
-			this.printText(gui.isTimeStampsEnabled(),line);
-		} catch(Exception e){
-			//TODO something here
-		}
+		this.printText(gui.isTimeStampsEnabled(),line);
 	}
 
 	/* (non-Javadoc)
@@ -437,8 +431,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 				if(!serverTextBox.getText().trim().isEmpty())
 					serverConnection.sendClientText(serverTextBox.getText(),getName());
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Constants.LOGGER.log(Level.WARNING, "Failed to send server text! " + e.getMessage());
 			}
 			serverTextBox.setText("");
 		}
@@ -453,8 +446,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 			if(serverConnection != null)
 				serverConnection.sendClientText(line, source);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Constants.LOGGER.log(Level.WARNING, "Couldn't send text! " + e.getLocalizedMessage());
 		}
 	}
 
@@ -492,13 +484,6 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 
 
 		new LineFormatter(gui.getFont(),getNick()).formattedDocument(doc, timeLine, "", line);
-
-		//try {
-		//doc.insertString(doc.getLength(), line+"\n", style);
-		//} catch (BadLocationException e) {
-		// TODO Auto-generated catch block
-		//e.printStackTrace();
-		//}
 
 		serverTextArea.setCaretPosition(serverTextArea.getDocument().getLength());
 	}

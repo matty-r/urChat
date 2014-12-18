@@ -2,7 +2,11 @@ package urChatBasic.frontend;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.logging.Level;
+
 import javax.swing.text.*;
+
+import urChatBasic.base.Constants;
 
 public class LineFormatter {
 	private String myNick;
@@ -91,8 +95,7 @@ public class LineFormatter {
     	doc.insertString(doc.getLength(), "> ", lineStyle);
     	doc.insertString(doc.getLength(), line+"\n", lineStyle);
 		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Constants.LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
 		}
 	}
 	

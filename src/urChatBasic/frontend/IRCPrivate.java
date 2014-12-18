@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -55,8 +56,7 @@ public class IRCPrivate extends JPanel{
 		try {
 			tempIcon = ImageIO.read(new File(Constants.RESOURCES_DIR+"User.png"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Constants.LOGGER.log(Level.SEVERE, "FAILED to load User.png! " + e.getLocalizedMessage());
 		} 
 		icon = new ImageIcon(tempIcon);
 	}

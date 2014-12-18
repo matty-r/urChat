@@ -9,6 +9,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
@@ -223,7 +225,7 @@ public class Connection implements ConnectionBase{
 		try{
 		message = receivedText.substring(nthOccurrence(receivedText, ':', 2)+1);
 		} catch(IndexOutOfBoundsException e) {
-			//TODO This probably means it's not a server wide message?
+			Constants.LOGGER.log(Level.SEVERE, "Whats going on here? " + e.getLocalizedMessage());
 		}
 		
 		 if (receivedText.toLowerCase( ).startsWith("ping")) {
@@ -378,8 +380,7 @@ public class Connection implements ConnectionBase{
 		try {
 			startUp();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());
 		}
 	}
 

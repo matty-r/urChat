@@ -1,6 +1,7 @@
 package urChatBasic.frontend;
 
 import java.awt.*;
+import java.util.logging.Level;
 import java.util.prefs.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,6 +13,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.event.*;
 
+import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.UserGUIBase;
 
@@ -657,8 +659,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 				 for(String value : clientSettings.node("Favourites").node(serverNode).keys())
 					 favouritesListModel.addElement(new FavouritesItem(serverNode,value));
 		 } catch (BackingStoreException e) {
-			 // TODO Auto-generated catch block
-			 e.printStackTrace();
+			 Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
 		 }
 	 }
 
