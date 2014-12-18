@@ -61,7 +61,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	//Created channels/tabs
 	private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
 
-	public IRCServer(String serverName,String nick,String login){
+	public IRCServer(String serverName,String nick,String login,String portNumber){
 		this.setLayout(new BorderLayout());
 		this.add(serverTextScroll, BorderLayout.CENTER);
 		this.add(serverTextBox, BorderLayout.PAGE_END);
@@ -80,7 +80,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 		} 
 		icon = new ImageIcon(tempIcon);	
 
-		serverConnect(nick,login, Constants.BACKEND_CLASS);
+		serverConnect(nick,login, portNumber,Constants.BACKEND_CLASS);
 	}
 
 	/* (non-Javadoc)
@@ -136,10 +136,10 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 * @see urChatBasic.backend.IRCServerBase#serverConnect(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void serverConnect(String nick,String login, Class connection){
+	public void serverConnect(String nick,String login,String portNumber,Class connection){
 		try {
-			Constructor<?> ctor = connection.getConstructor(new Class[]{IRCServerBase.class, String.class, String.class, UserGUIBase.class});
-			Object temp = ctor.newInstance(new Object[] {this, nick, login, gui});
+			Constructor<?> ctor = connection.getConstructor(new Class[]{IRCServerBase.class, String.class, String.class, String.class, UserGUIBase.class});
+			Object temp = ctor.newInstance(new Object[] {this, nick, login, portNumber,gui});
 			if(temp instanceof ConnectionBase)
 			{
 				serverConnection = (ConnectionBase) temp;
@@ -184,11 +184,11 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	}
 
 	/* (non-Javadoc)
-	 * @see urChatBasic.backend.IRCServerBase#getIRCUser(java.lang.String)
+	 * @see urChatBasic.base.IRCServerBase#getIRCUser(java.lang.String)
 	 */
 	@Override
 	public IRCUser getIRCUser(String userName){
-			for(IRCChannel tempChannel : createdChannels)
+		for(IRCChannel tempChannel : createdChannels)
 			if(tempChannel.getCreatedUsers(userName) != null)
 				return tempChannel.getCreatedUsers(userName);
 		return new IRCUser(this,userName);
@@ -200,8 +200,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 */
 	@Override
 	public IRCPrivate getCreatedPrivateRoom(String privateRoom){
-		while(createdPrivateRooms.iterator().hasNext()){
-			IRCPrivate tempPrivate = createdPrivateRooms.iterator().next();
+		for(IRCPrivate tempPrivate : createdPrivateRooms){
 				if(tempPrivate.getName().toLowerCase().equals(privateRoom.toLowerCase()))
 					return tempPrivate;
 		}
@@ -325,17 +324,9 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 */
 	@Override
 	public void printPrivateText(String userName, String line,String fromUser){
-		/**if(getIRCUser(userName) != null && !getIRCUser(userName).isMuted()){
-			if(getCreatedPrivateRoom(userName) == null)
-				addToPrivateRooms(getIRCUser(userName));
-			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),fromUser,line);
-		} else if (getIRCUser(userName) == null){
-			if(getCreatedPrivateRoom(userName) == null)
-				addToPrivateRooms(new IRCUser(this,userName));
-			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),fromUser,line);
-		}**/
 		
-		//private messages aren't linked to a channel, so if they aren't muted 
+		//private messages aren't linked to a channel, so create it - also
+		// if they aren't muted
 		if(getIRCUser(userName) != null && !getIRCUser(userName).isMuted()){
 			addToPrivateRooms(getIRCUser(userName));
 			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),fromUser,line);

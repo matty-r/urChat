@@ -12,7 +12,7 @@ public interface IRCServerBase {
 	 * Saves all the information from the text boxes to the connection
 	 * 
 	 */
-	public abstract void serverConnect(String nick, String login, Class connection);
+	public abstract void serverConnect(String nick, String login,String portNumber, Class connection);
 
 	public abstract String toString();
 
@@ -27,6 +27,12 @@ public interface IRCServerBase {
 	 */
 	public abstract Boolean isCreatedChannelsEmpty();
 
+	/**
+	 * Get the IRCUser object from the userName - if 
+	 * the IRCUser isn't found, then create it.
+	 * @param userName
+	 * @return
+	 */
 	public abstract IRCUser getIRCUser(String userName);
 
 	/**

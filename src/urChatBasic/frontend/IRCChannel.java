@@ -500,10 +500,8 @@ public class IRCChannel extends JPanel implements IRCActions{
 	 * @param channelName
 	 * @return IRCChannel
 	 */
-
 	public IRCUser getCreatedUsers(String userName){
-		while(usersArray.iterator().hasNext()){
-			IRCUser tempUser = usersArray.iterator().next();
+		for(IRCUser tempUser : usersArray){
 			if(tempUser.getName().toLowerCase().equals(userName.toLowerCase()))
 				return tempUser;
 		};

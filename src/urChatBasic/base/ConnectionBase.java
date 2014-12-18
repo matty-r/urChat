@@ -12,6 +12,10 @@ public interface ConnectionBase extends Runnable {
 	public abstract void setNick(String newNick);
 
 	public abstract String getNick();
+	
+	public abstract String getPortNumber();
+	
+	public abstract String getLogin();
 
 	public abstract void sendClientText(String clientText, String fromChannel)
 			throws IOException;

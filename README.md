@@ -15,10 +15,15 @@ If you would like to assist in the development of urChat take a look at the Issu
 * Fixed lock-up when change to/from Private tab - required changing how selecting a tab is handled, now uses the same method of getting what type of tab is selected as TabbedMouseListener.
 * Changed some methods to use an iterator instead of an Enhanced For loop, this should help with ConcurrentModificationExceptions.
 * Fixed IndexOutOfBounds error when parsing the 'message' out of receivedText by checking to make sure there are two ':' within received text. See countOfOccurences within Connection.
+* Improved the layout of the option panels
+* Removed the favourites panel and placed it onto the same panel as the Server options - this makes more sense as you'll be able to see what you're connecting to when you press connect. 
+* Added Port to the server options, defaults to port 6667
+* Added Port requirement when creating an IRCServer&Connection.
+* Added Real name to the server options
 
 =Update (17 DEC 14)
 
-* Package split into Frontend, base and Backend - thanks Goofybud16
+* Package split into Frontend, Base and Backend - thanks Goofybud16
 
 =Update (16 DEC 14)
 

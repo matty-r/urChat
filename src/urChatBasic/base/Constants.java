@@ -22,6 +22,7 @@ public class Constants{
 	private static Handler LOGGER_TO_FILE;
 	public static Logger LOGGER = Logger.getLogger("Main");
 	public static String LOGFILE_NAME = "Errors.log";
+	public static final String PORT_DEFAULT = "6667";
 	/**
 	 * Used to initialize some values that may throw exceptions.
 	 * @author goofybud16

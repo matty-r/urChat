@@ -28,6 +28,7 @@ public class Connection implements ConnectionBase{
 	private IRCServerBase server;
 	private String myNick;
 	private String login;
+	private String portNumber;
 	private Socket mySocket;
 	public UserGUIBase gui;
 	
@@ -39,10 +40,13 @@ public class Connection implements ConnectionBase{
 	//private Date todayDate = new Date();
 	//private String debugFile;
 
-    public Connection(IRCServerBase server,String nick,String login, UserGUIBase ugb){
+    public Connection(IRCServerBase server,String nick,String login,String portNumber, UserGUIBase ugb){
     	this.gui = ugb;
     	this.server =  server;
     	this.myNick = nick;
+    	if(portNumber.trim().equals(""))
+    		this.portNumber = Constants.PORT_DEFAULT;
+    	this.portNumber = portNumber;
     	this.login = login;
 	}
     
@@ -61,12 +65,28 @@ public class Connection implements ConnectionBase{
 	public IRCServerBase getServer(){
     	return this.server;
     }
+    
+    /* (non-Javadoc)
+	 * @see urChatBasic.base.ConnectionBase#getServer()
+	 */
+    @Override
+	public String getPortNumber(){
+    	return this.portNumber;
+    }
+    
+    /* (non-Javadoc)
+	 * @see urChatBasic.base.ConnectionBase#getServer()
+	 */
+    @Override
+	public String getLogin(){
+    	return this.login;
+    }
 
     private void startUp() throws IOException{
     	
 		localMessage("Attempting to connect to "+server);
 		//TODO must be able to type in the port number instead of having this hard-coded.
-        mySocket = new Socket(server.getName(), 6667);
+        mySocket = new Socket(server.getName(), Integer.parseInt(getPortNumber()));
 
 		writer = new BufferedWriter(
                 new OutputStreamWriter(mySocket.getOutputStream( )));
@@ -76,13 +96,12 @@ public class Connection implements ConnectionBase{
         localMessage("Connected to "+getServer());
         
         
-        
         String line = null;
         
         // Log on to the server.
-        writer.write("NICK " + myNick + "\r\n");
-        writer.write("USER " + login + " 8 * : "+myNick+"\r\n");
-        localMessage("Connect with nick "+myNick);
+        writer.write("NICK " + getNick() + "\r\n");
+        writer.write("USER " + login + " 8 * : "+getLogin()+"\r\n");
+        localMessage("Connect with nick "+getNick());
         writer.flush( );
         
         // Read lines from the server until it tells us we have connected.
@@ -130,8 +149,7 @@ public class Connection implements ConnectionBase{
 	public void sendClientText(String clientText,String fromChannel) throws IOException{
 		if(isConnected()){
 		
-			String[] tempTextArray = null;
-			String tempText = "";
+			String[] tempTextArray = clientText.split(" ");
 			
 			if(clientText != ""){
 				if(clientText.startsWith("/join")){
@@ -141,24 +159,14 @@ public class Connection implements ConnectionBase{
 						myNick = clientText.replace("/nick ","");
 				} else if(clientText.startsWith("/msg")){
 					tempTextArray = clientText.split(" ");
-					for(int x = 2; x < tempTextArray.length; x++){
-						tempText += tempTextArray[x] + " ";
-					}
-
 					if(tempTextArray.length > -1){
-						writer.write("PRIVMSG " + fromChannel + " :"+tempText.substring(0, tempText.length()-1) +"\r\n");
-						server.printPrivateText(fromChannel, tempText.substring(0, tempText.length()-1), myNick);
+						writer.write("PRIVMSG " + tempTextArray[1] + " :"+clientText.replace("/msg "+tempTextArray[1]+" ", "") +"\r\n");
+						server.printPrivateText(tempTextArray[1], clientText.replace("/msg "+tempTextArray[1]+" ", ""), myNick);
 						gui.setCurrentTab(tempTextArray[1]);
 					}
 				} else if(clientText.startsWith("/whois")){
-					tempTextArray = clientText.split(" ");
-					for(int x = 2; x < tempTextArray.length; x++){
-						tempText += tempTextArray[x] + " ";
-					}
-
-					if(tempTextArray.length > -1){
+					if(tempTextArray.length > -1)
 						writer.write("WHOIS " + tempTextArray[1] +"\r\n");
-					}
 				} else if(clientText.startsWith("/quit")){
 						writer.write("QUIT :" + clientText.replace("/quit ","") +"\r\n");
 				} else if(clientText.startsWith("/part")){
@@ -167,7 +175,7 @@ public class Connection implements ConnectionBase{
 					writer.write("PRIVMSG " + fromChannel + " :  ACTION " + clientText.replace("/me ","") +"  \r\n");
 				} else {
 					writer.write("PRIVMSG " + fromChannel + " :"+clientText+"\r\n");
-					server.printChannelText(fromChannel, clientText,myNick);
+					server.printChannelText(fromChannel, clientText, myNick);
 				}
 			writer.flush();
 			
@@ -304,7 +312,7 @@ public class Connection implements ConnectionBase{
 		        	case "PRIVMSG": if(!receivedOptions[2].equals(myNick)){
 		        						server.printChannelText(receivedOptions[2],message,extractNick(receivedOptions[0]));
 			        				} else{
-			        					server.printChannelText(extractNick(receivedOptions[0]),message,extractNick(receivedOptions[0]));
+			        					server.printPrivateText(extractNick(receivedOptions[0]),message,extractNick(receivedOptions[0]));
 			        				}
 		        				break;
     				//311 = Whois response
@@ -390,7 +398,8 @@ public class Connection implements ConnectionBase{
 	@Override
 	public void run() {
 		try {
-			startUp();
+			if(getPortNumber() != null && getServer() != null && getNick() != null)
+				startUp();
 		} catch (IOException e) {
 			Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());
 		}

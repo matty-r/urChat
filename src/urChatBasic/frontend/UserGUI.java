@@ -23,8 +23,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 */
 	private static final long serialVersionUID = 2595649865577419300L;
 	//Main Panel
-	final private int MAIN_WIDTH = 800;
-	final private int MAIN_HEIGHT = 600;
+	final private int MAIN_WIDTH_INIT = 800;
+	final private int MAIN_HEIGHT_INIT = 600;
 
 	//Tabs
 	public JTabbedPane tabbedPane = new JTabbedPane();
@@ -35,10 +35,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	private JPanel optionsLeftPanel = new JPanel();
 	private DefaultListModel<String> optionsArray = new DefaultListModel<String>();
 	private JList<String> optionsList = new JList<String>(optionsArray);
-
 	private JPanel optionsRightPanel = new JPanel();
 	private Preferences clientSettings;
-
 
 
 	//Client Options Panel
@@ -53,28 +51,35 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	private JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
 	private JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
 	private JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
+	private JPanel clientFontPanel = new FontPanel(this);
 	//private JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
 
 	private JTextField limitServerLinesCount = new JTextField();
 	private JTextField limitChannelLinesCount = new JTextField();
 
-	private static final int TICKER_DELAY_MIN = 1;
+	private static final int TICKER_DELAY_MIN = 0;
 	private static final int TICKER_DELAY_MAX = 30;
 	private static final int TICKER_DELAY_INIT = 20; 
-	private static final int DEFAULT_LINES_LIMIT = 1000;
-	private JSlider eventTickerDelay = new JSlider(JSlider.HORIZONTAL,TICKER_DELAY_MIN, TICKER_DELAY_MAX, TICKER_DELAY_INIT);
+	private static final int DEFAULT_LINES_LIMIT = 500;
+	private final JSlider eventTickerDelay = new JSlider(JSlider.HORIZONTAL,TICKER_DELAY_MIN, TICKER_DELAY_MAX, TICKER_DELAY_INIT);
 
-	private JButton saveSettings = new JButton("Save Settings");
+	private final JButton saveSettings = new JButton("Save Settings");
 
 	//Server Options Panel
-	private JPanel serverOptionsPanel = new JPanel();
-	private JTextField usernameTextField = new JTextField("");
-	private JTextField servernameTextField = new JTextField("");
-	private JTextField firstChannelTextField = new JTextField("");
-	private JButton connectButton = new JButton("Connect");
+	private static final JPanel serverOptionsPanel = new JPanel();
+	private static final JLabel userNameLabel = new JLabel("Nick:");
+	private static final JTextField userNameTextField = new JTextField("");
+	private static final JLabel realNameLabel = new JLabel("Real name:");
+	private static final JTextField realNameTextField = new JTextField("");
+	private static final JLabel serverNameLabel = new JLabel("Server:");
+	private static final JTextField servernameTextField = new JTextField("");
+	private static final JLabel serverPortLabel = new JLabel("Port:");
+	private static final JTextField serverPortTextField = new JTextField("");
+	private static final JLabel firstChannelLabel = new JLabel("Channel:");
+	private static final JTextField firstChannelTextField = new JTextField("");
+	private static final JButton connectButton = new JButton("Connect");
 
 	//Favourites Panel
-	private JPanel optionsFavouritesPanel = new JPanel();
 	private JCheckBox autoConnectToFavourites = new JCheckBox("Automatically connect to favourites");
 	private DefaultListModel<FavouritesItem> favouritesListModel = new DefaultListModel<FavouritesItem>();
 	private JList<FavouritesItem> favouritesList = new JList<FavouritesItem>(favouritesListModel);
@@ -106,7 +111,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		try{
 			return Integer.parseInt(limitChannelLinesCount.getText());
 		} catch(Exception e){
-			//Was an error, default to 1000
+			//Was an error, set to default
 			return DEFAULT_LINES_LIMIT;
 		}
 	}
@@ -176,9 +181,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 */
 	@Override
 	public void addToCreatedServers(String serverName){
-
 		if(getCreatedServer(serverName) == null){
-			IRCServer tempServer = new IRCServer(serverName.trim(),usernameTextField.getText().trim(),usernameTextField.getText().trim());
+			IRCServer tempServer = new IRCServer(serverName.trim(),userNameTextField.getText().trim(),realNameTextField.getText().trim(),serverPortTextField.getText().trim());
 			createdServers.add(tempServer);
 			tabbedPane.addTab(serverName, tempServer.icon,tempServer);
 			tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempServer));
@@ -272,31 +276,118 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	return enableClickableLinks.isSelected();
 	}*/
 
-	private void setupServerOptionsPanel(){
-		serverOptionsPanel.setLayout(new BoxLayout(serverOptionsPanel, BoxLayout.PAGE_AXIS));
-		serverOptionsPanel.add(new JLabel("Nick:"));
-		usernameTextField.setMaximumSize(new Dimension(250,20));
-		serverOptionsPanel.add(usernameTextField);
-		serverOptionsPanel.add(Box.createRigidArea(new Dimension(0,5)));
-		serverOptionsPanel.add(new JLabel("Server name:"));
-		servernameTextField.setMaximumSize(new Dimension(250,20));
+	 private void setupOptionsPanel(){
+		 optionsMainPanel.setLayout(new BorderLayout());
+
+		 optionsArray.addElement("Server");
+		 optionsArray.addElement("Client");
+
+		 setupLeftOptionsPanel();
+		 setupRightOptionsPanel();
+
+		 optionsMainPanel.add(optionsLeftPanel, BorderLayout.LINE_START);
+		 optionsMainPanel.add(optionsRightPanel, BorderLayout.CENTER);
+		 optionsList.setSelectedIndex(OPTIONS_INDEX);
+	 }
+	
+	 /**
+	  * Add the components to the Server Options Panel.
+	  */
+	private void setupServerOptionsPanelComponents(){
+		//serverOptionsPanel.setLayout(new BoxLayout(serverOptionsPanel, BoxLayout.PAGE_AXIS));
+		setupServerOptionsLayout();
+		
+		
+		serverOptionsPanel.add(userNameLabel);
+		serverOptionsPanel.add(userNameTextField);
+		userNameTextField.setPreferredSize(new Dimension(100,20));
+		
+		serverOptionsPanel.add(realNameLabel);
+		serverOptionsPanel.add(realNameTextField);
+		realNameTextField.setPreferredSize(new Dimension(100,20));
+		
+		serverOptionsPanel.add(serverNameLabel);
 		serverOptionsPanel.add(servernameTextField);
-		serverOptionsPanel.add(Box.createRigidArea(new Dimension(0,5)));
-		serverOptionsPanel.add(new JLabel("Channel:"));
-		firstChannelTextField.setMaximumSize(new Dimension(250,20));
+		servernameTextField.setPreferredSize(new Dimension(100,20));
+		
+		serverOptionsPanel.add(serverPortLabel);
+		serverOptionsPanel.add(serverPortTextField);
+		serverPortTextField.setPreferredSize(new Dimension(50,20));
+		
+		serverOptionsPanel.add(firstChannelLabel);
 		serverOptionsPanel.add(firstChannelTextField);
-		serverOptionsPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-		serverOptionsPanel.add(Box.createRigidArea(new Dimension(0,20)));
+		firstChannelTextField.setPreferredSize(new Dimension(100,20));
 		serverOptionsPanel.add(connectButton);
 		connectButton.addActionListener(new ConnectPressed());
+		
+		serverOptionsPanel.add(autoConnectToFavourites);
+		
+		favouritesScroller.setPreferredSize(new Dimension(autoConnectToFavourites.getPreferredSize().width,0));
+		favouritesList.addMouseListener(new FavouritesPopClickListener());
+		serverOptionsPanel.add(favouritesScroller);
 
 		optionsRightPanel.add(serverOptionsPanel, "Server");
+	}
+	
+	/**
+	 * Aligns components on the Server Options Panel
+	 */
+	private void setupServerOptionsLayout(){
+		SpringLayout serverLayout = new SpringLayout();
+		serverOptionsPanel.setLayout(serverLayout);
+		
+		//Used to make it more obvious what is going on -
+		//and perhaps more readable.
+		//0 means THAT edge will be flush with the opposing components edge
+		//Yes, negative numbers will make it overlap
+		final int TOP_SPACING = 5;
+		final int TOP_ALIGNED = 0;
+		final int LEFT_ALIGNED = 0;
+		final int LEFT_SPACING = 0;
+		
+		// Components are aligned off the top label
+		serverLayout.putConstraint(SpringLayout.WEST, userNameLabel, 5, SpringLayout.WEST, serverOptionsPanel);
+		serverLayout.putConstraint(SpringLayout.NORTH, userNameLabel, TOP_ALIGNED, SpringLayout.NORTH, serverOptionsPanel);
+		
+		serverLayout.putConstraint(SpringLayout.NORTH, userNameTextField, TOP_ALIGNED, SpringLayout.SOUTH, userNameLabel);
+		serverLayout.putConstraint(SpringLayout.WEST, userNameTextField, LEFT_ALIGNED, SpringLayout.WEST, userNameLabel);
 
+		serverLayout.putConstraint(SpringLayout.NORTH, realNameLabel, TOP_SPACING, SpringLayout.SOUTH, userNameTextField);
+		serverLayout.putConstraint(SpringLayout.WEST, realNameLabel, LEFT_ALIGNED, SpringLayout.WEST, userNameTextField);
+		
+		serverLayout.putConstraint(SpringLayout.NORTH, realNameTextField, TOP_ALIGNED, SpringLayout.SOUTH, realNameLabel);
+		serverLayout.putConstraint(SpringLayout.WEST, realNameTextField, LEFT_ALIGNED, SpringLayout.WEST, realNameLabel);
+		
+		serverLayout.putConstraint(SpringLayout.NORTH, serverNameLabel, TOP_SPACING, SpringLayout.SOUTH, realNameTextField);
+		serverLayout.putConstraint(SpringLayout.WEST, serverNameLabel, LEFT_ALIGNED, SpringLayout.WEST, realNameTextField);
+		
+		serverLayout.putConstraint(SpringLayout.NORTH, servernameTextField, TOP_ALIGNED, SpringLayout.SOUTH, serverNameLabel);
+		serverLayout.putConstraint(SpringLayout.WEST, servernameTextField, LEFT_ALIGNED, SpringLayout.WEST, serverNameLabel);
+		
+		serverLayout.putConstraint(SpringLayout.NORTH, serverPortLabel, TOP_ALIGNED, SpringLayout.NORTH, serverNameLabel);
+		serverLayout.putConstraint(SpringLayout.WEST, serverPortLabel, LEFT_SPACING, SpringLayout.EAST, servernameTextField);
+		
+		serverLayout.putConstraint(SpringLayout.NORTH, serverPortTextField, TOP_ALIGNED, SpringLayout.SOUTH, serverPortLabel);
+		serverLayout.putConstraint(SpringLayout.WEST, serverPortTextField, LEFT_ALIGNED, SpringLayout.WEST, serverPortLabel);
+		
+		serverLayout.putConstraint(SpringLayout.NORTH, firstChannelLabel, TOP_SPACING, SpringLayout.SOUTH, servernameTextField);
+		serverLayout.putConstraint(SpringLayout.WEST, firstChannelLabel, LEFT_ALIGNED, SpringLayout.WEST, servernameTextField);
+
+		serverLayout.putConstraint(SpringLayout.NORTH, firstChannelTextField, TOP_ALIGNED, SpringLayout.SOUTH, firstChannelLabel);
+		serverLayout.putConstraint(SpringLayout.WEST, firstChannelTextField, LEFT_ALIGNED, SpringLayout.WEST, firstChannelLabel);
+		
+		serverLayout.putConstraint(SpringLayout.NORTH, connectButton, TOP_SPACING*TOP_SPACING, SpringLayout.SOUTH, firstChannelTextField);
+		serverLayout.putConstraint(SpringLayout.WEST, connectButton, LEFT_SPACING, SpringLayout.WEST, firstChannelTextField);
+		
+		serverLayout.putConstraint(SpringLayout.NORTH, autoConnectToFavourites, TOP_SPACING, SpringLayout.SOUTH, connectButton);
+		serverLayout.putConstraint(SpringLayout.WEST, autoConnectToFavourites, LEFT_SPACING, SpringLayout.WEST, connectButton);
+		
+		serverLayout.putConstraint(SpringLayout.NORTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH, autoConnectToFavourites);
+		serverLayout.putConstraint(SpringLayout.SOUTH, favouritesScroller, TOP_ALIGNED, SpringLayout.SOUTH, serverOptionsPanel);
+		serverLayout.putConstraint(SpringLayout.WEST, favouritesScroller, LEFT_SPACING, SpringLayout.WEST, autoConnectToFavourites);
 	}
 
-	private void setupClientOptionsPanel(){
-		optionsClientPanel.setLayout(new BoxLayout(optionsClientPanel,BoxLayout.PAGE_AXIS));
-
+	private void setupClientOptionsPanelComponents(){
 
 		//Settings for these are loaded with the settings API
 		//found in getClientSettings()
@@ -309,47 +400,126 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		optionsClientPanel.add(logClientText);
 		optionsClientPanel.add(limitServerLines);
 		optionsClientPanel.add(limitServerLinesCount);
-		limitServerLinesCount.setMaximumSize(new Dimension(250,20));
+
+		limitServerLinesCount.setPreferredSize(new Dimension(50,20));
 		optionsClientPanel.add(limitChannelLines);
+
 		optionsClientPanel.add(limitChannelLinesCount);
-		limitChannelLinesCount.setMaximumSize(new Dimension(250,20));
+
+		limitChannelLinesCount.setPreferredSize(new Dimension(50,20));
 		optionsClientPanel.add(enableTimeStamps);
 
+		clientFontPanel.setPreferredSize(new Dimension(600,40));
+		optionsClientPanel.add(clientFontPanel);
+		
 		//Turn on labels at major tick marks.
 		eventTickerDelay.setMajorTickSpacing(10);
 		eventTickerDelay.setMinorTickSpacing(1);
 		eventTickerDelay.setPaintTicks(true);
+		//Ensure this is added to the COMPONENT ALIGNMENT once enabled.
 		//optionsClientPanel.add(enableClickableLinks);
 		eventTickerDelay.setPaintLabels(true);
 		eventTickerDelay.setMaximumSize(new Dimension(400,40));
-		optionsClientPanel.add(Box.createRigidArea(new Dimension(0,5)));
-		optionsClientPanel.add(new JLabel("Event Ticker movement delay (Lower is faster)"));
-		optionsClientPanel.add(Box.createRigidArea(new Dimension(0,5)));
+		
+		eventTickerDelay.setToolTipText("Event Ticker movement delay (Lower is faster)");
 		optionsClientPanel.add(eventTickerDelay);
-		optionsClientPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-		JPanel fontsPanel =  new FontPanel(this);
-		fontsPanel.setMaximumSize(new Dimension(600,60));
-		optionsClientPanel.add(fontsPanel);
+
+		
 		optionsClientPanel.add(saveSettings);
+
 		saveSettings.addActionListener( new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				setClientSettings();
 			}
 		});
-
+		
+		setupClientOptionsLayout();
 		optionsRightPanel.add(optionsClientPanel, "Client");
 	}
 
+	/**
+	 * Aligns components on the Client Options Panel
+	 */
+	private void setupClientOptionsLayout(){
+		SpringLayout clientLayout = new SpringLayout();
+		optionsClientPanel.setLayout(clientLayout);
+		
+		//Used to make it more obvious what is going on -
+		//and perhaps more readable.
+		//0 means THAT edge will be flush with the opposing components edge
+		//Yes, negative numbers will make it overlap
+		final int TOP_SPACING = 0;
+		final int TOP_ALIGNED = 0;
+		final int LEFT_ALIGNED = 0;
+		final int LEFT_SPACING = 0;
+		
+		// Components are aligned off the top label
+		clientLayout.putConstraint(SpringLayout.WEST, showEventTicker, LEFT_ALIGNED, SpringLayout.WEST, optionsClientPanel);
+		clientLayout.putConstraint(SpringLayout.NORTH, showEventTicker, TOP_ALIGNED, SpringLayout.NORTH, optionsClientPanel);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, showUsersList, TOP_SPACING, SpringLayout.SOUTH, showEventTicker);
+		clientLayout.putConstraint(SpringLayout.WEST, showUsersList, LEFT_ALIGNED, SpringLayout.WEST, showEventTicker);
+		
+		/* --Place holder for clickable links alignment settings--
+		 * Uncomment when clickable links is added
+		 * clientLayout.putConstraint(SpringLayout.NORTH, enableClickableLinks, TOP_SPACING, SpringLayout.SOUTH, showUsersList);
+		 * clientLayout.putConstraint(SpringLayout.WEST, enableClickableLinks, LEFT_ALIGNED, SpringLayout.WEST, showUsersList);
+		 * clientLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsEventTicker, LEFT_ALIGNED, SpringLayout.WEST, enableClickableLinks);
+		 * clientLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsEventTicker, LEFT_ALIGNED, SpringLayout.WEST, enableClickableLinks);
+		 */
+		
+		//Remove this when clickable links is added
+		clientLayout.putConstraint(SpringLayout.NORTH, showJoinsQuitsEventTicker, TOP_SPACING, SpringLayout.SOUTH, showUsersList);
+		//Remove this when clickable links is added
+		clientLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsEventTicker, LEFT_ALIGNED, SpringLayout.WEST, showUsersList);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, showJoinsQuitsMainWindow, TOP_SPACING, SpringLayout.SOUTH, showJoinsQuitsEventTicker);
+		clientLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsMainWindow, LEFT_ALIGNED, SpringLayout.WEST, showJoinsQuitsEventTicker);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, logChannelText, TOP_SPACING, SpringLayout.SOUTH, showJoinsQuitsMainWindow);
+		clientLayout.putConstraint(SpringLayout.WEST, logChannelText, LEFT_ALIGNED, SpringLayout.WEST, showJoinsQuitsMainWindow);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, logServerActivity, TOP_SPACING, SpringLayout.SOUTH, logChannelText);
+		clientLayout.putConstraint(SpringLayout.WEST, logServerActivity, LEFT_ALIGNED, SpringLayout.WEST, logChannelText);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, logClientText, TOP_SPACING, SpringLayout.SOUTH, logServerActivity);
+		clientLayout.putConstraint(SpringLayout.WEST, logClientText, LEFT_ALIGNED, SpringLayout.WEST, logServerActivity);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, limitServerLines, TOP_SPACING, SpringLayout.SOUTH, logClientText);
+		clientLayout.putConstraint(SpringLayout.WEST, limitServerLines, LEFT_ALIGNED, SpringLayout.WEST, logClientText);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, limitServerLinesCount, TOP_ALIGNED, SpringLayout.NORTH, limitServerLines);
+		clientLayout.putConstraint(SpringLayout.WEST, limitServerLinesCount, TOP_SPACING, SpringLayout.EAST, limitServerLines);
+
+		clientLayout.putConstraint(SpringLayout.NORTH, limitChannelLines, TOP_SPACING, SpringLayout.SOUTH, limitServerLines);
+		clientLayout.putConstraint(SpringLayout.WEST, limitChannelLines, LEFT_ALIGNED, SpringLayout.WEST, limitServerLines);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, limitChannelLinesCount, TOP_ALIGNED, SpringLayout.NORTH, limitChannelLines);
+		clientLayout.putConstraint(SpringLayout.WEST, limitChannelLinesCount, LEFT_SPACING, SpringLayout.EAST, limitChannelLines);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, enableTimeStamps, TOP_SPACING, SpringLayout.SOUTH, limitChannelLines);
+		clientLayout.putConstraint(SpringLayout.WEST, enableTimeStamps, LEFT_ALIGNED, SpringLayout.WEST, limitChannelLines);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, clientFontPanel, TOP_SPACING, SpringLayout.SOUTH, enableTimeStamps);
+		clientLayout.putConstraint(SpringLayout.WEST, clientFontPanel, LEFT_SPACING, SpringLayout.WEST, enableTimeStamps);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, eventTickerDelay, TOP_SPACING, SpringLayout.SOUTH, clientFontPanel);
+		clientLayout.putConstraint(SpringLayout.WEST, eventTickerDelay, LEFT_ALIGNED, SpringLayout.WEST, clientFontPanel);
+		
+		clientLayout.putConstraint(SpringLayout.NORTH, saveSettings, TOP_SPACING, SpringLayout.SOUTH, eventTickerDelay);
+		clientLayout.putConstraint(SpringLayout.WEST, saveSettings, LEFT_ALIGNED, SpringLayout.WEST, eventTickerDelay);
+		
+	}
+	
 	private void setupFavouritesOptionsPanel(){
-		optionsFavouritesPanel.setLayout(new BorderLayout());
-		optionsFavouritesPanel.add(autoConnectToFavourites, BorderLayout.NORTH);
-		favouritesList.addMouseListener(new FavouritesPopClickListener());
-		favouritesScroller.setPreferredSize(new Dimension(autoConnectToFavourites.getPreferredSize().width,0));
-		optionsFavouritesPanel.add(favouritesScroller, BorderLayout.LINE_START);
+		//optionsFavouritesPanel.setLayout(new BorderLayout());
+		//optionsFavouritesPanel.add(autoConnectToFavourites, BorderLayout.NORTH);
+
+		//optionsFavouritesPanel.add(favouritesScroller, BorderLayout.LINE_START);
 
 
-		optionsRightPanel.add(optionsFavouritesPanel, "Favourites");
+		//optionsRightPanel.add(optionsFavouritesPanel, "Favourites");
 	}
 
 
@@ -513,8 +683,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		 optionsRightPanel.setBackground(Color.BLACK);
 		 optionsRightPanel.setLayout(new CardLayout());
 
-		 setupServerOptionsPanel();
-		 setupClientOptionsPanel();
+		 setupServerOptionsPanelComponents();
+		 setupClientOptionsPanelComponents();
 		 setupFavouritesOptionsPanel();
 	 }
 
@@ -608,15 +778,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		 createdServers.remove(server);
 	 }
 
-
-
 	 /**
 	  * Saves the settings into the registry/Settings API
 	  */
 	 private void setClientSettings(){
 		 clientSettings.put("FIRST_CHANNEL", firstChannelTextField.getText());
 		 clientSettings.put("SERVER_NAME", servernameTextField.getText());
-		 clientSettings.put("NICK_NAME", usernameTextField.getText());
+		 clientSettings.put("SERVER_PORT", serverPortTextField.getText());
+		 clientSettings.put("NICK_NAME", userNameTextField.getText());
+		 clientSettings.put("REAL_NAME", realNameTextField.getText());
 		 clientSettings.putBoolean("TIME_STAMPS", enableTimeStamps.isSelected());
 		 clientSettings.putBoolean("EVENT_TICKER_ACTIVE",showEventTicker.isSelected());
 		 clientSettings.putBoolean("USERS_LIST_ACTIVE", showUsersList.isSelected());
@@ -639,7 +809,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 private void getClientSettings(){
 		 firstChannelTextField.setText(clientSettings.get("FIRST_CHANNEL",""));
 		 servernameTextField.setText(clientSettings.get("SERVER_NAME", ""));
-		 usernameTextField.setText(clientSettings.get("NICK_NAME", ""));
+		 serverPortTextField.setText(clientSettings.get("SERVER_PORT", Constants.PORT_DEFAULT));
+		 userNameTextField.setText(clientSettings.get("NICK_NAME", ""));
+		 realNameTextField.setText(clientSettings.get("REAL_NAME", ""));
 		 showUsersList.setSelected(clientSettings.getBoolean("USERS_LIST_ACTIVE", true));
 		 showEventTicker.setSelected(clientSettings.getBoolean("EVENT_TICKER_ACTIVE", true));
 		 enableTimeStamps.setSelected(clientSettings.getBoolean("TIME_STAMPS", true));
@@ -655,7 +827,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		 eventTickerDelay.setValue(clientSettings.getInt("EVENT_TICKER_DELAY", 20));
 		 autoConnectToFavourites.setSelected(clientSettings.getBoolean("AUTO_CONNECT_FAVOURITES", false));
 
-
+		 //TODO Add Port number to favourites.
 		 try {
 			 for(String serverNode : clientSettings.node("Favourites").childrenNames())
 				 for(String value : clientSettings.node("Favourites").node(serverNode).keys())
@@ -682,8 +854,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 }
 
 	 /**
-	  * Used to change which panel to show when you choose an option
-	  * Client or Server item in the list
+	  * Used to change which panel to show when you choose an option under the
+	  * Options Tab.
 	  * @author Matt
 	  *
 	  */
@@ -705,28 +877,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		 }
 	 }
 
-	 private void setupOptionsPanel(){
-		 optionsMainPanel.setLayout(new BorderLayout());
-
-		 optionsArray.addElement("Server");
-		 optionsArray.addElement("Client");
-		 optionsArray.addElement("Favourites");
-
-		 setupLeftOptionsPanel();
-		 setupRightOptionsPanel();
-
-		 optionsMainPanel.add(optionsLeftPanel, BorderLayout.LINE_START);
-		 optionsMainPanel.add(optionsRightPanel, BorderLayout.CENTER);
-		 optionsList.setSelectedIndex(OPTIONS_INDEX);
-	 }
-
 	 private void setupTabbedPane(){
 		 tabbedPane.addChangeListener(new MainTabbedPanel_changeAdapter(this));
 		 tabbedPane.addMouseListener(new TabbedMouseListener());
 		 setupOptionsPanel();
 		 tabbedPane.addTab("Options",optionsMainPanel);
-
 	 }
+	 
 	 /**
 	  * Used to listen to the right click on the tabs to determine
 	  * what type we clicked on and pop up a menu or exit.
@@ -740,17 +897,17 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 			 if(index > -1){ 
 				 String tabName = tabbedPane.getTitleAt(index);
 				 if(SwingUtilities.isRightMouseButton(e))			   
-					 if(tabbedPane.getComponentAt(index).getClass() == IRCChannel.class){
+					 if(tabbedPane.getComponentAt(index) instanceof IRCChannel){
 						 IRCServerBase tempServer = getCreatedServer(((IRCChannel)tabbedPane.getComponentAt(index)).getServer());
 						 if(isFavourite(tempServer.getCreatedChannel(tabName)))
 							 tempServer.getCreatedChannel(tabName).myMenu.addAsFavouriteItem.setText("Remove as Favourite");
 						 else 
 							 tempServer.getCreatedChannel(tabName).myMenu.addAsFavouriteItem.setText("Add as Favourite");
 						 tempServer.getCreatedChannel(tabName).myMenu.show(tabbedPane, e.getX(), e.getY());
-					 }else if(tabbedPane.getComponentAt(index).getClass() == IRCPrivate.class){
+					 }else if(tabbedPane.getComponentAt(index) instanceof IRCPrivate){
 						 IRCServerBase tempServer = getCreatedServer(((IRCPrivate)tabbedPane.getComponentAt(index)).getServer());
 						 tempServer.quitPrivateRooms(tabName);
-					 }else if(getCreatedServer(tabName) != null) {
+					 }else if(tabbedPane.getComponentAt(index) instanceof IRCServer) {
 						 ((IRCServer)getCreatedServer(tabName)).myMenu.show(tabbedPane, e.getX(), e.getY());
 					 }
 			 }
@@ -758,19 +915,22 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 }
 
 
-	 //Sets focus to the clientTextBox when tab is changed to a channel
+	 /**
+	  * Sets focus to the appropriate textBox when tab is changed
+	  * @param e
+	  */
 	 private void TabbedPanel_stateChanged(ChangeEvent e) {
 		 JTabbedPane tabSource = (JTabbedPane) e.getSource();
 		 int index = tabSource.getSelectedIndex();
 		 if(index > -1){
-			 if(tabbedPane.getComponentAt(index).getClass().equals(IRCChannel.class)){
+			 if(tabbedPane.getComponentAt(index) instanceof IRCChannel){
 				 IRCChannel tempTab = (IRCChannel)tabbedPane.getComponentAt(index);
 				 tempTab.showEventTicker(isShowingEventTicker());
 				 tempTab.clientTextBox.requestFocus();
 				 tempTab.showUsersList(isShowingUsersList());
-			 } else if(tabbedPane.getComponentAt(index).getClass().equals(IRCPrivate.class)){
+			 } else if(tabbedPane.getComponentAt(index) instanceof IRCPrivate){
 				 ((IRCPrivate)tabbedPane.getComponentAt(index)).privateTextBox.requestFocus();
-			 } else if(tabbedPane.getComponentAt(index).getClass().equals(IRCServer.class)){
+			 } else if(tabbedPane.getComponentAt(index) instanceof IRCServer){
 				 ((IRCServer)tabbedPane.getComponentAt(index)).serverTextBox.requestFocus();
 			 }
 		 }
@@ -788,13 +948,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 
 
 	 public UserGUI(){
+		 this.setPreferredSize (new Dimension(MAIN_WIDTH_INIT, MAIN_HEIGHT_INIT));
+		 this.setFont(universalFont);
 		 //Create the initial size of the panel
 		 setupTabbedPane();
 		 this.setLayout(new BorderLayout());
 		 this.add(tabbedPane, BorderLayout.CENTER);
-		 this.setFont(universalFont);
 		 //Set size of the overall panel
-		 this.setPreferredSize (new Dimension(MAIN_WIDTH, MAIN_HEIGHT));
 		 this.setBackground(Color.gray);
 		 clientSettings = Preferences.userNodeForPackage(this.getClass());
 		 getClientSettings();
