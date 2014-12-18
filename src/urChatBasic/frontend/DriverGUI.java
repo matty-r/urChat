@@ -18,13 +18,7 @@ public class DriverGUI
 		} catch (Exception e) {
 		    //TODO something meaningful
 		}
-		try{
-			Constants.init();
-		} catch(Exception e)
-		{
-			System.out.println("Error! Constants.init() failed!");
-			e.printStackTrace();
-		}
+		Constants.init();
 		DriverGUI driver = new DriverGUI();	
 		driver.startGUI();
 	}

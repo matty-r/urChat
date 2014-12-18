@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Level;
 
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
@@ -169,19 +170,14 @@ public class Connection implements ConnectionBase{
 			
 			if(clientText.toLowerCase().startsWith("/msg nickserv"))
 				clientText = "*** HIDDEN NICKSERV IDENTIFY ***";
-			writeDebugFile("Client Text:- "+fromChannel+" "+clientText);
+			Constants.LOGGER.log(Level.FINE, "Client Text:- "+fromChannel+" "+clientText);
 			}
 		}
 	}
 
 	private void localMessage(String message){
 		server.printServerText(message);
-		try {
-			writeDebugFile("Local Text:-"+message);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Constants.LOGGER.log(Level.FINE, "Local Text:-"+message);
 	}
 	
 	
@@ -213,7 +209,7 @@ public class Connection implements ConnectionBase{
 	}
 	 
 	private void serverMessage(String receivedText) throws IOException{
-		writeDebugFile(receivedText);
+		Constants.LOGGER.log(Level.FINE, receivedText);
 		String[] receivedOptions;
 		String message = "";
 
@@ -343,11 +339,11 @@ public class Connection implements ConnectionBase{
 		        				gui.quitServer(server);
 		        				break;
 		        	default:printServerText(message);
-		        			writeDebugFile("!!!!!!!!!!!!Not Handled!!!!!!!!!!!!");
+		        			Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: " + message);
 	        	 			break;
 	        	 } else {
 	        		printServerText(message);
-	        		writeDebugFile("!!!!!!!!!!!!Not Handled!!!!!!!!!!!!");
+	        		Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: " + message);
 	        	 }
          }
 	}
@@ -363,25 +359,6 @@ public class Connection implements ConnectionBase{
 	/* (non-Javadoc)
 	 * @see urChatBasic.base.ConnectionBase#writeDebugFile(java.lang.String)
 	 */
-	@Override
-	public void writeDebugFile(String message) throws IOException{
-		if(gui.saveServerHistory()){
-			debugFile = debugDateFormat.format(todayDate)+" "+server+".log";
-			File logDir = new File(Constants.DIRECTORY_LOGS);
-			if(!logDir.exists()){
-				logDir.mkdir();
-			}
-			File logFile = new File(Constants.DIRECTORY_LOGS, debugFile);
-			if(!logFile.exists()){
-				logFile.createNewFile();
-			}
-			FileWriter fw = new FileWriter (logFile, true);
-			BufferedWriter bw = new BufferedWriter (fw);
-			PrintWriter outFile = new PrintWriter (bw);
-			outFile.println(debugTimeFormat.format(todayDate)+"> "+message);
-			outFile.close();
-		}
-	}
 	
 	private String extractNick(String textString){
 		if(textString.indexOf("!") > -1)
