@@ -19,7 +19,6 @@ public interface ConnectionBase extends Runnable {
 	/** Write a line to the server log file - checks to make sure
 	 * the client has enabled saving of the server history.
 	 * */
-	public abstract void writeDebugFile(String message) throws IOException;
 	
 	public abstract void run();
 

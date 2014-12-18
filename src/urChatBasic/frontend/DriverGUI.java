@@ -3,6 +3,8 @@ package urChatBasic.frontend;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.logging.Level;
+
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
@@ -13,17 +15,11 @@ public class DriverGUI
 	public static UserGUI gui = null;
 	
 	public static void main(String[] args) throws IOException{
+		Constants.init();
 		try {
 		    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
-		    //TODO something meaningful
-		}
-		try{
-			Constants.init();
-		} catch(Exception e)
-		{
-			System.out.println("Error! Constants.init() failed!");
-			e.printStackTrace();
+			Constants.LOGGER.log(Level.WARNING, "Failed to setLookAndFeel! " + e.getLocalizedMessage());
 		}
 		DriverGUI driver = new DriverGUI();	
 		driver.startGUI();
