@@ -1,15 +1,17 @@
 package urChatBasic.backend;
 
 import java.awt.Toolkit;
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
-
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
