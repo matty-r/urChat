@@ -367,11 +367,11 @@ public class Connection implements ConnectionBase{
 	public void writeDebugFile(String message) throws IOException{
 		if(gui.saveServerHistory()){
 			debugFile = debugDateFormat.format(todayDate)+" "+server+".log";
-			File logDir = new File(Constants.directoryLogs);
+			File logDir = new File(Constants.DIRECTORY_LOGS);
 			if(!logDir.exists()){
 				logDir.mkdir();
 			}
-			File logFile = new File(Constants.directoryLogs, debugFile);
+			File logFile = new File(Constants.DIRECTORY_LOGS, debugFile);
 			if(!logFile.exists()){
 				logFile.createNewFile();
 			}

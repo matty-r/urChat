@@ -713,7 +713,7 @@ public IRCUser getCreatedUsers(String userName){
 	/** Write all competitors to the competitors.txt file */
 	public void writeHistoryFile(String line) throws IOException{
 		if(gui.saveChannelHistory()){
-			FileWriter fw = new FileWriter (Constants.directoryLogs+historyFileName, true);
+			FileWriter fw = new FileWriter (Constants.DIRECTORY_LOGS+historyFileName, true);
 			BufferedWriter bw = new BufferedWriter (fw);
 			PrintWriter outFile = new PrintWriter (bw);
 			outFile.println(line);
