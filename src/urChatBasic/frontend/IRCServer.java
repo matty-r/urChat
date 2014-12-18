@@ -188,11 +188,10 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 */
 	@Override
 	public IRCUser getIRCUser(String userName){
-		for(IRCChannel tempChannel : createdChannels)
+			for(IRCChannel tempChannel : createdChannels)
 			if(tempChannel.getCreatedUsers(userName) != null)
 				return tempChannel.getCreatedUsers(userName);
-
-		return null;
+		return new IRCUser(this,userName);
 	}
 
 
@@ -201,10 +200,12 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 */
 	@Override
 	public IRCPrivate getCreatedPrivateRoom(String privateRoom){
-		//for(int x = 0; x < createdChannels.size(); x++)
-		for(IRCPrivate tempPrivate : createdPrivateRooms)
-			if(tempPrivate.getName().toLowerCase().equals(privateRoom.toLowerCase()))
-				return tempPrivate;
+		while(createdPrivateRooms.iterator().hasNext()){
+			IRCPrivate tempPrivate = createdPrivateRooms.iterator().next();
+				if(tempPrivate.getName().toLowerCase().equals(privateRoom.toLowerCase()))
+					return tempPrivate;
+		}
+
 		return null;
 	}
 
@@ -315,8 +316,6 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	public void printChannelText(String channelName, String line, String fromUser){
 		if(channelName.equals(fromUser)){
 			printPrivateText(channelName,line,fromUser);
-			//addToPrivateRooms(channelName);
-			//getCreatedPrivateRoom(channelName).printText(isTimeStampsEnabled(), line);
 		} else
 			getCreatedChannel(channelName).printText(gui.isTimeStampsEnabled(),line,fromUser);
 	}
@@ -326,16 +325,21 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 */
 	@Override
 	public void printPrivateText(String userName, String line,String fromUser){
-		if(getIRCUser(userName) != null && !getIRCUser(userName).isMuted()){
+		/**if(getIRCUser(userName) != null && !getIRCUser(userName).isMuted()){
 			if(getCreatedPrivateRoom(userName) == null)
 				addToPrivateRooms(getIRCUser(userName));
 			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),fromUser,line);
-			if(gui.getTabIndex(userName) != gui.tabbedPane.getSelectedIndex())
-				Toolkit.getDefaultToolkit().beep();
 		} else if (getIRCUser(userName) == null){
 			if(getCreatedPrivateRoom(userName) == null)
 				addToPrivateRooms(new IRCUser(this,userName));
 			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),fromUser,line);
+		}**/
+		
+		//private messages aren't linked to a channel, so if they aren't muted 
+		if(getIRCUser(userName) != null && !getIRCUser(userName).isMuted()){
+			addToPrivateRooms(getIRCUser(userName));
+			getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(),fromUser,line);
+			//Make a noise if the user hasn't got the current tab selected
 			if(gui.getTabIndex(userName) != gui.tabbedPane.getSelectedIndex())
 				Toolkit.getDefaultToolkit().beep();
 		}

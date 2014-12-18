@@ -132,7 +132,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 */
 	@Override
 	public int getTabIndex(String tabName){
-		for(int x = 0; x < tabbedPane.getTabCount(); x++){
+		int currentTabCount = tabbedPane.getTabCount();
+		
+		for(int x = 0; x < currentTabCount; x++){
 			if(tabbedPane.getTitleAt(x).toLowerCase().equals(tabName.toLowerCase()))
 				return x;
 		}
@@ -759,19 +761,18 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 //Sets focus to the clientTextBox when tab is changed to a channel
 	 private void TabbedPanel_stateChanged(ChangeEvent e) {
 		 JTabbedPane tabSource = (JTabbedPane) e.getSource();
-		 if(tabSource.getSelectedIndex() > -1){
-			 String tab = tabSource.getTitleAt(tabSource.getSelectedIndex());
-			 for(IRCServerBase tempServer : createdServers)
-				 if(tempServer.getCreatedChannel(tab) != null){
-					 tempServer.getCreatedChannel(tab).clientTextBox.requestFocus();
-					 //Show/hide depending on what the user has selected, does not override
-					 //individual channel settings.
-					 tempServer.getCreatedChannel(tab).showEventTicker(isShowingEventTicker());
-					 tempServer.getCreatedChannel(tab).showUsersList(isShowingUsersList());
-				 } else if(tempServer.getCreatedPrivateRoom(tab) != null)
-					 tempServer.getCreatedPrivateRoom(tab).privateTextBox.requestFocus();
-				 else if(getCreatedServer(tab) != null)
-					 ((IRCServer)getCreatedServer(tab)).serverTextBox.requestFocus();
+		 int index = tabSource.getSelectedIndex();
+		 if(index > -1){
+			 if(tabbedPane.getComponentAt(index).getClass().equals(IRCChannel.class)){
+				 IRCChannel tempTab = (IRCChannel)tabbedPane.getComponentAt(index);
+				 tempTab.showEventTicker(isShowingEventTicker());
+				 tempTab.clientTextBox.requestFocus();
+				 tempTab.showUsersList(isShowingUsersList());
+			 } else if(tabbedPane.getComponentAt(index).getClass().equals(IRCPrivate.class)){
+				 ((IRCPrivate)tabbedPane.getComponentAt(index)).privateTextBox.requestFocus();
+			 } else if(tabbedPane.getComponentAt(index).getClass().equals(IRCServer.class)){
+				 ((IRCServer)tabbedPane.getComponentAt(index)).serverTextBox.requestFocus();
+			 }
 		 }
 	 }
 

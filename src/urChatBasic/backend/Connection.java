@@ -28,23 +28,22 @@ public class Connection implements ConnectionBase{
 	private IRCServerBase server;
 	private String myNick;
 	private String login;
-	//public String firstChannel;
 	private Socket mySocket;
 	public UserGUIBase gui;
 	
 	//Used for Logging messages received by the server
 	//Debug Mode
-	private DateFormat debugDateFormat = new SimpleDateFormat("ddMMyyyy");
-	private DateFormat debugTimeFormat = new SimpleDateFormat("HHmm");
-	private Date todayDate = new Date();
-	private String debugFile;
+	//Currently deprecated
+	//private DateFormat debugDateFormat = new SimpleDateFormat("ddMMyyyy");
+	//private DateFormat debugTimeFormat = new SimpleDateFormat("HHmm");
+	//private Date todayDate = new Date();
+	//private String debugFile;
 
     public Connection(IRCServerBase server,String nick,String login, UserGUIBase ugb){
     	this.gui = ugb;
     	this.server =  server;
     	this.myNick = nick;
     	this.login = login;
-    	//this.firstChannel = firstChannel;
 	}
     
     /* (non-Javadoc)
@@ -185,7 +184,7 @@ public class Connection implements ConnectionBase{
 	}
 	
 	
-	private int nthOccurrence(String str, char c, int n) {
+	private int posnOfOccurrence(String str, char c, int n) {
 	    int pos = 0;
 	    int matches = 0;
 
@@ -198,6 +197,16 @@ public class Connection implements ConnectionBase{
 	    	pos++;
 	    }
 	    return pos;
+	}
+	
+	private int countOfOccurrences(String str, char c) {
+	    int matches = 0;
+
+	    for(char myChar : str.toCharArray()){
+	    	if(myChar == c)
+	    		matches++;
+	    }
+	    return matches;
 	}
 	
 	private Boolean isBetween(String line,String start,String middle,String end) {
@@ -221,11 +230,12 @@ public class Connection implements ConnectionBase{
 			receivedOptions = receivedText.split(" ");
 			receivedText = receivedText.replace(receivedOptions[0], ":");
 		} else			
-			receivedOptions = receivedText.substring(nthOccurrence(receivedText, ':', 1)+1, nthOccurrence(receivedText, ':', 2)).split(" ");
+			receivedOptions = receivedText.substring(posnOfOccurrence(receivedText, ':', 1)+1, posnOfOccurrence(receivedText, ':', 2)).split(" ");
 
 		
 		try{
-		message = receivedText.substring(nthOccurrence(receivedText, ':', 2)+1);
+		if(countOfOccurrences(receivedText, ':') > 1)
+			message = receivedText.substring(posnOfOccurrence(receivedText, ':', 2)+1);
 		} catch(IndexOutOfBoundsException e) {
 			Constants.LOGGER.log(Level.SEVERE, "Whats going on here? " + e.getLocalizedMessage());
 		}

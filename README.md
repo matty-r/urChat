@@ -9,12 +9,18 @@ Contributions
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
 
+=Update (18 DEC 14)
 
+* Changed logging function to use inbuilt logger - thanks Goofybud16
+* Fixed lock-up when change to/from Private tab - required changing how selecting a tab is handled, now uses the same method of getting what type of tab is selected as TabbedMouseListener.
+* Changed some methods to use an iterator instead of an Enhanced For loop, this should help with ConcurrentModificationExceptions.
+* Fixed IndexOutOfBounds error when parsing the 'message' out of receivedText by checking to make sure there are two ':' within received text. See countOfOccurences within Connection.
 
+=Update (17 DEC 14)
 
+* Package split into Frontend, base and Backend - thanks Goofybud16
 
-
-=Update(16 DEV 14)
+=Update (16 DEC 14)
 
 * Changed how user status is set, it's now set through IRCUser in the constructor
 * Changed how the JOIN command is handled, channels will always start with # so use this to find the channel name to join to. Also use the extractNick() method to get the appropriate username if it isn't me.
@@ -22,6 +28,7 @@ If you would like to assist in the development of urChat take a look at the Issu
 * TODO list is now maintained on GITHUB https://github.com/matty-r/urChat/issues
 * Fixed communication with multiple servers - BufferedReader and BufferedWriter of the connection class were static methods. This was a piece that hadn't been changed over during the transition to enable multiple server connections.
 * Improved the handling of the TabbedMouseListener, it finds out the appropriate class of the selected tab and carries out the correct method. This will stop things with the same name closing incorrectly.
+* Removed unused imports.
 
 =Update (15 DEC 14)
 
