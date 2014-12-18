@@ -782,55 +782,55 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	  * Saves the settings into the registry/Settings API
 	  */
 	 private void setClientSettings(){
-		 clientSettings.put("FIRST_CHANNEL", firstChannelTextField.getText());
-		 clientSettings.put("SERVER_NAME", servernameTextField.getText());
-		 clientSettings.put("SERVER_PORT", serverPortTextField.getText());
-		 clientSettings.put("NICK_NAME", userNameTextField.getText());
-		 clientSettings.put("REAL_NAME", realNameTextField.getText());
-		 clientSettings.putBoolean("TIME_STAMPS", enableTimeStamps.isSelected());
-		 clientSettings.putBoolean("EVENT_TICKER_ACTIVE",showEventTicker.isSelected());
-		 clientSettings.putBoolean("USERS_LIST_ACTIVE", showUsersList.isSelected());
-		 clientSettings.putBoolean("EVENT_TICKER_JOINS_QUITS", showJoinsQuitsEventTicker.isSelected());
-		 clientSettings.putBoolean("MAIN_WINDOW_JOINS_QUITS", showJoinsQuitsMainWindow.isSelected());
-		 clientSettings.putBoolean("LOG_CHANNEL_HISTORY", logChannelText.isSelected());
-		 clientSettings.putBoolean("LOG_SERVER_ACTIVITY", logServerActivity.isSelected());
-		 clientSettings.putBoolean("LIMIT_CHANNEL_LINES", limitChannelLines.isSelected());
-		 clientSettings.putBoolean("AUTO_CONNECT_FAVOURITES", autoConnectToFavourites.isSelected());
-		 clientSettings.put("LIMIT_CHANNEL_LINES_COUNT", limitChannelLinesCount.getText());
-		 clientSettings.putBoolean("LIMIT_SERVER_LINES", limitServerLines.isSelected());
-		 clientSettings.put("LIMIT_SERVER_LINES_COUNT", limitServerLinesCount.getText());
-		 clientSettings.putBoolean("LOG_CLIENT_TEXT", logClientText.isSelected());
-		 clientSettings.putInt("EVENT_TICKER_DELAY", eventTickerDelay.getValue());
+		 clientSettings.put(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText());
+		 clientSettings.put(Constants.KEY_FIRST_SERVER, servernameTextField.getText());
+		 clientSettings.put(Constants.KEY_FIRST_PORT, serverPortTextField.getText());
+		 clientSettings.put(Constants.KEY_NICK_NAME, userNameTextField.getText());
+		 clientSettings.put(Constants.KEY_REAL_NAME, realNameTextField.getText());
+		 clientSettings.putBoolean(Constants.KEY_TIME_STAMPS, enableTimeStamps.isSelected());
+		 clientSettings.putBoolean(Constants.KEY_EVENT_TICKER_ACTIVE,showEventTicker.isSelected());
+		 clientSettings.putBoolean(Constants.KEY_USERS_LIST_ACTIVE, showUsersList.isSelected());
+		 clientSettings.putBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS, showJoinsQuitsEventTicker.isSelected());
+		 clientSettings.putBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS, showJoinsQuitsMainWindow.isSelected());
+		 clientSettings.putBoolean(Constants.KEY_LOG_CHANNEL_HISTORY, logChannelText.isSelected());
+		 clientSettings.putBoolean(Constants.KEY_LOG_SERVER_ACTIVITY, logServerActivity.isSelected());
+		 clientSettings.putBoolean(Constants.KEY_LIMIT_CHANNEL_LINES, limitChannelLines.isSelected());
+		 clientSettings.putBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES, autoConnectToFavourites.isSelected());
+		 clientSettings.put(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT, limitChannelLinesCount.getText());
+		 clientSettings.putBoolean(Constants.KEY_LIMIT_SERVER_LINES, limitServerLines.isSelected());
+		 clientSettings.put(Constants.KEY_LIMIT_SERVER_LINES_COUNT, limitServerLinesCount.getText());
+		 clientSettings.putBoolean(Constants.KEY_LOG_CLIENT_TEXT, logClientText.isSelected());
+		 clientSettings.putInt(Constants.KEY_EVENT_TICKER_DELAY, eventTickerDelay.getValue());
 	 }
 
 	 /**
 	  * Loads the settings from the registry/Settings API
 	  */
 	 private void getClientSettings(){
-		 firstChannelTextField.setText(clientSettings.get("FIRST_CHANNEL",""));
-		 servernameTextField.setText(clientSettings.get("SERVER_NAME", ""));
-		 serverPortTextField.setText(clientSettings.get("SERVER_PORT", Constants.PORT_DEFAULT));
-		 userNameTextField.setText(clientSettings.get("NICK_NAME", ""));
-		 realNameTextField.setText(clientSettings.get("REAL_NAME", ""));
-		 showUsersList.setSelected(clientSettings.getBoolean("USERS_LIST_ACTIVE", true));
-		 showEventTicker.setSelected(clientSettings.getBoolean("EVENT_TICKER_ACTIVE", true));
-		 enableTimeStamps.setSelected(clientSettings.getBoolean("TIME_STAMPS", true));
-		 showJoinsQuitsEventTicker.setSelected(clientSettings.getBoolean("EVENT_TICKER_JOINS_QUITS", true));
-		 showJoinsQuitsMainWindow.setSelected(clientSettings.getBoolean("MAIN_WINDOW_JOINS_QUITS", false));
-		 logChannelText.setSelected(clientSettings.getBoolean("LOG_CHANNEL_HISTORY", false));
-		 logServerActivity.setSelected(clientSettings.getBoolean("LOG_SERVER_ACTIVITY", false));
-		 limitChannelLines.setSelected(clientSettings.getBoolean("LIMIT_CHANNEL_LINES", true));
-		 limitChannelLinesCount.setText(clientSettings.get("LIMIT_CHANNEL_LINES_COUNT","500"));
-		 limitServerLines.setSelected(clientSettings.getBoolean("LIMIT_SERVER_LINES", true));
-		 limitServerLinesCount.setText(clientSettings.get("LIMIT_SERVER_LINES_COUNT","500"));
-		 logClientText.setSelected(clientSettings.getBoolean("LOG_CLIENT_TEXT", false));
-		 eventTickerDelay.setValue(clientSettings.getInt("EVENT_TICKER_DELAY", 20));
-		 autoConnectToFavourites.setSelected(clientSettings.getBoolean("AUTO_CONNECT_FAVOURITES", false));
+		 firstChannelTextField.setText(clientSettings.get(Constants.KEY_FIRST_CHANNEL,Constants.DEFAULT_FIRST_CHANNEL));
+		 servernameTextField.setText(clientSettings.get(Constants.KEY_FIRST_SERVER, Constants.DEFAULT_FIRST_SERVER));
+		 serverPortTextField.setText(clientSettings.get(Constants.KEY_FIRST_PORT, Constants.DEFAULT_FIRST_PORT));
+		 userNameTextField.setText(clientSettings.get(Constants.KEY_NICK_NAME, Constants.DEFAULT_NICK_NAME));
+		 realNameTextField.setText(clientSettings.get(Constants.KEY_REAL_NAME, Constants.DEFAULT_REAL_NAME));
+		 showUsersList.setSelected(clientSettings.getBoolean(Constants.KEY_USERS_LIST_ACTIVE, Constants.DEFAULT_USERS_LIST_ACTIVE));
+		 showEventTicker.setSelected(clientSettings.getBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, Constants.DEFAULT_EVENT_TICKER_ACTIVE));
+		 enableTimeStamps.setSelected(clientSettings.getBoolean(Constants.KEY_TIME_STAMPS, Constants.DEFAULT_TIME_STAMPS));
+		 showJoinsQuitsEventTicker.setSelected(clientSettings.getBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS, Constants.DEFAULT_EVENT_TICKER_JOINS_QUITS));
+		 showJoinsQuitsMainWindow.setSelected(clientSettings.getBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS, Constants.DEFAULT_MAIN_WINDOW_JOINS_QUITS));
+		 logChannelText.setSelected(clientSettings.getBoolean(Constants.KEY_LOG_CHANNEL_HISTORY, Constants.DEFAULT_LOG_CHANNEL_HISTORY));
+		 logServerActivity.setSelected(clientSettings.getBoolean(Constants.KEY_LOG_SERVER_ACTIVITY, Constants.DEFAULT_LOG_SERVER_ACTIVITY));
+		 limitChannelLines.setSelected(clientSettings.getBoolean(Constants.KEY_LIMIT_CHANNEL_LINES, Constants.DEFAULT_LIMIT_CHANNEL_LINES));
+		 limitChannelLinesCount.setText(clientSettings.get(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT,Constants.DEFAULT_LIMIT_CHANNEL_LINES_COUNT));
+		 limitServerLines.setSelected(clientSettings.getBoolean(Constants.KEY_LIMIT_SERVER_LINES, Constants.DEFAULT_LIMIT_SERVER_LINES));
+		 limitServerLinesCount.setText(clientSettings.get(Constants.KEY_LIMIT_SERVER_LINES_COUNT,Constants.DEFAULT_LIMIT_SERVER_LINES_COUNT));
+		 logClientText.setSelected(clientSettings.getBoolean(Constants.KEY_LOG_CLIENT_TEXT, Constants.DEFAULT_LOG_CLIENT_TEXT));
+		 eventTickerDelay.setValue(clientSettings.getInt(Constants.KEY_EVENT_TICKER_DELAY, Constants.DEFAULT_EVENT_TICKER_DELAY));
+		 autoConnectToFavourites.setSelected(clientSettings.getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES, Constants.DEFAULT_AUTO_CONNECT_FAVOURITES));
 
 		 //TODO Add Port number to favourites.
 		 try {
-			 for(String serverNode : clientSettings.node("Favourites").childrenNames())
-				 for(String value : clientSettings.node("Favourites").node(serverNode).keys())
+			 for(String serverNode : clientSettings.node(Constants.KEY_FAVOURITES_NODE).childrenNames())
+				 for(String value : clientSettings.node(Constants.KEY_FAVOURITES_NODE).node(serverNode).keys())
 					 favouritesListModel.addElement(new FavouritesItem(serverNode,value));
 		 } catch (BackingStoreException e) {
 			 Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());

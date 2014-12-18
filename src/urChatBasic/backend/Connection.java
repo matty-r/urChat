@@ -45,7 +45,7 @@ public class Connection implements ConnectionBase{
     	this.server =  server;
     	this.myNick = nick;
     	if(portNumber.trim().equals(""))
-    		this.portNumber = Constants.PORT_DEFAULT;
+    		this.portNumber = Constants.DEFAULT_FIRST_PORT;
     	this.portNumber = portNumber;
     	this.login = login;
 	}

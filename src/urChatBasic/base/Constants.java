@@ -22,7 +22,50 @@ public class Constants{
 	private static Handler LOGGER_TO_FILE;
 	public static Logger LOGGER = Logger.getLogger("Main");
 	public static String LOGFILE_NAME = "Errors.log";
-	public static final String PORT_DEFAULT = "6667";
+	
+	//Key Strings that are used when saving settings
+	public static final String KEY_FIRST_CHANNEL = "first channel name";
+	public static final String KEY_FIRST_SERVER = "first server name";
+	public static final String KEY_FIRST_PORT = "first server port";
+	public static final String KEY_NICK_NAME = "nick name";
+	public static final String KEY_REAL_NAME = "real name";
+	public static final String KEY_TIME_STAMPS = "show time stamps";
+	public static final String KEY_EVENT_TICKER_ACTIVE = "show event ticker";
+	public static final String KEY_USERS_LIST_ACTIVE = "show users list";
+	public static final String KEY_EVENT_TICKER_JOINS_QUITS = "show events in ticker";
+	public static final String KEY_MAIN_WINDOW_JOINS_QUITS = "show events in main window";
+	public static final String KEY_LOG_CHANNEL_HISTORY = "log channel history";
+	public static final String KEY_LOG_SERVER_ACTIVITY = "log server activity";
+	public static final String KEY_LIMIT_CHANNEL_LINES = "limit number of channel lines";
+	public static final String KEY_AUTO_CONNECT_FAVOURITES = "connect to favourites";
+	public static final String KEY_LIMIT_CHANNEL_LINES_COUNT = "limit number of channel lines count";
+	public static final String KEY_LIMIT_SERVER_LINES = "limit number of server lines";
+	public static final String KEY_LIMIT_SERVER_LINES_COUNT = "limit number of server lines count";
+	public static final String KEY_LOG_CLIENT_TEXT = "log client text";
+	public static final String KEY_EVENT_TICKER_DELAY = "event ticker delay";
+	public static final String KEY_FAVOURITES_NODE = "favourites";
+	
+	//Setting defaults
+	public static final String DEFAULT_FIRST_CHANNEL = "##java";
+	public static final String DEFAULT_FIRST_SERVER = "irc.freenode.net";
+	public static final String DEFAULT_FIRST_PORT = "6667";
+	public static final String DEFAULT_NICK_NAME = "urChatClient";
+	public static final String DEFAULT_REAL_NAME = "urChatClient";
+	public static final Boolean DEFAULT_TIME_STAMPS = true;
+	public static final Boolean DEFAULT_EVENT_TICKER_ACTIVE = true;
+	public static final Boolean DEFAULT_USERS_LIST_ACTIVE = true;
+	public static final Boolean DEFAULT_EVENT_TICKER_JOINS_QUITS = true;
+	public static final Boolean DEFAULT_MAIN_WINDOW_JOINS_QUITS = true;
+	public static final Boolean DEFAULT_LOG_CHANNEL_HISTORY = false;
+	public static final Boolean DEFAULT_LOG_SERVER_ACTIVITY = false;
+	public static final Boolean DEFAULT_AUTO_CONNECT_FAVOURITES = false;
+	public static final Boolean DEFAULT_LIMIT_CHANNEL_LINES = true;
+	public static final String DEFAULT_LIMIT_CHANNEL_LINES_COUNT = "500";
+	public static final Boolean DEFAULT_LIMIT_SERVER_LINES = true;
+	public static final String DEFAULT_LIMIT_SERVER_LINES_COUNT = "500";
+	public static final Boolean DEFAULT_LOG_CLIENT_TEXT = true;
+	public static final int DEFAULT_EVENT_TICKER_DELAY = 20;
+	
 	/**
 	 * Used to initialize some values that may throw exceptions.
 	 * @author goofybud16
