@@ -12,7 +12,7 @@ public interface IRCServerBase {
 	 * Saves all the information from the text boxes to the connection
 	 * 
 	 */
-	public abstract void serverConnect(String nick, String login);
+	public abstract void serverConnect(String nick, String login, Class connection);
 
 	public abstract String toString();
 

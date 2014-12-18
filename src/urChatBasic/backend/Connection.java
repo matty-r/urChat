@@ -34,17 +34,16 @@ public class Connection implements ConnectionBase{
 	private Date todayDate = new Date();
 	private String debugFile;
 
-    public Connection(IRCServerBase server,String nick,String login, UserGUIBase ugb) throws Exception{
+    public Connection(IRCServerBase server,String nick,String login, UserGUIBase ugb){
     	this.gui = ugb;
     	this.server =  server;
     	this.myNick = nick;
     	this.login = login;
     	//this.firstChannel = firstChannel;
-    	
 	}
     
     /* (non-Javadoc)
-	 * @see urChatBasic.backend.ConnectionBase#isConnected()
+	 * @see urChatBasic.base.ConnectionBase#isConnected()
 	 */
     @Override
 	public Boolean isConnected(){
@@ -52,7 +51,7 @@ public class Connection implements ConnectionBase{
     }
     
     /* (non-Javadoc)
-	 * @see urChatBasic.backend.ConnectionBase#getServer()
+	 * @see urChatBasic.base.ConnectionBase#getServer()
 	 */
     @Override
 	public IRCServerBase getServer(){
@@ -105,7 +104,7 @@ public class Connection implements ConnectionBase{
     }
 	
 	/* (non-Javadoc)
-	 * @see urChatBasic.backend.ConnectionBase#setNick(java.lang.String)
+	 * @see urChatBasic.base.ConnectionBase#setNick(java.lang.String)
 	 */
 	@Override
 	public void setNick(String newNick){
@@ -113,7 +112,7 @@ public class Connection implements ConnectionBase{
 	}
 	
 	/* (non-Javadoc)
-	 * @see urChatBasic.backend.ConnectionBase#getNick()
+	 * @see urChatBasic.base.ConnectionBase#getNick()
 	 */
 	@Override
 	public String getNick(){
@@ -121,7 +120,7 @@ public class Connection implements ConnectionBase{
 	}
 	
 	/* (non-Javadoc)
-	 * @see urChatBasic.backend.ConnectionBase#sendClientText(java.lang.String, java.lang.String)
+	 * @see urChatBasic.base.ConnectionBase#sendClientText(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void sendClientText(String clientText,String fromChannel) throws IOException{
@@ -362,7 +361,7 @@ public class Connection implements ConnectionBase{
 	}
 	
 	/* (non-Javadoc)
-	 * @see urChatBasic.backend.ConnectionBase#writeDebugFile(java.lang.String)
+	 * @see urChatBasic.base.ConnectionBase#writeDebugFile(java.lang.String)
 	 */
 	@Override
 	public void writeDebugFile(String message) throws IOException{
@@ -395,7 +394,7 @@ public class Connection implements ConnectionBase{
 	}
 
 	/* (non-Javadoc)
-	 * @see urChatBasic.backend.ConnectionBase#run()
+	 * @see urChatBasic.base.ConnectionBase#run()
 	 */
 	@Override
 	public void run() {
@@ -406,6 +405,6 @@ public class Connection implements ConnectionBase{
 			e.printStackTrace();
 		}
 	}
-	
+
 
 }
