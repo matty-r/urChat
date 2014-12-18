@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import urChatBasic.backend.Connection;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
+import urChatBasic.base.UserGUIBase;
 
 public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	/**
@@ -79,7 +81,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 		} 
 		icon = new ImageIcon(tempIcon);	
 
-		serverConnect(nick,login);
+		serverConnect(nick,login, Constants.BACKEND_CLASS);
 	}
 
 	/* (non-Javadoc)
@@ -135,9 +137,14 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 * @see urChatBasic.backend.IRCServerBase#serverConnect(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void serverConnect(String nick,String login){
+	public void serverConnect(String nick,String login, Class connection){
 		try {
-			serverConnection = new Connection(this,nick,login, gui);
+			Constructor<?> ctor = connection.getConstructor(new Class[]{IRCServerBase.class, String.class, String.class, UserGUIBase.class});
+			Object temp = ctor.newInstance(new Object[] {this, nick, login, gui});
+			if(temp instanceof ConnectionBase)
+			{
+				serverConnection = (ConnectionBase) temp;
+			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

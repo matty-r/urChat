@@ -6,6 +6,8 @@ import java.io.IOException;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
+import urChatBasic.base.Constants;
+
 public class DriverGUI
 {
 	public static UserGUI gui = null;
@@ -16,7 +18,13 @@ public class DriverGUI
 		} catch (Exception e) {
 		    //TODO something meaningful
 		}
-		
+		try{
+			Constants.init();
+		} catch(Exception e)
+		{
+			System.out.println("Error! Constants.init() failed!");
+			e.printStackTrace();
+		}
 		DriverGUI driver = new DriverGUI();	
 		driver.startGUI();
 	}

@@ -20,7 +20,7 @@ public interface ConnectionBase extends Runnable {
 	 * the client has enabled saving of the server history.
 	 * */
 	public abstract void writeDebugFile(String message) throws IOException;
-
+	
 	public abstract void run();
 
 }
