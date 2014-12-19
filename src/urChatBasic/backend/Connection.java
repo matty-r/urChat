@@ -148,7 +148,7 @@ public class Connection implements ConnectionBase{
 	@Override
 	public void sendClientText(String clientText,String fromChannel) throws IOException{
 		if(isConnected()){
-		
+			
 			String[] tempTextArray = clientText.split(" ");
 			
 			if(clientText != ""){
@@ -172,7 +172,7 @@ public class Connection implements ConnectionBase{
 				} else if(clientText.startsWith("/part")){
 					writer.write("PART " + fromChannel + " :" + clientText.replace("/part  ","") +"\r\n");
 				} else if(clientText.startsWith("/me")){
-					writer.write("PRIVMSG " + fromChannel + " :  ACTION " + clientText.replace("/me ","") +"  \r\n");
+					writer.write("PRIVMSG " + fromChannel + " :"+'\001'+"ACTION"+'\001' + clientText.replace("/me ","") +"\r\n");
 				} else {
 					writer.write("PRIVMSG " + fromChannel + " :"+clientText+"\r\n");
 					server.printChannelText(fromChannel, clientText, myNick);
@@ -217,10 +217,10 @@ public class Connection implements ConnectionBase{
 	    return matches;
 	}
 	
-	private Boolean isBetween(String line,String start,String middle,String end) {
+	private Boolean isBetween(String line,char start,String middle,char end) {
 		int startIndex = line.indexOf(start);
 		int middleIndex = line.indexOf(middle);
-		int endIndex = line.indexOf(end);
+		int endIndex = line.substring(startIndex+1).indexOf(end) + startIndex;
 		
 		if(startIndex >= 0 && middleIndex >= 0 && endIndex >= 0)
 			if(middleIndex > startIndex && middleIndex < endIndex)
@@ -234,7 +234,7 @@ public class Connection implements ConnectionBase{
 		String[] receivedOptions;
 		String message = "";
 
-		if(isBetween(receivedText,":","!","@")){
+		if(isBetween(receivedText,':',"!",'@')){
 			receivedOptions = receivedText.split(" ");
 			receivedText = receivedText.replace(receivedOptions[0], ":");
 		} else			
@@ -245,7 +245,7 @@ public class Connection implements ConnectionBase{
 		if(countOfOccurrences(receivedText, ':') > 1)
 			message = receivedText.substring(posnOfOccurrence(receivedText, ':', 2)+1);
 		} catch(IndexOutOfBoundsException e) {
-			Constants.LOGGER.log(Level.SEVERE, "Whats going on here? " + e.getLocalizedMessage());
+			Constants.LOGGER.log(Level.SEVERE, "Failed to extract a message from received text. " + e.getLocalizedMessage());
 		}
 		
 		 if (receivedText.toLowerCase( ).startsWith("ping")) {
@@ -310,6 +310,8 @@ public class Connection implements ConnectionBase{
 		        					server.addToUsersList(joinChannel, extractNick(receivedOptions[0]));
 		        				break;
 		        	case "PRIVMSG": if(!receivedOptions[2].equals(myNick)){
+		        						if(isBetween(message,'\001',"ACTION",'\001'))
+		        							message = message.replace('\001'+"ACTION", ">");
 		        						server.printChannelText(receivedOptions[2],message,extractNick(receivedOptions[0]));
 			        				} else{
 			        					server.printPrivateText(extractNick(receivedOptions[0]),message,extractNick(receivedOptions[0]));

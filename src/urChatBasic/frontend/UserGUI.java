@@ -585,7 +585,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	@Override
 	public void addFavourite(String server,String channel){
 		favouritesListModel.addElement(new FavouritesItem(server, channel));
-		clientSettings.node("Favourites").node(server).put(channel, channel);
+		clientSettings.node(Constants.KEY_FAVOURITES_NODE).node(server).put(channel, channel);
 	}
 
 	/* (non-Javadoc)

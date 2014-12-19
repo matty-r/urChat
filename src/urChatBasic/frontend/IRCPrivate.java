@@ -90,7 +90,7 @@ public class IRCPrivate extends JPanel{
 		DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
 		Date chatDate = new Date();
 		String timeLine = "";
-		
+
 		if(dateTime)
 			timeLine = "["+chatDateFormat.format(chatDate)+"]";
 	    	new LineFormatter(gui.getFont(),myServer.getNick()).formattedDocument(doc,timeLine,fromUser,line);

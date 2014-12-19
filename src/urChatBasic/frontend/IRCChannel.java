@@ -287,6 +287,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 		public void mouseClicked(MouseEvent e) {
 			final int index = usersList.locationToIndex(e.getPoint());
 			if(index > -1){
+				usersList.setSelectedIndex(index);
 				IRCUser userName = usersList.getSelectedValue();
 				if(SwingUtilities.isRightMouseButton(e))
 					userName.myMenu.show(e.getComponent(), e.getX(), e.getY());

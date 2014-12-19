@@ -27,7 +27,6 @@ public class LineFormatter {
 		return tempStyle;
 	}
 	
-	
 	public SimpleAttributeSet lowStyle(){
 		
 		SimpleAttributeSet tempStyle = new SimpleAttributeSet();
@@ -69,6 +68,7 @@ public class LineFormatter {
 		return tempStyle;
 	}
 	
+	
 	public void formattedDocument(StyledDocument doc,String timeLine,String fromUser,String line){
 		SimpleAttributeSet timeStyle = lowStyle();
 		SimpleAttributeSet nameStyle = standardStyle();
@@ -85,8 +85,6 @@ public class LineFormatter {
 	        		nameStyle = lowStyle();
 	        		lineStyle = lowStyle();
 	        	}
-	        
-	        	
 			
 		try {
 		doc.insertString(doc.getLength(), timeLine, timeStyle);
