@@ -11,6 +11,8 @@ If you would like to assist in the development of urChat take a look at the Issu
 =Update (19 DEC 14)
 
 * Fixed usersList not selecting an item when you right click a user
+* Fixed LOGGER not deleting lck files on exit.
+* Added MessageHandler placeholder class for future message handling.
 
 =Update (18 DEC 14)
 

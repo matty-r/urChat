@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import urChatBasic.base.ConnectionBase;
@@ -361,13 +362,15 @@ public class Connection implements ConnectionBase{
 		    					break;
 		        	case "Link"://gui.shutdownAll();
 		        				gui.quitServer(server);
+		        				for(Handler tempHandler:Constants.LOGGER.getHandlers())
+		        					tempHandler.close();   //must call h.close or a .LCK file will remain.
 		        				break;
 		        	default:printServerText(message);
-		        			Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: " + message);
+		        			Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: "+receivedOptions[1]+" :" + message);
 	        	 			break;
 	        	 } else {
 	        		printServerText(message);
-	        		Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: " + message);
+	        		Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: "+receivedOptions[1]+" :" + message);
 	        	 }
          }
 	}
