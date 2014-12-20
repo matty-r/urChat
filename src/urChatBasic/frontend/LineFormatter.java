@@ -50,7 +50,9 @@ public class LineFormatter {
 	public SimpleAttributeSet highStyle(){
 		
 		SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+		StyleConstants.setBold(tempStyle, true);
 		StyleConstants.setBackground(tempStyle, Color.RED);
+		StyleConstants.setForeground(tempStyle, Color.WHITE);
 		StyleConstants.setItalic(tempStyle, true);
 		StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
 		StyleConstants.setFontSize(tempStyle, myFont.getSize());
@@ -61,6 +63,7 @@ public class LineFormatter {
 	public SimpleAttributeSet myStyle(){
 		
 		SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+		StyleConstants.setForeground(tempStyle, Color.GREEN);
 		StyleConstants.setBold(tempStyle, true);
 		StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
 		StyleConstants.setFontSize(tempStyle, myFont.getSize());

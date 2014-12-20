@@ -1,6 +1,8 @@
 package urChatBasic.base;
 
+import urChatBasic.backend.MessageHandler.Message;
+
 public interface MessageHandlerBase {
-	void messageExec(String message);
-	void messageParse(String message);
+	void messageExec(Message myMessage);
+	void exactIdMatch();
 }

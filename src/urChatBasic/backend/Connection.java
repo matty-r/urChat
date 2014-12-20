@@ -383,10 +383,6 @@ public class Connection implements ConnectionBase{
 		server.printServerText(message);
 	}
 	
-	/* (non-Javadoc)
-	 * @see urChatBasic.base.ConnectionBase#writeDebugFile(java.lang.String)
-	 */
-	
 	private String extractNick(String textString){
 		if(textString.indexOf("!") > -1)
 			if(textString.startsWith(":"))
