@@ -8,6 +8,10 @@ Contributions
 ======
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
+=Update (20 DEC 14)
+
+* Added MessageHandler - It's now much more flexible and allows it to be expanded to support many different types of messages, each with it's own accompanying method. Not 100% tested at this stage, but we no longer need to rely on Connection to do the message parsing - Connection should only be worried about receiving the text.
+
 =Update (19 DEC 14)
 
 * Fixed usersList not selecting an item when you right click a user

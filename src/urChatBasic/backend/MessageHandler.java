@@ -9,6 +9,7 @@ import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.MessageHandlerBase;
 import urChatBasic.base.UserGUIBase;
+import urChatBasic.frontend.DriverGUI;
 
 /** This class will Handle the message it has received and assign an approriate 
  * class that will parse the string and then
@@ -20,7 +21,7 @@ public class MessageHandler {
 	static Set<IDSingle> singleIDs = new HashSet<IDSingle>();
 	
 	IRCServerBase myServer;
-	UserGUIBase gui;
+	UserGUIBase gui = DriverGUI.gui;
 	private static final char CHANNEL_DELIMITER = '#';
 	private static final char CTCP_DELIMITER = '\001';
 	private static final char SPACES_AHEAD_DELIMITER = ':';
@@ -32,8 +33,8 @@ public class MessageHandler {
 	 * @param server
 	 * @param messageID
 	 */
-	public MessageHandler(String receivedText){
-		//this.myServer = server;
+	public MessageHandler(IRCServerBase server,String receivedText){
+		this.myServer = server;
 		
 		if(groupIDs.isEmpty())
 			addRanges();
@@ -70,7 +71,7 @@ public class MessageHandler {
 			}
 			
 		if(!handled)
-		handleDefault(receivedMessage.toString());
+		handleDefault(receivedMessage);
 		
 	}
 
@@ -175,18 +176,20 @@ public class MessageHandler {
 	
 	private void addRanges(){
 		groupIDs.add(new IDGroup(1,4,new UserRegistrationMessage())); 
-		groupIDs.add(new IDGroup(312,322,new CommandResponseMessage()));
+		groupIDs.add(new IDGroup(311,322,new CommandResponseMessage()));
 		groupIDs.add(new IDGroup(412,415,new BadPrivateMessage()));
 		groupIDs.add(new IDGroup(371,376,new GeneralMessage()));
 		groupIDs.add(new IDGroup(251,256,new GeneralMessage()));
+		groupIDs.add(new IDGroup(471,475,new JoinFailureMessage()));
 	}
 	
 	private void addSingles(){
 		singleIDs.add(new IDSingle(5,new NoticeMessage()));
 		singleIDs.add(new IDSingle(353,new UsersListMessage()));
+		singleIDs.add(new IDSingle((new int[]{311,319,312,318}),new WhoIsMessage()));
 		singleIDs.add(new IDSingle(332,new ChannelTopicMessage()));
-		singleIDs.add(new IDSingle(477,new JoinFailureMessage()));
 		singleIDs.add(new IDSingle((new int[]{366,265,266,250,333,328}),new GeneralMessage()));
+		singleIDs.add(new IDSingle((new int[]{432,433}),new InvalidNickMessage()));
 		singleIDs.add(new IDSingle("MODE",new ModeMessage()));
 		singleIDs.add(new IDSingle("NOTICE",new NoticeMessage()));
 		singleIDs.add(new IDSingle("PRIVMSG",new PrivateMessage()));
@@ -195,6 +198,7 @@ public class MessageHandler {
 		singleIDs.add(new IDSingle("JOIN",new JoinMessage()));
 		singleIDs.add(new IDSingle(":Closing",new DisconnectMessage()));
 		singleIDs.add(new IDSingle("QUIT",new DisconnectMessage()));
+		singleIDs.add(new IDSingle("NICK",new RenameUserMessage()));
 	}
 	
 	public enum MessageIdType{
@@ -293,7 +297,7 @@ public class MessageHandler {
 		
 		@Override
 		public void messageExec(Message myMessage) {
-			System.out.println(myMessage.body);
+			printServerText(myMessage.body);
 		}
 
 	}
@@ -303,7 +307,7 @@ public class MessageHandler {
 		
 		@Override
 		public void messageExec(Message myMessage){
-			System.out.println(myMessage.body);
+			printServerText(myMessage.body);
 		}
 	}
 	
@@ -312,7 +316,7 @@ public class MessageHandler {
 		
 		@Override
 		public void messageExec(Message myMessage){
-			System.out.println(myMessage.body);
+			printServerText(myMessage.body);
 		}
 	}
 	
@@ -321,7 +325,11 @@ public class MessageHandler {
 		
 		@Override
 		public void messageExec(Message myMessage){
-			System.out.println(myMessage.body);
+			if(myMessage.nick.equals(myServer.getNick())){
+        		myServer.addToCreatedChannels(myMessage.channel);
+				myServer.printEventTicker(myMessage.channel, "You have joined "+myMessage.channel);
+        	} else 
+				myServer.addToUsersList(myMessage.channel, myMessage.nick);
 		}
 
 	}
@@ -331,7 +339,7 @@ public class MessageHandler {
 		
 		@Override
 		public void messageExec(Message myMessage){
-			System.out.println(myMessage.body);
+			myServer.setChannelTopic(myMessage.channel, myMessage.body);
 		}
 	}
 		
@@ -340,7 +348,17 @@ public class MessageHandler {
 		
 		@Override
 		public void messageExec(Message myMessage){
-			System.out.println(myMessage.body);
+			myServer.addToUsersList(myMessage.channel, myMessage.body.split(" "));
+		}
+	}
+	
+	public class RenameUserMessage implements MessageHandlerBase {
+		
+		
+		@Override
+		public void messageExec(Message myMessage){
+			if(!myMessage.nick.equals(myServer.getNick()))
+				myServer.renameUser(myMessage.nick, myMessage.body);
 		}
 	}
 	
@@ -349,7 +367,7 @@ public class MessageHandler {
 		
 		@Override
 		public void messageExec(Message myMessage){
-			System.out.println(myMessage.body);
+			printServerText(myMessage.body);
 		}
 
 	}
@@ -359,17 +377,27 @@ public class MessageHandler {
 		
 		@Override
 		public void messageExec(Message myMessage){
-			System.out.println(myMessage.body);
+			printServerText(myMessage.body);
 		}
 	
 	}
+
+	public class WhoIsMessage implements MessageHandlerBase {
+		
+		
+		@Override
+		public void messageExec(Message myMessage){
+			printPrivateText(myMessage.rawMessage.split(" ")[3],myMessage.body,myMessage.rawMessage.split(" ")[3]);
+		}
+	
+	}	
 	
 	public class ServerChangeMessage implements MessageHandlerBase {
 		
 		
 		@Override
 		public void messageExec(Message myMessage){
-			
+			//TODO
 		}
 
 	}
@@ -379,17 +407,29 @@ public class MessageHandler {
 		@Override
 		public void messageExec(Message myMessage) {
 			// TODO Auto-generated method stub
-			
 		}
 
 		
 	}
 	
+	public class InvalidNickMessage implements MessageHandlerBase {
+		
+		
+		@Override
+		public void messageExec(Message myMessage){
+			printServerText(myMessage.body);
+		}
+	}	
+	
 	public class NoticeMessage implements MessageHandlerBase{
 
 		@Override
 		public void messageExec(Message myMessage) {
-			System.out.println(myMessage.body);
+			if(myMessage.nick != null && myMessage.nick.toLowerCase().equals("NickServ".toLowerCase())){
+				printPrivateText(myMessage.nick, myMessage.body, myMessage.nick);
+				gui.connectFavourites(myServer);
+			} else
+				printServerText(myMessage.body);
 		}
 
 
@@ -400,8 +440,13 @@ public class MessageHandler {
 
 		@Override
 		public void messageExec(Message myMessage) {
-			// TODO Auto-generated method stub
-			
+			 if(!myMessage.channel.equals(myServer.getNick())){
+					if(isBetween(myMessage.body,CTCP_DELIMITER,"ACTION",CTCP_DELIMITER))
+						myMessage.body = myMessage.body.replace(CTCP_DELIMITER+"ACTION", ">");
+					myServer.printChannelText(myMessage.channel,myMessage.body,myMessage.nick);
+				} else{
+					myServer.printChannelText(myMessage.channel,myMessage.body,myMessage.nick);
+				}
 		}
 
 
@@ -411,8 +456,15 @@ public class MessageHandler {
 
 		@Override
 		public void messageExec(Message myMessage) {
-			// TODO Auto-generated method stub
-			
+			if(!(myMessage.nick.equals(myServer.getNick()))){
+				for(String tempChannel : myMessage.channel.split(","))
+					myServer.removeFromUsersList(tempChannel, myMessage.nick);
+			} else {
+				for(String tempChannel : myMessage.channel.split(",")){
+					myServer.removeFromUsersList(tempChannel, myServer.getNick());
+					printServerText( "You quit "+tempChannel);
+				}
+			}
 		}
 
 		
@@ -422,8 +474,7 @@ public class MessageHandler {
 
 		@Override
 		public void messageExec(Message myMessage) {
-			// TODO Auto-generated method stub
-			
+			myServer.removeFromUsersList(myMessage.channel, myMessage.body);
 		}
 
 		
@@ -437,13 +488,21 @@ public class MessageHandler {
 			gui.quitServer(myServer);
 			for(Handler tempHandler:Constants.LOGGER.getHandlers())
 				tempHandler.close();
-			}
+			} else
+				myServer.removeFromUsersList(myServer.getName(),myMessage.nick);
 		}
 	}
 
-	private void handleDefault(String message) {
-		System.out.println("Unhandled: "+message);
+	private void handleDefault(Message myMessage) {
+		printServerText(myMessage.rawMessage);
+		Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: "+myMessage.rawMessage);
 	}
 	
+	private void printPrivateText(String userName,String line,String fromUser){
+		myServer.printPrivateText(userName, line, fromUser);
+	}
 	
+	private void printServerText(String message){
+		myServer.printServerText(message);
+	}
 }
