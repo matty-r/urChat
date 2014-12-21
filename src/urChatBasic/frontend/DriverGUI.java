@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 
@@ -15,6 +16,7 @@ public class DriverGUI
 {
 	public static UserGUI gui = null;
 	public static JFrame frame = null;
+	ImageIcon img = new ImageIcon(Constants.RESOURCES_DIR+"urChat Icon.png");
 	
 	public static void main(String[] args) throws IOException{
 		
@@ -46,6 +48,7 @@ public class DriverGUI
 		frame.setDefaultCloseOperation (JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().add(gui);
 		frame.pack();
+		frame.setIconImage(img.getImage());
 		frame.setVisible(true); 
 		frame.addWindowListener(new WindowAdapter() {
 			  public void windowClosing(WindowEvent e) {

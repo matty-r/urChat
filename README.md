@@ -16,6 +16,7 @@ If you would like to assist in the development of urChat take a look at the Issu
 * Added saving of Window Bounds (X,Y,Width,Height)
 * Added save settings on exit
 * Added scrollpanes to Server options and client Options - also moved the Save Settings button
+* Added an icon :)
 
 =Update (20 DEC 14)
 
