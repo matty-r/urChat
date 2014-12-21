@@ -15,6 +15,7 @@ If you would like to assist in the development of urChat take a look at the Issu
 * Fixed bug where quitting from the server would result in an exception - it was trying to send information to the server that had already been removed.
 * Added saving of Window Bounds (X,Y,Width,Height)
 * Added save settings on exit
+* Added scrollpanes to Server options and client Options - also moved the Save Settings button
 
 =Update (20 DEC 14)
 

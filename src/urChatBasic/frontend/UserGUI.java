@@ -22,9 +22,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 * 
 	 */
 	private static final long serialVersionUID = 2595649865577419300L;
-	//Main Panel
-	final private int MAIN_WIDTH_INIT = 800;
-	final private int MAIN_HEIGHT_INIT = 600;
 
 	//Tabs
 	public DnDTabbedPane tabbedPane = new DnDTabbedPane();
@@ -40,17 +37,18 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 
 
 	//Client Options Panel
-	private JPanel optionsClientPanel = new JPanel();
-	private JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
-	private JCheckBox showUsersList = new JCheckBox("Show Users List");
-	private JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
-	private JCheckBox showJoinsQuitsMainWindow = new JCheckBox("Show Joins/Quits in the Chat Window");
-	private JCheckBox logChannelText = new JCheckBox("Save and log all channel text");
-	private JCheckBox logServerActivity = new JCheckBox("Save and log all Server activity");
-	private JCheckBox logClientText = new JCheckBox("Log client text (Allows up or down history)");
-	private JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
-	private JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
-	private JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
+	private static final JPanel optionsClientPanel = new JPanel();
+	private static final JScrollPane clientScroller = new JScrollPane(optionsClientPanel);
+	private static final JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
+	private static final JCheckBox showUsersList = new JCheckBox("Show Users List");
+	private static final JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
+	private static final JCheckBox showJoinsQuitsMainWindow = new JCheckBox("Show Joins/Quits in the Chat Window");
+	private static final JCheckBox logChannelText = new JCheckBox("Save and log all channel text");
+	private static final JCheckBox logServerActivity = new JCheckBox("Save and log all Server activity");
+	private static final JCheckBox logClientText = new JCheckBox("Log client text (Allows up or down history)");
+	private static final JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
+	private static final JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
+	private static final JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
 	private JPanel clientFontPanel = new FontPanel(this);
 	//private JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
 
@@ -63,10 +61,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	private static final int DEFAULT_LINES_LIMIT = 500;
 	private final JSlider eventTickerDelay = new JSlider(JSlider.HORIZONTAL,TICKER_DELAY_MIN, TICKER_DELAY_MAX, TICKER_DELAY_INIT);
 
-	private final JButton saveSettings = new JButton("Save Settings");
+	private final JButton saveSettings = new JButton("Save");
 
 	//Server Options Panel
 	private static final JPanel serverOptionsPanel = new JPanel();
+	private static final JScrollPane serverScroller = new JScrollPane(serverOptionsPanel);
 	private static final JLabel userNameLabel = new JLabel("Nick:");
 	private static final JTextField userNameTextField = new JTextField("");
 	private static final JLabel realNameLabel = new JLabel("Real name:");
@@ -278,7 +277,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 
 	 private void setupOptionsPanel(){
 		 optionsMainPanel.setLayout(new BorderLayout());
-
+		 
 		 optionsArray.addElement("Server");
 		 optionsArray.addElement("Client");
 
@@ -288,7 +287,39 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		 optionsMainPanel.add(optionsLeftPanel, BorderLayout.LINE_START);
 		 optionsMainPanel.add(optionsRightPanel, BorderLayout.CENTER);
 		 optionsList.setSelectedIndex(OPTIONS_INDEX);
+
+		 optionsClientPanel.setPreferredSize(new Dimension(500,350));
+		 serverOptionsPanel.setPreferredSize(new Dimension(200,350));
+		 
+		 optionsRightPanel.add(serverScroller, "Server");
+		 optionsRightPanel.add(clientScroller,"Client");
 	 }
+	 
+	/**
+	 * Houses the options list
+	 */
+	 private void setupLeftOptionsPanel(){
+		optionsLeftPanel.setBackground(Color.RED);
+		optionsLeftPanel.setPreferredSize(new Dimension(100,0));
+		optionsLeftPanel.setLayout(new BorderLayout());
+		optionsLeftPanel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+		optionsLeftPanel.add(saveSettings, BorderLayout.SOUTH);
+		optionsLeftPanel.add(optionsList, BorderLayout.CENTER);
+	 }
+
+	 private void setupRightOptionsPanel(){
+		 ListSelectionModel listSelectionModel = optionsList.getSelectionModel();
+		 listSelectionModel.addListSelectionListener(
+				 new OptionsListSelectionHandler());
+
+		 optionsRightPanel.setBackground(Color.BLACK);
+		 optionsRightPanel.setLayout(new CardLayout());
+
+		 setupServerOptionsPanelComponents();
+		 setupClientOptionsPanelComponents();
+		 setupFavouritesOptionsPanel();
+	 }
+
 	
 	 /**
 	  * Add the components to the Server Options Panel.
@@ -326,7 +357,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		favouritesList.addMouseListener(new FavouritesPopClickListener());
 		serverOptionsPanel.add(favouritesScroller);
 
-		optionsRightPanel.add(serverOptionsPanel, "Server");
+		
 	}
 	
 	/**
@@ -388,7 +419,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	}
 
 	private void setupClientOptionsPanelComponents(){
-
+		
+		//clientScroller.setPreferredSize(new Dimension(this.getSize())); 
+		//clientScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		//Settings for these are loaded with the settings API
 		//found in getClientSettings()
 		optionsClientPanel.add(showEventTicker);
@@ -409,10 +442,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		limitChannelLinesCount.setPreferredSize(new Dimension(50,20));
 		optionsClientPanel.add(enableTimeStamps);
 
-		clientFontPanel.setPreferredSize(new Dimension(600,40));
+		clientFontPanel.setPreferredSize(new Dimension(500,40));
 		optionsClientPanel.add(clientFontPanel);
 		
-		//Turn on labels at major tick marks.
+		//Turn on labels at major tick mark.
 		eventTickerDelay.setMajorTickSpacing(10);
 		eventTickerDelay.setMinorTickSpacing(1);
 		eventTickerDelay.setPaintTicks(true);
@@ -424,9 +457,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		eventTickerDelay.setToolTipText("Event Ticker movement delay (Lower is faster)");
 		optionsClientPanel.add(eventTickerDelay);
 
-		
-		optionsClientPanel.add(saveSettings);
-
 		saveSettings.addActionListener( new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -435,7 +465,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		});
 		
 		setupClientOptionsLayout();
-		optionsRightPanel.add(optionsClientPanel, "Client");
+		//optionsRightPanel.add(optionsClientPanel, "Client");
 	}
 
 	/**
@@ -503,13 +533,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		
 		clientLayout.putConstraint(SpringLayout.NORTH, clientFontPanel, TOP_SPACING, SpringLayout.SOUTH, enableTimeStamps);
 		clientLayout.putConstraint(SpringLayout.WEST, clientFontPanel, LEFT_SPACING, SpringLayout.WEST, enableTimeStamps);
+
 		
 		clientLayout.putConstraint(SpringLayout.NORTH, eventTickerDelay, TOP_SPACING, SpringLayout.SOUTH, clientFontPanel);
 		clientLayout.putConstraint(SpringLayout.WEST, eventTickerDelay, LEFT_ALIGNED, SpringLayout.WEST, clientFontPanel);
-		
-		clientLayout.putConstraint(SpringLayout.NORTH, saveSettings, TOP_SPACING, SpringLayout.SOUTH, eventTickerDelay);
-		clientLayout.putConstraint(SpringLayout.WEST, saveSettings, LEFT_ALIGNED, SpringLayout.WEST, eventTickerDelay);
-		
 	}
 	
 	private void setupFavouritesOptionsPanel(){
@@ -664,30 +691,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 			favouritesList.getSelectedValue().myMenu.show(e.getComponent(), e.getX(), e.getY());
 		}
 	}
-	/**
-	 * Houses the options list
-	 */
-	 private void setupLeftOptionsPanel(){
-		optionsLeftPanel.setBackground(Color.RED);
-		optionsLeftPanel.setPreferredSize(new Dimension(100,0));
-		optionsLeftPanel.setLayout(new BorderLayout());
-		optionsLeftPanel.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
-		optionsLeftPanel.add(optionsList);
-	 }
-
-	 private void setupRightOptionsPanel(){
-		 ListSelectionModel listSelectionModel = optionsList.getSelectionModel();
-		 listSelectionModel.addListSelectionListener(
-				 new OptionsListSelectionHandler());
-
-		 optionsRightPanel.setBackground(Color.BLACK);
-		 optionsRightPanel.setLayout(new CardLayout());
-
-		 setupServerOptionsPanelComponents();
-		 setupClientOptionsPanelComponents();
-		 setupFavouritesOptionsPanel();
-	 }
-
 	 /**
 	  * Used to initiate server connection
 	  * @author Matt
