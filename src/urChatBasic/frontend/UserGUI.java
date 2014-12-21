@@ -27,7 +27,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	final private int MAIN_HEIGHT_INIT = 600;
 
 	//Tabs
-	public JTabbedPane tabbedPane = new JTabbedPane();
+	public DnDTabbedPane tabbedPane = new DnDTabbedPane();
 	private final int OPTIONS_INDEX = 0;
 
 	//Options Panel
