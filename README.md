@@ -8,6 +8,14 @@ Contributions
 ======
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
+=Update (21 DEC 14)
+
+* Improved MessageHandler
+* Added tab Drag and Drop functionality - thanks jnorgan
+* Fixed bug where quitting from the server would result in an exception - it was trying to send information to the server that had already been removed.
+* Added saving of Window Bounds (X,Y,Width,Height)
+* Added save settings on exit
+
 =Update (20 DEC 14)
 
 * Added MessageHandler - It's now much more flexible and allows it to be expanded to support many different types of messages, each with it's own accompanying method. Not 100% tested at this stage, but we no longer need to rely on Connection to do the message parsing - Connection should only be worried about receiving the text.

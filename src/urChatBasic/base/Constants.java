@@ -44,6 +44,10 @@ public class Constants{
 	public static final String KEY_LOG_CLIENT_TEXT = "log client text";
 	public static final String KEY_EVENT_TICKER_DELAY = "event ticker delay";
 	public static final String KEY_FAVOURITES_NODE = "favourites";
+	public static final String KEY_WINDOW_X = "window position x";
+	public static final String KEY_WINDOW_Y = "window position y";
+	public static final String KEY_WINDOW_WIDTH = "window position width";
+	public static final String KEY_WINDOW_HEIGHT = "window position height";
 	
 	//Setting defaults
 	public static final String DEFAULT_FIRST_CHANNEL = "##java";
@@ -65,6 +69,11 @@ public class Constants{
 	public static final String DEFAULT_LIMIT_SERVER_LINES_COUNT = "500";
 	public static final Boolean DEFAULT_LOG_CLIENT_TEXT = true;
 	public static final int DEFAULT_EVENT_TICKER_DELAY = 20;
+	public static final int DEFAULT_WINDOW_X = 0;
+	public static final int DEFAULT_WINDOW_Y = 0;
+	public static final int DEFAULT_WINDOW_WIDTH = 640;
+	public static final int DEFAULT_WINDOW_HEIGHT = 480;
+	
 	
 	/**
 	 * Used to initialize some values that may throw exceptions.

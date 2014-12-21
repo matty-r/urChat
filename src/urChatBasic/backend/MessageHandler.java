@@ -225,7 +225,7 @@ public class MessageHandler {
 	private void addSingles(){
 		singleIDs.add(new IDSingle(5,new NoticeMessage()));
 		singleIDs.add(new IDSingle(353,new UsersListMessage()));
-		singleIDs.add(new IDSingle((new int[]{311,319,312,318}),new WhoIsMessage()));
+		singleIDs.add(new IDSingle((new int[]{311,319,312,318,301,671,330,378}),new WhoIsMessage()));
 		singleIDs.add(new IDSingle(332,new ChannelTopicMessage()));
 		singleIDs.add(new IDSingle((new int[]{366,265,266,250,333,328,477}),new GeneralMessage()));
 		singleIDs.add(new IDSingle((new int[]{432,433}),new InvalidNickMessage()));
@@ -529,8 +529,6 @@ public class MessageHandler {
 		public void messageExec(Message myMessage) {
 			if(myServer.getNick().equals(myMessage.nick)){
 			gui.quitServer(myServer);
-			for(Handler tempHandler:Constants.LOGGER.getHandlers())
-				tempHandler.close();
 			} else
 				myServer.removeFromUsersList(myServer.getName(),myMessage.nick);
 		}

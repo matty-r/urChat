@@ -56,7 +56,7 @@ public class Connection implements ConnectionBase{
 	 */
     @Override
 	public Boolean isConnected(){
-    	return (mySocket != null) && (server != null) && (mySocket.isConnected());
+    	return (mySocket != null) && (server != null) && (mySocket.isConnected()) && (gui.getTabIndex(this.server.getName()) > -1);
     }
     
     /* (non-Javadoc)
@@ -198,12 +198,13 @@ public class Connection implements ConnectionBase{
 	}
 	 
 	private void serverMessage(String receivedText){
-		try{
-		new MessageHandler(getServer(),receivedText);
-		Constants.LOGGER.log(Level.FINE, receivedText);
-		} catch(Exception e){
-			Constants.LOGGER.log(Level.WARNING, receivedText);
-		}
+		if(isConnected())
+			try{
+			new MessageHandler(getServer(),receivedText);
+			Constants.LOGGER.log(Level.FINE, receivedText);
+			} catch(Exception e){
+				Constants.LOGGER.log(Level.WARNING, receivedText);
+			}
 	}
 	/* (non-Javadoc)
 	 * @see urChatBasic.base.ConnectionBase#run()

@@ -3,6 +3,7 @@ package urChatBasic.frontend;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import javax.swing.JFrame;
@@ -13,8 +14,10 @@ import urChatBasic.base.Constants;
 public class DriverGUI
 {
 	public static UserGUI gui = null;
+	public static JFrame frame = null;
 	
 	public static void main(String[] args) throws IOException{
+		
 		Constants.init();
 		try {
 		    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -33,11 +36,12 @@ public class DriverGUI
 	}
 	
 	public void startGUI(){
+		frame = new JFrame ("urChat");
+		
 		gui = new UserGUI();
 		new Thread(gui).start();
 		
 		
-		JFrame frame = new JFrame ("urChat");
 		
 		frame.setDefaultCloseOperation (JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().add(gui);
@@ -45,8 +49,11 @@ public class DriverGUI
 		frame.setVisible(true); 
 		frame.addWindowListener(new WindowAdapter() {
 			  public void windowClosing(WindowEvent e) {
+				  			gui.setClientSettings();
 							if(!gui.isCreatedServersEmpty())
 								gui.sendGlobalMessage("/quit Goodbye cruel world", "Server");
+							for(Handler tempHandler:Constants.LOGGER.getHandlers())
+								tempHandler.close();
 				  }
 				});
 					

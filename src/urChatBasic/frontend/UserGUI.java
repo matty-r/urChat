@@ -759,7 +759,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 			 IRCServerBase tempServer = createdServers.iterator().next();
 			 tempServer.quitChannels();
 			 tempServer.quitPrivateRooms();
-			 if(tempServer instanceof IRCServer)
+			 if(tempServer instanceof IRCServerBase)
 			 {
 				 tabbedPane.remove((IRCServer)tempServer);
 			 }
@@ -781,7 +781,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 /**
 	  * Saves the settings into the registry/Settings API
 	  */
-	 private void setClientSettings(){
+	 public void setClientSettings(){
 		 clientSettings.put(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText());
 		 clientSettings.put(Constants.KEY_FIRST_SERVER, servernameTextField.getText());
 		 clientSettings.put(Constants.KEY_FIRST_PORT, serverPortTextField.getText());
@@ -801,12 +801,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		 clientSettings.put(Constants.KEY_LIMIT_SERVER_LINES_COUNT, limitServerLinesCount.getText());
 		 clientSettings.putBoolean(Constants.KEY_LOG_CLIENT_TEXT, logClientText.isSelected());
 		 clientSettings.putInt(Constants.KEY_EVENT_TICKER_DELAY, eventTickerDelay.getValue());
+		 clientSettings.putInt(Constants.KEY_WINDOW_X,(int) DriverGUI.frame.getBounds().getX());
+		 clientSettings.putInt(Constants.KEY_WINDOW_Y,(int) DriverGUI.frame.getBounds().getY());
+		 clientSettings.putInt(Constants.KEY_WINDOW_WIDTH,(int) DriverGUI.frame.getBounds().getWidth());
+		 clientSettings.putInt(Constants.KEY_WINDOW_HEIGHT,(int) DriverGUI.frame.getBounds().getHeight());
 	 }
 
 	 /**
 	  * Loads the settings from the registry/Settings API
 	  */
-	 private void getClientSettings(){
+	 public void getClientSettings(){
 		 firstChannelTextField.setText(clientSettings.get(Constants.KEY_FIRST_CHANNEL,Constants.DEFAULT_FIRST_CHANNEL));
 		 servernameTextField.setText(clientSettings.get(Constants.KEY_FIRST_SERVER, Constants.DEFAULT_FIRST_SERVER));
 		 serverPortTextField.setText(clientSettings.get(Constants.KEY_FIRST_PORT, Constants.DEFAULT_FIRST_PORT));
@@ -826,6 +830,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		 logClientText.setSelected(clientSettings.getBoolean(Constants.KEY_LOG_CLIENT_TEXT, Constants.DEFAULT_LOG_CLIENT_TEXT));
 		 eventTickerDelay.setValue(clientSettings.getInt(Constants.KEY_EVENT_TICKER_DELAY, Constants.DEFAULT_EVENT_TICKER_DELAY));
 		 autoConnectToFavourites.setSelected(clientSettings.getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES, Constants.DEFAULT_AUTO_CONNECT_FAVOURITES));
+		 DriverGUI.frame.setBounds(clientSettings.getInt(Constants.KEY_WINDOW_X, Constants.DEFAULT_WINDOW_X), 
+				 clientSettings.getInt(Constants.KEY_WINDOW_Y, Constants.DEFAULT_WINDOW_Y), 
+				 clientSettings.getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH), 
+				 clientSettings.getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT));
+		 this.setPreferredSize(new Dimension(clientSettings.getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),clientSettings.getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT)));
 
 		 //TODO Add Port number to favourites.
 		 try {
@@ -948,7 +957,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 
 
 	 public UserGUI(){
-		 this.setPreferredSize (new Dimension(MAIN_WIDTH_INIT, MAIN_HEIGHT_INIT));
+		 
+		// this.setPreferredSize (new Dimension(MAIN_WIDTH_INIT, MAIN_HEIGHT_INIT));
 		 this.setFont(universalFont);
 		 //Create the initial size of the panel
 		 setupTabbedPane();

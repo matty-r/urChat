@@ -438,7 +438,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	@Override
 	public void sendClientText(String line,String source){
 		try {
-			if(serverConnection != null)
+			if(serverConnection.isConnected())
 				serverConnection.sendClientText(line, source);
 		} catch (IOException e) {
 			Constants.LOGGER.log(Level.WARNING, "Couldn't send text! " + e.getLocalizedMessage());
