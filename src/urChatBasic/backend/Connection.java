@@ -119,7 +119,12 @@ public class Connection implements ConnectionBase{
         
         // Keep reading lines from the server.
         while ((line = reader.readLine()) != null) {
-        	serverMessage(line);
+           	if (line.toLowerCase( ).startsWith("ping")) {
+                // We must respond to PINGs to avoid being disconnected.
+                writer.write("PONG " + line.substring(line.indexOf(':')+1) + "\r\n");
+                writer.flush();
+            } else
+            	serverMessage(line);
         }
         
 		writer.close();

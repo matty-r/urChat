@@ -74,6 +74,45 @@ public class MessageHandler {
 		handleDefault(receivedMessage);
 		
 	}
+	
+	public MessageHandler(String receivedText){
+		if(groupIDs.isEmpty())
+			addRanges();
+		if(singleIDs.isEmpty())
+			addSingles();
+		
+		Message receivedMessage = new Message(receivedText);
+		
+		boolean handled = false;
+		
+		
+		if(!handled)
+		for(IDSingle testSingle : singleIDs)
+			if(testSingle.type.equals(MessageIdType.NUMBER_ID) && testSingle.isEqual(receivedMessage.idCommandNumber)){
+				testSingle.handlerType.messageExec(receivedMessage);
+				handled = true;
+				break;
+			}
+
+		if(!handled)
+		for(IDSingle testSingle : singleIDs)
+			if(testSingle.type.equals(MessageIdType.STRING_ID) && testSingle.isEqual(receivedMessage.idCommand)){
+				testSingle.handlerType.messageExec(receivedMessage);
+				handled = true;
+				break;
+			}
+		
+		if(!handled)
+		for(IDGroup testRange : groupIDs)
+			if(testRange.type.equals(MessageIdType.NUMBER_ID) && testRange.inRange(receivedMessage.idCommandNumber)){
+				testRange.handlerType.messageExec(receivedMessage);
+				handled = true;
+				break;
+			}
+			
+		if(!handled)
+		handleDefault(receivedMessage);
+	}
 
 	private int posnOfOccurrence(String str, char c, int n) {
 	    int pos = 0;
@@ -188,7 +227,7 @@ public class MessageHandler {
 		singleIDs.add(new IDSingle(353,new UsersListMessage()));
 		singleIDs.add(new IDSingle((new int[]{311,319,312,318}),new WhoIsMessage()));
 		singleIDs.add(new IDSingle(332,new ChannelTopicMessage()));
-		singleIDs.add(new IDSingle((new int[]{366,265,266,250,333,328}),new GeneralMessage()));
+		singleIDs.add(new IDSingle((new int[]{366,265,266,250,333,328,477}),new GeneralMessage()));
 		singleIDs.add(new IDSingle((new int[]{432,433}),new InvalidNickMessage()));
 		singleIDs.add(new IDSingle("MODE",new ModeMessage()));
 		singleIDs.add(new IDSingle("NOTICE",new NoticeMessage()));
@@ -221,8 +260,8 @@ public class MessageHandler {
 			this.rawMessage = fullMessage;
 			setPrefix();
 			setChannel();
-			setMessageBody();
 			setIdCommand();
+			setMessageBody();
 			setServer();
 			setHost();
 			setNick();
@@ -258,26 +297,30 @@ public class MessageHandler {
 		}
 		
 		private void setServer(){
-			String tempMessage = rawMessage.split(" ")[0];
-			if(tempMessage.charAt(0) == ':')
-				if(countOfOccurrences(tempMessage, '.') == 2)
-					this.server = tempMessage.substring(1).trim();
+			if(prefix.charAt(0) == ':')
+				if(countOfOccurrences(prefix, '.') == 2)
+					this.server = prefix.substring(1).trim();
 		}
 		
 		private void setChannel(){
-			int messageBegin = posnOfOccurrence(rawMessage, SPACES_AHEAD_DELIMITER, 2);
+			String withoutPrefix = rawMessage.replace(prefix, "").trim();
+			int messageBegin = posnOfOccurrence(withoutPrefix, SPACES_AHEAD_DELIMITER, 1);
 			
-			int channelBegin = rawMessage.indexOf(CHANNEL_DELIMITER);
+			int channelBegin = withoutPrefix.indexOf(CHANNEL_DELIMITER);
 			if(channelBegin < messageBegin && channelBegin > -1)
-				this.channel = rawMessage.substring(channelBegin, messageBegin).split(" ")[0].trim();
+				this.channel = withoutPrefix.substring(channelBegin, messageBegin).split(" ")[0].trim();
+			else
+				this.channel = withoutPrefix.split(" ")[1];
 		}
 		
 		private void setMessageBody(){
 			try{
-			if(countOfOccurrences(rawMessage, ':') > 1)
-				this.body = rawMessage.substring(posnOfOccurrence(rawMessage, ':', 2)+1).trim();
+			String withoutPrefixIdChannel = rawMessage.replace(prefix,"").trim();
+
+			if(withoutPrefixIdChannel.indexOf(":") > -1)
+				this.body = withoutPrefixIdChannel.substring(withoutPrefixIdChannel.indexOf(":")+1).trim();
 			else
-				this.body = rawMessage.substring(posnOfOccurrence(rawMessage, ':', 1)+1).trim();
+				this.body = withoutPrefixIdChannel;
 			} catch(IndexOutOfBoundsException e) {
 				Constants.LOGGER.log(Level.SEVERE, "Failed to extract a message from received text. " + e.getLocalizedMessage());
 			}
