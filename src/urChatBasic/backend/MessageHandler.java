@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
+import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.MessageHandlerBase;
@@ -33,85 +34,17 @@ public class MessageHandler {
 	 * @param server
 	 * @param messageID
 	 */
-	public MessageHandler(IRCServerBase server,String receivedText){
+	public MessageHandler(IRCServerBase server){
 		this.myServer = server;
 
 		if(groupIDs.isEmpty())
 			addRanges();
 		if(singleIDs.isEmpty())
 			addSingles();
-
-		Message receivedMessage = new Message(receivedText);
-
-		boolean handled = false;
-
-
-		if(!handled)
-			for(IDSingle testSingle : singleIDs)
-				if(testSingle.type.equals(MessageIdType.NUMBER_ID) && testSingle.isEqual(receivedMessage.idCommandNumber)){
-					testSingle.handlerType.messageExec(receivedMessage);
-					handled = true;
-					break;
-				}
-
-		if(!handled)
-			for(IDSingle testSingle : singleIDs)
-				if(testSingle.type.equals(MessageIdType.STRING_ID) && testSingle.isEqual(receivedMessage.idCommand)){
-					testSingle.handlerType.messageExec(receivedMessage);
-					handled = true;
-					break;
-				}
-
-		if(!handled)
-			for(IDGroup testRange : groupIDs)
-				if(testRange.type.equals(MessageIdType.NUMBER_ID) && testRange.inRange(receivedMessage.idCommandNumber)){
-					testRange.handlerType.messageExec(receivedMessage);
-					handled = true;
-					break;
-				}
-
-		if(!handled)
-			handleDefault(receivedMessage);
-
 	}
-
-	public MessageHandler(String receivedText){
-		if(groupIDs.isEmpty())
-			addRanges();
-		if(singleIDs.isEmpty())
-			addSingles();
-
-		Message receivedMessage = new Message(receivedText);
-
-		boolean handled = false;
-
-
-		if(!handled)
-			for(IDSingle testSingle : singleIDs)
-				if(testSingle.type.equals(MessageIdType.NUMBER_ID) && testSingle.isEqual(receivedMessage.idCommandNumber)){
-					testSingle.handlerType.messageExec(receivedMessage);
-					handled = true;
-					break;
-				}
-
-		if(!handled)
-			for(IDSingle testSingle : singleIDs)
-				if(testSingle.type.equals(MessageIdType.STRING_ID) && testSingle.isEqual(receivedMessage.idCommand)){
-					testSingle.handlerType.messageExec(receivedMessage);
-					handled = true;
-					break;
-				}
-
-		if(!handled)
-			for(IDGroup testRange : groupIDs)
-				if(testRange.type.equals(MessageIdType.NUMBER_ID) && testRange.inRange(receivedMessage.idCommandNumber)){
-					testRange.handlerType.messageExec(receivedMessage);
-					handled = true;
-					break;
-				}
-
-		if(!handled)
-			handleDefault(receivedMessage);
+	
+	public void parseMessage(Message receivedMessage) {
+		receivedMessage.myBase.messageExec(receivedMessage);
 	}
 
 	private int posnOfOccurrence(String str, char c, int n) {
@@ -227,7 +160,7 @@ public class MessageHandler {
 		singleIDs.add(new IDSingle(353,new UsersListMessage()));
 		singleIDs.add(new IDSingle((new int[]{311,319,312,318,301,671,330,378}),new WhoIsMessage()));
 		singleIDs.add(new IDSingle(332,new ChannelTopicMessage()));
-		singleIDs.add(new IDSingle((new int[]{366,265,266,250,333,328,477}),new GeneralMessage()));
+		singleIDs.add(new IDSingle((new int[]{366,265,266,250,328,477,331,333}),new GeneralMessage()));
 		singleIDs.add(new IDSingle((new int[]{432,433}),new InvalidNickMessage()));
 		singleIDs.add(new IDSingle(403, new NoSuchChannelMessage()));
 		singleIDs.add(new IDSingle(461, new NotEnoughParametersMesssage()));
@@ -257,6 +190,7 @@ public class MessageHandler {
 		String host;
 		String server;
 		String nick;
+		MessageHandlerBase myBase;
 
 		public Message(String fullMessage){
 			this.rawMessage = fullMessage;
@@ -267,7 +201,8 @@ public class MessageHandler {
 			setServer();
 			setHost();
 			setNick();
-
+			
+			
 			try{
 				this.idCommandNumber = Integer.parseInt(this.idCommand);
 				this.type = MessageIdType.NUMBER_ID;
@@ -275,6 +210,7 @@ public class MessageHandler {
 				this.type = MessageIdType.STRING_ID;
 			}	
 
+			setHandler();
 		}
 
 		public String toString(){
@@ -299,9 +235,7 @@ public class MessageHandler {
 		}
 
 		private void setServer(){
-			if(prefix.charAt(0) == ':')
-				if(countOfOccurrences(prefix, '.') == 2)
-					this.server = prefix.substring(1).trim();
+			this.server = MessageHandler.this.myServer.getName();
 		}
 
 		private void setChannel(){
@@ -326,6 +260,37 @@ public class MessageHandler {
 			} catch(IndexOutOfBoundsException e) {
 				Constants.LOGGER.log(Level.SEVERE, "Failed to extract a message from received text. " + e.getLocalizedMessage());
 			}
+		}
+		
+		private void setHandler(){
+			boolean handled = false;
+			
+			if(!handled)
+				for(IDSingle testSingle : singleIDs)
+					if(testSingle.type.equals(MessageIdType.NUMBER_ID) && testSingle.isEqual(this.idCommandNumber)){
+						this.myBase = testSingle.handlerType;
+						handled = true;
+						break;
+					}
+
+			if(!handled)
+				for(IDSingle testSingle : singleIDs)
+					if(testSingle.type.equals(MessageIdType.STRING_ID) && testSingle.isEqual(this.idCommand)){
+						this.myBase = testSingle.handlerType;
+						handled = true;
+						break;
+					}
+
+			if(!handled)
+				for(IDGroup testRange : groupIDs)
+					if(testRange.type.equals(MessageIdType.NUMBER_ID) && testRange.inRange(this.idCommandNumber)){
+						this.myBase = testRange.handlerType;
+						handled = true;
+						break;
+					}
+
+			if(!handled)
+				this.myBase = new MessageHandler.DefaultMesssage();
 		}
 
 		private void setIdCommand(){
@@ -384,7 +349,7 @@ public class MessageHandler {
 
 		@Override
 		public void messageExec(Message myMessage){
-			myServer.setChannelTopic(myMessage.channel, myMessage.body);
+				myServer.setChannelTopic(myMessage.channel, myMessage.body);			
 		}
 	}
 
@@ -422,7 +387,11 @@ public class MessageHandler {
 
 		@Override
 		public void messageExec(Message myMessage){
-			printServerText(myMessage.body);
+			//printServerText(myMessage.body);
+			if(myMessage.channel.equals(myServer.getNick()))
+				printServerText(myMessage.body);
+			else
+				myServer.getCreatedChannel(myMessage.channel).createEvent(myMessage.body);
 		}
 
 	}
@@ -498,7 +467,6 @@ public class MessageHandler {
 	}
 
 	public class PartMessage implements MessageHandlerBase{
-
 		@Override
 		public void messageExec(Message myMessage) {
 			if(!(myMessage.nick.equals(myServer.getNick()))){
@@ -511,22 +479,16 @@ public class MessageHandler {
 				}
 			}
 		}
-
-
 	}
 
 	public class KickMessage implements MessageHandlerBase{
-
 		@Override
 		public void messageExec(Message myMessage) {
 			myServer.removeFromUsersList(myMessage.channel, myMessage.body);
 		}
-
-
 	}
 
 	public class DisconnectMessage implements MessageHandlerBase{
-
 		@Override
 		public void messageExec(Message myMessage) {
 			if(myServer.getNick().equals(myMessage.nick)){
@@ -537,8 +499,6 @@ public class MessageHandler {
 	}
 
 	public class NoSuchChannelMessage implements MessageHandlerBase {
-
-
 		@Override
 		public void messageExec(Message myMessage){
 			printServerText(myMessage.body);
@@ -546,17 +506,18 @@ public class MessageHandler {
 	}
 
 	public class NotEnoughParametersMesssage implements MessageHandlerBase {
-
-
 		@Override
 		public void messageExec(Message myMessage){
 			printServerText(myMessage.body);
 		}
 	}
 
-	private void handleDefault(Message myMessage) {
-		printServerText(myMessage.rawMessage);
-		Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: "+myMessage.rawMessage);
+	public class DefaultMesssage implements MessageHandlerBase {
+		@Override
+		public void messageExec(Message myMessage){
+			printServerText(myMessage.body);
+			Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: "+myMessage.rawMessage);
+		}
 	}
 
 	private void printPrivateText(String userName,String line,String fromUser){

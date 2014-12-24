@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
+import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
@@ -31,6 +32,7 @@ public class Connection implements ConnectionBase{
 	private String login;
 	private String portNumber;
 	private Socket mySocket;
+	private MessageHandler messageHandler;
 	public UserGUIBase gui;
 	
 	//Used for Logging messages received by the server
@@ -49,6 +51,7 @@ public class Connection implements ConnectionBase{
     		this.portNumber = Constants.DEFAULT_FIRST_PORT;
     	this.portNumber = portNumber;
     	this.login = login;
+    	this.messageHandler = new MessageHandler(this.server);
 	}
     
     /* (non-Javadoc)
@@ -114,7 +117,7 @@ public class Connection implements ConnectionBase{
         		gui.connectFavourites(server);
                 break;
             } else
-            	serverMessage(line);
+            	serverMessage(messageHandler.new Message(line));
         }
         
         // Keep reading lines from the server.
@@ -124,12 +127,12 @@ public class Connection implements ConnectionBase{
                 writer.write("PONG " + line.substring(line.indexOf(':')+1) + "\r\n");
                 writer.flush();
             } else
-            	serverMessage(line);
+            	serverMessage(messageHandler.new Message(line));
         }
         
-		writer.close();
-		reader.close();
-		mySocket.close();
+		//writer.close();
+		//reader.close();
+		//mySocket.close();
     }
 	
 	/* (non-Javadoc)
@@ -197,13 +200,13 @@ public class Connection implements ConnectionBase{
 		Constants.LOGGER.log(Level.FINE, "Local Text:-"+message);
 	}
 	 
-	private void serverMessage(String receivedText){
+	private void serverMessage(Message newMessage){
 		if(isConnected())
 			try{
-			new MessageHandler(getServer(),receivedText);
-			Constants.LOGGER.log(Level.FINE, receivedText);
+				messageHandler.parseMessage(newMessage);
+			Constants.LOGGER.log(Level.FINE, newMessage.rawMessage);
 			} catch(Exception e){
-				Constants.LOGGER.log(Level.WARNING, receivedText);
+				Constants.LOGGER.log(Level.WARNING, newMessage.rawMessage);
 			}
 	}
 	/* (non-Javadoc)
@@ -214,6 +217,8 @@ public class Connection implements ConnectionBase{
 		try {
 			if(getPortNumber() != null && getServer() != null && getNick() != null)
 				startUp();
+			else
+				Constants.LOGGER.log(Level.SEVERE, "Incomplete settings: (Port "+getPortNumber()+") (Server "+getServer()+") (Nick "+getNick()+") ");
 		} catch (IOException e) {
 			Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());
 		}

@@ -3,6 +3,8 @@ package urChatBasic.base;
 import java.awt.Graphics;
 
 import urChatBasic.frontend.IRCChannel;
+import urChatBasic.frontend.IRCServer;
+import urChatBasic.frontend.IRCUser;
 
 public interface UserGUIBase {
 
@@ -114,15 +116,7 @@ public interface UserGUIBase {
 	 * @param channel
 	 */
 	public abstract void addFavourite(String server, String channel);
-
-	/**
-	 * Used to check if the server&channel is already a favourite from a string
-	 * @param server
-	 * @param channel
-	 * @return Boolean
-	 */
-	public abstract Boolean isFavourite(String server, String channel);
-
+	
 	/**
 	 * Used to check if the channel is already a favourite from an IRCChannel
 	 * @param channel
@@ -130,7 +124,7 @@ public interface UserGUIBase {
 	 */
 	public abstract Boolean isFavourite(IRCChannel channel);
 
-	public abstract void removeFavourite(String server, String channel);
+	//public abstract void removeFavourite(String server, String channel);
 
 	public abstract void sendGlobalMessage(String message, String sender);
 
@@ -165,5 +159,7 @@ public interface UserGUIBase {
 	public abstract void paintComponent(Graphics g);
 
 	public abstract void run();
+	
+	public abstract void removeFavourite(String favServer, String favChannel);
 
 }

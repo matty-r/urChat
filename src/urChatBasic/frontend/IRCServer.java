@@ -52,6 +52,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	private JScrollPane serverTextScroll = new JScrollPane(serverTextArea);
 	public JTextField serverTextBox = new JTextField();
 	private String name; 
+	private String port;
 
 	public ServerPopUp myMenu = new ServerPopUp();
 	private FontPanel fontPanel;
@@ -63,6 +64,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 
 	public IRCServer(String serverName,String nick,String login,String portNumber){
 		this.setLayout(new BorderLayout());
+		this.port = portNumber;
 		this.add(serverTextScroll, BorderLayout.CENTER);
 		this.add(serverTextBox, BorderLayout.PAGE_END);
 		serverTextArea.setEditable(false);
@@ -89,6 +91,11 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	@Override
 	public String getNick(){
 		return serverConnection.getNick();
+	}
+	
+	@Override
+	public String getPort(){
+		return this.port;
 	}
 
 	class ServerPopUp extends JPopupMenu{
@@ -120,7 +127,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			sendClientText("/quit ", IRCServer.this.getName());
+			sendClientText("/quit Goodbye cruel world", IRCServer.this.getName());
 		}   
 	}
 
@@ -359,15 +366,11 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 */
 	@Override
 	public void addToUsersList(final String channelName,final String[] users){
-		SwingUtilities.invokeLater(new Runnable(){
-			public void run(){
 				if(!channelName.matches("Server")){
 					IRCChannel tempChannel = getCreatedChannel(channelName);
 					if(tempChannel != null)
 						tempChannel.addToUsersList(tempChannel.getName(), users);
 				}
-			}
-		});
 	}
 
 	//Adds a single user, good for when a user joins the channel
@@ -376,8 +379,6 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 */
 	@Override
 	public void addToUsersList(final String channelName,final String user){
-		SwingUtilities.invokeLater(new Runnable(){
-			public void run(){
 				String thisUser = user;
 				if(user.startsWith(":"))
 					thisUser = user.substring(1);
@@ -385,8 +386,6 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 				IRCChannel tempChannel = getCreatedChannel(channelName);
 				if(tempChannel != null)
 					tempChannel.addToUsersList(tempChannel.getName(), thisUser);
-			}
-		});
 	}
 
 
@@ -395,8 +394,6 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 */
 	@Override
 	public void removeFromUsersList(final String channelName,final String user){
-		SwingUtilities.invokeLater(new Runnable(){
-			public void run(){
 				String thisUser = user;
 				if(user.startsWith(":"))
 					thisUser = user.substring(1);
@@ -413,8 +410,6 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 						else
 							tempChannel.removeFromUsersList(channelName, thisUser);
 				}
-			}
-		});
 	}
 
 

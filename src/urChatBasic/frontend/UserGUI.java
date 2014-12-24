@@ -87,7 +87,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	public static Font universalFont = new Font("Consolas", Font.PLAIN, 12);
 
 	//Created Servers/Tabs
-	private List<IRCServerBase> createdServers = new ArrayList<IRCServerBase>();
+	private static List<IRCServerBase> createdServers = new ArrayList<IRCServerBase>();
 
 	/* (non-Javadoc)
 	 * @see urChatBasic.frontend.UserGUIBase#getLimitServerLinesCount()
@@ -183,7 +183,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		if(getCreatedServer(serverName) == null){
 			IRCServer tempServer = new IRCServer(serverName.trim(),userNameTextField.getText().trim(),realNameTextField.getText().trim(),serverPortTextField.getText().trim());
 			createdServers.add(tempServer);
-			tabbedPane.addTab(serverName, tempServer.icon,tempServer);
+			tabbedPane.addTab(tempServer.getName(), tempServer.icon,tempServer);
 			tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempServer));
 			tempServer.serverTextBox.requestFocus();
 		}
@@ -557,20 +557,21 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 * @param String server
 	 * @param String channel
 	 */
+	//TODO update javadoc
 	class FavouritesItem{
-		String server;
-		String channel;
+		String favServer;
+		String favChannel;
 		FavouritesPopUp myMenu;
 
-		public FavouritesItem(String server, String channel){
-			this.server = server;
-			this.channel = channel;
+		public FavouritesItem(String favServer,String favChannel){
+			this.favServer = favServer;
+			this.favChannel = favChannel;
 			myMenu = new FavouritesPopUp();
 		}
 
 		@Override
 		public String toString(){
-			return server +":"+channel;
+			return favServer +":"+favChannel;
 		}
 
 		private class FavouritesPopUp extends JPopupMenu {
@@ -598,8 +599,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 			public void actionPerformed(ActionEvent arg0) {
 				if(favouritesList.getSelectedIndex() > -1){
 					FavouritesItem tempItem = favouritesListModel.elementAt(favouritesList.getSelectedIndex());
-					removeFavourite(tempItem.server,tempItem.channel);
-					clientSettings.node("Favourites").node(server).remove(tempItem.channel);
+					removeFavourite(tempItem.favServer,tempItem.favChannel);
+					clientSettings.node(Constants.KEY_FAVOURITES_NODE).node(tempItem.favServer).remove(tempItem.favChannel);
 				}
 			}
 		}
@@ -610,27 +611,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 * @see urChatBasic.frontend.UserGUIBase#addFavourite(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void addFavourite(String server,String channel){
-		favouritesListModel.addElement(new FavouritesItem(server, channel));
-		clientSettings.node(Constants.KEY_FAVOURITES_NODE).node(server).put(channel, channel);
+	public void addFavourite(String favServer,String favChannel){
+		favouritesListModel.addElement(new FavouritesItem(favServer,favChannel));
+
+		clientSettings.node(Constants.KEY_FAVOURITES_NODE).node(favServer).node(favChannel).put("PORT", getCreatedServer(favServer).getPort());
+		
+		
 	}
 
-	/* (non-Javadoc)
-	 * @see urChatBasic.frontend.UserGUIBase#isFavourite(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public Boolean isFavourite(String server,String channel){
-		FavouritesItem castItem;
-
-		for(Object tempItem : favouritesListModel.toArray()){
-			castItem = (FavouritesItem) tempItem;
-			if(castItem.server.equals(server) && castItem.channel.equals(channel)){
-				return true;
-			}
-		}
-
-		return false;
-	}
 
 	/* (non-Javadoc)
 	 * @see urChatBasic.frontend.UserGUIBase#isFavourite(urChatBasic.frontend.IRCChannel)
@@ -641,7 +629,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 
 		for(Object tempItem : favouritesListModel.toArray()){
 			castItem = (FavouritesItem) tempItem;
-			if(castItem.server.equals(channel.getServer()) && castItem.channel.equals(channel.getName())){
+			if(castItem.favChannel.equals(channel.getName()) && castItem.favServer.equals(channel.getServer())){
 				return true;
 			}
 		}
@@ -653,12 +641,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	 * @see urChatBasic.frontend.UserGUIBase#removeFavourite(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void removeFavourite(String server,String channel){
+	public void removeFavourite(String favServer,String favChannel){
 		FavouritesItem castItem;
 
 		for(Object tempItem : favouritesListModel.toArray()){
 			castItem = (FavouritesItem) tempItem;
-			if(castItem.server.equals(server) && castItem.channel.equals(channel)){
+			if(castItem.favChannel.equals(favChannel) && castItem.favServer.equals(favServer)){
 				favouritesListModel.removeElement(castItem);
 				break;
 			}
@@ -706,7 +694,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 					 FavouritesItem castItem;
 					 for(Object tempItem : favouritesListModel.toArray()){
 						 castItem = (FavouritesItem) tempItem;
-						 addToCreatedServers(castItem.server);
+						 addToCreatedServers(castItem.favServer);
 					 }
 				 }
 			 }
@@ -735,9 +723,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 			 FavouritesItem castItem;
 			 for(Object tempItem : favouritesListModel.toArray()){
 				 castItem = (FavouritesItem) tempItem;
-				 if(castItem.server.equals(server.getName()))
-					 if(server.getCreatedChannel(castItem.channel) == null)
-						 server.sendClientText("/join "+castItem.channel,castItem.server);
+				 if(castItem.favServer.equals(server.getName()))
+					 if(server.getCreatedChannel(castItem.favChannel) == null)
+						 server.sendClientText("/join "+castItem.favChannel,castItem.favServer);
 			 }
 		 }
 	 }
@@ -842,8 +830,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		 //TODO Add Port number to favourites.
 		 try {
 			 for(String serverNode : clientSettings.node(Constants.KEY_FAVOURITES_NODE).childrenNames())
-				 for(String value : clientSettings.node(Constants.KEY_FAVOURITES_NODE).node(serverNode).keys())
-					 favouritesListModel.addElement(new FavouritesItem(serverNode,value));
+				 for(String channelNode : clientSettings.node(Constants.KEY_FAVOURITES_NODE).node(serverNode).childrenNames())
+						 favouritesListModel.addElement(new FavouritesItem(serverNode,channelNode));
 		 } catch (BackingStoreException e) {
 			 Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
 		 }

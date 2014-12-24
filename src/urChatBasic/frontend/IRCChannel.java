@@ -440,10 +440,10 @@ public class IRCChannel extends JPanel implements IRCActions{
 
 		@Override
 		public void actionPerformed(ActionEvent arg0){
-			if(!gui.isFavourite(serverName, channelName)){
-				gui.addFavourite(serverName, channelName);
+			if(!gui.isFavourite(IRCChannel.this)){
+				gui.addFavourite(myServer.getName(),IRCChannel.this.getName());
 			} else {
-				gui.removeFavourite(serverName, channelName);
+				gui.removeFavourite(myServer.getName(),IRCChannel.this.getName());
 			}
 		}
 	}
@@ -638,7 +638,8 @@ public class IRCChannel extends JPanel implements IRCActions{
 						if(users[x].startsWith(":"))
 							tempUser = tempUser.substring(1);
 
-						usersArray.add(new IRCUser(myServer,tempUser));
+						if(!usersArray.contains(tempUser))
+							usersArray.add(new IRCUser(myServer,tempUser));
 					}
 				}
 				usersListModel.sort();
@@ -654,10 +655,12 @@ public class IRCChannel extends JPanel implements IRCActions{
 				if(user.startsWith(":"))
 					thisUser = user.substring(1);
 
-				usersArray.add(new IRCUser(myServer,thisUser));
-				usersList.setSelectedIndex(0);
-				createEvent("++ "+thisUser+" has entered "+channel);
-				usersListModel.sort();
+				if(!usersArray.contains(thisUser)){
+					usersArray.add(new IRCUser(myServer,thisUser));
+					usersList.setSelectedIndex(0);
+					createEvent("++ "+thisUser+" has entered "+channel);
+					usersListModel.sort();
+				}
 			}
 		});
 	}

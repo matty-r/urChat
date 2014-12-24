@@ -8,6 +8,14 @@ Contributions
 ======
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
+=Update (23 DEC 14)
+
+* Added check to make sure a user doesn't already exist in the users list before attempting to add them.
+
+=Update (22 DEC 14)
+
+* Added support for 403(NoSuchChannel) and 461(NotEnoughParameters) - Goofybud16
+
 =Update (21 DEC 14)
 
 * Improved MessageHandler
@@ -17,6 +25,7 @@ If you would like to assist in the development of urChat take a look at the Issu
 * Added save settings on exit
 * Added scrollpanes to Server options and client Options - also moved the Save Settings button
 * Added an icon :)
+* Changed how MessageHandler is instantiated through Connection.
 
 =Update (20 DEC 14)
 

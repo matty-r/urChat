@@ -145,4 +145,6 @@ public interface IRCServerBase {
 
 	public abstract String getServer();
 
+	public abstract String getPort();
+
 }
