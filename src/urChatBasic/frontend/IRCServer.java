@@ -33,7 +33,7 @@ import urChatBasic.base.UserGUIBase;
 
 public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -4685985875752613136L;
 	////////////////
@@ -45,16 +45,19 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	private UserGUI gui = DriverGUI.gui;
 
 	//Server Properties
-	private ConnectionBase serverConnection; 
+	private ConnectionBase serverConnection;
 
 	//Server Text Area
 	private JTextPane serverTextArea = new JTextPane();
 	private JScrollPane serverTextScroll = new JScrollPane(serverTextArea);
 	public JTextField serverTextBox = new JTextField();
-	private String name; 
+	private String name;
 	private String port;
 
 	private Boolean isTLS;
+
+	private String proxyHost;
+	private String proxyPort;
 	private Boolean useSOCKS;
 
 	public ServerPopUp myMenu = new ServerPopUp();
@@ -65,11 +68,15 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	//Created channels/tabs
 	private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
 
-	public IRCServer(String serverName,String nick,String login,String portNumber, Boolean isTLS, Boolean useSOCKS){
+	public IRCServer(String serverName,String nick,String login,String portNumber, Boolean isTLS,String proxyHost,String proxyPort, Boolean useSOCKS){
 		this.setLayout(new BorderLayout());
 		this.port = portNumber;
 		this.isTLS = isTLS;
+
+		this.proxyHost = proxyHost;
+		this.proxyPort = proxyPort;
 		this.useSOCKS = useSOCKS;
+
 		this.add(serverTextScroll, BorderLayout.CENTER);
 		this.add(serverTextBox, BorderLayout.PAGE_END);
 		serverTextArea.setEditable(false);
@@ -84,10 +91,10 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 			tempIcon = ImageIO.read(new File(Constants.RESOURCES_DIR+"Server.png"));
 		} catch (IOException e) {
 			Constants.LOGGER.log(Level.SEVERE, "COULD NOT LOAD Server.png " + e.getLocalizedMessage());
-		} 
-		icon = new ImageIcon(tempIcon);	
+		}
+		icon = new ImageIcon(tempIcon);
 
-		serverConnect(nick,login, portNumber, isTLS, useSOCKS, Constants.BACKEND_CLASS);
+		serverConnect(nick,login, portNumber, isTLS, proxyHost, proxyPort, useSOCKS, Constants.BACKEND_CLASS);
 	}
 
 	/* (non-Javadoc)
@@ -97,7 +104,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	public String getNick(){
 		return serverConnection.getNick();
 	}
-	
+
 	@Override
 	public String getPort(){
 		return this.port;
@@ -105,7 +112,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 
 	class ServerPopUp extends JPopupMenu{
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 640768684923757684L;
 		JMenuItem nameItem;
@@ -133,7 +140,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			sendClientText("/quit Goodbye cruel world", IRCServer.this.getName());
-		}   
+		}
 	}
 
 	private class ChooseFont implements ActionListener{
@@ -148,10 +155,10 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 * @see urChatBasic.backend.IRCServerBase#serverConnect(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void serverConnect(String nick,String login,String portNumber,Boolean isTLS,Boolean useSOCKS,Class connection){
+	public void serverConnect(String nick,String login,String portNumber,Boolean isTLS,String proxyHost,String proxyPort,Boolean useSOCKS,Class connection){
 		try {
-			Constructor<?> ctor = connection.getConstructor(IRCServerBase.class, String.class, String.class, String.class, Boolean.class, Boolean.class ,UserGUIBase.class);
-			Object temp = ctor.newInstance(this, nick, login, portNumber, isTLS, useSOCKS,gui);
+			Constructor<?> ctor = connection.getConstructor(IRCServerBase.class, String.class, String.class, String.class, Boolean.class, String.class, String.class, Boolean.class ,UserGUIBase.class);
+			Object temp = ctor.newInstance(this, nick, login, portNumber, isTLS, proxyHost, proxyPort, useSOCKS, gui);
 			if(temp instanceof ConnectionBase)
 			{
 				serverConnection = (ConnectionBase) temp;
@@ -280,7 +287,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 
 	/* (non-Javadoc)
 	 * @see urChatBasic.backend.IRCServerBase#addToCreatedChannels(java.lang.String)
-	 */	
+	 */
 	@Override
 	public void addToCreatedChannels(String channelName){
 		if(getCreatedChannel(channelName) == null){
@@ -336,7 +343,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 */
 	@Override
 	public void printPrivateText(String userName, String line,String fromUser){
-		
+
 		//private messages aren't linked to a channel, so create it - also
 		// if they aren't muted
 		if(getIRCUser(userName) != null && !getIRCUser(userName).isMuted()){

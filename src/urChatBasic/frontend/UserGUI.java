@@ -191,7 +191,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	@Override
 	public void addToCreatedServers(String serverName){
 		if(getCreatedServer(serverName) == null){
-			IRCServer tempServer = new IRCServer(serverName.trim(),userNameTextField.getText().trim(),realNameTextField.getText().trim(),serverPortTextField.getText().trim(), serverTLSCheckBox.isSelected(), serverProxyCheckBox.isSelected());
+			IRCServer tempServer = new IRCServer(serverName.trim(),userNameTextField.getText().trim(),realNameTextField.getText().trim(),serverPortTextField.getText().trim(), serverTLSCheckBox.isSelected(), proxyHostNameTextField.getText() , proxyPortTextField.getText(), serverProxyCheckBox.isSelected());
 			createdServers.add(tempServer);
 			tabbedPane.addTab(tempServer.getName(), tempServer.icon,tempServer);
 			tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempServer));

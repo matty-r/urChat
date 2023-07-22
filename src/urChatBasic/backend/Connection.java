@@ -30,6 +30,8 @@ public class Connection implements ConnectionBase{
 	private String myNick;
 	private String login;
 	private boolean isTLS;
+	private String proxyHost;
+	private String proxyPort;
 	private boolean useSOCKS;
 	private String portNumber;
 	private Socket mySocket;
@@ -44,11 +46,13 @@ public class Connection implements ConnectionBase{
 	//private Date todayDate = new Date();
 	//private String debugFile;
 
-    public Connection(IRCServerBase server,String nick,String login,String portNumber,Boolean isTLS, Boolean useSOCKS, UserGUIBase ugb){
+    public Connection(IRCServerBase server,String nick,String login,String portNumber,Boolean isTLS, String proxyHost,String proxyPort, Boolean useSOCKS, UserGUIBase ugb){
     	this.gui = ugb;
     	this.server =  server;
     	this.myNick = nick;
 		this.isTLS = isTLS;
+		this.proxyHost = proxyHost;
+		this.proxyPort = proxyPort;
 		this.useSOCKS = useSOCKS;
     	if(portNumber.trim().equals(""))
     		this.portNumber = Constants.DEFAULT_FIRST_PORT;
@@ -105,7 +109,7 @@ public class Connection implements ConnectionBase{
 
 		// Determine the socket type to be used
 		if (usingSOCKS()) {
-			Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress("localhost", 1080));
+			Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort)));
 			Socket proxySocket = new Socket(proxy);
 			InetSocketAddress address = new InetSocketAddress(server.getName(), Integer.parseInt(getPortNumber()));
 

@@ -8,7 +8,7 @@ public interface IRCServerBase {
 
 	public abstract String getNick();
 
-	public abstract void serverConnect(String nick, String login,String portNumber, Boolean isTLS, Boolean useSOCKS, Class connection);
+	public abstract void serverConnect(String nick, String login,String portNumber, Boolean isTLS,String proxyHost,String proxyPort, Boolean useSOCKS, Class connection);
 
 	public abstract String toString();
 
