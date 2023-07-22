@@ -54,6 +54,8 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	private String name; 
 	private String port;
 
+	private Boolean isTLS;
+
 	public ServerPopUp myMenu = new ServerPopUp();
 	private FontPanel fontPanel;
 
@@ -62,9 +64,10 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	//Created channels/tabs
 	private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
 
-	public IRCServer(String serverName,String nick,String login,String portNumber){
+	public IRCServer(String serverName,String nick,String login,String portNumber, Boolean isTLS){
 		this.setLayout(new BorderLayout());
 		this.port = portNumber;
+		this.isTLS = isTLS;
 		this.add(serverTextScroll, BorderLayout.CENTER);
 		this.add(serverTextBox, BorderLayout.PAGE_END);
 		serverTextArea.setEditable(false);
@@ -82,7 +85,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 		} 
 		icon = new ImageIcon(tempIcon);	
 
-		serverConnect(nick,login, portNumber,Constants.BACKEND_CLASS);
+		serverConnect(nick,login, portNumber, isTLS,Constants.BACKEND_CLASS);
 	}
 
 	/* (non-Javadoc)
@@ -143,10 +146,10 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase {
 	 * @see urChatBasic.backend.IRCServerBase#serverConnect(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void serverConnect(String nick,String login,String portNumber,Class connection){
+	public void serverConnect(String nick,String login,String portNumber,Boolean isTLS,Class connection){
 		try {
-			Constructor<?> ctor = connection.getConstructor(new Class[]{IRCServerBase.class, String.class, String.class, String.class, UserGUIBase.class});
-			Object temp = ctor.newInstance(new Object[] {this, nick, login, portNumber,gui});
+			Constructor<?> ctor = connection.getConstructor(IRCServerBase.class, String.class, String.class, String.class, Boolean.class ,UserGUIBase.class);
+			Object temp = ctor.newInstance(this, nick, login, portNumber, isTLS, gui);
 			if(temp instanceof ConnectionBase)
 			{
 				serverConnection = (ConnectionBase) temp;

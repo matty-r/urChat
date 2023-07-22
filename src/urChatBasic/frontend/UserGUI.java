@@ -74,6 +74,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	private static final JTextField servernameTextField = new JTextField("");
 	private static final JLabel serverPortLabel = new JLabel("Port:");
 	private static final JTextField serverPortTextField = new JTextField("");
+	private static final JLabel serverUseTLSLabel = new JLabel("TLS:");
+	private static final JCheckBox serverTLSCheckBox = new JCheckBox();
 	private static final JLabel firstChannelLabel = new JLabel("Channel:");
 	private static final JTextField firstChannelTextField = new JTextField("");
 	private static final JButton connectButton = new JButton("Connect");
@@ -181,7 +183,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 	@Override
 	public void addToCreatedServers(String serverName){
 		if(getCreatedServer(serverName) == null){
-			IRCServer tempServer = new IRCServer(serverName.trim(),userNameTextField.getText().trim(),realNameTextField.getText().trim(),serverPortTextField.getText().trim());
+			IRCServer tempServer = new IRCServer(serverName.trim(),userNameTextField.getText().trim(),realNameTextField.getText().trim(),serverPortTextField.getText().trim(), serverTLSCheckBox.isSelected());
 			createdServers.add(tempServer);
 			tabbedPane.addTab(tempServer.getName(), tempServer.icon,tempServer);
 			tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempServer));
@@ -344,6 +346,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		serverOptionsPanel.add(serverPortLabel);
 		serverOptionsPanel.add(serverPortTextField);
 		serverPortTextField.setPreferredSize(new Dimension(50,20));
+
+		serverOptionsPanel.add(serverUseTLSLabel);
+		serverOptionsPanel.add(serverTLSCheckBox);
+		serverTLSCheckBox.setPreferredSize(new Dimension(50,20));
 		
 		serverOptionsPanel.add(firstChannelLabel);
 		serverOptionsPanel.add(firstChannelTextField);
@@ -356,8 +362,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		favouritesScroller.setPreferredSize(new Dimension(autoConnectToFavourites.getPreferredSize().width,0));
 		favouritesList.addMouseListener(new FavouritesPopClickListener());
 		serverOptionsPanel.add(favouritesScroller);
-
-		
 	}
 	
 	/**
@@ -377,7 +381,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		final int LEFT_SPACING = 0;
 		
 		// Components are aligned off the top label
-		serverLayout.putConstraint(SpringLayout.WEST, userNameLabel, 5, SpringLayout.WEST, serverOptionsPanel);
+		serverLayout.putConstraint(SpringLayout.WEST, userNameLabel, TOP_SPACING, SpringLayout.WEST, serverOptionsPanel);
 		serverLayout.putConstraint(SpringLayout.NORTH, userNameLabel, TOP_ALIGNED, SpringLayout.NORTH, serverOptionsPanel);
 		
 		serverLayout.putConstraint(SpringLayout.NORTH, userNameTextField, TOP_ALIGNED, SpringLayout.SOUTH, userNameLabel);
@@ -400,6 +404,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		
 		serverLayout.putConstraint(SpringLayout.NORTH, serverPortTextField, TOP_ALIGNED, SpringLayout.SOUTH, serverPortLabel);
 		serverLayout.putConstraint(SpringLayout.WEST, serverPortTextField, LEFT_ALIGNED, SpringLayout.WEST, serverPortLabel);
+
+		serverLayout.putConstraint(SpringLayout.NORTH, serverUseTLSLabel, TOP_ALIGNED, SpringLayout.NORTH, serverPortLabel);
+		serverLayout.putConstraint(SpringLayout.WEST, serverUseTLSLabel, LEFT_SPACING, SpringLayout.EAST, serverPortTextField);
+
+		serverLayout.putConstraint(SpringLayout.NORTH, serverTLSCheckBox, TOP_ALIGNED, SpringLayout.SOUTH, serverUseTLSLabel);
+		serverLayout.putConstraint(SpringLayout.WEST, serverTLSCheckBox, LEFT_ALIGNED, SpringLayout.WEST, serverUseTLSLabel);
 		
 		serverLayout.putConstraint(SpringLayout.NORTH, firstChannelLabel, TOP_SPACING, SpringLayout.SOUTH, servernameTextField);
 		serverLayout.putConstraint(SpringLayout.WEST, firstChannelLabel, LEFT_ALIGNED, SpringLayout.WEST, servernameTextField);
@@ -776,6 +786,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		 clientSettings.put(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText());
 		 clientSettings.put(Constants.KEY_FIRST_SERVER, servernameTextField.getText());
 		 clientSettings.put(Constants.KEY_FIRST_PORT, serverPortTextField.getText());
+		 clientSettings.putBoolean(Constants.KEY_USE_TLS, serverTLSCheckBox.isSelected());
 		 clientSettings.put(Constants.KEY_NICK_NAME, userNameTextField.getText());
 		 clientSettings.put(Constants.KEY_REAL_NAME, realNameTextField.getText());
 		 clientSettings.putBoolean(Constants.KEY_TIME_STAMPS, enableTimeStamps.isSelected());
@@ -805,6 +816,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase{
 		 firstChannelTextField.setText(clientSettings.get(Constants.KEY_FIRST_CHANNEL,Constants.DEFAULT_FIRST_CHANNEL));
 		 servernameTextField.setText(clientSettings.get(Constants.KEY_FIRST_SERVER, Constants.DEFAULT_FIRST_SERVER));
 		 serverPortTextField.setText(clientSettings.get(Constants.KEY_FIRST_PORT, Constants.DEFAULT_FIRST_PORT));
+		 serverTLSCheckBox.setSelected(clientSettings.getBoolean(Constants.KEY_USE_TLS, Constants.DEFAULT_USE_TLS));
 		 userNameTextField.setText(clientSettings.get(Constants.KEY_NICK_NAME, Constants.DEFAULT_NICK_NAME));
 		 realNameTextField.setText(clientSettings.get(Constants.KEY_REAL_NAME, Constants.DEFAULT_REAL_NAME));
 		 showUsersList.setSelected(clientSettings.getBoolean(Constants.KEY_USERS_LIST_ACTIVE, Constants.DEFAULT_USERS_LIST_ACTIVE));

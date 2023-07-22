@@ -22,11 +22,12 @@ public class Constants{
 	private static Handler LOGGER_TO_FILE;
 	public static Logger LOGGER = Logger.getLogger("Main");
 	public static String LOGFILE_NAME = "Errors.log";
-	
+
 	//Key Strings that are used when saving settings
 	public static final String KEY_FIRST_CHANNEL = "first channel name";
 	public static final String KEY_FIRST_SERVER = "first server name";
 	public static final String KEY_FIRST_PORT = "first server port";
+	public static final String KEY_USE_TLS = "use tls";
 	public static final String KEY_NICK_NAME = "nick name";
 	public static final String KEY_REAL_NAME = "real name";
 	public static final String KEY_TIME_STAMPS = "show time stamps";
@@ -48,11 +49,12 @@ public class Constants{
 	public static final String KEY_WINDOW_Y = "window position y";
 	public static final String KEY_WINDOW_WIDTH = "window position width";
 	public static final String KEY_WINDOW_HEIGHT = "window position height";
-	
+
 	//Setting defaults
 	public static final String DEFAULT_FIRST_CHANNEL = "##java";
-	public static final String DEFAULT_FIRST_SERVER = "irc.freenode.net";
-	public static final String DEFAULT_FIRST_PORT = "6667";
+	public static final String DEFAULT_FIRST_SERVER = "irc.liberachat.net";
+	public static final String DEFAULT_FIRST_PORT = "6697";
+	public static final Boolean DEFAULT_USE_TLS = true;
 	public static final String DEFAULT_NICK_NAME = "urChatClient";
 	public static final String DEFAULT_REAL_NAME = "urChatClient";
 	public static final Boolean DEFAULT_TIME_STAMPS = true;
@@ -73,8 +75,8 @@ public class Constants{
 	public static final int DEFAULT_WINDOW_Y = 0;
 	public static final int DEFAULT_WINDOW_WIDTH = 640;
 	public static final int DEFAULT_WINDOW_HEIGHT = 480;
-	
-	
+
+
 	/**
 	 * Used to initialize some values that may throw exceptions.
 	 * @author goofybud16

@@ -17,6 +17,8 @@ public interface ConnectionBase extends Runnable {
 	
 	public abstract String getLogin();
 
+	public abstract boolean usingTLS();
+
 	public abstract void sendClientText(String clientText, String fromChannel)
 			throws IOException;
 

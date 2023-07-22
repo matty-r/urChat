@@ -1,6 +1,5 @@
 package urChatBasic.backend;
 
-import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -8,10 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import urChatBasic.backend.MessageHandler.Message;
@@ -20,21 +15,24 @@ import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.UserGUIBase;
 
+import javax.net.ssl.SSLSocketFactory;
+
 
 public class Connection implements ConnectionBase{
 
-	//This was static.. it was causing silly issues with the reader/writer
 	private BufferedWriter writer;
 	private BufferedReader reader;
-	
+
 	private IRCServerBase server;
 	private String myNick;
 	private String login;
+	private boolean isTLS;
+
 	private String portNumber;
 	private Socket mySocket;
 	private MessageHandler messageHandler;
 	public UserGUIBase gui;
-	
+
 	//Used for Logging messages received by the server
 	//Debug Mode
 	//Currently deprecated
@@ -43,17 +41,18 @@ public class Connection implements ConnectionBase{
 	//private Date todayDate = new Date();
 	//private String debugFile;
 
-    public Connection(IRCServerBase server,String nick,String login,String portNumber, UserGUIBase ugb){
+    public Connection(IRCServerBase server,String nick,String login,String portNumber,Boolean isTLS, UserGUIBase ugb){
     	this.gui = ugb;
     	this.server =  server;
     	this.myNick = nick;
+		this.isTLS = isTLS;
     	if(portNumber.trim().equals(""))
     		this.portNumber = Constants.DEFAULT_FIRST_PORT;
     	this.portNumber = portNumber;
     	this.login = login;
     	this.messageHandler = new MessageHandler(this.server);
 	}
-    
+
     /* (non-Javadoc)
 	 * @see urChatBasic.base.ConnectionBase#isConnected()
 	 */
@@ -61,7 +60,7 @@ public class Connection implements ConnectionBase{
 	public Boolean isConnected(){
     	return (mySocket != null) && (server != null) && (mySocket.isConnected()) && (gui.getTabIndex(this.server.getName()) > -1);
     }
-    
+
     /* (non-Javadoc)
 	 * @see urChatBasic.base.ConnectionBase#getServer()
 	 */
@@ -69,7 +68,7 @@ public class Connection implements ConnectionBase{
 	public IRCServerBase getServer(){
     	return this.server;
     }
-    
+
     /* (non-Javadoc)
 	 * @see urChatBasic.base.ConnectionBase#getServer()
 	 */
@@ -77,7 +76,7 @@ public class Connection implements ConnectionBase{
 	public String getPortNumber(){
     	return this.portNumber;
     }
-    
+
     /* (non-Javadoc)
 	 * @see urChatBasic.base.ConnectionBase#getServer()
 	 */
@@ -86,30 +85,41 @@ public class Connection implements ConnectionBase{
     	return this.login;
     }
 
-    private void startUp() throws IOException{
-    	
+	@Override
+	public boolean usingTLS() {
+		return this.isTLS;
+	}
+
+	private void startUp() throws IOException{
+
 		localMessage("Attempting to connect to "+server);
-		//TODO must be able to type in the port number instead of having this hard-coded.
-        mySocket = new Socket(server.getName(), Integer.parseInt(getPortNumber()));
+
+		if(usingTLS()) {
+			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			mySocket = sslsocketfactory.createSocket(server.getName(), Integer.parseInt(getPortNumber()));
+		} else {
+			mySocket = new Socket(server.getName(), Integer.parseInt(getPortNumber()));
+		}
+
 
 		writer = new BufferedWriter(
                 new OutputStreamWriter(mySocket.getOutputStream( )));
         reader = new BufferedReader(
                 new InputStreamReader(mySocket.getInputStream( ),StandardCharsets.UTF_8));
-        
+
         localMessage("Connected to "+getServer());
-        
-        
+
+
         String line = null;
-        
+
         // Log on to the server.
         writer.write("NICK " + getNick() + "\r\n");
         writer.write("USER " + login + " 8 * : "+getLogin()+"\r\n");
         localMessage("Connect with nick "+getNick());
         writer.flush( );
-        
+
         // Read lines from the server until it tells us we have connected.
-        
+
         while ((line = reader.readLine()) != null) {
         	if (line.indexOf("004") >= 0) {
                 //Logged in successfully
@@ -119,7 +129,7 @@ public class Connection implements ConnectionBase{
             } else
             	serverMessage(messageHandler.new Message(line));
         }
-        
+
         // Keep reading lines from the server.
         while ((line = reader.readLine()) != null) {
            	if (line.toLowerCase( ).startsWith("ping")) {
@@ -129,12 +139,12 @@ public class Connection implements ConnectionBase{
             } else
             	serverMessage(messageHandler.new Message(line));
         }
-        
+
 		//writer.close();
 		//reader.close();
 		//mySocket.close();
     }
-	
+
 	/* (non-Javadoc)
 	 * @see urChatBasic.base.ConnectionBase#setNick(java.lang.String)
 	 */
@@ -142,7 +152,7 @@ public class Connection implements ConnectionBase{
 	public void setNick(String newNick){
 		myNick = newNick;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see urChatBasic.base.ConnectionBase#getNick()
 	 */
@@ -150,16 +160,16 @@ public class Connection implements ConnectionBase{
 	public String getNick(){
 		return myNick;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see urChatBasic.base.ConnectionBase#sendClientText(java.lang.String, java.lang.String)
 	 */
 	@Override
 	public void sendClientText(String clientText,String fromChannel) throws IOException{
 		if(isConnected()){
-			
+
 			String[] tempTextArray = clientText.split(" ");
-			
+
 			if(clientText != ""){
 				if(clientText.startsWith("/join")){
 					writer.write("JOIN " + clientText.replace("/join ","") +"\r\n");
@@ -187,7 +197,7 @@ public class Connection implements ConnectionBase{
 					server.printChannelText(fromChannel, clientText, myNick);
 				}
 			writer.flush();
-			
+
 			if(clientText.toLowerCase().startsWith("/msg nickserv"))
 				clientText = "*** HIDDEN NICKSERV IDENTIFY ***";
 			Constants.LOGGER.log(Level.FINE, "Client Text:- "+fromChannel+" "+clientText);
@@ -199,7 +209,7 @@ public class Connection implements ConnectionBase{
 		server.printServerText(message);
 		Constants.LOGGER.log(Level.FINE, "Local Text:-"+message);
 	}
-	 
+
 	private void serverMessage(Message newMessage){
 		if(isConnected())
 			try{
