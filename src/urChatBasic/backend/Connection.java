@@ -5,6 +5,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
@@ -15,6 +17,7 @@ import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.UserGUIBase;
 
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 
@@ -27,7 +30,7 @@ public class Connection implements ConnectionBase{
 	private String myNick;
 	private String login;
 	private boolean isTLS;
-
+	private boolean useSOCKS;
 	private String portNumber;
 	private Socket mySocket;
 	private MessageHandler messageHandler;
@@ -41,11 +44,12 @@ public class Connection implements ConnectionBase{
 	//private Date todayDate = new Date();
 	//private String debugFile;
 
-    public Connection(IRCServerBase server,String nick,String login,String portNumber,Boolean isTLS, UserGUIBase ugb){
+    public Connection(IRCServerBase server,String nick,String login,String portNumber,Boolean isTLS, Boolean useSOCKS, UserGUIBase ugb){
     	this.gui = ugb;
     	this.server =  server;
     	this.myNick = nick;
 		this.isTLS = isTLS;
+		this.useSOCKS = useSOCKS;
     	if(portNumber.trim().equals(""))
     		this.portNumber = Constants.DEFAULT_FIRST_PORT;
     	this.portNumber = portNumber;
@@ -90,16 +94,39 @@ public class Connection implements ConnectionBase{
 		return this.isTLS;
 	}
 
+	@Override
+	public boolean usingSOCKS() {
+		return this.useSOCKS;
+	}
+
 	private void startUp() throws IOException{
 
 		localMessage("Attempting to connect to "+server);
 
-		if(usingTLS()) {
-			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-			mySocket = sslsocketfactory.createSocket(server.getName(), Integer.parseInt(getPortNumber()));
+		// Determine the socket type to be used
+		if (usingSOCKS()) {
+			Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress("localhost", 1080));
+			Socket proxySocket = new Socket(proxy);
+			InetSocketAddress address = new InetSocketAddress(server.getName(), Integer.parseInt(getPortNumber()));
+
+			if (usingTLS()) {
+				proxySocket.connect(address);
+
+				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				mySocket = sslsocketfactory.createSocket(proxySocket, address.getHostName(), address.getPort(), true);
+			} else {
+				proxySocket.connect(address);
+				mySocket = proxySocket;
+			}
 		} else {
-			mySocket = new Socket(server.getName(), Integer.parseInt(getPortNumber()));
+			if (usingTLS()) {
+				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				mySocket = sslsocketfactory.createSocket(server.getName(), Integer.parseInt(getPortNumber()));
+			} else {
+				mySocket = new Socket(server.getName(), Integer.parseInt(getPortNumber()));
+			}
 		}
+
 
 
 		writer = new BufferedWriter(

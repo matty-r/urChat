@@ -28,6 +28,9 @@ public class Constants{
 	public static final String KEY_FIRST_SERVER = "first server name";
 	public static final String KEY_FIRST_PORT = "first server port";
 	public static final String KEY_USE_TLS = "use tls";
+	public static final String KEY_USE_PROXY = "use proxy";
+	public static final String KEY_PROXY_HOST = "proxy host";
+	public static final String KEY_PROXY_PORT = "proxy port";
 	public static final String KEY_NICK_NAME = "nick name";
 	public static final String KEY_REAL_NAME = "real name";
 	public static final String KEY_TIME_STAMPS = "show time stamps";
@@ -55,6 +58,9 @@ public class Constants{
 	public static final String DEFAULT_FIRST_SERVER = "irc.liberachat.net";
 	public static final String DEFAULT_FIRST_PORT = "6697";
 	public static final Boolean DEFAULT_USE_TLS = true;
+	public static final Boolean DEFAULT_USE_PROXY = false;
+	public static final String DEFAULT_PROXY_HOST = "";
+	public static final String DEFAULT_PROXY_PORT = "";
 	public static final String DEFAULT_NICK_NAME = "urChatClient";
 	public static final String DEFAULT_REAL_NAME = "urChatClient";
 	public static final Boolean DEFAULT_TIME_STAMPS = true;
