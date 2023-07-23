@@ -55,7 +55,7 @@ public class Constants{
 
 	//Setting defaults
 	public static final String DEFAULT_FIRST_CHANNEL = "##java";
-	public static final String DEFAULT_FIRST_SERVER = "irc.liberachat.net";
+	public static final String DEFAULT_FIRST_SERVER = "irc.libera.chat";
 	public static final String DEFAULT_FIRST_PORT = "6697";
 	public static final Boolean DEFAULT_USE_TLS = true;
 	public static final Boolean DEFAULT_USE_PROXY = false;
