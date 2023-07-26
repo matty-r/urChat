@@ -18,7 +18,7 @@ import urChatBasic.base.Constants;
 
 public class IRCChannel extends JPanel implements IRCActions{
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1358231872908927052L;
 
@@ -112,7 +112,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 			tempIcon = ImageIO.read(new File(Constants.RESOURCES_DIR+"Room.png"));
 		} catch (IOException e) {
 			Constants.LOGGER.log(Level.SEVERE, "FAILED TO LOAD Room.png: " + e.getLocalizedMessage());
-		} 
+		}
 		icon = new ImageIcon(tempIcon);
 
 		myServer = serverName;
@@ -190,31 +190,41 @@ public class IRCChannel extends JPanel implements IRCActions{
 				if(startingCharacters == null){
 					//If it's not the first word then get from where the last space is
 					if(clientTextBox.getText().lastIndexOf(" ") >= 0)
-						startingCharacters = clientTextBox.getText().toLowerCase().substring(clientTextBox.getText().lastIndexOf(" ")+1, clientTextBox.getCaretPosition());
+					{
+						// get text between last space and caretPosition
+						for(String word : clientTextBox.getText().split(" "))
+						{
+							if(startingCharacters == null || (clientTextBox.getText().indexOf(word) < clientTextBox.getCaretPosition() && clientTextBox.getText().indexOf(word) > clientTextBox.getText().indexOf(startingCharacters)))
+							{
+								startingCharacters = word;
+							}
+						}
+
+						// startingCharacters = clientTextBox.getText().toLowerCase().substring(clientTextBox.getText().lastIndexOf(" ")+1, clientTextBox.getCaretPosition());
+					}
 					else
+					{
 						startingCharacters = clientTextBox.getText().toLowerCase().substring(0, clientTextBox.getCaretPosition());
+					}
 				}
 
 				//If usersArray and clientText isn't empty.
-				ArrayList<String> matches = new ArrayList<String>();
 				if(usersArray.size() > 0 && clientTextBox.getText().length() > 0){
-					for(int x=0; x < usersArray.size()-1; x++){
-						//For each matching word put it in the matches array
-						if(usersArray.get(x).getName().toLowerCase().replace("@","").startsWith(startingCharacters))
-							matches.add(usersArray.get(x).getName());
-					}
-					//If the matches arean't already in autoCompleteNames
-					if(!matches.isEmpty()){
-						if(!autoCompleteNames.containsAll(matches))
-							autoCompleteNames = matches;
+					usersArray.stream()
+						.filter(user -> user.getName().toLowerCase().replace("@", "").startsWith(startingCharacters.toLowerCase()))
+						.forEach(user -> autoCompleteNames.add(user.getName()));
 
+					//If the matches arean't already in autoCompleteNames
+					if(!autoCompleteNames.isEmpty()){
 
 						String nextUser;
+						int currentCaretPosition = clientTextBox.getCaretPosition();
 						//If we haven't already chosen a previous match, starting from the beginning
 						if(lastUserToComplete == null){
 							lastUserToComplete = autoCompleteNames.get(0);
 							nextUser = autoCompleteNames.get(0);
 						} else {
+							currentCaretPosition = clientTextBox.getText().indexOf(lastUserToComplete);
 							//Otherwise choose the next one along, or go back to the start if its the last match
 							if((autoCompleteNames.indexOf(lastUserToComplete) + 1) == autoCompleteNames.size())
 								nextUser = autoCompleteNames.get(0);
@@ -224,12 +234,19 @@ public class IRCChannel extends JPanel implements IRCActions{
 
 						//If the lastUser is already in the clientTextBox then just replace it
 						//otherwise put it where the cursor and the last space is
+						int completionLength = nextUser.length();
 						if(clientTextBox.getText().contains(lastUserToComplete))
+						{
+							// TODO: this should only replace the text closest to the caret position.
 							clientTextBox.setText(clientTextBox.getText().replace(lastUserToComplete+": ", nextUser+": "));
-						else
-							clientTextBox.setText(clientTextBox.getText().substring(0, (clientTextBox.getCaretPosition()-startingCharacters.length()))+(nextUser+": "));	        				
-
-						lastUserToComplete = nextUser;	
+							completionLength += 2;
+						} else
+						{
+							String textAfterCaret = clientTextBox.getText().substring(clientTextBox.getCaretPosition(), clientTextBox.getText().length());
+							clientTextBox.setText(clientTextBox.getText().substring(0, (clientTextBox.getCaretPosition()-startingCharacters.length()))+(nextUser+": ") + textAfterCaret);
+						}
+						clientTextBox.setCaretPosition((currentCaretPosition+completionLength));
+						lastUserToComplete = nextUser;
 					}
 				}
 			} else {
@@ -262,7 +279,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 				break;
 				}
 			}
-		}	
+		}
 		public void keyTyped(KeyEvent ke){}
 		public void keyReleased(KeyEvent ke){}
 	}
@@ -274,7 +291,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 		usersList.setVisibleRowCount(-1);
 		usersList.addMouseListener(new UsersMouseListener());
 		userScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-		userScroller.setPreferredSize(new Dimension(USER_LIST_WIDTH, MAIN_HEIGHT-BOTTOM_HEIGHT)); 
+		userScroller.setPreferredSize(new Dimension(USER_LIST_WIDTH, MAIN_HEIGHT-BOTTOM_HEIGHT));
 	}
 
 
@@ -315,7 +332,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 
 	public class IRCAlert extends JLabel{
 		/**
-		 * 
+		 *
 		 */
 		 private static final long serialVersionUID = 1L;
 		 AlertType type;
@@ -379,7 +396,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 
 	class ChannelPopUp extends JPopupMenu{
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 640768684923757684L;
 		JMenuItem nameItem;
@@ -420,7 +437,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			myServer.sendClientText("/part i'm outta here", IRCChannel.this.getName());
-		}   
+		}
 	}
 	/**
 	 * Used by the PopUpMenu to Toggle the Ticker
@@ -431,9 +448,9 @@ public class IRCChannel extends JPanel implements IRCActions{
 	{
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
-			usersListShown = !IRCChannel.this.userScroller.isVisible();	
+			usersListShown = !IRCChannel.this.userScroller.isVisible();
 			showUsersList(!IRCChannel.this.userScroller.isVisible());
-		}   
+		}
 	}
 
 	private class AddAsFavourite implements ActionListener{
@@ -459,7 +476,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 	/**
 	 * First checks to make sure the user hasn't set it manually for this channel.
 	 * usersListShown is only set by the pop up menu, so unless you've changed it,
-	 * it won't care about the global setting 
+	 * it won't care about the global setting
 	 * @param showIt
 	 */
 	public void showUsersList(Boolean showIt){
@@ -478,12 +495,12 @@ public class IRCChannel extends JPanel implements IRCActions{
 		public void actionPerformed(ActionEvent arg0) {
 			eventTickerShown = !IRCChannel.this.tickerPanel.isVisible();
 			showEventTicker(!IRCChannel.this.tickerPanel.isVisible());
-		}   
+		}
 	}
 	/**
 	 * First checks to make sure the user hasn't set it manually for this channel.
 	 * eventTickerShown is only set by the pop up menu, so unless you've changed it,
-	 * it won't care about the global setting 
+	 * it won't care about the global setting
 	 * @param showIt
 	 */
 	public void showEventTicker(Boolean showIt){
@@ -491,7 +508,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 			IRCChannel.this.tickerPanel.setVisible(showIt);
 			if(IRCChannel.this.tickerPanel.isVisible())
 				IRCChannel.this.bottomPanel.setPreferredSize(new Dimension(IRCChannel.this.getWidth(),BOTTOM_HEIGHT));
-			else 
+			else
 				IRCChannel.this.bottomPanel.setPreferredSize(IRCChannel.this.clientTextBox.getPreferredSize());
 		}
 	}
@@ -506,7 +523,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 			if(tempUser.getName().toLowerCase().equals(userName.toLowerCase()))
 				return tempUser;
 		};
-		
+
 		return null;
 	}
 
@@ -551,7 +568,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 			new LineFormatter(this.getFont(),myServer.getNick()).formattedDocument(doc, timeLine, fromUser, line);
 
 			channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
-		}		
+		}
 	}
 
 	private void setupMainTextArea(){
@@ -567,7 +584,7 @@ public class IRCChannel extends JPanel implements IRCActions{
 
 	class WrapEditorKit extends StyledEditorKit {
 		/**
-		 * 
+		 *
 		 */
 		private static final long serialVersionUID = 980393121518733188L;
 		ViewFactory defaultFactory=new WrapColumnFactory();

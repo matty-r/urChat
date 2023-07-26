@@ -222,3 +222,4 @@ pip-log.txt
 #Others
 .idea
 *.iml
+Logs/Errors.log.lck
