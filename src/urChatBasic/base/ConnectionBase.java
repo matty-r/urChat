@@ -24,11 +24,6 @@ public interface ConnectionBase extends Runnable
 
     public abstract void sendClientText(String clientText, String fromChannel) throws IOException;
 
-    /**
-     * Write a line to the server log file - checks to make sure the client has enabled saving of the
-     * server history.
-     */
-
     public abstract void run();
 
 }

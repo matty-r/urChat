@@ -4,7 +4,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.logging.Level;
 
-import javax.swing.text.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 import urChatBasic.base.Constants;
 

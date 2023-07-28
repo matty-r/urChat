@@ -1,6 +1,7 @@
 package urChatBasic.frontend;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -14,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
-
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
@@ -433,7 +433,10 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
             getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(), fromUser, line);
             // Make a noise if the user hasn't got the current tab selected
             if (gui.getTabIndex(userName) != gui.tabbedPane.getSelectedIndex())
+            {
                 Toolkit.getDefaultToolkit().beep();
+                gui.tabbedPane.setBackgroundAt(gui.getTabIndex(userName), Color.BLACK);
+            }
         }
     }
 
