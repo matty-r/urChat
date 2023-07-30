@@ -9,8 +9,8 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.logging.Level;
-
 import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
@@ -21,9 +21,10 @@ import javax.net.ssl.SSLSocketFactory;
 
 public class Connection implements ConnectionBase
 {
-
     private BufferedWriter writer;
-    private BufferedReader reader;
+
+    private boolean shutdown = false;
+    private String creationTime = (new Date()).toString();
 
     private IRCServerBase server;
     private String myNick;
@@ -34,6 +35,7 @@ public class Connection implements ConnectionBase
     private boolean useSOCKS;
     private String portNumber;
     private Socket mySocket;
+
     private MessageHandler messageHandler;
     public UserGUIBase gui;
 
@@ -59,7 +61,6 @@ public class Connection implements ConnectionBase
             this.portNumber = Constants.DEFAULT_FIRST_PORT;
         this.portNumber = portNumber;
         this.login = login;
-        this.messageHandler = new MessageHandler(this.server);
     }
 
     /*
@@ -110,18 +111,20 @@ public class Connection implements ConnectionBase
     @Override
     public boolean usingTLS()
     {
-        return this.isTLS;
+        return isTLS;
     }
 
     @Override
     public boolean usingSOCKS()
     {
-        return this.useSOCKS;
+        return useSOCKS;
     }
 
     private void startUp() throws IOException
     {
+        BufferedReader reader;
 
+        messageHandler = new MessageHandler(server);
         localMessage("Attempting to connect to " + server);
 
         // Determine the socket type to be used
@@ -154,13 +157,13 @@ public class Connection implements ConnectionBase
             }
         }
 
-
-
         writer = new BufferedWriter(new OutputStreamWriter(mySocket.getOutputStream()));
         reader = new BufferedReader(new InputStreamReader(mySocket.getInputStream(), StandardCharsets.UTF_8));
 
-        localMessage("Connected to " + getServer());
+        // if we got this far, we established a connection to the server
+        gui.setupServerTab(server);
 
+        localMessage("Connected to " + getServer());
 
         String line = null;
 
@@ -170,22 +173,7 @@ public class Connection implements ConnectionBase
         localMessage("Connect with nick " + getNick());
         writer.flush();
 
-        // Read lines from the server until it tells us we have connected.
-
-        while ((line = reader.readLine()) != null)
-        {
-            if (line.indexOf("004") >= 0)
-            {
-                // Logged in successfully
-                localMessage("Logged in successfully.");
-                gui.connectFavourites(server);
-                break;
-            } else
-                serverMessage(messageHandler.new Message(line));
-        }
-
-        // Keep reading lines from the server.
-        while ((line = reader.readLine()) != null)
+        while ((line = reader.readLine()) != null && !shutdown)
         {
             if (line.toLowerCase().startsWith("ping"))
             {
@@ -193,12 +181,23 @@ public class Connection implements ConnectionBase
                 writer.write("PONG " + line.substring(line.indexOf(':') + 1) + "\r\n");
                 writer.flush();
             } else
-                serverMessage(messageHandler.new Message(line));
+            {
+                serverMessage(messageHandler.new Message(messageHandler, line));
+            }
         }
 
-        // writer.close();
-        // reader.close();
-        // mySocket.close();
+        if (shutdown)
+        {
+            try
+            {
+                writer.close();
+                reader.close();
+                mySocket.close();
+            } catch (IOException e)
+            {
+                Constants.LOGGER.log(Level.SEVERE, "Error stopping connected.. " + e.getLocalizedMessage());
+            }
+        }
     }
 
     /*
@@ -236,7 +235,7 @@ public class Connection implements ConnectionBase
 
             String[] tempTextArray = clientText.split(" ");
 
-            if (clientText != "")
+            if (!clientText.equals(""))
             {
                 if (clientText.startsWith("/join"))
                 {
@@ -248,18 +247,14 @@ public class Connection implements ConnectionBase
                 } else if (clientText.startsWith("/msg"))
                 {
                     tempTextArray = clientText.split(" ");
-                    if (tempTextArray.length > -1)
-                    {
-                        writer.write("PRIVMSG " + tempTextArray[1] + " :"
-                                + clientText.replace("/msg " + tempTextArray[1] + " ", "") + "\r\n");
-                        server.printPrivateText(tempTextArray[1],
-                                clientText.replace("/msg " + tempTextArray[1] + " ", ""), myNick);
-                        gui.setCurrentTab(tempTextArray[1]);
-                    }
+                    writer.write("PRIVMSG " + tempTextArray[1] + " :"
+                            + clientText.replace("/msg " + tempTextArray[1] + " ", "") + "\r\n");
+                    server.printPrivateText(tempTextArray[1], clientText.replace("/msg " + tempTextArray[1] + " ", ""),
+                            myNick);
+                    gui.setCurrentTab(tempTextArray[1]);
                 } else if (clientText.startsWith("/whois"))
                 {
-                    if (tempTextArray.length > -1)
-                        writer.write("WHOIS " + tempTextArray[1] + "\r\n");
+                    writer.write("WHOIS " + tempTextArray[1] + "\r\n");
                 } else if (clientText.startsWith("/quit"))
                 {
                     writer.write("QUIT :" + clientText.replace("/quit ", "") + "\r\n");
@@ -296,10 +291,10 @@ public class Connection implements ConnectionBase
             try
             {
                 messageHandler.parseMessage(newMessage);
-                Constants.LOGGER.log(Level.FINE, newMessage.rawMessage);
+                Constants.LOGGER.log(Level.FINE, newMessage.toString());
             } catch (Exception e)
             {
-                Constants.LOGGER.log(Level.WARNING, newMessage.rawMessage);
+                Constants.LOGGER.log(Level.WARNING, newMessage.toString());
             }
     }
 
@@ -314,15 +309,24 @@ public class Connection implements ConnectionBase
         try
         {
             if (getPortNumber() != null && getServer() != null && getNick() != null)
+            {
                 startUp();
-            else
+            } else
+            {
                 Constants.LOGGER.log(Level.SEVERE, "Incomplete settings: (Port " + getPortNumber() + ") (Server "
                         + getServer() + ") (Nick " + getNick() + ") ");
+            }
+
+            Constants.LOGGER.log(Level.INFO, "Disconnected safely!");
         } catch (IOException e)
         {
             Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());
         }
     }
 
-
+    @Override
+    public void disconnect()
+    {
+        shutdown = true;
+    }
 }

@@ -46,6 +46,13 @@ public interface UserGUIBase
     public abstract IRCServerBase getCreatedServer(String serverName);
 
     /**
+     * Called when the connection to the server was a success
+     *
+     * @param server
+     */
+    public abstract void setupServerTab(IRCServerBase server);
+
+    /**
      * Creates a new server based on name
      *
      * @param serverName
@@ -162,9 +169,6 @@ public interface UserGUIBase
      */
     public abstract void quitServers();
 
-    /**
-     * Loops through all servers and disconnects and deletes the tab
-     */
     public abstract void quitServer(IRCServerBase server);
 
     public abstract void removeClientSetting(String node, String key);

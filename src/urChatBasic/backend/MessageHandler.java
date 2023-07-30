@@ -1,14 +1,13 @@
 package urChatBasic.backend;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Handler;
 import java.util.logging.Level;
 
-import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
-import urChatBasic.base.MessageHandlerBase;
+import urChatBasic.base.MessageBase;
 import urChatBasic.base.UserGUIBase;
 import urChatBasic.frontend.DriverGUI;
 
@@ -21,16 +20,12 @@ import urChatBasic.frontend.DriverGUI;
  */
 public class MessageHandler
 {
-    static Set<IDRange> rangeIDs = new HashSet<IDRange>();
-    static Set<IDSingle> singleIDs = new HashSet<IDSingle>();
+    Set<IDRange> rangeIDs = new HashSet<IDRange>();
+    Set<IDSingle> singleIDs = new HashSet<IDSingle>();
 
-    IRCServerBase myServer;
+    IRCServerBase serverBase;
     UserGUIBase gui = DriverGUI.gui;
-    private static final char CHANNEL_DELIMITER = '#';
-    private static final char CTCP_DELIMITER = '\001';
-    private static final char SPACES_AHEAD_DELIMITER = ':';
-    private static final int MESSAGE_LIMIT = 510;
-    private static final String END_MESSAGE = "\r\n";
+    public String creationTime = (new Date()).toString();
 
     /**
      * Assign the correct
@@ -40,7 +35,7 @@ public class MessageHandler
      */
     public MessageHandler(IRCServerBase server)
     {
-        this.myServer = server;
+        this.serverBase = server;
 
         if (rangeIDs.isEmpty())
             addRanges();
@@ -50,7 +45,7 @@ public class MessageHandler
 
     public void parseMessage(Message receivedMessage)
     {
-        receivedMessage.myBase.messageExec(receivedMessage);
+        receivedMessage.messageBase.messageExec(receivedMessage);
     }
 
     private int posnOfOccurrence(String str, char c, int n)
@@ -96,13 +91,13 @@ public class MessageHandler
         return false;
     }
 
-    public static class IDRange
+    public class IDRange
     {
-        private final int min, max;
-        private final MessageHandlerBase handlerType;
-        private final MessageIdType type = MessageIdType.NUMBER_ID;
+        private int min, max;
+        private MessageBase handlerType;
+        private MessageIdType type = MessageIdType.NUMBER_ID;
 
-        public IDRange(int min, int max, MessageHandlerBase handlerType)
+        public IDRange(int min, int max, MessageBase handlerType)
         {
             this.min = min;
             this.max = max;
@@ -118,28 +113,28 @@ public class MessageHandler
         }
     }
 
-    public static class IDSingle
+    public class IDSingle
     {
-        String id;
-        int[] idArray;
-        MessageHandlerBase handlerType;
-        MessageIdType type;
+        private String id;
+        private int[] idArray;
+        private MessageBase handlerType;
+        private MessageIdType type;
 
-        public IDSingle(int id, MessageHandlerBase handlerType)
+        public IDSingle(int id, MessageBase handlerType)
         {
             this.idArray = new int[] {id};
             this.handlerType = handlerType;
             type = MessageIdType.NUMBER_ID;
         }
 
-        public IDSingle(int[] id, MessageHandlerBase handlerType)
+        public IDSingle(int[] id, MessageBase handlerType)
         {
             this.idArray = id;
             this.handlerType = handlerType;
             type = MessageIdType.NUMBER_ID;
         }
 
-        public IDSingle(String id, MessageHandlerBase handlerType)
+        public IDSingle(String id, MessageBase handlerType)
         {
             this.id = id;
             this.handlerType = handlerType;
@@ -216,20 +211,18 @@ public class MessageHandler
         String body;
         MessageIdType type;
         String rawMessage;
-        String host;
-        String server;
         String nick;
-        MessageHandlerBase myBase;
+        MessageBase messageBase;
+        MessageHandler messageHandler;
 
-        public Message(String fullMessage)
+        public Message(MessageHandler handler, String fullMessage)
         {
             this.rawMessage = fullMessage;
+            this.messageHandler = handler;
             setPrefix();
             setChannel();
             setIdCommand();
             setMessageBody();
-            setServer();
-            setHost();
             setNick();
 
 
@@ -262,25 +255,12 @@ public class MessageHandler
                 this.nick = rawMessage.substring(1, rawMessage.indexOf("!")).trim();
         }
 
-        private void setHost()
-        {
-            String tempMessage = rawMessage.split(" ")[0];
-            if (tempMessage.indexOf('@') > -1)
-                this.host = tempMessage.substring(tempMessage.indexOf('@') + 1).trim();
-
-        }
-
-        private void setServer()
-        {
-            this.server = MessageHandler.this.myServer.getName();
-        }
-
         private void setChannel()
         {
             String withoutPrefix = rawMessage.replace(prefix, "").trim();
-            int messageBegin = posnOfOccurrence(withoutPrefix, SPACES_AHEAD_DELIMITER, 1);
+            int messageBegin = posnOfOccurrence(withoutPrefix, Constants.SPACES_AHEAD_DELIMITER, 1);
 
-            int channelBegin = withoutPrefix.indexOf(CHANNEL_DELIMITER);
+            int channelBegin = withoutPrefix.indexOf(Constants.CHANNEL_DELIMITER);
             if (channelBegin < messageBegin && channelBegin > -1)
                 this.channel = withoutPrefix.substring(channelBegin, messageBegin).split(" ")[0].trim();
             else
@@ -313,7 +293,7 @@ public class MessageHandler
                 for (IDSingle testSingle : singleIDs)
                     if (testSingle.type.equals(MessageIdType.NUMBER_ID) && testSingle.isEqual(this.idCommandNumber))
                     {
-                        this.myBase = testSingle.handlerType;
+                        this.messageBase = testSingle.handlerType;
                         handled = true;
                         break;
                     }
@@ -322,7 +302,7 @@ public class MessageHandler
                 for (IDSingle testSingle : singleIDs)
                     if (testSingle.type.equals(MessageIdType.STRING_ID) && testSingle.isEqual(this.idCommand))
                     {
-                        this.myBase = testSingle.handlerType;
+                        this.messageBase = testSingle.handlerType;
                         handled = true;
                         break;
                     }
@@ -331,13 +311,13 @@ public class MessageHandler
                 for (IDRange testRange : rangeIDs)
                     if (testRange.type.equals(MessageIdType.NUMBER_ID) && testRange.inRange(this.idCommandNumber))
                     {
-                        this.myBase = testRange.handlerType;
+                        this.messageBase = testRange.handlerType;
                         handled = true;
                         break;
                     }
 
             if (!handled)
-                this.myBase = new MessageHandler.DefaultMesssage();
+                this.messageBase = new MessageHandler.DefaultMesssage();
         }
 
         private void setIdCommand()
@@ -346,13 +326,7 @@ public class MessageHandler
         }
     }
 
-    /**
-     * MessageHandlerBase simply contains two abstract methods to be overridden
-     *
-     * @author Matt
-     *
-     */
-    public class UserRegistrationMessage implements MessageHandlerBase
+    public class UserRegistrationMessage implements MessageBase
     {
 
         @Override
@@ -363,18 +337,7 @@ public class MessageHandler
 
     }
 
-    public class CommandResponseMessage implements MessageHandlerBase
-    {
-
-
-        @Override
-        public void messageExec(Message myMessage)
-        {
-            printServerText(myMessage.body);
-        }
-    }
-
-    public class GeneralMessage implements MessageHandlerBase
+    public class CommandResponseMessage implements MessageBase
     {
 
         @Override
@@ -384,54 +347,64 @@ public class MessageHandler
         }
     }
 
-    public class JoinMessage implements MessageHandlerBase
+    public class GeneralMessage implements MessageBase
     {
 
         @Override
         public void messageExec(Message myMessage)
         {
-            if (myMessage.nick.equals(myServer.getNick()))
+            printServerText(myMessage.body);
+        }
+    }
+
+    public class JoinMessage implements MessageBase
+    {
+
+        @Override
+        public void messageExec(Message myMessage)
+        {
+            if (myMessage.nick.equals(myMessage.messageHandler.serverBase.getNick()))
             {
-                myServer.addToCreatedChannels(myMessage.channel);
-                myServer.printEventTicker(myMessage.channel, "You have joined " + myMessage.channel);
+                myMessage.messageHandler.serverBase.addToCreatedChannels(myMessage.channel);
+                myMessage.messageHandler.serverBase.printEventTicker(myMessage.channel, "You have joined " + myMessage.channel);
             } else
-                myServer.addToUsersList(myMessage.channel, myMessage.nick);
+                myMessage.messageHandler.serverBase.addToUsersList(myMessage.channel, myMessage.nick);
         }
 
     }
 
-    public class ChannelTopicMessage implements MessageHandlerBase
+    public class ChannelTopicMessage implements MessageBase
     {
 
         @Override
         public void messageExec(Message myMessage)
         {
-            myServer.setChannelTopic(myMessage.channel, myMessage.body);
+            myMessage.messageHandler.serverBase.setChannelTopic(myMessage.channel, myMessage.body);
         }
     }
 
-    public class UsersListMessage implements MessageHandlerBase
+    public class UsersListMessage implements MessageBase
     {
 
         @Override
         public void messageExec(Message myMessage)
         {
-            myServer.addToUsersList(myMessage.channel, myMessage.body.split(" "));
+            myMessage.messageHandler.serverBase.addToUsersList(myMessage.channel, myMessage.body.split(" "));
         }
     }
 
-    public class RenameUserMessage implements MessageHandlerBase
+    public class RenameUserMessage implements MessageBase
     {
 
         @Override
         public void messageExec(Message myMessage)
         {
-            if (!myMessage.nick.equals(myServer.getNick()))
-                myServer.renameUser(myMessage.nick, myMessage.body);
+            if (!myMessage.nick.equals(myMessage.messageHandler.serverBase.getNick()))
+                myMessage.messageHandler.serverBase.renameUser(myMessage.nick, myMessage.body);
         }
     }
 
-    public class JoinFailureMessage implements MessageHandlerBase
+    public class JoinFailureMessage implements MessageBase
     {
 
         @Override
@@ -442,7 +415,7 @@ public class MessageHandler
 
     }
 
-    public class ModeMessage implements MessageHandlerBase
+    public class ModeMessage implements MessageBase
     {
 
 
@@ -450,15 +423,15 @@ public class MessageHandler
         public void messageExec(Message myMessage)
         {
             // printServerText(myMessage.body);
-            if (myMessage.channel.equals(myServer.getNick()))
+            if (myMessage.channel.equals(myMessage.messageHandler.serverBase.getNick()))
                 printServerText(myMessage.body);
             else
-                myServer.getCreatedChannel(myMessage.channel).createEvent(myMessage.body);
+                myMessage.messageHandler.serverBase.getCreatedChannel(myMessage.channel).createEvent(myMessage.body);
         }
 
     }
 
-    public class WhoIsMessage implements MessageHandlerBase
+    public class WhoIsMessage implements MessageBase
     {
 
 
@@ -470,7 +443,7 @@ public class MessageHandler
 
     }
 
-    public class ServerChangeMessage implements MessageHandlerBase
+    public class ServerChangeMessage implements MessageBase
     {
 
 
@@ -482,7 +455,7 @@ public class MessageHandler
 
     }
 
-    public class BadPrivateMessage implements MessageHandlerBase
+    public class BadPrivateMessage implements MessageBase
     {
 
         @Override
@@ -494,7 +467,7 @@ public class MessageHandler
 
     }
 
-    public class InvalidNickMessage implements MessageHandlerBase
+    public class InvalidNickMessage implements MessageBase
     {
 
 
@@ -505,7 +478,7 @@ public class MessageHandler
         }
     }
 
-    public class NoticeMessage implements MessageHandlerBase
+    public class NoticeMessage implements MessageBase
     {
 
         @Override
@@ -514,7 +487,7 @@ public class MessageHandler
             if (myMessage.nick != null && myMessage.nick.toLowerCase().equals("NickServ".toLowerCase()))
             {
                 printPrivateText(myMessage.nick, myMessage.body, myMessage.nick);
-                gui.connectFavourites(myServer);
+                gui.connectFavourites(myMessage.messageHandler.serverBase);
             } else
                 printServerText(myMessage.body);
         }
@@ -523,70 +496,70 @@ public class MessageHandler
 
     }
 
-    public class PrivateMessage implements MessageHandlerBase
+    public class PrivateMessage implements MessageBase
     {
 
         @Override
         public void messageExec(Message myMessage)
         {
-            if (!myMessage.channel.equals(myServer.getNick()))
+            if (!myMessage.channel.equals(myMessage.messageHandler.serverBase.getNick()))
             {
-                if (isBetween(myMessage.body, CTCP_DELIMITER, "ACTION", CTCP_DELIMITER))
-                    myMessage.body = myMessage.body.replace(CTCP_DELIMITER + "ACTION", ">");
-                myServer.printChannelText(myMessage.channel, myMessage.body, myMessage.nick);
+                if (isBetween(myMessage.body, Constants.CTCP_DELIMITER, "ACTION", Constants.CTCP_DELIMITER))
+                    myMessage.body = myMessage.body.replace(Constants.CTCP_DELIMITER + "ACTION", ">");
+                myMessage.messageHandler.serverBase.printChannelText(myMessage.channel, myMessage.body, myMessage.nick);
             } else
             {
                 // channel is myNick, so instead use the nick of the sender for the channel
-                myServer.printChannelText(myMessage.nick, myMessage.body, myMessage.nick);
+                myMessage.messageHandler.serverBase.printChannelText(myMessage.nick, myMessage.body, myMessage.nick);
             }
         }
 
 
     }
 
-    public class PartMessage implements MessageHandlerBase
+    public class PartMessage implements MessageBase
     {
         @Override
         public void messageExec(Message myMessage)
         {
-            if (!(myMessage.nick.equals(myServer.getNick())))
+            if (!(myMessage.nick.equals(myMessage.messageHandler.serverBase.getNick())))
             {
                 for (String tempChannel : myMessage.channel.split(","))
-                    myServer.removeFromUsersList(tempChannel, myMessage.nick);
+                    myMessage.messageHandler.serverBase.removeFromUsersList(tempChannel, myMessage.nick);
             } else
             {
                 for (String tempChannel : myMessage.channel.split(","))
                 {
-                    myServer.removeFromUsersList(tempChannel, myServer.getNick());
+                    myMessage.messageHandler.serverBase.removeFromUsersList(tempChannel, myMessage.messageHandler.serverBase.getNick());
                     printServerText("You quit " + tempChannel);
                 }
             }
         }
     }
 
-    public class KickMessage implements MessageHandlerBase
+    public class KickMessage implements MessageBase
     {
         @Override
         public void messageExec(Message myMessage)
         {
-            myServer.removeFromUsersList(myMessage.channel, myMessage.body);
+            myMessage.messageHandler.serverBase.removeFromUsersList(myMessage.channel, myMessage.body);
         }
     }
 
-    public class DisconnectMessage implements MessageHandlerBase
+    public class DisconnectMessage implements MessageBase
     {
         @Override
         public void messageExec(Message myMessage)
         {
-            if (myServer.getNick().equals(myMessage.nick))
+            if (myMessage.messageHandler.serverBase.getNick().equals(myMessage.nick))
             {
-                gui.quitServer(myServer);
+                gui.quitServer(myMessage.messageHandler.serverBase);
             } else
-                myServer.removeFromUsersList(myServer.getName(), myMessage.nick);
+                myMessage.messageHandler.serverBase.removeFromUsersList(myMessage.messageHandler.serverBase.getName(), myMessage.nick);
         }
     }
 
-    public class NoSuchChannelMessage implements MessageHandlerBase
+    public class NoSuchChannelMessage implements MessageBase
     {
         @Override
         public void messageExec(Message myMessage)
@@ -595,7 +568,7 @@ public class MessageHandler
         }
     }
 
-    public class NotEnoughParametersMesssage implements MessageHandlerBase
+    public class NotEnoughParametersMesssage implements MessageBase
     {
         @Override
         public void messageExec(Message myMessage)
@@ -604,7 +577,7 @@ public class MessageHandler
         }
     }
 
-    public class DefaultMesssage implements MessageHandlerBase
+    public class DefaultMesssage implements MessageBase
     {
         @Override
         public void messageExec(Message myMessage)
@@ -616,11 +589,11 @@ public class MessageHandler
 
     private void printPrivateText(String userName, String line, String fromUser)
     {
-        myServer.printPrivateText(userName, line, fromUser);
+        serverBase.printPrivateText(userName, line, fromUser);
     }
 
     private void printServerText(String message)
     {
-        myServer.printServerText(message);
+        serverBase.printServerText(message);
     }
 }

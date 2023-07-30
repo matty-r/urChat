@@ -2,7 +2,7 @@ package urChatBasic.base;
 
 import urChatBasic.backend.MessageHandler.Message;
 
-public interface MessageHandlerBase
+public interface MessageBase
 {
     void messageExec(Message myMessage);
 }

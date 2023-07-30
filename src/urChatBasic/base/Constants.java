@@ -85,6 +85,13 @@ public class Constants
     public static final int DEFAULT_WINDOW_WIDTH = 640;
     public static final int DEFAULT_WINDOW_HEIGHT = 480;
 
+    // Message Handler
+    public static final char CHANNEL_DELIMITER = '#';
+    public static final char CTCP_DELIMITER = '\001';
+    public static final char SPACES_AHEAD_DELIMITER = ':';
+    public static final int MESSAGE_LIMIT = 510;
+    public static final String END_MESSAGE = "\r\n";
+
 
     /**
      * Used to initialize some values that may throw exceptions.

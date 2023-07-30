@@ -23,7 +23,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      *
      */
     private static final long serialVersionUID = 2595649865577419300L;
-
+    private String creationTime = (new Date()).toString();
     // Tabs
     public DnDTabbedPane tabbedPane = new DnDTabbedPane();
     private final int OPTIONS_INDEX = 0;
@@ -50,11 +50,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
     private static final JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
     private static final JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
-    private JPanel clientFontPanel = new FontPanel(this);
+    private final JPanel clientFontPanel = new FontPanel(this);
     // private JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
 
-    private JTextField limitServerLinesCount = new JTextField();
-    private JTextField limitChannelLinesCount = new JTextField();
+    private static final JTextField limitServerLinesCount = new JTextField();
+    private static final JTextField limitChannelLinesCount = new JTextField();
 
     private static final int TICKER_DELAY_MIN = 0;
     private static final int TICKER_DELAY_MAX = 30;
@@ -91,15 +91,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JButton connectButton = new JButton("Connect");
 
     // Favourites Panel
-    private JCheckBox autoConnectToFavourites = new JCheckBox("Automatically connect to favourites");
-    private DefaultListModel<FavouritesItem> favouritesListModel = new DefaultListModel<FavouritesItem>();
-    private JList<FavouritesItem> favouritesList = new JList<FavouritesItem>(favouritesListModel);
-    private JScrollPane favouritesScroller = new JScrollPane(favouritesList);
+    private static final JCheckBox autoConnectToFavourites = new JCheckBox("Automatically connect to favourites");
+    private static final DefaultListModel<FavouritesItem> favouritesListModel = new DefaultListModel<FavouritesItem>();
+    private static final JList<FavouritesItem> favouritesList = new JList<FavouritesItem>(favouritesListModel);
+    private static final JScrollPane favouritesScroller = new JScrollPane(favouritesList);
 
     public static Font universalFont = new Font("Consolas", Font.PLAIN, 12);
 
     // Created Servers/Tabs
-    private static List<IRCServerBase> createdServers = new ArrayList<IRCServerBase>();
+    private final List<IRCServerBase> createdServers = new ArrayList<IRCServerBase>();
 
     /*
      * (non-Javadoc)
@@ -211,9 +211,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public IRCServerBase getCreatedServer(String serverName)
     {
         // for(int x = 0; x < createdChannels.size(); x++)
-        for (IRCServerBase tempServer : createdServers)
-            if (tempServer.getName().equals(serverName.toLowerCase()))
-                return tempServer;
+        for (IRCServerBase createdServer : createdServers)
+        {
+            if (createdServer.getName().equals(serverName.toLowerCase()))
+            {
+                return createdServer;
+            }
+        }
         return null;
     }
 
@@ -228,14 +232,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         if (getCreatedServer(serverName) == null)
         {
-            IRCServer tempServer = new IRCServer(serverName.trim(), userNameTextField.getText().trim(),
+            createdServers.add(new IRCServer(serverName.trim(), userNameTextField.getText().trim(),
                     realNameTextField.getText().trim(), serverPortTextField.getText().trim(),
                     serverTLSCheckBox.isSelected(), proxyHostNameTextField.getText(), proxyPortTextField.getText(),
-                    serverProxyCheckBox.isSelected());
-            createdServers.add(tempServer);
-            tabbedPane.addTab(tempServer.getName(), tempServer.icon, tempServer);
-            tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(tempServer));
-            tempServer.serverTextBox.requestFocus();
+                    serverProxyCheckBox.isSelected()));
         }
     }
 
@@ -926,23 +926,42 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            if (connectButton.getText() == "Connect")
-            {
-                addToCreatedServers(servernameTextField.getText().trim());
 
-                if (autoConnectToFavourites.isSelected())
+            addToCreatedServers(servernameTextField.getText().trim());
+
+            if (autoConnectToFavourites.isSelected())
+            {
+                FavouritesItem castItem;
+                for (Object tempItem : favouritesListModel.toArray())
                 {
-                    FavouritesItem castItem;
-                    for (Object tempItem : favouritesListModel.toArray())
-                    {
-                        castItem = (FavouritesItem) tempItem;
-                        addToCreatedServers(castItem.favServer);
-                    }
+                    castItem = (FavouritesItem) tempItem;
+                    addToCreatedServers(castItem.favServer);
                 }
+            }
+
+            for (IRCServerBase server : createdServers)
+            {
+                server.connect();
             }
         }
     }
 
+    /**
+     * (non-Javadoc)
+     *
+     * Connection was a success, setup the server tab
+     *
+     * @see urChatBasic.frontend.UserGUIBase#setupServerTab(urChatBasic.base.IRCServerBase)
+     */
+    public void setupServerTab(IRCServerBase server)
+    {
+        if (server instanceof IRCServer)
+        {
+            tabbedPane.addTab(server.getName(), ((IRCServer) server).icon, ((IRCServer) server));
+            tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(((IRCServer) server)));
+            ((IRCServer) server).serverTextBox.requestFocus();
+        }
+    }
 
     /*
      * (non-Javadoc)
@@ -1002,19 +1021,19 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#quitServers()
      */
     @Override
-    public void quitServers()
+    public void quitServers ()
     {
         while (createdServers.iterator().hasNext())
         {
             IRCServerBase tempServer = createdServers.iterator().next();
-            tempServer.quitChannels();
-            tempServer.quitPrivateRooms();
+            tempServer.disconnect();
             if (tempServer instanceof IRCServerBase)
             {
                 tabbedPane.remove((IRCServer) tempServer);
             }
             createdServers.remove(tempServer);
         }
+
     }
 
     /*
@@ -1023,10 +1042,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#quitServer(urChatBasic.base.IRCServerBase)
      */
     @Override
-    public void quitServer(IRCServerBase server)
+    public void quitServer (IRCServerBase server)
     {
-        server.quitChannels();
-        server.quitPrivateRooms();
+        server.disconnect();
         tabbedPane.remove((IRCServer) server);
         createdServers.remove(server);
     }
@@ -1275,7 +1293,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     public UserGUI()
     {
-
+        this.creationTime = (new Date()).toString();
         // this.setPreferredSize (new Dimension(MAIN_WIDTH_INIT, MAIN_HEIGHT_INIT));
         this.setFont(universalFont);
         // Create the initial size of the panel

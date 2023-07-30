@@ -26,4 +26,5 @@ public interface ConnectionBase extends Runnable
 
     public abstract void run();
 
+    public abstract void disconnect ();
 }
