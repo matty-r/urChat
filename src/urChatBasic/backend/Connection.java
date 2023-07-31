@@ -294,7 +294,7 @@ public class Connection implements ConnectionBase
                 Constants.LOGGER.log(Level.FINE, newMessage.toString());
             } catch (Exception e)
             {
-                Constants.LOGGER.log(Level.WARNING, newMessage.toString());
+                Constants.LOGGER.log(Level.WARNING, e.toString() + newMessage);
             }
     }
 

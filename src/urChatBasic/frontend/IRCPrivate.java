@@ -1,6 +1,8 @@
 package urChatBasic.frontend;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,11 +19,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.Timer;
 import javax.swing.text.StyledDocument;
 
 import urChatBasic.base.Constants;
 
-public class IRCPrivate extends JPanel
+public class IRCPrivate extends JPanel implements IRCActions
 {
     /**
      *
@@ -41,6 +44,11 @@ public class IRCPrivate extends JPanel
 
     private UserGUI gui = DriverGUI.gui;
     private IRCServer myServer;
+
+    // IRCActions stuff
+    private boolean wantsAttention = false;
+    private Timer wantsAttentionTimer = new Timer(0, new FlashTab());
+    private Color originalColor;
 
 
     public IRCPrivate(IRCServer serverName, IRCUser user)
@@ -103,7 +111,11 @@ public class IRCPrivate extends JPanel
 
         if (dateTime)
             timeLine = "[" + chatDateFormat.format(chatDate) + "]";
-        new LineFormatter(gui.getFont(), myServer.getNick()).formattedDocument(doc, timeLine, fromUser, line);
+
+        LineFormatter newLine = new LineFormatter(this.getFont(), myServer.getNick());
+        newLine.formattedDocument(doc, timeLine, fromUser, line);
+
+        this.callForAttention();
 
         privateTextArea.setCaretPosition(privateTextArea.getDocument().getLength());
     }
@@ -112,6 +124,61 @@ public class IRCPrivate extends JPanel
     public String getServer()
     {
         return myServer.getName();
+    }
+
+    private class FlashTab implements ActionListener
+    {
+        public void actionPerformed(ActionEvent event)
+        {
+            Component selectedComponent = gui.tabbedPane.getSelectedComponent();
+            int tabIndex = gui.tabbedPane.indexOfComponent(IRCPrivate.this);
+
+            if (IRCPrivate.this.wantsAttention() && selectedComponent != IRCPrivate.this)
+            {
+                privateTextBox.requestFocus();
+
+                if (gui.tabbedPane.getBackgroundAt(tabIndex) == Color.red)
+                {
+
+                    gui.tabbedPane.setBackgroundAt(tabIndex, IRCPrivate.this.originalColor);
+                } else
+                {
+                    gui.tabbedPane.setBackgroundAt(tabIndex, Color.red);
+                }
+
+                repaint();
+            } else
+            {
+                gui.tabbedPane.setBackgroundAt(tabIndex, IRCPrivate.this.originalColor);
+                wantsAttentionTimer.stop();
+            }
+        }
+    }
+
+    @Override
+    public void callForAttention()
+    {
+        wantsAttentionTimer.setDelay(1000);
+        wantsAttention = true;
+
+
+        for(int i = 0; i < gui.tabbedPane.getTabCount(); i++)
+        {
+            if(gui.tabbedPane.getComponentAt(i) == IRCPrivate.this)
+            {
+                IRCPrivate.this.originalColor = gui.tabbedPane.getBackgroundAt(i);
+                break;
+            }
+        }
+
+        if (!(wantsAttentionTimer.isRunning()))
+            wantsAttentionTimer.start();
+    }
+
+    @Override
+    public boolean wantsAttention()
+    {
+        return wantsAttention;
     }
 
 }

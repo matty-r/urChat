@@ -2,6 +2,7 @@ package urChatBasic.frontend;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -25,6 +26,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.text.StyledDocument;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.ConnectionBase;
@@ -45,7 +47,6 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
     public ImageIcon icon;
 
     private final UserGUI gui = DriverGUI.gui;
-    private String creationTime = (new Date()).toString();
 
     // Server Properties
     private ConnectionBase serverConnection = null;
@@ -72,6 +73,12 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
     private List<IRCPrivate> createdPrivateRooms = new ArrayList<IRCPrivate>();
     // Created channels/tabs
     private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
+
+    // IRCActions stuff
+    private boolean wantsAttention = false;
+    private Timer wantsAttentionTimer = new Timer(0, new FlashTab());
+    private Color originalColor;
+
 
     public IRCServer(String serverName, String nick, String login, String portNumber, Boolean isTLS, String proxyHost,
             String proxyPort, Boolean useSOCKS)
@@ -432,7 +439,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
      * java.lang.String)
      */
     @Override
-    public void printChannelText(String channelName, String line, String fromUser)
+    public void printChannelText (String channelName, String line, String fromUser)
     {
         if (channelName.equals(fromUser))
         {
@@ -681,6 +688,35 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
         });
     }
 
+    private class FlashTab implements ActionListener
+    {
+        public void actionPerformed(ActionEvent event)
+        {
+            Component selectedComponent = gui.tabbedPane.getSelectedComponent();
+            int tabIndex = gui.tabbedPane.indexOfComponent(IRCServer.this);
+
+            if (IRCServer.this.wantsAttention() && selectedComponent != IRCServer.this)
+            {
+                serverTextBox.requestFocus();
+
+                if (gui.tabbedPane.getBackgroundAt(tabIndex) == Color.red)
+                {
+
+                    gui.tabbedPane.setBackgroundAt(tabIndex, IRCServer.this.originalColor);
+                } else
+                {
+                    gui.tabbedPane.setBackgroundAt(tabIndex, Color.red);
+                }
+
+                repaint();
+            } else
+            {
+                gui.tabbedPane.setBackgroundAt(tabIndex, IRCServer.this.originalColor);
+                wantsAttentionTimer.stop();
+            }
+        }
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -690,6 +726,33 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
     public String getServer()
     {
         return this.getName();
+    }
+
+    @Override
+    public void callForAttention()
+    {
+        wantsAttentionTimer.setDelay(1000);
+        wantsAttention = true;
+
+
+        for(int i = 0; i < gui.tabbedPane.getTabCount(); i++)
+        {
+            if(gui.tabbedPane.getComponentAt(i) == IRCServer.this)
+            {
+                IRCServer.this.originalColor = gui.tabbedPane.getBackgroundAt(i);
+                break;
+            }
+        }
+
+        if (!(wantsAttentionTimer.isRunning()))
+            wantsAttentionTimer.start();
+    }
+
+    @Override
+    public boolean wantsAttention()
+    {
+        wantsAttention = true;
+        return true;
     }
 
 }

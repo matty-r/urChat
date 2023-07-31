@@ -181,7 +181,7 @@ public class MessageHandler
         singleIDs.add(new IDSingle(5, new NoticeMessage()));
         singleIDs.add(new IDSingle(353, new UsersListMessage()));
         singleIDs.add(new IDSingle(322, new CommandResponseMessage()));
-        singleIDs.add(new IDSingle((new int[] {311, 319, 312, 318, 301, 671, 330, 378}), new WhoIsMessage()));
+        singleIDs.add(new IDSingle((new int[] {311, 319, 312, 318, 301, 671, 330, 338, 378}), new WhoIsMessage()));
         singleIDs.add(new IDSingle((new int[] {366, 265, 266, 250, 328, 477, 331, 900}), new GeneralMessage()));
         singleIDs.add(new IDSingle((new int[] {432, 433}), new InvalidNickMessage()));
         singleIDs.add(new IDSingle(403, new NoSuchChannelMessage()));

@@ -32,8 +32,6 @@ public class IRCChannel extends JPanel implements IRCActions
     // Used to identify a message to be printed from the Event ticker
     public static final String EVENT_USER = "****";
     private final int USER_LIST_WIDTH = 100;
-    // Deprecated. Was used to save history, but is now done live.
-    // private List<String> channelHistory = new ArrayList<String>();
     private List<String> userHistory = new ArrayList<String>();
     private String channelTopic;
     private String historyFileName;
@@ -50,7 +48,6 @@ public class IRCChannel extends JPanel implements IRCActions
     // channel Text Area
     private JTextPane channelTextArea = new JTextPane();
     private JScrollPane channelScroll = new JScrollPane(channelTextArea);
-    // private Font channelFont = gui.getFont(); JPanel has it's own Font attribute
 
     // Users list area
     private List<IRCUser> usersArray = new ArrayList<IRCUser>();
@@ -87,6 +84,12 @@ public class IRCChannel extends JPanel implements IRCActions
     // IRCServer information (Owner of channel)
     private IRCServer myServer;
 
+    // IRCActions stuff
+    private boolean wantsAttention = false;
+    private Timer wantsAttentionTimer = new Timer(0, new FlashTab());
+    private Color originalColor;
+
+    // wantsAttentionStuff
 
     /**
      * Constructor
@@ -157,6 +160,35 @@ public class IRCChannel extends JPanel implements IRCActions
                 }
 
                 eventTickerTimer.stop();
+            }
+        }
+    }
+
+    private class FlashTab implements ActionListener
+    {
+        public void actionPerformed(ActionEvent event)
+        {
+            Component selectedComponent = gui.tabbedPane.getSelectedComponent();
+            int tabIndex = gui.tabbedPane.indexOfComponent(IRCChannel.this);
+
+            if (IRCChannel.this.wantsAttention() && selectedComponent != IRCChannel.this)
+            {
+                clientTextBox.requestFocus();
+
+                if (gui.tabbedPane.getBackgroundAt(tabIndex) == Color.red)
+                {
+
+                    gui.tabbedPane.setBackgroundAt(tabIndex, IRCChannel.this.originalColor);
+                } else
+                {
+                    gui.tabbedPane.setBackgroundAt(tabIndex, Color.red);
+                }
+
+                repaint();
+            } else
+            {
+                gui.tabbedPane.setBackgroundAt(tabIndex, IRCChannel.this.originalColor);
+                wantsAttentionTimer.stop();
             }
         }
     }
@@ -664,7 +696,12 @@ public class IRCChannel extends JPanel implements IRCActions
 
         if ((getCreatedUsers(fromUser) != null && !getCreatedUsers(fromUser).isMuted()) || fromUser.equals(EVENT_USER))
         {
-            new LineFormatter(this.getFont(), myServer.getNick()).formattedDocument(doc, timeLine, fromUser, line);
+            LineFormatter newLine = new LineFormatter(this.getFont(), myServer.getNick());
+            newLine.formattedDocument(doc, timeLine, fromUser, line);
+            if (newLine.nameStyle.getAttribute("name") == newLine.highStyle().getAttribute("name"))
+            {
+                this.callForAttention();
+            }
 
             channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
         }
@@ -833,8 +870,6 @@ public class IRCChannel extends JPanel implements IRCActions
                     if (usersArray.get(x).getName().matches(thisUser))
                     {
                         usersArray.remove(x);
-
-
                         createEvent("-- " + thisUser + " has quit " + channel);
                     }
                 }
@@ -889,5 +924,31 @@ public class IRCChannel extends JPanel implements IRCActions
                 }
             }
         });
+    }
+    
+    @Override
+    public void callForAttention()
+    {
+        wantsAttentionTimer.setDelay(1000);
+        wantsAttention = true;
+
+
+        for(int i = 0; i < gui.tabbedPane.getTabCount(); i++)
+        {
+            if(gui.tabbedPane.getComponentAt(i) == IRCChannel.this)
+            {
+                IRCChannel.this.originalColor = gui.tabbedPane.getBackgroundAt(i);
+                break;
+            }
+        }
+
+        if (!(wantsAttentionTimer.isRunning()))
+            wantsAttentionTimer.start();
+    }
+
+    @Override
+    public boolean wantsAttention()
+    {
+        return wantsAttention;
     }
 }

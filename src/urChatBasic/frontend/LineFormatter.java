@@ -15,6 +15,9 @@ public class LineFormatter
 {
     private String myNick;
     private Font myFont;
+    public SimpleAttributeSet timeStyle;
+    public SimpleAttributeSet nameStyle;
+    public SimpleAttributeSet lineStyle;
 
     public LineFormatter(Font myFont, String myNick)
     {
@@ -26,6 +29,7 @@ public class LineFormatter
     {
 
         SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+        tempStyle.addAttribute("name", "standardStyle");
         StyleConstants.setForeground(tempStyle, Color.BLACK);
         StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
         StyleConstants.setFontSize(tempStyle, myFont.getSize());
@@ -37,6 +41,7 @@ public class LineFormatter
     {
 
         SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+        tempStyle.addAttribute("name", "lowStyle");
         StyleConstants.setForeground(tempStyle, Color.LIGHT_GRAY);
         StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
         StyleConstants.setFontSize(tempStyle, myFont.getSize());
@@ -48,6 +53,7 @@ public class LineFormatter
     {
 
         SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+        tempStyle.addAttribute("name", "mediumStyle");
         StyleConstants.setBackground(tempStyle, Color.YELLOW);
         StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
         StyleConstants.setFontSize(tempStyle, myFont.getSize());
@@ -59,6 +65,7 @@ public class LineFormatter
     {
 
         SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+        tempStyle.addAttribute("name", "highStyle");
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setBackground(tempStyle, Color.RED);
         StyleConstants.setForeground(tempStyle, Color.WHITE);
@@ -71,8 +78,8 @@ public class LineFormatter
 
     public SimpleAttributeSet myStyle()
     {
-
         SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+        tempStyle.addAttribute("name", "myStyle");
         StyleConstants.setForeground(tempStyle, Color.GREEN);
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
@@ -81,13 +88,9 @@ public class LineFormatter
         return tempStyle;
     }
 
-
     public void formattedDocument(StyledDocument doc, String timeLine, String fromUser, String line)
     {
-        SimpleAttributeSet timeStyle = lowStyle();
-        SimpleAttributeSet nameStyle = standardStyle();
-        SimpleAttributeSet lineStyle = standardStyle();
-
+        nameStyle = standardStyle();
 
         if (myNick.equals(fromUser))
         {
@@ -97,6 +100,7 @@ public class LineFormatter
             if (line.indexOf(myNick) > -1)
                 nameStyle = highStyle();
         }
+
         if (fromUser.equals(IRCChannel.EVENT_USER))
         {
             nameStyle = lowStyle();

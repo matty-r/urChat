@@ -1259,16 +1259,18 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         int index = tabSource.getSelectedIndex();
         if (index > -1)
         {
-            if (tabbedPane.getComponentAt(index) instanceof IRCChannel)
+            Component selectedComponent = tabbedPane.getComponentAt(index);
+
+            if (selectedComponent instanceof IRCChannel)
             {
                 IRCChannel tempTab = (IRCChannel) tabbedPane.getComponentAt(index);
                 tempTab.showEventTicker(isShowingEventTicker());
                 tempTab.clientTextBox.requestFocus();
                 tempTab.showUsersList(isShowingUsersList());
-            } else if (tabbedPane.getComponentAt(index) instanceof IRCPrivate)
+            } else if (selectedComponent instanceof IRCPrivate)
             {
                 ((IRCPrivate) tabbedPane.getComponentAt(index)).privateTextBox.requestFocus();
-            } else if (tabbedPane.getComponentAt(index) instanceof IRCServer)
+            } else if (selectedComponent instanceof IRCServer)
             {
                 ((IRCServer) tabbedPane.getComponentAt(index)).serverTextBox.requestFocus();
             }
