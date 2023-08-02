@@ -101,7 +101,7 @@ public class LineFormatter
                 nameStyle = highStyle();
         }
 
-        if (fromUser.equals(IRCChannel.EVENT_USER))
+        if (fromUser.equals(Constants.EVENT_USER))
         {
             nameStyle = lowStyle();
             lineStyle = lowStyle();

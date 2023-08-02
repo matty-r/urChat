@@ -31,10 +31,11 @@ import javax.swing.text.StyledDocument;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
+import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.UserGUIBase;
 
-public class IRCServer extends JPanel implements IRCActions, IRCServerBase
+public class IRCServer extends IRCRoomBase implements IRCServerBase
 {
     /**
      *
@@ -43,18 +44,16 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
     ////////////////
     // GUI ELEMENTS//
     ////////////////
-    // Icons
-    public ImageIcon icon;
 
-    private final UserGUI gui = DriverGUI.gui;
-
-    // Server Properties
+    // Connection Properties
+    // TODO: Should remove the connection stuff from here into Connection instead of being in IRCServer?
+    // Should also probably be called IRCNetwork?
     private ConnectionBase serverConnection = null;
 
     // Server Text Area
     private JTextPane serverTextArea = new JTextPane();
     private JScrollPane serverTextScroll = new JScrollPane(serverTextArea);
-    public JTextField serverTextBox = new JTextField();
+    public JTextField serverTextBox = new JTextField(); //userTextBox
     private String name;
     private String port;
     private String nick;
@@ -392,7 +391,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
             createdChannels.add(tempChannel);
             gui.tabbedPane.addTab(channelName, tempChannel.icon, tempChannel);
             gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempChannel));
-            tempChannel.clientTextBox.requestFocus();
+            tempChannel.getUserTextBox().requestFocus();
         }
     }
 
@@ -688,71 +687,9 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
         });
     }
 
-    private class FlashTab implements ActionListener
-    {
-        public void actionPerformed(ActionEvent event)
-        {
-            Component selectedComponent = gui.tabbedPane.getSelectedComponent();
-            int tabIndex = gui.tabbedPane.indexOfComponent(IRCServer.this);
-
-            if (IRCServer.this.wantsAttention() && selectedComponent != IRCServer.this)
-            {
-                serverTextBox.requestFocus();
-
-                if (gui.tabbedPane.getBackgroundAt(tabIndex) == Color.red)
-                {
-
-                    gui.tabbedPane.setBackgroundAt(tabIndex, IRCServer.this.originalColor);
-                } else
-                {
-                    gui.tabbedPane.setBackgroundAt(tabIndex, Color.red);
-                }
-
-                repaint();
-            } else
-            {
-                gui.tabbedPane.setBackgroundAt(tabIndex, IRCServer.this.originalColor);
-                wantsAttentionTimer.stop();
-            }
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.backend.IRCServerBase#getServer()
-     */
     @Override
     public String getServer()
     {
-        return this.getName();
+        return this.name;
     }
-
-    @Override
-    public void callForAttention()
-    {
-        wantsAttentionTimer.setDelay(1000);
-        wantsAttention = true;
-
-
-        for(int i = 0; i < gui.tabbedPane.getTabCount(); i++)
-        {
-            if(gui.tabbedPane.getComponentAt(i) == IRCServer.this)
-            {
-                IRCServer.this.originalColor = gui.tabbedPane.getBackgroundAt(i);
-                break;
-            }
-        }
-
-        if (!(wantsAttentionTimer.isRunning()))
-            wantsAttentionTimer.start();
-    }
-
-    @Override
-    public boolean wantsAttention()
-    {
-        wantsAttention = true;
-        return true;
-    }
-
 }

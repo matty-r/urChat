@@ -23,8 +23,9 @@ import javax.swing.Timer;
 import javax.swing.text.StyledDocument;
 
 import urChatBasic.base.Constants;
+import urChatBasic.base.IRCRoomBase;
 
-public class IRCPrivate extends JPanel implements IRCActions
+public class IRCPrivate extends IRCRoomBase
 {
     /**
      *

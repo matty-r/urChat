@@ -92,6 +92,13 @@ public class Constants
     public static final int MESSAGE_LIMIT = 510;
     public static final String END_MESSAGE = "\r\n";
 
+    // Used to identify a message to be printed from the Event ticker
+    // like a "user joins room" type message
+    public static final String EVENT_USER = "****";
+
+    // Main text area
+    public static final int MAIN_WIDTH = 500;
+    public static final int MAIN_HEIGHT = 400;
 
     /**
      * Used to initialize some values that may throw exceptions.
