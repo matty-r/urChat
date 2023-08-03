@@ -145,7 +145,7 @@ public interface UserGUIBase
      * @param channel
      * @return
      */
-    public abstract Boolean isFavourite(IRCChannel channel);
+    public abstract Boolean isFavourite(IRCRoomBase channel);
 
     // public abstract void removeFavourite(String server, String channel);
 

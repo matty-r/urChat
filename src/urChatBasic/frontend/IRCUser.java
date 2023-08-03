@@ -58,7 +58,7 @@ public class IRCUser implements Comparable<IRCUser>
     }
 
 
-    class UserPopUp extends JPopupMenu
+    public class UserPopUp extends JPopupMenu
     {
         /**
          *

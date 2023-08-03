@@ -35,7 +35,7 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.UserGUIBase;
 
-public class IRCServer extends IRCRoomBase implements IRCServerBase
+public class IRCServer extends JPanel implements IRCServerBase
 {
     /**
      *
@@ -44,6 +44,13 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     ////////////////
     // GUI ELEMENTS//
     ////////////////
+    protected UserGUI gui = DriverGUI.gui;
+
+    // Icons
+    public ImageIcon icon;
+
+    private FontPanel fontPanel;
+
 
     // Connection Properties
     // TODO: Should remove the connection stuff from here into Connection instead of being in IRCServer?
@@ -66,17 +73,11 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     private Boolean useSOCKS;
 
     public ServerPopUp myMenu = new ServerPopUp();
-    private FontPanel fontPanel;
 
     // Created Private Rooms/Tabs
     private List<IRCPrivate> createdPrivateRooms = new ArrayList<IRCPrivate>();
     // Created channels/tabs
     private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
-
-    // IRCActions stuff
-    private boolean wantsAttention = false;
-    private Timer wantsAttentionTimer = new Timer(0, new FlashTab());
-    private Color originalColor;
 
 
     public IRCServer(String serverName, String nick, String login, String portNumber, Boolean isTLS, String proxyHost,
@@ -194,6 +195,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         }
     }
 
+
     /*
      * (non-Javadoc)
      *
@@ -252,7 +254,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#getName()
      */
     @Override
-    public String getName()
+    public String getName ()
     {
         return this.name;
     }
@@ -409,7 +411,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             createdPrivateRooms.add(tempPrivateRoom);
             gui.tabbedPane.addTab(tempPrivateRoom.getName(), tempPrivateRoom.icon, tempPrivateRoom);
             gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempPrivateRoom));
-            tempPrivateRoom.privateTextBox.requestFocus();
+            tempPrivateRoom.getUserTextBox().requestFocus();
         }
     }
 
@@ -427,7 +429,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             createdPrivateRooms.add(tempPrivateRoom);
             gui.tabbedPane.addTab(tempPrivateRoom.getName(), tempPrivateRoom.icon, tempPrivateRoom);
             gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempPrivateRoom));
-            tempPrivateRoom.privateTextBox.requestFocus();
+            tempPrivateRoom.getUserTextBox().requestFocus();
         }
     }
 
