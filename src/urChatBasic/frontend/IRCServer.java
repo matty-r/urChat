@@ -218,7 +218,7 @@ public class IRCServer extends JPanel implements IRCServerBase
     }
 
     @Override
-    public void disconnect ()
+    public void disconnect()
     {
         quitChannels();
         quitPrivateRooms();
@@ -254,7 +254,7 @@ public class IRCServer extends JPanel implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#getName()
      */
     @Override
-    public String getName ()
+    public String getName()
     {
         return this.name;
     }
@@ -440,13 +440,15 @@ public class IRCServer extends JPanel implements IRCServerBase
      * java.lang.String)
      */
     @Override
-    public void printChannelText (String channelName, String line, String fromUser)
+    public void printChannelText(String channelName, String line, String fromUser)
     {
         if (channelName.equals(fromUser))
         {
             printPrivateText(channelName, line, fromUser);
         } else
+        {
             getCreatedChannel(channelName).printText(gui.isTimeStampsEnabled(), line, fromUser);
+        }
     }
 
     /*
@@ -458,13 +460,13 @@ public class IRCServer extends JPanel implements IRCServerBase
     @Override
     public void printPrivateText(String userName, String line, String fromUser)
     {
-
         // private messages aren't linked to a channel, so create it - also
         // if they aren't muted
         if (getIRCUser(userName) != null && !getIRCUser(userName).isMuted())
         {
+            // TODO: This needs to be smarter, and properly adding ircusers to the IRCServer
             addToPrivateRooms(getIRCUser(userName));
-            getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(), fromUser, line);
+            getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(), line, fromUser);
             // Make a noise if the user hasn't got the current tab selected
             // TODO: Make it work on linux, and also add a focus request
             if (gui.getTabIndex(userName) != gui.tabbedPane.getSelectedIndex())

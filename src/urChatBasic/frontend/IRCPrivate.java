@@ -19,6 +19,7 @@ public class IRCPrivate extends IRCRoomBase
     public IRCPrivate(IRCServer server, IRCUser user)
     {
         super(server, user.getName());
+        clientTextBox.addActionListener(new SendTextListener());
     }
 
 
