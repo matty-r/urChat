@@ -88,6 +88,14 @@ public class LineFormatter
         return tempStyle;
     }
 
+    /**
+     * Inserts a string onto the end of the doc.
+     * 
+     * @param doc
+     * @param timeLine
+     * @param fromUser
+     * @param line
+     */
     public void formattedDocument(StyledDocument doc, String timeLine, String fromUser, String line)
     {
         nameStyle = standardStyle();

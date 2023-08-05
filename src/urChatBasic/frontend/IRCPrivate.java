@@ -11,14 +11,12 @@ public class IRCPrivate extends IRCRoomBase
      *
      */
     private static final long serialVersionUID = -7861645386733494089L;
-    ////////////////
-    // GUI ELEMENTS//
-    ////////////////
-
 
     public IRCPrivate(IRCServer server, IRCUser user)
     {
         super(server, user.getName());
+        hideUsersList();
+        hideEventTicker();
         clientTextBox.addActionListener(new SendTextListener());
     }
 

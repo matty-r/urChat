@@ -119,6 +119,19 @@ public class IRCRoomBase extends JPanel
         roomName = newName;
     }
 
+    public void hideEventTicker()
+    {
+        eventTickerShown = false;
+        tickerPanel.setVisible(eventTickerShown);
+        bottomPanel.setPreferredSize(clientTextBox.getPreferredSize());
+    }
+
+    public void hideUsersList()
+    {
+        usersListShown = false;
+        userScroller.setVisible(usersListShown);
+    }
+
     public IRCRoomBase(IRCServerBase server, String roomName)
     {
         this.server = server;
@@ -265,17 +278,18 @@ public class IRCRoomBase extends JPanel
         }
 
         if (gui.isJoinsQuitsMainEnabled())
-            printText(gui.isTimeStampsEnabled(), eventText, Constants.EVENT_USER);
+            printText(eventText, Constants.EVENT_USER);
     }
 
-    public void printText(Boolean dateTime, String line, String fromUser)
+    // TODO: Change this to accept IRCUser instead
+    public void printText(String line, String fromUser)
     {
 
         DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
         Date chatDate = new Date();
         String timeLine = "";
 
-        if (dateTime)
+        if (gui.isTimeStampsEnabled())
             timeLine = "[" + chatDateFormat.format(chatDate) + "]";
         if (gui.isChannelHistoryEnabled())
         {
@@ -288,17 +302,21 @@ public class IRCRoomBase extends JPanel
             }
         }
         StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
+        IRCUser fromIRCUser = getCreatedUsers(fromUser);
         // If we received a message from a user that isn't in the channel
         // then add them to the users list.
         // But don't add them if it's from the Event Ticker
-        if (getCreatedUsers(fromUser) == null)
+        if (fromIRCUser == null)
         {
             if (!fromUser.equals(Constants.EVENT_USER))
-                addToUsersList(this.getName(), fromUser);
+            {
+                addToUsersList(getName(), fromUser);
+                fromIRCUser = getCreatedUsers(fromUser);
+            }
         }
 
 
-        if ((getCreatedUsers(fromUser) != null && !getCreatedUsers(fromUser).isMuted()) || fromUser.equals(Constants.EVENT_USER))
+        if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
         {
             LineFormatter newLine = new LineFormatter(this.getFont(), server.getNick());
             newLine.formattedDocument(doc, timeLine, fromUser, line);
@@ -307,6 +325,8 @@ public class IRCRoomBase extends JPanel
                 myActions.callForAttention();
             }
 
+            // TODO: Scrolls to the bottom of the channelTextArea on message received, this should be disabled
+            // when the user has scrolled up
             channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
         }
     }
@@ -377,11 +397,8 @@ public class IRCRoomBase extends JPanel
     // Adds users to the list in the users array[]
     public void addToUsersList(final String channel, final String[] users)
     {
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            public void run()
-            {
-                if (users.length >= 0)
+        // Removed as Runnable(), not sure it was necessary
+        if (users.length >= 0)
                 {
                     for (int x = 0; x < users.length; x++)
                     {
@@ -394,30 +411,24 @@ public class IRCRoomBase extends JPanel
                     }
                 }
                 usersListModel.sort();
-            }
-        });
     }
 
     // Adds a single user, good for when a user joins the channel
     public void addToUsersList(final String channel, final String user)
     {
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            public void run()
-            {
-                String thisUser = user;
-                if (user.startsWith(":"))
-                    thisUser = user.substring(1);
+        // Removed as Runnable(), not sure it was necessary
+        String thisUser = user;
+        if (user.startsWith(":"))
+            thisUser = user.substring(1);
 
-                if (!usersArray.contains(thisUser))
-                {
-                    usersArray.add(new IRCUser(server, thisUser));
-                    usersList.setSelectedIndex(0);
-                    createEvent("++ " + thisUser + " has entered " + channel);
-                    usersListModel.sort();
-                }
-            }
-        });
+        if (!usersArray.contains(thisUser))
+        {
+            IRCUser newUser = new IRCUser(server, thisUser);
+            usersArray.add(newUser);
+            usersList.setSelectedIndex(0);
+            createEvent("++ " + thisUser + " has entered " + channel);
+            usersListModel.sort();
+        }
     }
 
     public String getChannelTopic(String roomName)

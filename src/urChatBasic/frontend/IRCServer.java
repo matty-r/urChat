@@ -26,14 +26,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.text.StyledDocument;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
-import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
-import urChatBasic.base.UserGUIBase;
 
 public class IRCServer extends JPanel implements IRCServerBase
 {
@@ -400,37 +397,23 @@ public class IRCServer extends JPanel implements IRCServerBase
     /*
      * (non-Javadoc)
      *
-     * @see urChatBasic.backend.IRCServerBase#addToPrivateRooms(java.lang.String)
-     */
-    @Override
-    public void addToPrivateRooms(String privateRoom)
-    {
-        if (getCreatedPrivateRoom(privateRoom) == null)
-        {
-            IRCPrivate tempPrivateRoom = new IRCPrivate(this, getIRCUser(privateRoom));
-            createdPrivateRooms.add(tempPrivateRoom);
-            gui.tabbedPane.addTab(tempPrivateRoom.getName(), tempPrivateRoom.icon, tempPrivateRoom);
-            gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempPrivateRoom));
-            tempPrivateRoom.getUserTextBox().requestFocus();
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see urChatBasic.backend.IRCServerBase#addToPrivateRooms(urChatBasic.frontend.IRCUser)
      */
     @Override
-    public void addToPrivateRooms(IRCUser privateRoom)
+    public IRCPrivate addToPrivateRooms(IRCUser fromUser)
     {
-        if (getCreatedPrivateRoom(privateRoom.getName()) == null)
+        IRCPrivate privateRoom = getCreatedPrivateRoom(fromUser.getName());
+        if (privateRoom == null)
         {
-            IRCPrivate tempPrivateRoom = new IRCPrivate(this, privateRoom);
-            createdPrivateRooms.add(tempPrivateRoom);
-            gui.tabbedPane.addTab(tempPrivateRoom.getName(), tempPrivateRoom.icon, tempPrivateRoom);
-            gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempPrivateRoom));
-            tempPrivateRoom.getUserTextBox().requestFocus();
+            privateRoom = new IRCPrivate(this, fromUser);
+            createdPrivateRooms.add(privateRoom);
+            gui.tabbedPane.addTab(privateRoom.getName(), privateRoom.icon, privateRoom);
+            gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(privateRoom));
+            privateRoom.getUserTextBox().requestFocus();
+            return privateRoom;
         }
+
+        return privateRoom;
     }
 
     /*
@@ -447,7 +430,7 @@ public class IRCServer extends JPanel implements IRCServerBase
             printPrivateText(channelName, line, fromUser);
         } else
         {
-            getCreatedChannel(channelName).printText(gui.isTimeStampsEnabled(), line, fromUser);
+            getCreatedChannel(channelName).printText(line, fromUser);
         }
     }
 
@@ -464,9 +447,9 @@ public class IRCServer extends JPanel implements IRCServerBase
         // if they aren't muted
         if (getIRCUser(userName) != null && !getIRCUser(userName).isMuted())
         {
-            // TODO: This needs to be smarter, and properly adding ircusers to the IRCServer
-            addToPrivateRooms(getIRCUser(userName));
-            getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(), line, fromUser);
+            IRCPrivate privateRoom = addToPrivateRooms(getIRCUser(userName));
+
+            privateRoom.printText(line, fromUser);
             // Make a noise if the user hasn't got the current tab selected
             // TODO: Make it work on linux, and also add a focus request
             if (gui.getTabIndex(userName) != gui.tabbedPane.getSelectedIndex())
@@ -484,7 +467,7 @@ public class IRCServer extends JPanel implements IRCServerBase
     @Override
     public void printServerText(String line)
     {
-        this.printText(gui.isTimeStampsEnabled(), line);
+        this.printText(line);
     }
 
     /*
@@ -629,7 +612,7 @@ public class IRCServer extends JPanel implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#printText(java.lang.Boolean, java.lang.String)
      */
     @Override
-    public void printText(Boolean dateTime, String line)
+    public void printText(String line)
     {
         doLimitLines();
 
@@ -639,7 +622,7 @@ public class IRCServer extends JPanel implements IRCServerBase
         Date chatDate = new Date();
 
         String timeLine = "";
-        if (dateTime)
+        if (gui.isTimeStampsEnabled())
             timeLine = "[" + chatDateFormat.format(chatDate) + "]";
 
 

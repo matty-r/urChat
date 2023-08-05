@@ -92,7 +92,7 @@ public class IRCUser implements Comparable<IRCUser>
         public void actionPerformed(ActionEvent arg0)
         {
             if (!isMuted())
-                myServer.addToPrivateRooms(IRCUser.this.getName());
+                myServer.addToPrivateRooms(IRCUser.this);
         }
     }
 
