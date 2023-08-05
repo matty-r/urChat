@@ -1270,7 +1270,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 IRCChannel tempTab = (IRCChannel) tabbedPane.getComponentAt(index);
                 tempTab.showEventTicker(isShowingEventTicker());
                 tempTab.getUserTextBox().requestFocus();
-                tempTab.showUsersList(isShowingUsersList());
+                if(isShowingUsersList())
+                {
+                    tempTab.showUsersList();
+                } else {
+                    tempTab.hideUsersList();
+                }
             } else if (selectedComponent instanceof IRCPrivate)
             {
                 ((IRCPrivate) tabbedPane.getComponentAt(index)).getUserTextBox().requestFocus();

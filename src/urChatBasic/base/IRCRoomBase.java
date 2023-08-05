@@ -50,6 +50,7 @@ public class IRCRoomBase extends JPanel
 
     // Main Panel
     protected JPanel mainPanel = new JPanel();
+    protected JSplitPane mainResizer = new JSplitPane();
 
     // Bottom panel to hold the user text box
     protected JTextField clientTextBox = new JTextField();
@@ -129,7 +130,15 @@ public class IRCRoomBase extends JPanel
     public void hideUsersList()
     {
         usersListShown = false;
-        userScroller.setVisible(usersListShown);
+        // userScroller.setVisible(usersListShown);
+        toggleUsersList();
+    }
+
+    public void showUsersList()
+    {
+        usersListShown = true;
+        // userScroller.setVisible(usersListShown);
+        toggleUsersList();
     }
 
     public IRCRoomBase(IRCServerBase server, String roomName)
@@ -167,10 +176,25 @@ public class IRCRoomBase extends JPanel
     {
         mainPanel.setLayout(new BorderLayout());
         setupMainTextArea();
-        mainPanel.add(channelScroll, BorderLayout.CENTER);
+        // mainPanel.add(channelScroll, BorderLayout.CENTER);
         setupUsersList();
-        mainPanel.add(userScroller, BorderLayout.LINE_END);
+        // mainPanel.add(userScroller, BorderLayout.LINE_END);
+
+        //Create a split pane with the two scroll panes in it.
+        mainResizer = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                        channelScroll, userScroller);
+        mainResizer.setOneTouchExpandable(true);
+
+        // This should be set to where the minimum size of the userScroller would end up
+        mainResizer.setDividerLocation(gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
+
+        // Left most panel (channelScroll pane), gets the extra space when resizing the window
+        mainResizer.setResizeWeight(1);
+        channelScroll.setMinimumSize(channelScroll.getPreferredSize());
+        userScroller.setMinimumSize(userScroller.getPreferredSize());
+
         mainPanel.setBackground(Color.black);
+        mainPanel.add(mainResizer, BorderLayout.CENTER);
         setupBottomPanel();
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
     }
@@ -180,6 +204,7 @@ public class IRCRoomBase extends JPanel
         channelScroll.setPreferredSize(new Dimension(Constants.MAIN_WIDTH - usersListWidth, Constants.MAIN_HEIGHT - BOTTOM_HEIGHT));
         channelScroll.setLocation(0, 0);
         channelScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
         channelTextArea.setEditable(false);
         channelTextArea.setFont(gui.getFont());
         channelTextArea.setEditorKit(new WrapEditorKit());
@@ -338,10 +363,15 @@ public class IRCRoomBase extends JPanel
      *
      * @param showIt
      */
-    public void showUsersList(Boolean showIt)
+    public void toggleUsersList()
     {
-        if (usersListShown == showIt || usersListShown == null)
-            userScroller.setVisible(showIt);
+        if (usersListShown == null || !usersListShown)
+        {
+            // userScroller.setVisible(showIt);
+            mainResizer.setDividerLocation(gui.getWidth());
+        } else {
+            mainResizer.setDividerLocation(gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
+        }
     }
 
     /**
@@ -676,8 +706,14 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            usersListShown = !userScroller.isVisible();
-            showUsersList(!userScroller.isVisible());
+
+            if(mainResizer.getDividerLocation() <= gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()) )
+            {
+                usersListShown = false;
+            } else {
+                usersListShown = true;
+            }
+            toggleUsersList();
         }
     }
 
