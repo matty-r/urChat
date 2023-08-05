@@ -75,18 +75,12 @@ public interface IRCServerBase
     public abstract void addToCreatedChannels (String channelName);
 
     /**
-     * Creates a new Private Room based on name
-     *
-     * @param serverName
-     */
-    public abstract void addToPrivateRooms (String privateRoom);
-
-    /**
      * Creates a new Private Room based on IRCUser
      *
      * @param serverName
+     * @return
      */
-    public abstract void addToPrivateRooms (IRCUser privateRoom);
+    public abstract IRCPrivate addToPrivateRooms (IRCUser privateRoom);
 
     /**
      * Prints the text to the appropriate channels main text window.
@@ -129,7 +123,7 @@ public interface IRCServerBase
 
     public abstract void doLimitLines ();
 
-    public abstract void printText (Boolean dateTime, String line);
+    public abstract void printText (String line);
 
     public abstract String getChannelTopic (String channelName);
 

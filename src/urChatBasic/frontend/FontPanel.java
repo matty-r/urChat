@@ -11,7 +11,7 @@ import java.awt.event.ItemListener;
 
 import javax.swing.*;
 
-class FontPanel extends JPanel
+public class FontPanel extends JPanel
 {
     /**
      *

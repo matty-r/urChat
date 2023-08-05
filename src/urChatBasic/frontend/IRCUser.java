@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import urChatBasic.base.IRCServerBase;
 
 public class IRCUser implements Comparable<IRCUser>
 {
@@ -12,12 +13,12 @@ public class IRCUser implements Comparable<IRCUser>
     private String userStatus = "";
     public UserPopUp myMenu;
     private Boolean muted = false;
-    private IRCServer myServer;
+    private IRCServerBase myServer;
 
-    public IRCUser(IRCServer serverName, String name)
+    public IRCUser(IRCServerBase server, String name)
     {
         this.name = name;
-        this.myServer = serverName;
+        this.myServer = server;
         this.myMenu = new UserPopUp();
 
         if (name.startsWith("@"))
@@ -57,7 +58,7 @@ public class IRCUser implements Comparable<IRCUser>
     }
 
 
-    class UserPopUp extends JPopupMenu
+    public class UserPopUp extends JPopupMenu
     {
         /**
          *
@@ -91,7 +92,7 @@ public class IRCUser implements Comparable<IRCUser>
         public void actionPerformed(ActionEvent arg0)
         {
             if (!isMuted())
-                myServer.addToPrivateRooms(IRCUser.this.getName());
+                myServer.addToPrivateRooms(IRCUser.this);
         }
     }
 

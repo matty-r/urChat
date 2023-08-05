@@ -88,6 +88,14 @@ public class LineFormatter
         return tempStyle;
     }
 
+    /**
+     * Inserts a string onto the end of the doc.
+     * 
+     * @param doc
+     * @param timeLine
+     * @param fromUser
+     * @param line
+     */
     public void formattedDocument(StyledDocument doc, String timeLine, String fromUser, String line)
     {
         nameStyle = standardStyle();
@@ -101,7 +109,7 @@ public class LineFormatter
                 nameStyle = highStyle();
         }
 
-        if (fromUser.equals(IRCChannel.EVENT_USER))
+        if (fromUser.equals(Constants.EVENT_USER))
         {
             nameStyle = lowStyle();
             lineStyle = lowStyle();

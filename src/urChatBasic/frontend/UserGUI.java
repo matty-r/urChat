@@ -14,6 +14,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 import urChatBasic.base.Constants;
+import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.UserGUIBase;
 
@@ -844,7 +845,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isFavourite(urChatBasic.frontend.IRCChannel)
      */
     @Override
-    public Boolean isFavourite(IRCChannel channel)
+    public Boolean isFavourite(IRCRoomBase channel)
     {
         FavouritesItem castItem;
 
@@ -1021,7 +1022,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#quitServers()
      */
     @Override
-    public void quitServers ()
+    public void quitServers()
     {
         while (createdServers.iterator().hasNext())
         {
@@ -1042,7 +1043,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#quitServer(urChatBasic.base.IRCServerBase)
      */
     @Override
-    public void quitServer (IRCServerBase server)
+    public void quitServer(IRCServerBase server)
     {
         server.disconnect();
         tabbedPane.remove((IRCServer) server);
@@ -1229,10 +1230,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                         IRCServerBase tempServer =
                                 getCreatedServer(((IRCChannel) tabbedPane.getComponentAt(index)).getServer());
                         if (isFavourite(tempServer.getCreatedChannel(tabName)))
+                        {
                             tempServer.getCreatedChannel(tabName).myMenu.addAsFavouriteItem
                                     .setText("Remove as Favourite");
-                        else
+                        } else
+                        {
                             tempServer.getCreatedChannel(tabName).myMenu.addAsFavouriteItem.setText("Add as Favourite");
+                        }
                         tempServer.getCreatedChannel(tabName).myMenu.show(tabbedPane, e.getX(), e.getY());
                     } else if (tabbedPane.getComponentAt(index) instanceof IRCPrivate)
                     {
@@ -1265,11 +1269,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             {
                 IRCChannel tempTab = (IRCChannel) tabbedPane.getComponentAt(index);
                 tempTab.showEventTicker(isShowingEventTicker());
-                tempTab.clientTextBox.requestFocus();
-                tempTab.showUsersList(isShowingUsersList());
+                tempTab.getUserTextBox().requestFocus();
+                if(isShowingUsersList())
+                {
+                    tempTab.showUsersList();
+                } else {
+                    tempTab.hideUsersList();
+                }
             } else if (selectedComponent instanceof IRCPrivate)
             {
-                ((IRCPrivate) tabbedPane.getComponentAt(index)).privateTextBox.requestFocus();
+                ((IRCPrivate) tabbedPane.getComponentAt(index)).getUserTextBox().requestFocus();
             } else if (selectedComponent instanceof IRCServer)
             {
                 ((IRCServer) tabbedPane.getComponentAt(index)).serverTextBox.requestFocus();

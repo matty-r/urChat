@@ -26,15 +26,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.text.StyledDocument;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
-import urChatBasic.base.UserGUIBase;
 
-public class IRCServer extends JPanel implements IRCActions, IRCServerBase
+public class IRCServer extends JPanel implements IRCServerBase
 {
     /**
      *
@@ -43,18 +41,23 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
     ////////////////
     // GUI ELEMENTS//
     ////////////////
+    protected UserGUI gui = DriverGUI.gui;
+
     // Icons
     public ImageIcon icon;
 
-    private final UserGUI gui = DriverGUI.gui;
+    private FontPanel fontPanel;
 
-    // Server Properties
+
+    // Connection Properties
+    // TODO: Should remove the connection stuff from here into Connection instead of being in IRCServer?
+    // Should also probably be called IRCNetwork?
     private ConnectionBase serverConnection = null;
 
     // Server Text Area
     private JTextPane serverTextArea = new JTextPane();
     private JScrollPane serverTextScroll = new JScrollPane(serverTextArea);
-    public JTextField serverTextBox = new JTextField();
+    public JTextField serverTextBox = new JTextField(); //userTextBox
     private String name;
     private String port;
     private String nick;
@@ -67,17 +70,11 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
     private Boolean useSOCKS;
 
     public ServerPopUp myMenu = new ServerPopUp();
-    private FontPanel fontPanel;
 
     // Created Private Rooms/Tabs
     private List<IRCPrivate> createdPrivateRooms = new ArrayList<IRCPrivate>();
     // Created channels/tabs
     private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
-
-    // IRCActions stuff
-    private boolean wantsAttention = false;
-    private Timer wantsAttentionTimer = new Timer(0, new FlashTab());
-    private Color originalColor;
 
 
     public IRCServer(String serverName, String nick, String login, String portNumber, Boolean isTLS, String proxyHost,
@@ -195,6 +192,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
         }
     }
 
+
     /*
      * (non-Javadoc)
      *
@@ -217,7 +215,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
     }
 
     @Override
-    public void disconnect ()
+    public void disconnect()
     {
         quitChannels();
         quitPrivateRooms();
@@ -392,25 +390,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
             createdChannels.add(tempChannel);
             gui.tabbedPane.addTab(channelName, tempChannel.icon, tempChannel);
             gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempChannel));
-            tempChannel.clientTextBox.requestFocus();
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.backend.IRCServerBase#addToPrivateRooms(java.lang.String)
-     */
-    @Override
-    public void addToPrivateRooms(String privateRoom)
-    {
-        if (getCreatedPrivateRoom(privateRoom) == null)
-        {
-            IRCPrivate tempPrivateRoom = new IRCPrivate(this, getIRCUser(privateRoom));
-            createdPrivateRooms.add(tempPrivateRoom);
-            gui.tabbedPane.addTab(tempPrivateRoom.getName(), tempPrivateRoom.icon, tempPrivateRoom);
-            gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempPrivateRoom));
-            tempPrivateRoom.privateTextBox.requestFocus();
+            tempChannel.getUserTextBox().requestFocus();
         }
     }
 
@@ -420,16 +400,20 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#addToPrivateRooms(urChatBasic.frontend.IRCUser)
      */
     @Override
-    public void addToPrivateRooms(IRCUser privateRoom)
+    public IRCPrivate addToPrivateRooms(IRCUser fromUser)
     {
-        if (getCreatedPrivateRoom(privateRoom.getName()) == null)
+        IRCPrivate privateRoom = getCreatedPrivateRoom(fromUser.getName());
+        if (privateRoom == null)
         {
-            IRCPrivate tempPrivateRoom = new IRCPrivate(this, privateRoom);
-            createdPrivateRooms.add(tempPrivateRoom);
-            gui.tabbedPane.addTab(tempPrivateRoom.getName(), tempPrivateRoom.icon, tempPrivateRoom);
-            gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempPrivateRoom));
-            tempPrivateRoom.privateTextBox.requestFocus();
+            privateRoom = new IRCPrivate(this, fromUser);
+            createdPrivateRooms.add(privateRoom);
+            gui.tabbedPane.addTab(privateRoom.getName(), privateRoom.icon, privateRoom);
+            gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(privateRoom));
+            privateRoom.getUserTextBox().requestFocus();
+            return privateRoom;
         }
+
+        return privateRoom;
     }
 
     /*
@@ -439,13 +423,15 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
      * java.lang.String)
      */
     @Override
-    public void printChannelText (String channelName, String line, String fromUser)
+    public void printChannelText(String channelName, String line, String fromUser)
     {
         if (channelName.equals(fromUser))
         {
             printPrivateText(channelName, line, fromUser);
         } else
-            getCreatedChannel(channelName).printText(gui.isTimeStampsEnabled(), line, fromUser);
+        {
+            getCreatedChannel(channelName).printText(line, fromUser);
+        }
     }
 
     /*
@@ -457,13 +443,13 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
     @Override
     public void printPrivateText(String userName, String line, String fromUser)
     {
-
         // private messages aren't linked to a channel, so create it - also
         // if they aren't muted
         if (getIRCUser(userName) != null && !getIRCUser(userName).isMuted())
         {
-            addToPrivateRooms(getIRCUser(userName));
-            getCreatedPrivateRoom(userName).printText(gui.isTimeStampsEnabled(), fromUser, line);
+            IRCPrivate privateRoom = addToPrivateRooms(getIRCUser(userName));
+
+            privateRoom.printText(line, fromUser);
             // Make a noise if the user hasn't got the current tab selected
             // TODO: Make it work on linux, and also add a focus request
             if (gui.getTabIndex(userName) != gui.tabbedPane.getSelectedIndex())
@@ -481,7 +467,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
     @Override
     public void printServerText(String line)
     {
-        this.printText(gui.isTimeStampsEnabled(), line);
+        this.printText(line);
     }
 
     /*
@@ -626,7 +612,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#printText(java.lang.Boolean, java.lang.String)
      */
     @Override
-    public void printText(Boolean dateTime, String line)
+    public void printText(String line)
     {
         doLimitLines();
 
@@ -636,7 +622,7 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
         Date chatDate = new Date();
 
         String timeLine = "";
-        if (dateTime)
+        if (gui.isTimeStampsEnabled())
             timeLine = "[" + chatDateFormat.format(chatDate) + "]";
 
 
@@ -688,71 +674,9 @@ public class IRCServer extends JPanel implements IRCActions, IRCServerBase
         });
     }
 
-    private class FlashTab implements ActionListener
-    {
-        public void actionPerformed(ActionEvent event)
-        {
-            Component selectedComponent = gui.tabbedPane.getSelectedComponent();
-            int tabIndex = gui.tabbedPane.indexOfComponent(IRCServer.this);
-
-            if (IRCServer.this.wantsAttention() && selectedComponent != IRCServer.this)
-            {
-                serverTextBox.requestFocus();
-
-                if (gui.tabbedPane.getBackgroundAt(tabIndex) == Color.red)
-                {
-
-                    gui.tabbedPane.setBackgroundAt(tabIndex, IRCServer.this.originalColor);
-                } else
-                {
-                    gui.tabbedPane.setBackgroundAt(tabIndex, Color.red);
-                }
-
-                repaint();
-            } else
-            {
-                gui.tabbedPane.setBackgroundAt(tabIndex, IRCServer.this.originalColor);
-                wantsAttentionTimer.stop();
-            }
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.backend.IRCServerBase#getServer()
-     */
     @Override
     public String getServer()
     {
-        return this.getName();
+        return this.name;
     }
-
-    @Override
-    public void callForAttention()
-    {
-        wantsAttentionTimer.setDelay(1000);
-        wantsAttention = true;
-
-
-        for(int i = 0; i < gui.tabbedPane.getTabCount(); i++)
-        {
-            if(gui.tabbedPane.getComponentAt(i) == IRCServer.this)
-            {
-                IRCServer.this.originalColor = gui.tabbedPane.getBackgroundAt(i);
-                break;
-            }
-        }
-
-        if (!(wantsAttentionTimer.isRunning()))
-            wantsAttentionTimer.start();
-    }
-
-    @Override
-    public boolean wantsAttention()
-    {
-        wantsAttention = true;
-        return true;
-    }
-
 }
