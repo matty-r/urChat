@@ -4,10 +4,9 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.AlertType;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCActions;
-import urChatBasic.frontend.IRCChannel;
-import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.LineFormatter;
+import urChatBasic.frontend.LineFormatter.ClickableText;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.UsersListModel;
 import urChatBasic.frontend.FontPanel;
@@ -204,7 +203,8 @@ public class IRCRoomBase extends JPanel
         channelScroll.setPreferredSize(new Dimension(Constants.MAIN_WIDTH - usersListWidth, Constants.MAIN_HEIGHT - BOTTOM_HEIGHT));
         channelScroll.setLocation(0, 0);
         channelScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
+        channelTextArea.addMouseListener(new ChannelClickListener());
+        channelTextArea.addMouseMotionListener(new ChannelMovementListener());
         channelTextArea.setEditable(false);
         channelTextArea.setFont(gui.getFont());
         channelTextArea.setEditorKit(new WrapEditorKit());
@@ -262,6 +262,37 @@ public class IRCRoomBase extends JPanel
             this.type = type;
         }
 
+    }
+
+    class ChannelClickListener extends MouseInputAdapter
+    {
+        public void mouseClicked(MouseEvent e)
+        {
+            StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
+            Element ele = doc.getCharacterElement(channelTextArea.viewToModel2D((e.getPoint())));
+            AttributeSet as = ele.getAttributes();
+            ClickableText isClickableText = (ClickableText) as.getAttribute("clickableText");
+            if (isClickableText != null)
+            {
+                isClickableText.execute();
+            }
+        }
+    }
+
+    class ChannelMovementListener extends MouseAdapter
+    {
+        public void mouseMoved(MouseEvent e) {
+            StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
+            Element wordElement = doc.getCharacterElement(channelTextArea.viewToModel2D((e.getPoint())));
+            AttributeSet wordAttributeSet = wordElement.getAttributes();
+            ClickableText isClickableText = (ClickableText) wordAttributeSet.getAttribute("clickableText");
+            if (isClickableText != null)
+            {
+                channelTextArea.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            } else {
+                channelTextArea.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        }
     }
 
     public void createEvent(String eventText)
