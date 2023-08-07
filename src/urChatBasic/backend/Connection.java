@@ -167,7 +167,8 @@ public class Connection implements ConnectionBase
 
         String line = null;
 
-        // Log on to the server.
+        // Initiate connection to the server.
+        writer.write("CAP LS 302\r\n");
         writer.write("NICK " + getNick() + "\r\n");
         writer.write("USER " + login + " 8 * : " + getLogin() + "\r\n");
         localMessage("Connect with nick " + getNick());
@@ -265,6 +266,9 @@ public class Connection implements ConnectionBase
                 {
                     writer.write("PRIVMSG " + fromChannel + " :" + '\001' + "ACTION" + '\001'
                             + clientText.replace("/me ", "") + "\r\n");
+                } else if (clientText.startsWith("CAP") || clientText.startsWith("AUTHENTICATE"))
+                {
+                    writer.write(clientText + "\r\n");
                 } else
                 {
                     writer.write("PRIVMSG " + fromChannel + " :" + clientText + "\r\n");

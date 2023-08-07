@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
-
+import java.util.regex.Pattern;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.MessageBase;
@@ -181,11 +181,15 @@ public class MessageHandler
         singleIDs.add(new IDSingle(5, new NoticeMessage()));
         singleIDs.add(new IDSingle(353, new UsersListMessage()));
         singleIDs.add(new IDSingle(322, new CommandResponseMessage()));
-        singleIDs.add(new IDSingle((new int[] {311, 319, 312, 318, 301, 671, 330, 338, 378}), new WhoIsMessage()));
+        singleIDs.add(new IDSingle((new int[] {311, 319, 312, 317, 318, 301, 671, 330, 338, 378}), new WhoIsMessage()));
         singleIDs.add(new IDSingle((new int[] {366, 265, 266, 250, 328, 477, 331, 900}), new GeneralMessage()));
         singleIDs.add(new IDSingle((new int[] {432, 433}), new InvalidNickMessage()));
         singleIDs.add(new IDSingle(403, new NoSuchChannelMessage()));
         singleIDs.add(new IDSingle(461, new NotEnoughParametersMesssage()));
+        singleIDs.add(new IDSingle(903, new SASLAuthenticateSuccessMessage()));
+        singleIDs.add(new IDSingle(904, new SASLAuthenticateFailedMessage()));
+        singleIDs.add(new IDSingle("CAP", new CapabilityMessage()));
+        singleIDs.add(new IDSingle("AUTHENTICATE", new SASLAuthenticateMessage()));
         singleIDs.add(new IDSingle("MODE", new ModeMessage()));
         singleIDs.add(new IDSingle("NOTICE", new NoticeMessage()));
         singleIDs.add(new IDSingle("PRIVMSG", new PrivateMessage()));
@@ -204,14 +208,15 @@ public class MessageHandler
 
     public class Message
     {
-        String prefix;
-        String idCommand;
+        String prefix = "";
+        String idCommand = "";
         int idCommandNumber;
-        String channel;
-        String body;
+        String channel = "";
+        String body = "";
         MessageIdType type;
-        String rawMessage;
-        String nick;
+        String rawMessage = "";
+        String nick = "";
+        String subType  = "";
         MessageBase messageBase;
         MessageHandler messageHandler;
 
@@ -220,11 +225,15 @@ public class MessageHandler
             this.rawMessage = fullMessage;
             this.messageHandler = handler;
             setPrefix();
-            setChannel();
-            setIdCommand();
-            setMessageBody();
-            setNick();
-
+            try{
+                setChannel();
+                setIdCommand();
+                setMessageBody();
+                setNick();
+                setSubType();
+            } catch (Exception e) {
+                this.channel = "";
+            }
 
             try
             {
@@ -233,6 +242,12 @@ public class MessageHandler
             } catch (Exception e)
             {
                 this.type = MessageIdType.STRING_ID;
+
+                // requires special handling
+                if(channel.isEmpty() && nick.isEmpty() && subType.isEmpty())
+                {
+                    idCommand = prefix;
+                }
             }
 
             setHandler();
@@ -323,6 +338,16 @@ public class MessageHandler
         private void setIdCommand()
         {
             idCommand = rawMessage.split(" ")[1];
+        }
+
+        private void setSubType ()
+        {
+            String subType = this.rawMessage.replaceFirst(Pattern.quote(this.prefix), "");
+            subType = subType.replaceFirst(Pattern.quote(this.idCommand), "");
+            subType = subType.replaceFirst(Pattern.quote(this.channel), "");
+            subType = subType.replaceFirst(Pattern.quote(this.body),"");
+            subType = subType.trim();
+            this.subType = subType.split(" ")[0];
         }
     }
 
@@ -463,13 +488,67 @@ public class MessageHandler
         {
             // TODO Auto-generated method stub
         }
-
-
     }
+
+    public class SASLAuthenticateFailedMessage implements MessageBase
+    {
+        @Override
+        public void messageExec(Message myMessage)
+        {
+            printServerText(myMessage.body);
+            Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: " + myMessage.rawMessage);
+        }
+    }
+
+    public class SASLAuthenticateSuccessMessage implements MessageBase
+    {
+        @Override
+        public void messageExec(Message myMessage)
+        {
+            printServerText(myMessage.body);
+            serverBase.saslCompleteAuthentication();
+        }
+    }
+
+    public class SASLAuthenticateMessage implements MessageBase
+    {
+        @Override
+        public void messageExec(Message myMessage)
+        {
+            if(myMessage.rawMessage.equals("AUTHENTICATE +"))
+            {
+                printServerText(myMessage.rawMessage);
+                serverBase.saslSendAuthentication();
+            }
+        }
+    }
+
+    public class CapabilityMessage implements MessageBase
+    {
+
+        @Override
+        public void messageExec(Message myMessage)
+        {
+            // CAP ACK or CAP LS?
+            switch (myMessage.subType) {
+                case "LS":
+                        printServerText(myMessage.body);
+                        // TODO: If client enabled SASL authentication, check the myMessage for sasl='op'
+                        serverBase.saslRequestAuthentication();
+                    break;
+                case "ACK":
+                        printServerText("Begin SASL Authentication");
+                        serverBase.saslDoAuthentication();
+                    break;
+                default:
+                    printServerText(myMessage.body);
+            }
+        }
+    }
+
 
     public class InvalidNickMessage implements MessageBase
     {
-
 
         @Override
         public void messageExec(Message myMessage)

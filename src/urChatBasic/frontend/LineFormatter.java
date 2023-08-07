@@ -174,7 +174,6 @@ public class LineFormatter
             SimpleAttributeSet linkStyle = urlStyle();
 
             while (matcher.find()) {
-                System.out.println(matcher.start() + " : " + matcher.end());
                 // pre http
                 doc.insertString(doc.getLength(), line.substring(0, matcher.start()), lineStyle);
 

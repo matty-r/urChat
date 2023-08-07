@@ -1,8 +1,6 @@
 package urChatBasic.frontend;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -10,10 +8,12 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
-import java.lang.reflect.Constructor;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -59,6 +59,7 @@ public class IRCServer extends JPanel implements IRCServerBase
     private JScrollPane serverTextScroll = new JScrollPane(serverTextArea);
     public JTextField serverTextBox = new JTextField(); //userTextBox
     private String name;
+    private String password;
     private String port;
     private String nick;
     private String login;
@@ -77,7 +78,7 @@ public class IRCServer extends JPanel implements IRCServerBase
     private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
 
 
-    public IRCServer(String serverName, String nick, String login, String portNumber, Boolean isTLS, String proxyHost,
+    public IRCServer(String serverName, String nick, String login, String password, String portNumber, Boolean isTLS, String proxyHost,
             String proxyPort, Boolean useSOCKS)
     {
         this.setLayout(new BorderLayout());
@@ -88,6 +89,7 @@ public class IRCServer extends JPanel implements IRCServerBase
         this.proxyPort = proxyPort;
         this.useSOCKS = useSOCKS;
         this.name = serverName;
+        this.password = password;
         this.login = login;
         this.nick = nick;
 
@@ -111,6 +113,41 @@ public class IRCServer extends JPanel implements IRCServerBase
         fontPanel.setVisible(false);
     }
 
+    @Override
+    public void saslRequestAuthentication()
+    {
+        sendClientText("CAP REQ sasl", getName());
+    }
+
+    @Override
+    public void saslCompleteAuthentication()
+    {
+        sendClientText("CAP END", getName());
+    }
+
+    @Override
+    public void saslDoAuthentication()
+    {
+        sendClientText("AUTHENTICATE PLAIN", getName());
+    }
+
+    @Override
+    public void saslSendAuthentication()
+    {
+        String escapedDelim = Character.toString(0x0);
+        String saslString = escapedDelim+getNick()+escapedDelim+getPassword();
+        try
+        {
+            saslString = Base64.getEncoder().encodeToString(saslString.getBytes(StandardCharsets.UTF_8.toString()));
+        } catch (UnsupportedEncodingException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        System.out.println(saslString);
+        sendClientText("AUTHENTICATE "+saslString, getName());
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -120,6 +157,12 @@ public class IRCServer extends JPanel implements IRCServerBase
     public String getNick()
     {
         return serverConnection.getNick();
+    }
+
+    @Override
+    public String getPassword()
+    {
+        return password;
     }
 
     @Override

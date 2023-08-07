@@ -9,6 +9,8 @@ public interface IRCServerBase
 
     public abstract String getNick ();
 
+    public abstract String getPassword ();
+
     public abstract void connect ();
 
     public abstract void disconnect ();
@@ -81,6 +83,17 @@ public interface IRCServerBase
      * @return
      */
     public abstract IRCPrivate addToPrivateRooms (IRCUser privateRoom);
+
+    /**
+     * Used to negotiate a PLAIN SASL connection to the IRC Server.
+     */
+    public abstract void saslRequestAuthentication ();
+
+    public abstract void saslDoAuthentication ();
+
+    public abstract void saslSendAuthentication ();
+
+    public abstract void saslCompleteAuthentication ();
 
     /**
      * Prints the text to the appropriate channels main text window.

@@ -73,6 +73,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JTextField userNameTextField = new JTextField("");
     private static final JLabel realNameLabel = new JLabel("Real name:");
     private static final JTextField realNameTextField = new JTextField("");
+    private static final JLabel saslPasswordLabel = new JLabel("SASL Password:");
+    private static final JPasswordField saslPasswordTextField = new JPasswordField("");
+
     private static final JLabel serverNameLabel = new JLabel("Server:");
     private static final JTextField servernameTextField = new JTextField("");
     private static final JLabel serverPortLabel = new JLabel("Port:");
@@ -234,7 +237,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         if (getCreatedServer(serverName) == null)
         {
             createdServers.add(new IRCServer(serverName.trim(), userNameTextField.getText().trim(),
-                    realNameTextField.getText().trim(), serverPortTextField.getText().trim(),
+                    realNameTextField.getText().trim(), new String(saslPasswordTextField.getPassword()),
+                    serverPortTextField.getText().trim(),
                     serverTLSCheckBox.isSelected(), proxyHostNameTextField.getText(), proxyPortTextField.getText(),
                     serverProxyCheckBox.isSelected()));
         }
@@ -421,6 +425,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         serverOptionsPanel.add(realNameTextField);
         realNameTextField.setPreferredSize(new Dimension(100, 20));
 
+        serverOptionsPanel.add(saslPasswordLabel);
+        serverOptionsPanel.add(saslPasswordTextField);
+        saslPasswordTextField.setEchoChar('*');
+        saslPasswordTextField.setPreferredSize(new Dimension(100, 20));
+
         // Server Stuff
         serverOptionsPanel.add(serverNameLabel);
         serverOptionsPanel.add(servernameTextField);
@@ -500,11 +509,23 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         serverLayout.putConstraint(SpringLayout.WEST, realNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
                 realNameLabel);
 
+        // Authentication Stuff
+
+        serverLayout.putConstraint(SpringLayout.NORTH, saslPasswordLabel, TOP_SPACING, SpringLayout.SOUTH,
+                realNameTextField);
+        serverLayout.putConstraint(SpringLayout.WEST, saslPasswordLabel, LEFT_ALIGNED, SpringLayout.WEST,
+                realNameTextField);
+
+        serverLayout.putConstraint(SpringLayout.NORTH, saslPasswordTextField, TOP_ALIGNED, SpringLayout.SOUTH,
+                saslPasswordLabel);
+        serverLayout.putConstraint(SpringLayout.WEST, saslPasswordTextField, LEFT_ALIGNED, SpringLayout.WEST,
+                saslPasswordLabel);
+
         // Server stuff
         serverLayout.putConstraint(SpringLayout.NORTH, serverNameLabel, TOP_SPACING, SpringLayout.SOUTH,
-                realNameTextField);
+                saslPasswordTextField);
         serverLayout.putConstraint(SpringLayout.WEST, serverNameLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                realNameTextField);
+                saslPasswordTextField);
 
         serverLayout.putConstraint(SpringLayout.NORTH, servernameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
                 serverNameLabel);
