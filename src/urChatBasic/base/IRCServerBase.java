@@ -1,5 +1,7 @@
 package urChatBasic.base;
 
+import urChatBasic.base.capabilities.CapTypeBase;
+import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.IRCChannel;
 import urChatBasic.frontend.IRCPrivate;
 import urChatBasic.frontend.IRCUser;
@@ -94,6 +96,10 @@ public interface IRCServerBase
     public abstract void saslSendAuthentication ();
 
     public abstract void saslCompleteAuthentication ();
+
+    public abstract void setCapabilities (String capabilityMessage);
+
+    public boolean hasCapability (CapabilityTypes sasl);
 
     /**
      * Prints the text to the appropriate channels main text window.

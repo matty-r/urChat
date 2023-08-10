@@ -9,6 +9,7 @@ import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.MessageBase;
 import urChatBasic.base.UserGUIBase;
+import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.DriverGUI;
 
 /**
@@ -171,8 +172,8 @@ public class MessageHandler
         rangeIDs.add(new IDRange(1, 4, new UserRegistrationMessage()));
         rangeIDs.add(new IDRange(332, 333, new ChannelTopicMessage()));
         rangeIDs.add(new IDRange(412, 415, new BadPrivateMessage()));
-        rangeIDs.add(new IDRange(371, 376, new GeneralMessage()));
-        rangeIDs.add(new IDRange(251, 256, new GeneralMessage()));
+        rangeIDs.add(new IDRange(371, 376, new GeneralServerMessage()));
+        rangeIDs.add(new IDRange(251, 256, new GeneralServerMessage()));
         rangeIDs.add(new IDRange(471, 475, new JoinFailureMessage()));
     }
 
@@ -182,7 +183,8 @@ public class MessageHandler
         singleIDs.add(new IDSingle(353, new UsersListMessage()));
         singleIDs.add(new IDSingle(322, new CommandResponseMessage()));
         singleIDs.add(new IDSingle((new int[] {311, 319, 312, 317, 318, 301, 671, 330, 338, 378}), new WhoIsMessage()));
-        singleIDs.add(new IDSingle((new int[] {366, 265, 266, 250, 328, 477, 331, 900}), new GeneralMessage()));
+        singleIDs.add(new IDSingle((new int[] {265, 266, 250, 328, 477, 331, 900}), new GeneralServerMessage()));
+        singleIDs.add(new IDSingle(366, new GeneralChannelMessage()));
         singleIDs.add(new IDSingle((new int[] {432, 433}), new InvalidNickMessage()));
         singleIDs.add(new IDSingle(403, new NoSuchChannelMessage()));
         singleIDs.add(new IDSingle(461, new NotEnoughParametersMesssage()));
@@ -372,13 +374,23 @@ public class MessageHandler
         }
     }
 
-    public class GeneralMessage implements MessageBase
+    public class GeneralServerMessage implements MessageBase
     {
 
         @Override
         public void messageExec(Message myMessage)
         {
             printServerText(myMessage.body);
+        }
+    }
+
+    public class GeneralChannelMessage implements MessageBase
+    {
+
+        @Override
+        public void messageExec(Message myMessage)
+        {
+            myMessage.messageHandler.serverBase.printChannelText(myMessage.channel, myMessage.body, myMessage.nick);
         }
     }
 
@@ -534,7 +546,11 @@ public class MessageHandler
                 case "LS":
                         printServerText(myMessage.body);
                         // TODO: If client enabled SASL authentication, check the myMessage for sasl='op'
-                        serverBase.saslRequestAuthentication();
+                        serverBase.setCapabilities(myMessage.body);
+                        if(serverBase.hasCapability(CapabilityTypes.SASL))
+                        {
+                            serverBase.saslRequestAuthentication();
+                        }
                     break;
                 case "ACK":
                         printServerText("Begin SASL Authentication");

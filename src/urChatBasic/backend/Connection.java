@@ -168,7 +168,7 @@ public class Connection implements ConnectionBase
         String line = null;
 
         // Initiate connection to the server.
-        writer.write("CAP LS 302\r\n");
+        writer.write("CAP LS 302\r\n"); 
         writer.write("NICK " + getNick() + "\r\n");
         writer.write("USER " + login + " 8 * : " + getLogin() + "\r\n");
         localMessage("Connect with nick " + getNick());

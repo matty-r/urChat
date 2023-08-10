@@ -31,6 +31,8 @@ import urChatBasic.backend.Connection;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
+import urChatBasic.base.capabilities.CapTypeBase;
+import urChatBasic.base.capabilities.CapabilityTypes;
 
 public class IRCServer extends JPanel implements IRCServerBase
 {
@@ -63,9 +65,7 @@ public class IRCServer extends JPanel implements IRCServerBase
     private String port;
     private String nick;
     private String login;
-
     private Boolean isTLS;
-
     private String proxyHost;
     private String proxyPort;
     private Boolean useSOCKS;
@@ -76,6 +76,9 @@ public class IRCServer extends JPanel implements IRCServerBase
     private List<IRCPrivate> createdPrivateRooms = new ArrayList<IRCPrivate>();
     // Created channels/tabs
     private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
+
+    // Server capabilities
+    private ArrayList<CapabilityTypes> capabilities = new ArrayList<CapabilityTypes>();
 
 
     public IRCServer(String serverName, String nick, String login, String password, String portNumber, Boolean isTLS, String proxyHost,
@@ -146,6 +149,46 @@ public class IRCServer extends JPanel implements IRCServerBase
         }
         System.out.println(saslString);
         sendClientText("AUTHENTICATE "+saslString, getName());
+    }
+
+    @Override
+    public void setCapabilities (String capabilityMessage)
+    {
+        // example message: account-notify away-notify chghost extended-join multi-prefix sasl=PLAIN,ECDSA-NIST256P-CHALLENGE,EXTERNAL tls account-tag cap-notify echo-message server-time solanum.chat/identify-msg solanum.chat/oper solanum.chat/realhost
+        String[] components = capabilityMessage.split(" ");
+
+        for (String component : components) {
+            for (CapabilityTypes capability : CapabilityTypes.values()) {
+                if(capability.getType().matches(component))
+                {
+                    capabilities.add(capability);
+                } else if(component.startsWith(capability.name().toLowerCase() + "="))
+                {
+                    capabilities.add(capability);
+                    String[] subComponents = component.replace(capability.name().toLowerCase() + "=", "").split(",");
+
+                    for (String subComponent : subComponents) {
+                        for (CapTypeBase subType : capability.getType().availableSubTypes()) {
+                            if(subType.matches(subComponent))
+                                capability.getType().addSubtype(subType);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean hasCapability (CapabilityTypes capability)
+    {
+        for (CapabilityTypes capabilityType : capabilities) {
+            if(capabilityType.equals(capability))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /*
