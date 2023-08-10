@@ -1,7 +1,6 @@
 package urChatBasic.base;
 
 import urChatBasic.base.IRCRoomBase;
-import urChatBasic.frontend.AlertType;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCActions;
 import urChatBasic.frontend.IRCUser;

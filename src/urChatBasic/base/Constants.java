@@ -121,7 +121,7 @@ public class Constants
             {
                 logFile.createNewFile();
             }
-            LOGGER_TO_FILE = new FileHandler(logFile.getAbsolutePath());
+            LOGGER_TO_FILE = new FileHandler(logFile.getAbsolutePath(), true);
             LOGGER.addHandler(LOGGER_TO_FILE);
         } catch (Exception e)
         {

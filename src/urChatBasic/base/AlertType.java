@@ -1,4 +1,4 @@
-package urChatBasic.frontend;
+package urChatBasic.base;
 
 public enum AlertType
 {
