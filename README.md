@@ -16,6 +16,9 @@ If you would like to assist in the development of urChat take a look at the Issu
 * Clickable links have been implemented, and can be toggled
 * Tab now highlights/flashes if you're mentioned
 * Disconnecting/Reconnecting to the server is now done correctly
+* TLS/SSL has been implemented 
+* Adds support for using a proxy
+* Users list is now resizeable
 
 ### Update (23 DEC 14)
 
