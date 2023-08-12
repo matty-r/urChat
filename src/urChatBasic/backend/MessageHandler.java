@@ -10,6 +10,7 @@ import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.MessageBase;
 import urChatBasic.base.UserGUIBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.base.capabilities.SaslCapSubTypes;
 import urChatBasic.frontend.DriverGUI;
 
 /**
@@ -47,36 +48,6 @@ public class MessageHandler
     public void parseMessage(Message receivedMessage)
     {
         receivedMessage.messageBase.messageExec(receivedMessage);
-    }
-
-    private int posnOfOccurrence(String str, char c, int n)
-    {
-        int pos = 0;
-        int matches = 0;
-
-        for (char myChar : str.toCharArray())
-        {
-            if (myChar == c)
-            {
-                matches++;
-                if (matches == n)
-                    break;
-            }
-            pos++;
-        }
-        return pos;
-    }
-
-    private int countOfOccurrences(String str, char c)
-    {
-        int matches = 0;
-
-        for (char myChar : str.toCharArray())
-        {
-            if (myChar == c)
-                matches++;
-        }
-        return matches;
     }
 
     private Boolean isBetween(String line, char start, String middle, char end)
@@ -185,7 +156,7 @@ public class MessageHandler
         singleIDs.add(new IDSingle((new int[] {311, 319, 312, 317, 318, 301, 671, 330, 338, 378}), new WhoIsMessage()));
         singleIDs.add(new IDSingle((new int[] {265, 266, 250, 328, 477, 331, 900}), new GeneralServerMessage()));
         singleIDs.add(new IDSingle(366, new GeneralChannelMessage()));
-        singleIDs.add(new IDSingle((new int[] {432, 433}), new InvalidNickMessage()));
+        singleIDs.add(new IDSingle((new int[] {432, 433, 451}), new InvalidNickMessage()));
         singleIDs.add(new IDSingle(403, new NoSuchChannelMessage()));
         singleIDs.add(new IDSingle(461, new NotEnoughParametersMesssage()));
         singleIDs.add(new IDSingle(903, new SASLAuthenticateSuccessMessage()));
@@ -195,6 +166,7 @@ public class MessageHandler
         singleIDs.add(new IDSingle("MODE", new ModeMessage()));
         singleIDs.add(new IDSingle("NOTICE", new NoticeMessage()));
         singleIDs.add(new IDSingle("PRIVMSG", new PrivateMessage()));
+        singleIDs.add(new IDSingle("INVITE", new PrivateMessage()));
         singleIDs.add(new IDSingle("PART", new PartMessage()));
         singleIDs.add(new IDSingle("KICK", new KickMessage()));
         singleIDs.add(new IDSingle("JOIN", new JoinMessage()));
@@ -275,7 +247,13 @@ public class MessageHandler
         private void setChannel()
         {
             String withoutPrefix = rawMessage.replace(prefix, "").trim();
-            int messageBegin = posnOfOccurrence(withoutPrefix, Constants.SPACES_AHEAD_DELIMITER, 1);
+            // int messageBegin = posnOfOccurrence(withoutPrefix, Constants.SPACES_AHEAD_DELIMITER, 1);
+            int messageBegin = withoutPrefix.indexOf(Constants.SPACES_AHEAD_DELIMITER);
+
+            if(messageBegin < 0)
+            {
+                messageBegin = withoutPrefix.length();
+            }
 
             int channelBegin = withoutPrefix.indexOf(Constants.CHANNEL_DELIMITER);
             if (channelBegin < messageBegin && channelBegin > -1)
@@ -547,9 +525,23 @@ public class MessageHandler
                         printServerText(myMessage.body);
                         // TODO: If client enabled SASL authentication, check the myMessage for sasl='op'
                         serverBase.setCapabilities(myMessage.body);
+
                         if(serverBase.hasCapability(CapabilityTypes.SASL))
                         {
-                            serverBase.saslRequestAuthentication();
+                            // Did the client have a sasl type selected?
+                            if(gui.authenticationType().equals(SaslCapSubTypes.PLAIN))
+                            {
+                                serverBase.saslRequestAuthentication();
+                                break;
+                            }
+                        }
+
+                        // end capability message
+                        serverBase.saslCompleteAuthentication();
+
+                        if(gui.authenticationType().equals(CapabilityTypes.NICKSERV.getType()))
+                        {
+                            serverBase.nickservRequestAuthentication();
                         }
                     break;
                 case "ACK":
@@ -584,7 +576,9 @@ public class MessageHandler
                 printPrivateText(myMessage.nick, myMessage.body, myMessage.nick);
                 gui.connectFavourites(myMessage.messageHandler.serverBase);
             } else
+            {
                 printServerText(myMessage.body);
+            }
         }
 
 

@@ -1,8 +1,7 @@
 package urChatBasic.base;
 
 import java.awt.Graphics;
-
-import urChatBasic.frontend.IRCChannel;
+import urChatBasic.base.capabilities.CapTypeBase;
 
 public interface UserGUIBase
 {
@@ -80,6 +79,15 @@ public interface UserGUIBase
      * @return Boolean
      */
     public abstract Boolean isShowingUsersList();
+
+    /**
+     * Show users list?
+     *
+     * @return Boolean
+     */
+    public abstract Boolean isClickableLinksEnabled();
+
+    public abstract CapTypeBase authenticationType();
 
     /**
      * Show joins/quits in the event ticker?

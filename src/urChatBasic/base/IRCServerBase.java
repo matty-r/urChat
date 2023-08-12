@@ -97,6 +97,8 @@ public interface IRCServerBase
 
     public abstract void saslCompleteAuthentication ();
 
+    public abstract void nickservRequestAuthentication ();
+
     public abstract void setCapabilities (String capabilityMessage);
 
     public boolean hasCapability (CapabilityTypes sasl);

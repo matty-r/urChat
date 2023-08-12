@@ -17,6 +17,10 @@ import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.UserGUIBase;
+import urChatBasic.base.capabilities.CapTypeBase;
+import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.base.capabilities.NoAuthType;
+import urChatBasic.frontend.components.UCAuthTypeComboBox;
 
 public class UserGUI extends JPanel implements Runnable, UserGUIBase
 {
@@ -43,6 +47,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JScrollPane clientScroller = new JScrollPane(optionsClientPanel);
     private static final JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
     private static final JCheckBox showUsersList = new JCheckBox("Show Users List");
+    private static final JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
     private static final JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
     private static final JCheckBox showJoinsQuitsMainWindow = new JCheckBox("Show Joins/Quits in the Chat Window");
     private static final JCheckBox logChannelText = new JCheckBox("Save and log all channel text");
@@ -52,7 +57,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
     private static final JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
     private final JPanel clientFontPanel = new FontPanel(this);
-    // private JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
 
     private static final JTextField limitServerLinesCount = new JTextField();
     private static final JTextField limitChannelLinesCount = new JTextField();
@@ -69,20 +73,29 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // Server Options Panel
     private static final JPanel serverOptionsPanel = new JPanel();
     private static final JScrollPane serverScroller = new JScrollPane(serverOptionsPanel);
+
+    // Identification
     private static final JLabel userNameLabel = new JLabel("Nick:");
     private static final JTextField userNameTextField = new JTextField("");
     private static final JLabel realNameLabel = new JLabel("Real name:");
     private static final JTextField realNameTextField = new JTextField("");
-    private static final JLabel saslPasswordLabel = new JLabel("SASL Password:");
-    private static final JPasswordField saslPasswordTextField = new JPasswordField("");
 
+    // Authentication
+    private static final JLabel authenticationTypeLabel = new JLabel("Authentication Type:");
+    private static final UCAuthTypeComboBox authenticationTypeChoice = new UCAuthTypeComboBox();
+    private static final JLabel passwordLabel = new JLabel("Password:");
+    private static final JPasswordField passwordTextField = new JPasswordField("");
+
+    // Connection
     private static final JLabel serverNameLabel = new JLabel("Server:");
     private static final JTextField servernameTextField = new JTextField("");
     private static final JLabel serverPortLabel = new JLabel("Port:");
     private static final JTextField serverPortTextField = new JTextField("");
     private static final JLabel serverUseTLSLabel = new JLabel("TLS:");
     private static final JCheckBox serverTLSCheckBox = new JCheckBox();
+    private static final JButton connectButton = new JButton("Connect");
 
+    // Proxy
     private static final JLabel proxyHostLabel = new JLabel("Proxy Host:");
     private static final JTextField proxyHostNameTextField = new JTextField("");
     private static final JLabel proxyPortLabel = new JLabel("Port:");
@@ -92,7 +105,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     private static final JLabel firstChannelLabel = new JLabel("Channel:");
     private static final JTextField firstChannelTextField = new JTextField("");
-    private static final JButton connectButton = new JButton("Connect");
 
     // Favourites Panel
     private static final JCheckBox autoConnectToFavourites = new JCheckBox("Automatically connect to favourites");
@@ -237,10 +249,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         if (getCreatedServer(serverName) == null)
         {
             createdServers.add(new IRCServer(serverName.trim(), userNameTextField.getText().trim(),
-                    realNameTextField.getText().trim(), new String(saslPasswordTextField.getPassword()),
-                    serverPortTextField.getText().trim(),
-                    serverTLSCheckBox.isSelected(), proxyHostNameTextField.getText(), proxyPortTextField.getText(),
-                    serverProxyCheckBox.isSelected()));
+                    realNameTextField.getText().trim(), new String(passwordTextField.getPassword()),
+                    serverPortTextField.getText().trim(), serverTLSCheckBox.isSelected(),
+                    proxyHostNameTextField.getText(), proxyPortTextField.getText(), serverProxyCheckBox.isSelected()));
         }
     }
 
@@ -273,9 +284,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isShowingUsersList()
      */
     @Override
-    public Boolean isShowingUsersList()
+    public Boolean isShowingUsersList ()
     {
         return showUsersList.isSelected();
+    }
+
+    @Override
+    public Boolean isClickableLinksEnabled ()
+    {
+        return enableClickableLinks.isSelected();
     }
 
     /*
@@ -342,6 +359,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public Boolean isTimeStampsEnabled()
     {
         return enableTimeStamps.isSelected();
+    }
+
+    @Override
+    public CapTypeBase authenticationType()
+    {
+        return (CapTypeBase) authenticationTypeChoice.getSelectedItem();
     }
 
     /*
@@ -425,10 +448,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         serverOptionsPanel.add(realNameTextField);
         realNameTextField.setPreferredSize(new Dimension(100, 20));
 
-        serverOptionsPanel.add(saslPasswordLabel);
-        serverOptionsPanel.add(saslPasswordTextField);
-        saslPasswordTextField.setEchoChar('*');
-        saslPasswordTextField.setPreferredSize(new Dimension(100, 20));
+        serverOptionsPanel.add(authenticationTypeLabel);
+        serverOptionsPanel.add(authenticationTypeChoice);
+        authenticationTypeChoice.addActionListener(new UCAuthTypeComboBoxChangeHandler());
+        authenticationTypeChoice.setPreferredSize(new Dimension(200, 20));
+
+        serverOptionsPanel.add(passwordLabel);
+        serverOptionsPanel.add(passwordTextField);
+        passwordTextField.setEchoChar('*');
+        passwordTextField.setPreferredSize(new Dimension(200, 20));
 
         // Server Stuff
         serverOptionsPanel.add(serverNameLabel);
@@ -511,21 +539,32 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         // Authentication Stuff
 
-        serverLayout.putConstraint(SpringLayout.NORTH, saslPasswordLabel, TOP_SPACING, SpringLayout.SOUTH,
+        serverLayout.putConstraint(SpringLayout.NORTH, authenticationTypeLabel, TOP_SPACING, SpringLayout.SOUTH,
                 realNameTextField);
-        serverLayout.putConstraint(SpringLayout.WEST, saslPasswordLabel, LEFT_ALIGNED, SpringLayout.WEST,
+        serverLayout.putConstraint(SpringLayout.WEST, authenticationTypeLabel, LEFT_ALIGNED, SpringLayout.WEST,
                 realNameTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, saslPasswordTextField, TOP_ALIGNED, SpringLayout.SOUTH,
-                saslPasswordLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, saslPasswordTextField, LEFT_ALIGNED, SpringLayout.WEST,
-                saslPasswordLabel);
+        serverLayout.putConstraint(SpringLayout.NORTH, authenticationTypeChoice, TOP_ALIGNED, SpringLayout.SOUTH,
+                authenticationTypeLabel);
+        serverLayout.putConstraint(SpringLayout.WEST, authenticationTypeChoice, LEFT_ALIGNED, SpringLayout.WEST,
+                authenticationTypeLabel);
+
+        // Password
+        serverLayout.putConstraint(SpringLayout.NORTH, passwordLabel, TOP_SPACING, SpringLayout.SOUTH,
+                authenticationTypeChoice);
+        serverLayout.putConstraint(SpringLayout.WEST, passwordLabel, LEFT_ALIGNED, SpringLayout.WEST,
+                authenticationTypeChoice);
+
+        serverLayout.putConstraint(SpringLayout.NORTH, passwordTextField, TOP_ALIGNED, SpringLayout.SOUTH,
+                passwordLabel);
+        serverLayout.putConstraint(SpringLayout.WEST, passwordTextField, LEFT_ALIGNED, SpringLayout.WEST,
+                passwordLabel);
 
         // Server stuff
         serverLayout.putConstraint(SpringLayout.NORTH, serverNameLabel, TOP_SPACING, SpringLayout.SOUTH,
-                saslPasswordTextField);
+                passwordTextField);
         serverLayout.putConstraint(SpringLayout.WEST, serverNameLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                saslPasswordTextField);
+                passwordTextField);
 
         serverLayout.putConstraint(SpringLayout.NORTH, servernameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
                 serverNameLabel);
@@ -620,6 +659,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // found in getClientSettings()
         optionsClientPanel.add(showEventTicker);
         optionsClientPanel.add(showUsersList);
+        optionsClientPanel.add(enableClickableLinks);
         optionsClientPanel.add(showJoinsQuitsEventTicker);
         optionsClientPanel.add(showJoinsQuitsMainWindow);
         optionsClientPanel.add(logChannelText);
@@ -643,8 +683,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         eventTickerDelay.setMajorTickSpacing(10);
         eventTickerDelay.setMinorTickSpacing(1);
         eventTickerDelay.setPaintTicks(true);
-        // Ensure this is added to the COMPONENT ALIGNMENT once enabled.
-        // optionsClientPanel.add(enableClickableLinks);
+
         eventTickerDelay.setPaintLabels(true);
         eventTickerDelay.setMaximumSize(new Dimension(400, 40));
 
@@ -690,22 +729,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         clientLayout.putConstraint(SpringLayout.NORTH, showUsersList, TOP_SPACING, SpringLayout.SOUTH, showEventTicker);
         clientLayout.putConstraint(SpringLayout.WEST, showUsersList, LEFT_ALIGNED, SpringLayout.WEST, showEventTicker);
 
-        /*
-         * --Place holder for clickable links alignment settings-- Uncomment when clickable links is added
-         * clientLayout.putConstraint(SpringLayout.NORTH, enableClickableLinks, TOP_SPACING,
-         * SpringLayout.SOUTH, showUsersList); clientLayout.putConstraint(SpringLayout.WEST,
-         * enableClickableLinks, LEFT_ALIGNED, SpringLayout.WEST, showUsersList);
-         * clientLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsEventTicker, LEFT_ALIGNED,
-         * SpringLayout.WEST, enableClickableLinks); clientLayout.putConstraint(SpringLayout.WEST,
-         * showJoinsQuitsEventTicker, LEFT_ALIGNED, SpringLayout.WEST, enableClickableLinks);
-         */
+        clientLayout.putConstraint(SpringLayout.NORTH, enableClickableLinks, TOP_SPACING, SpringLayout.SOUTH,
+                showUsersList);
 
-        // Remove this when clickable links is added
+        clientLayout.putConstraint(SpringLayout.WEST, enableClickableLinks, LEFT_ALIGNED, SpringLayout.WEST,
+                showUsersList);
+
         clientLayout.putConstraint(SpringLayout.NORTH, showJoinsQuitsEventTicker, TOP_SPACING, SpringLayout.SOUTH,
-                showUsersList);
-        // Remove this when clickable links is added
+                enableClickableLinks);
         clientLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsEventTicker, LEFT_ALIGNED, SpringLayout.WEST,
-                showUsersList);
+                enableClickableLinks);
 
         clientLayout.putConstraint(SpringLayout.NORTH, showJoinsQuitsMainWindow, TOP_SPACING, SpringLayout.SOUTH,
                 showJoinsQuitsEventTicker);
@@ -948,22 +981,27 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-
-            addToCreatedServers(servernameTextField.getText().trim());
-
-            if (autoConnectToFavourites.isSelected())
+            if(passwordTextField.getPassword().length > 0 || authenticationType().equals(CapabilityTypes.NONE.getType()))
             {
-                FavouritesItem castItem;
-                for (Object tempItem : favouritesListModel.toArray())
+                addToCreatedServers(servernameTextField.getText().trim());
+
+                if (autoConnectToFavourites.isSelected())
                 {
-                    castItem = (FavouritesItem) tempItem;
-                    addToCreatedServers(castItem.favServer);
+                    FavouritesItem castItem;
+                    for (Object tempItem : favouritesListModel.toArray())
+                    {
+                        castItem = (FavouritesItem) tempItem;
+                        addToCreatedServers(castItem.favServer);
+                    }
                 }
-            }
 
-            for (IRCServerBase server : createdServers)
-            {
-                server.connect();
+                for (IRCServerBase server : createdServers)
+                {
+                    server.connect();
+                }
+            } else if (!authenticationType().equals(CapabilityTypes.NONE.getType())) {
+                MessageDialog dialog = new MessageDialog(DriverGUI.frame, "Password field is empty and is required for your chosen authentication method.", "Warning", JOptionPane.WARNING_MESSAGE);
+                    dialog.setVisible(true);
             }
         }
     }
@@ -1079,6 +1117,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         clientSettings.put(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText());
         clientSettings.put(Constants.KEY_FIRST_SERVER, servernameTextField.getText());
         clientSettings.put(Constants.KEY_FIRST_PORT, serverPortTextField.getText());
+        clientSettings.put(Constants.KEY_AUTH_TYPE, authenticationTypeChoice.getSelectedItem().toString());
         clientSettings.putBoolean(Constants.KEY_USE_TLS, serverTLSCheckBox.isSelected());
         clientSettings.put(Constants.KEY_PROXY_HOST, proxyHostNameTextField.getText());
         clientSettings.put(Constants.KEY_PROXY_PORT, proxyPortTextField.getText());
@@ -1088,6 +1127,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         clientSettings.putBoolean(Constants.KEY_TIME_STAMPS, enableTimeStamps.isSelected());
         clientSettings.putBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, showEventTicker.isSelected());
         clientSettings.putBoolean(Constants.KEY_USERS_LIST_ACTIVE, showUsersList.isSelected());
+        clientSettings.putBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED, enableClickableLinks.isSelected());
         clientSettings.putBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS, showJoinsQuitsEventTicker.isSelected());
         clientSettings.putBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS, showJoinsQuitsMainWindow.isSelected());
         clientSettings.putBoolean(Constants.KEY_LOG_CHANNEL_HISTORY, logChannelText.isSelected());
@@ -1115,6 +1155,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         serverPortTextField.setText(clientSettings.get(Constants.KEY_FIRST_PORT, Constants.DEFAULT_FIRST_PORT));
         serverTLSCheckBox.setSelected(clientSettings.getBoolean(Constants.KEY_USE_TLS, Constants.DEFAULT_USE_TLS));
 
+        authenticationTypeChoice.setSelectedItem(CapabilityTypes.getCapType(clientSettings.get(Constants.KEY_AUTH_TYPE, Constants.DEFAULT_AUTH_TYPE)));
+
         proxyHostNameTextField.setText(clientSettings.get(Constants.KEY_PROXY_HOST, Constants.DEFAULT_PROXY_HOST));
         proxyPortTextField.setText(clientSettings.get(Constants.KEY_PROXY_PORT, Constants.DEFAULT_PROXY_PORT));
         serverProxyCheckBox
@@ -1122,10 +1164,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         userNameTextField.setText(clientSettings.get(Constants.KEY_NICK_NAME, Constants.DEFAULT_NICK_NAME));
         realNameTextField.setText(clientSettings.get(Constants.KEY_REAL_NAME, Constants.DEFAULT_REAL_NAME));
+
         showUsersList.setSelected(
                 clientSettings.getBoolean(Constants.KEY_USERS_LIST_ACTIVE, Constants.DEFAULT_USERS_LIST_ACTIVE));
+
         showEventTicker.setSelected(
                 clientSettings.getBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, Constants.DEFAULT_EVENT_TICKER_ACTIVE));
+
+        enableClickableLinks.setSelected(
+                clientSettings.getBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED, Constants.DEFAULT_CLICKABLE_LINKS_ENABLED));
+
         enableTimeStamps
                 .setSelected(clientSettings.getBoolean(Constants.KEY_TIME_STAMPS, Constants.DEFAULT_TIME_STAMPS));
         showJoinsQuitsEventTicker.setSelected(clientSettings.getBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS,
@@ -1191,6 +1239,25 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public int getEventTickerDelay()
     {
         return eventTickerDelay.getValue();
+    }
+
+    class UCAuthTypeComboBoxChangeHandler implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            authenticationTypeChoice.runChangeListener();
+
+            if(authenticationType().equals(CapabilityTypes.NONE.getType()))
+            {
+                passwordLabel.setVisible(false);
+                passwordTextField.setVisible(false);
+            } else {
+                passwordLabel.setText(authenticationTypeChoice.getPasswordFieldName());
+                passwordLabel.setVisible(true);
+                passwordTextField.setVisible(true);
+            }
+        }
     }
 
     /**
@@ -1291,10 +1358,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 IRCChannel tempTab = (IRCChannel) tabbedPane.getComponentAt(index);
                 tempTab.showEventTicker(isShowingEventTicker());
                 tempTab.getUserTextBox().requestFocus();
-                if(isShowingUsersList())
+                if (isShowingUsersList())
                 {
                     tempTab.showUsersList();
-                } else {
+                } else
+                {
                     tempTab.hideUsersList();
                 }
             } else if (selectedComponent instanceof IRCPrivate)

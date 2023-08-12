@@ -123,9 +123,22 @@ public class IRCServer extends JPanel implements IRCServerBase
     }
 
     @Override
+    public void nickservRequestAuthentication()
+    {
+        if(!getPassword().isEmpty())
+        {
+            sendClientText("/msg nickserv identify "+getNick()+" "+getPassword(), getName());
+        } else {
+            sendClientText("/msg nickserv ACC",getName());
+        }
+
+    }
+
+    @Override
     public void saslCompleteAuthentication()
     {
         sendClientText("CAP END", getName());
+        gui.connectFavourites(this);
     }
 
     @Override
@@ -147,7 +160,6 @@ public class IRCServer extends JPanel implements IRCServerBase
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        System.out.println(saslString);
         sendClientText("AUTHENTICATE "+saslString, getName());
     }
 

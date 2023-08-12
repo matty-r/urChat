@@ -285,7 +285,7 @@ public class IRCRoomBase extends JPanel
             Element wordElement = doc.getCharacterElement(channelTextArea.viewToModel2D((e.getPoint())));
             AttributeSet wordAttributeSet = wordElement.getAttributes();
             ClickableText isClickableText = (ClickableText) wordAttributeSet.getAttribute("clickableText");
-            if (isClickableText != null)
+            if (isClickableText != null && gui.isClickableLinksEnabled())
             {
                 channelTextArea.setCursor(new Cursor(Cursor.HAND_CURSOR));
             } else {

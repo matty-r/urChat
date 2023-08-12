@@ -22,6 +22,7 @@ public class LineFormatter
     public SimpleAttributeSet timeStyle;
     public SimpleAttributeSet nameStyle;
     public SimpleAttributeSet lineStyle;
+    protected UserGUI gui = DriverGUI.gui;
 
     public LineFormatter(Font myFont, String myNick)
     {
@@ -115,7 +116,7 @@ public class LineFormatter
 
         public void execute()
         {
-            if (!textLink.isEmpty())
+            if (!textLink.isEmpty() && gui.isClickableLinksEnabled())
             {
                 // TODO: This should really pop up a dialog to confirm you want to open the link
                 try {
@@ -159,6 +160,8 @@ public class LineFormatter
             nameStyle = lowStyle();
             lineStyle = lowStyle();
         }
+
+
 
 
         try

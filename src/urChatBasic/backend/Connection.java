@@ -16,8 +16,11 @@ import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.UserGUIBase;
-
+import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.frontend.DriverGUI;
+import urChatBasic.frontend.MessageDialog;
 import javax.net.ssl.SSLSocketFactory;
+import javax.swing.JOptionPane;
 
 public class Connection implements ConnectionBase
 {
@@ -168,7 +171,7 @@ public class Connection implements ConnectionBase
         String line = null;
 
         // Initiate connection to the server.
-        writer.write("CAP LS 302\r\n"); 
+        writer.write("CAP LS 302\r\n");
         writer.write("NICK " + getNick() + "\r\n");
         writer.write("USER " + login + " 8 * : " + getLogin() + "\r\n");
         localMessage("Connect with nick " + getNick());
@@ -250,6 +253,12 @@ public class Connection implements ConnectionBase
                     tempTextArray = clientText.split(" ");
                     writer.write("PRIVMSG " + tempTextArray[1] + " :"
                             + clientText.replace("/msg " + tempTextArray[1] + " ", "") + "\r\n");
+
+                    if (clientText.toLowerCase().startsWith("/msg nickserv identify"))
+                    {
+                        clientText = "*** HIDDEN NICKSERV IDENTIFY ***";
+                    }
+
                     server.printPrivateText(tempTextArray[1], clientText.replace("/msg " + tempTextArray[1] + " ", ""),
                             myNick);
                     gui.setCurrentTab(tempTextArray[1]);
@@ -276,8 +285,6 @@ public class Connection implements ConnectionBase
                 }
                 writer.flush();
 
-                if (clientText.toLowerCase().startsWith("/msg nickserv"))
-                    clientText = "*** HIDDEN NICKSERV IDENTIFY ***";
                 Constants.LOGGER.log(Level.FINE, "Client Text:- " + fromChannel + " " + clientText);
             }
         }
@@ -325,6 +332,8 @@ public class Connection implements ConnectionBase
         } catch (IOException e)
         {
             Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());
+            MessageDialog dialog = new MessageDialog(DriverGUI.frame, "Startup failed.. unable to establish a connection.", "Error", JOptionPane.ERROR_MESSAGE);
+                    dialog.setVisible(true);
         }
     }
 

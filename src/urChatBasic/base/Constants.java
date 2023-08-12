@@ -7,6 +7,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import urChatBasic.backend.Connection;
+import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.base.capabilities.SaslCapSubTypes;
 
 /**
  * Used to store constants that are the same and do not change often. These are things used commonly
@@ -30,6 +32,7 @@ public class Constants
     public static final String KEY_FIRST_CHANNEL = "first channel name";
     public static final String KEY_FIRST_SERVER = "first server name";
     public static final String KEY_FIRST_PORT = "first server port";
+    public static final String KEY_AUTH_TYPE = "authentication type";
     public static final String KEY_USE_TLS = "use tls";
     public static final String KEY_USE_PROXY = "use proxy";
     public static final String KEY_PROXY_HOST = "proxy host";
@@ -39,6 +42,7 @@ public class Constants
     public static final String KEY_TIME_STAMPS = "show time stamps";
     public static final String KEY_EVENT_TICKER_ACTIVE = "show event ticker";
     public static final String KEY_USERS_LIST_ACTIVE = "show users list";
+    public static final String KEY_CLICKABLE_LINKS_ENABLED = "clickable links";
     public static final String KEY_EVENT_TICKER_JOINS_QUITS = "show events in ticker";
     public static final String KEY_MAIN_WINDOW_JOINS_QUITS = "show events in main window";
     public static final String KEY_LOG_CHANNEL_HISTORY = "log channel history";
@@ -57,9 +61,10 @@ public class Constants
     public static final String KEY_WINDOW_HEIGHT = "window position height";
 
     // Setting defaults
-    public static final String DEFAULT_FIRST_CHANNEL = "##java";
+    public static final String DEFAULT_FIRST_CHANNEL = "#linux";
     public static final String DEFAULT_FIRST_SERVER = "irc.libera.chat";
     public static final String DEFAULT_FIRST_PORT = "6697";
+    public static final String DEFAULT_AUTH_TYPE = CapabilityTypes.NONE.toString();
     public static final Boolean DEFAULT_USE_TLS = true;
     public static final Boolean DEFAULT_USE_PROXY = false;
     public static final String DEFAULT_PROXY_HOST = "";
@@ -68,6 +73,7 @@ public class Constants
     public static final String DEFAULT_REAL_NAME = "urChatClient";
     public static final Boolean DEFAULT_TIME_STAMPS = true;
     public static final Boolean DEFAULT_EVENT_TICKER_ACTIVE = true;
+    public static final Boolean DEFAULT_CLICKABLE_LINKS_ENABLED = true;
     public static final Boolean DEFAULT_USERS_LIST_ACTIVE = true;
     public static final Boolean DEFAULT_EVENT_TICKER_JOINS_QUITS = true;
     public static final Boolean DEFAULT_MAIN_WINDOW_JOINS_QUITS = true;

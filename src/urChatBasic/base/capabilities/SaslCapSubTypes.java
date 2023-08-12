@@ -4,12 +4,13 @@ import java.util.ArrayList;
 
 public enum SaslCapSubTypes implements CapTypeBase {
     PLAIN("PLAIN"),
-    EXTERNAL("EXTERNAL"),
-    SCRAM("ECDSA-NIST256P-CHALLENGE")
+    // EXTERNAL("EXTERNAL"), -- TODO: Needs to be implemented
+    // SCRAM("ECDSA-NIST256P-CHALLENGE") -- TODO: Needs to be implemented
     ;
 
     String name;
     ArrayList<CapTypeBase> enabledSubTypes;
+    CapTypeBase.Category category = CapTypeBase.Category.AUTHENTICATION;
 
     SaslCapSubTypes(String name)
     {
@@ -22,11 +23,18 @@ public enum SaslCapSubTypes implements CapTypeBase {
     }
 
     @Override
-    public ArrayList<CapTypeBase> getSubTypes()
+    public String toString ()
     {
-        return enabledSubTypes;
+        return "SASL-"+super.toString();
     }
 
+    @Override
+    public CapTypeBase[] getSubTypes()
+    {
+        CapTypeBase[] enabledSubTypesArray = new CapTypeBase[enabledSubTypes.size()];
+        enabledSubTypes.toArray(enabledSubTypesArray);
+        return enabledSubTypesArray;
+    }
     @Override
     public CapTypeBase[] availableSubTypes()
     {
@@ -48,5 +56,11 @@ public enum SaslCapSubTypes implements CapTypeBase {
         }
 
         return false;
+    }
+
+    @Override
+    public Category getCategory()
+    {
+        return category;
     }
 }

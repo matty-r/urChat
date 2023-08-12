@@ -2,14 +2,14 @@ package urChatBasic.base.capabilities;
 
 import java.util.ArrayList;
 
-public class SaslCapType implements CapTypeBase {
+public class NickServType implements CapTypeBase {
     String name;
     ArrayList<CapTypeBase> enabledSubTypes = new ArrayList<CapTypeBase>();
     CapTypeBase.Category category = CapTypeBase.Category.AUTHENTICATION;
 
-    SaslCapType()
+    NickServType()
     {
-        this.name = "SASL";
+        this.name = "NickServ";
     }
 
     public String getName ()
@@ -34,7 +34,9 @@ public class SaslCapType implements CapTypeBase {
     @Override
     public CapTypeBase[] availableSubTypes()
     {
-        return SaslCapSubTypes.values();
+        CapTypeBase[] enabledSubTypesArray = new CapTypeBase[1];
+        enabledSubTypesArray[0] = this;
+        return enabledSubTypesArray;
     }
 
     @Override
