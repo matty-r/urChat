@@ -486,7 +486,6 @@ public class MessageHandler
         public void messageExec(Message myMessage)
         {
             printServerText(myMessage.body);
-            Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: " + myMessage.rawMessage);
         }
     }
 

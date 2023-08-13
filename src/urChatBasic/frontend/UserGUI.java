@@ -65,6 +65,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final int TICKER_DELAY_MAX = 30;
     private static final int TICKER_DELAY_INIT = 20;
     private static final int DEFAULT_LINES_LIMIT = 500;
+    private static final JLabel eventTickerLabel = new JLabel("Event Ticker Delay:");
     private final JSlider eventTickerDelay =
             new JSlider(JSlider.HORIZONTAL, TICKER_DELAY_MIN, TICKER_DELAY_MAX, TICKER_DELAY_INIT);
 
@@ -112,7 +113,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JList<FavouritesItem> favouritesList = new JList<FavouritesItem>(favouritesListModel);
     private static final JScrollPane favouritesScroller = new JScrollPane(favouritesList);
 
-    public static Font universalFont = new Font("Consolas", Font.PLAIN, 12);
+    // public static Font universalFont = new Font("Consolas", Font.PLAIN, 12); // different font area for the interface?
 
     // Created Servers/Tabs
     private final List<IRCServerBase> createdServers = new ArrayList<IRCServerBase>();
@@ -409,10 +410,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     private void setupLeftOptionsPanel()
     {
-        optionsLeftPanel.setBackground(Color.RED);
+        optionsLeftPanel.setBackground(Color.LIGHT_GRAY);
         optionsLeftPanel.setPreferredSize(new Dimension(100, 0));
         optionsLeftPanel.setLayout(new BorderLayout());
-        optionsLeftPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        // optionsLeftPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         optionsLeftPanel.add(saveSettings, BorderLayout.SOUTH);
         optionsLeftPanel.add(optionsList, BorderLayout.CENTER);
     }
@@ -510,16 +511,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // and perhaps more readable.
         // 0 means THAT edge will be flush with the opposing components edge
         // Yes, negative numbers will make it overlap
-        final int TOP_SPACING = 5;
+        final int TOP_SPACING = 6;
         final int TOP_ALIGNED = 0;
         final int LEFT_ALIGNED = 0;
         final int LEFT_SPACING = 0;
 
         // Components are aligned off the top label
         // User stuff
-        serverLayout.putConstraint(SpringLayout.WEST, userNameLabel, TOP_SPACING, SpringLayout.WEST,
+        serverLayout.putConstraint(SpringLayout.WEST, userNameLabel, 6, SpringLayout.WEST,
                 serverOptionsPanel);
-        serverLayout.putConstraint(SpringLayout.NORTH, userNameLabel, TOP_ALIGNED, SpringLayout.NORTH,
+        serverLayout.putConstraint(SpringLayout.NORTH, userNameLabel, 12, SpringLayout.NORTH,
                 serverOptionsPanel);
 
         serverLayout.putConstraint(SpringLayout.NORTH, userNameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
@@ -688,6 +689,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         eventTickerDelay.setMaximumSize(new Dimension(400, 40));
 
         eventTickerDelay.setToolTipText("Event Ticker movement delay (Lower is faster)");
+
+        optionsClientPanel.add(eventTickerLabel);
         optionsClientPanel.add(eventTickerDelay);
 
         saveSettings.addActionListener(new ActionListener()
@@ -715,15 +718,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // and perhaps more readable.
         // 0 means THAT edge will be flush with the opposing components edge
         // Yes, negative numbers will make it overlap
-        final int TOP_SPACING = 0;
+        final int TOP_SPACING = 6;
         final int TOP_ALIGNED = 0;
         final int LEFT_ALIGNED = 0;
         final int LEFT_SPACING = 0;
 
         // Components are aligned off the top label
-        clientLayout.putConstraint(SpringLayout.WEST, showEventTicker, LEFT_ALIGNED, SpringLayout.WEST,
+        clientLayout.putConstraint(SpringLayout.WEST, showEventTicker, 6, SpringLayout.WEST,
                 optionsClientPanel);
-        clientLayout.putConstraint(SpringLayout.NORTH, showEventTicker, TOP_ALIGNED, SpringLayout.NORTH,
+        clientLayout.putConstraint(SpringLayout.NORTH, showEventTicker, 12, SpringLayout.NORTH,
                 optionsClientPanel);
 
         clientLayout.putConstraint(SpringLayout.NORTH, showUsersList, TOP_SPACING, SpringLayout.SOUTH, showEventTicker);
@@ -790,10 +793,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 enableTimeStamps);
 
 
+        clientLayout.putConstraint(SpringLayout.NORTH, eventTickerLabel, TOP_SPACING, SpringLayout.SOUTH,
+                clientFontPanel);
+        clientLayout.putConstraint(SpringLayout.WEST, eventTickerLabel, LEFT_ALIGNED, SpringLayout.WEST,
+                clientFontPanel);
+
         clientLayout.putConstraint(SpringLayout.NORTH, eventTickerDelay, TOP_SPACING, SpringLayout.SOUTH,
-                clientFontPanel);
+                eventTickerLabel);
         clientLayout.putConstraint(SpringLayout.WEST, eventTickerDelay, LEFT_ALIGNED, SpringLayout.WEST,
-                clientFontPanel);
+                eventTickerLabel);
     }
 
     private void setupFavouritesOptionsPanel()
@@ -1138,6 +1146,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         clientSettings.putBoolean(Constants.KEY_LIMIT_SERVER_LINES, limitServerLines.isSelected());
         clientSettings.put(Constants.KEY_LIMIT_SERVER_LINES_COUNT, limitServerLinesCount.getText());
         clientSettings.putBoolean(Constants.KEY_LOG_CLIENT_TEXT, logClientText.isSelected());
+        clientSettings.put(Constants.KEY_FONT_GENERAL_FAMILY, clientFontPanel.getFont().getFamily());
+        clientSettings.putBoolean(Constants.KEY_FONT_GENERAL_BOLD, clientFontPanel.getFont().isBold());
+        clientSettings.putBoolean(Constants.KEY_FONT_GENERAL_ITALIC, clientFontPanel.getFont().isItalic());
+        clientSettings.putInt(Constants.KEY_FONT_GENERAL_SIZE, clientFontPanel.getFont().getSize());
         clientSettings.putInt(Constants.KEY_EVENT_TICKER_DELAY, eventTickerDelay.getValue());
         clientSettings.putInt(Constants.KEY_WINDOW_X, (int) DriverGUI.frame.getBounds().getX());
         clientSettings.putInt(Constants.KEY_WINDOW_Y, (int) DriverGUI.frame.getBounds().getY());
@@ -1194,6 +1206,24 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 clientSettings.get(Constants.KEY_LIMIT_SERVER_LINES_COUNT, Constants.DEFAULT_LIMIT_SERVER_LINES_COUNT));
         logClientText.setSelected(
                 clientSettings.getBoolean(Constants.KEY_LOG_CLIENT_TEXT, Constants.DEFAULT_LOG_CLIENT_TEXT));
+
+
+        // SAVED FONT STUFF
+        int savedFontBoldItalic = 0;
+
+        if (clientSettings.getBoolean(Constants.KEY_FONT_GENERAL_BOLD, Constants.DEFAULT_FONT_GENERAL.isBold()))
+            savedFontBoldItalic = Font.BOLD;
+        if (clientSettings.getBoolean(Constants.KEY_FONT_GENERAL_ITALIC, Constants.DEFAULT_FONT_GENERAL.isItalic()))
+            savedFontBoldItalic |= Font.ITALIC;
+
+        Font savedFont = new Font(
+            clientSettings.get(Constants.KEY_FONT_GENERAL_FAMILY, Constants.DEFAULT_FONT_GENERAL.getFamily()),
+            savedFontBoldItalic,
+            clientSettings.getInt(Constants.KEY_FONT_GENERAL_SIZE, Constants.DEFAULT_FONT_GENERAL.getSize())
+        );
+
+        clientFontPanel.setFont(savedFont);
+
         eventTickerDelay.setValue(
                 clientSettings.getInt(Constants.KEY_EVENT_TICKER_DELAY, Constants.DEFAULT_EVENT_TICKER_DELAY));
         autoConnectToFavourites.setSelected(clientSettings.getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES,
@@ -1395,15 +1425,26 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         this.creationTime = (new Date()).toString();
         // this.setPreferredSize (new Dimension(MAIN_WIDTH_INIT, MAIN_HEIGHT_INIT));
-        this.setFont(universalFont);
+        // this.setFont(universalFont); // might be worth having a different font area for the interface?
         // Create the initial size of the panel
         setupTabbedPane();
         this.setLayout(new BorderLayout());
         this.add(tabbedPane, BorderLayout.CENTER);
-        // Set size of the overall panel
+
         this.setBackground(Color.gray);
         clientSettings = Preferences.userNodeForPackage(this.getClass());
         getClientSettings();
+    }
+
+    @Override
+    public Font getFont()
+    {
+        if(clientFontPanel != null)
+        {
+            return clientFontPanel.getFont();
+        }
+
+        return super.getFont();
     }
 
     /*

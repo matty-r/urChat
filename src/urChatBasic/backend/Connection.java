@@ -139,13 +139,13 @@ public class Connection implements ConnectionBase
 
             if (usingTLS())
             {
-                proxySocket.connect(address);
+                proxySocket.connect(address, 5000);
 
                 SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
                 mySocket = sslsocketfactory.createSocket(proxySocket, address.getHostName(), address.getPort(), true);
             } else
             {
-                proxySocket.connect(address);
+                proxySocket.connect(address, 5000);
                 mySocket = proxySocket;
             }
         } else
@@ -332,7 +332,7 @@ public class Connection implements ConnectionBase
         } catch (IOException e)
         {
             Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());
-            MessageDialog dialog = new MessageDialog(DriverGUI.frame, "Startup failed.. unable to establish a connection.", "Error", JOptionPane.ERROR_MESSAGE);
+            MessageDialog dialog = new MessageDialog(DriverGUI.frame, "startUp() failed! " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                     dialog.setVisible(true);
         }
     }

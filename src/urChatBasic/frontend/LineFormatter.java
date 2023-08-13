@@ -28,6 +28,9 @@ public class LineFormatter
     {
         this.myNick = myNick;
         this.myFont = myFont;
+        timeStyle = standardStyle();
+        nameStyle = standardStyle();
+        lineStyle = standardStyle();
     }
 
     public SimpleAttributeSet standardStyle()
@@ -36,6 +39,8 @@ public class LineFormatter
         SimpleAttributeSet tempStyle = new SimpleAttributeSet();
         tempStyle.addAttribute("name", "standardStyle");
         StyleConstants.setForeground(tempStyle, Color.BLACK);
+        StyleConstants.setBold(tempStyle, myFont.isBold());
+        StyleConstants.setItalic(tempStyle, myFont.isItalic());
         StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
         StyleConstants.setFontSize(tempStyle, myFont.getSize());
 
@@ -144,7 +149,6 @@ public class LineFormatter
      */
     public void formattedDocument(StyledDocument doc, String timeLine, String fromUser, String line)
     {
-        nameStyle = standardStyle();
 
         if (myNick.equals(fromUser))
         {
@@ -160,9 +164,6 @@ public class LineFormatter
             nameStyle = lowStyle();
             lineStyle = lowStyle();
         }
-
-
-
 
         try
         {

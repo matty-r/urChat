@@ -1,14 +1,14 @@
 package urChatBasic.base;
 
+import java.awt.Font;
 import java.io.File;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import javax.swing.JLabel;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.capabilities.CapabilityTypes;
-import urChatBasic.base.capabilities.SaslCapSubTypes;
 
 /**
  * Used to store constants that are the same and do not change often. These are things used commonly
@@ -27,6 +27,7 @@ public class Constants
     private static Handler LOGGER_TO_FILE;
     public static Logger LOGGER = Logger.getLogger("Main");
     public static String LOGFILE_NAME = "Errors.log";
+    private static final Font DEFAULT_FONT = new Font(new JLabel().getFont().getFamily(), 0, new JLabel().getFont().getSize());
 
     // Key Strings that are used when saving settings
     public static final String KEY_FIRST_CHANNEL = "first channel name";
@@ -54,6 +55,10 @@ public class Constants
     public static final String KEY_LIMIT_SERVER_LINES_COUNT = "limit number of server lines count";
     public static final String KEY_LOG_CLIENT_TEXT = "log client text";
     public static final String KEY_EVENT_TICKER_DELAY = "event ticker delay";
+    public static final String KEY_FONT_GENERAL_FAMILY = "font general family";
+    public static final String KEY_FONT_GENERAL_BOLD = "font general bold";
+    public static final String KEY_FONT_GENERAL_ITALIC = "font general italic";
+    public static final String KEY_FONT_GENERAL_SIZE = "font general size";
     public static final String KEY_FAVOURITES_NODE = "favourites";
     public static final String KEY_WINDOW_X = "window position x";
     public static final String KEY_WINDOW_Y = "window position y";
@@ -85,7 +90,8 @@ public class Constants
     public static final Boolean DEFAULT_LIMIT_SERVER_LINES = true;
     public static final String DEFAULT_LIMIT_SERVER_LINES_COUNT = "500";
     public static final Boolean DEFAULT_LOG_CLIENT_TEXT = true;
-    public static final int DEFAULT_EVENT_TICKER_DELAY = 20;
+    public static final Font DEFAULT_FONT_GENERAL = DEFAULT_FONT;
+    public static final int DEFAULT_EVENT_TICKER_DELAY = 10;
     public static final int DEFAULT_WINDOW_X = 0;
     public static final int DEFAULT_WINDOW_Y = 0;
     public static final int DEFAULT_WINDOW_WIDTH = 640;

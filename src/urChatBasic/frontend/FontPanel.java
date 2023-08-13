@@ -20,9 +20,9 @@ public class FontPanel extends JPanel
     private final JLabel TEXT_PREVIEW = new JLabel("A quick brown fox 0123456789");
     private final String[] FONT_LIST = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
     private final JComboBox<String> FONT_COMBO_BOX = new JComboBox<String>(FONT_LIST);
-    private final String[] FONT_SIZES =
-            {"8", "10", "11", "12", "14", "16", "18", "20", "24", "30", "36", "40", "48", "60", "72"};
-    private final JComboBox<String> SIZES_COMBO_BOX = new JComboBox<String>(FONT_SIZES);
+    private final Integer[] FONT_SIZES =
+                {8, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 40, 60, 72};
+    private final JComboBox<Integer> SIZES_COMBO_BOX = new JComboBox<>(FONT_SIZES);
     private final JCheckBox MAKE_BOLD = new JCheckBox("BOLD");
     private final JCheckBox MAKE_ITALIC = new JCheckBox("ITALIC");
     private final JButton SAVE_BUTTON = new JButton("Save Font");
@@ -63,6 +63,31 @@ public class FontPanel extends JPanel
     public Font getFont()
     {
         return savedFont;
+    }
+
+    public void setFont(Font newFont)
+    {
+        // Set font for JPanel
+        super.setFont(newFont);
+
+        // Set for this panel
+        myFont = newFont;
+        savedFont = newFont;
+
+        if(MAKE_BOLD != null)
+            MAKE_BOLD.setSelected(newFont.isBold());
+
+        if(MAKE_ITALIC != null)
+            MAKE_ITALIC.setSelected(newFont.isItalic());
+
+        if(FONT_COMBO_BOX != null)
+            FONT_COMBO_BOX.setSelectedItem(newFont.getFamily());
+
+        if(SIZES_COMBO_BOX != null)
+            SIZES_COMBO_BOX.setSelectedItem(newFont.getSize());
+
+        if(MAKE_BOLD != null && MAKE_ITALIC != null && FONT_COMBO_BOX != null && SIZES_COMBO_BOX != null)
+            previewFont();
     }
 
     private void previewFont()

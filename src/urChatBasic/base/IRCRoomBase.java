@@ -462,12 +462,14 @@ public class IRCRoomBase extends JPanel
                 {
                     for (int x = 0; x < users.length; x++)
                     {
-                        String tempUser = users[x];
+                        String tempUserName = users[x];
                         if (users[x].startsWith(":"))
-                            tempUser = tempUser.substring(1);
+                            tempUserName = tempUserName.substring(1);
 
-                        if (!usersArray.contains(tempUser))
-                            usersArray.add(new IRCUser(server, tempUser));
+                        IRCUser newUser = server.getIRCUser(tempUserName);
+
+                        if (!usersArray.contains(newUser))
+                            usersArray.add(newUser);
                     }
                 }
                 usersListModel.sort();
@@ -481,9 +483,10 @@ public class IRCRoomBase extends JPanel
         if (user.startsWith(":"))
             thisUser = user.substring(1);
 
-        if (!usersArray.contains(thisUser))
+        IRCUser newUser = server.getIRCUser(thisUser);
+
+        if (!usersArray.contains(newUser))
         {
-            IRCUser newUser = new IRCUser(server, thisUser);
             usersArray.add(newUser);
             usersList.setSelectedIndex(0);
             createEvent("++ " + thisUser + " has entered " + channel);
