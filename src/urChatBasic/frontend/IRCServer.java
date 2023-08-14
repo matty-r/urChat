@@ -33,6 +33,7 @@ import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.frontend.components.FontPanel;
 
 public class IRCServer extends JPanel implements IRCServerBase
 {

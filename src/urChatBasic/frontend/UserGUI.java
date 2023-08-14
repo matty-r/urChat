@@ -16,10 +16,12 @@ import javax.swing.event.*;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
+import urChatBasic.frontend.dialogs.FontDialog;
+import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.base.UserGUIBase;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
-import urChatBasic.base.capabilities.NoAuthType;
+import urChatBasic.frontend.components.FontPanel;
 import urChatBasic.frontend.components.UCAuthTypeComboBox;
 
 public class UserGUI extends JPanel implements Runnable, UserGUIBase
@@ -28,7 +30,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      *
      */
     private static final long serialVersionUID = 2595649865577419300L;
-    private String creationTime = (new Date()).toString();
+    // private String creationTime = (new Date()).toString();
     // Tabs
     public DnDTabbedPane tabbedPane = new DnDTabbedPane();
     private final int OPTIONS_INDEX = 0;
@@ -830,11 +832,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         String favServer;
         String favChannel;
         FavouritesPopUp myMenu;
+        FontDialog favFontDialog;
 
         public FavouritesItem(String favServer, String favChannel)
         {
             this.favServer = favServer;
             this.favChannel = favChannel;
+            favFontDialog = new FontDialog("Font: "+favChannel);
             myMenu = new FavouritesPopUp();
         }
 
@@ -852,12 +856,17 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             private static final long serialVersionUID = -3599612559330380653L;
             JMenuItem nameItem;
             JMenuItem removeItem;
+            JMenuItem fontItem;
 
             public FavouritesPopUp()
             {
                 nameItem = new JMenuItem(FavouritesItem.this.toString());
                 add(nameItem);
                 this.addSeparator();
+                //
+                fontItem = new JMenuItem("Channel Font");
+                fontItem.addActionListener(new ShowFontDialog());
+                add(fontItem);
                 // nameItem.setEnabled(false);
                 removeItem = new JMenuItem("Delete");
                 removeItem.addActionListener(new RemoveFavourite());
@@ -866,6 +875,18 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         }
 
+        private class ShowFontDialog implements ActionListener
+        {
+            @Override
+            public void actionPerformed(ActionEvent arg0)
+            {
+                if (favouritesList.getSelectedIndex() > -1)
+                {
+                    FavouritesItem tempItem = favouritesListModel.elementAt(favouritesList.getSelectedIndex());
+                    tempItem.favFontDialog.setVisible(true);
+                }
+            }
+        }
 
         private class RemoveFavourite implements ActionListener
         {
@@ -881,7 +902,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 }
             }
         }
-
     }
 
     /*
@@ -1008,7 +1028,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     server.connect();
                 }
             } else if (!authenticationType().equals(CapabilityTypes.NONE.getType())) {
-                MessageDialog dialog = new MessageDialog(DriverGUI.frame, "Password field is empty and is required for your chosen authentication method.", "Warning", JOptionPane.WARNING_MESSAGE);
+                MessageDialog dialog = new MessageDialog("Password field is empty and is required for your chosen authentication method.", "Warning", JOptionPane.WARNING_MESSAGE);
                     dialog.setVisible(true);
             }
         }
@@ -1345,17 +1365,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 if (SwingUtilities.isRightMouseButton(e))
                     if (tabbedPane.getComponentAt(index) instanceof IRCChannel)
                     {
-                        IRCServerBase tempServer =
-                                getCreatedServer(((IRCChannel) tabbedPane.getComponentAt(index)).getServer());
-                        if (isFavourite(tempServer.getCreatedChannel(tabName)))
-                        {
-                            tempServer.getCreatedChannel(tabName).myMenu.addAsFavouriteItem
-                                    .setText("Remove as Favourite");
-                        } else
-                        {
-                            tempServer.getCreatedChannel(tabName).myMenu.addAsFavouriteItem.setText("Add as Favourite");
-                        }
-                        tempServer.getCreatedChannel(tabName).myMenu.show(tabbedPane, e.getX(), e.getY());
+                        ((IRCChannel) tabbedPane.getComponentAt(index)).myMenu.show(tabbedPane, e.getX(), e.getY());
                     } else if (tabbedPane.getComponentAt(index) instanceof IRCPrivate)
                     {
                         IRCServerBase tempServer =
@@ -1363,7 +1373,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                         tempServer.quitPrivateRooms(tabName);
                     } else if (tabbedPane.getComponentAt(index) instanceof IRCServer)
                     {
-                        ((IRCServer) getCreatedServer(tabName)).myMenu.show(tabbedPane, e.getX(), e.getY());
+                        ((IRCServer) tabbedPane.getComponentAt(index)).myMenu.show(tabbedPane, e.getX(), e.getY());
                     }
             }
         }
@@ -1423,7 +1433,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     public UserGUI()
     {
-        this.creationTime = (new Date()).toString();
+        // this.creationTime = (new Date()).toString();
         // this.setPreferredSize (new Dimension(MAIN_WIDTH_INIT, MAIN_HEIGHT_INIT));
         // this.setFont(universalFont); // might be worth having a different font area for the interface?
         // Create the initial size of the panel

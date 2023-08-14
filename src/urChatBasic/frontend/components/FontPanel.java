@@ -1,4 +1,4 @@
-package urChatBasic.frontend;
+package urChatBasic.frontend.components;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -45,7 +45,7 @@ public class FontPanel extends JPanel
         //
         this.add(SIZES_COMBO_BOX);
         SIZES_COMBO_BOX.addItemListener(new FontSelectionChange());
-        SIZES_COMBO_BOX.setSelectedItem(String.valueOf(myFont.getSize()));
+        SIZES_COMBO_BOX.setSelectedItem(myFont.getSize());
         //
         this.add(MAKE_BOLD);
         MAKE_BOLD.addActionListener(new CheckListener());

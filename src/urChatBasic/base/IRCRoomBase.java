@@ -6,9 +6,9 @@ import urChatBasic.frontend.IRCActions;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.LineFormatter.ClickableText;
+import urChatBasic.frontend.components.FontPanel;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.UsersListModel;
-import urChatBasic.frontend.FontPanel;
 import java.awt.event.*;
 import java.awt.*;
 import java.io.*;
@@ -661,7 +661,7 @@ public class IRCRoomBase extends JPanel
 
         public ChannelPopUp()
         {
-            nameItem = new JMenuItem(getName());
+            nameItem = new JMenuItem(IRCRoomBase.this.getName());
             add(nameItem);
             addSeparator();
             //
@@ -676,7 +676,7 @@ public class IRCRoomBase extends JPanel
             hideTickerItem = new JMenuItem("Toggle Event Ticker");
             add(hideTickerItem);
             hideTickerItem.addActionListener(new ToggleHideTickerListItem());
-            //
+
             addAsFavouriteItem = new JMenuItem("Add as Favourite");
             add(addAsFavouriteItem);
             addAsFavouriteItem.addActionListener(new AddAsFavourite());
@@ -684,6 +684,20 @@ public class IRCRoomBase extends JPanel
             chooseFont = new JMenuItem("Toggle Font chooser");
             add(chooseFont);
             chooseFont.addActionListener(new ChooseFont());
+        }
+
+        @Override
+        public void show(Component arg0, int arg1, int arg2)
+        {
+            if (gui.isFavourite(IRCRoomBase.this))
+            {
+                IRCRoomBase.this.myMenu.addAsFavouriteItem.setText("Remove as Favourite");
+            } else
+            {
+                IRCRoomBase.this.myMenu.addAsFavouriteItem.setText("Add as Favourite");
+            }
+
+            super.show(arg0, arg1, arg2);
         }
     }
 

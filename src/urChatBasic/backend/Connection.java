@@ -9,16 +9,14 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.logging.Level;
 import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
+import urChatBasic.base.DialogBase;
 import urChatBasic.base.UserGUIBase;
-import urChatBasic.base.capabilities.CapabilityTypes;
-import urChatBasic.frontend.DriverGUI;
-import urChatBasic.frontend.MessageDialog;
+import urChatBasic.frontend.dialogs.MessageDialog;
 import javax.net.ssl.SSLSocketFactory;
 import javax.swing.JOptionPane;
 
@@ -27,7 +25,7 @@ public class Connection implements ConnectionBase
     private BufferedWriter writer;
 
     private boolean shutdown = false;
-    private String creationTime = (new Date()).toString();
+    // private String creationTime = (new Date()).toString();
 
     private IRCServerBase server;
     private String myNick;
@@ -332,7 +330,7 @@ public class Connection implements ConnectionBase
         } catch (IOException e)
         {
             Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());
-            MessageDialog dialog = new MessageDialog(DriverGUI.frame, "startUp() failed! " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            MessageDialog dialog = new MessageDialog("startUp() failed! " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                     dialog.setVisible(true);
         }
     }
