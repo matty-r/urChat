@@ -33,7 +33,7 @@ import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
-import urChatBasic.frontend.components.FontPanel;
+import urChatBasic.frontend.dialogs.FontDialog;
 
 public class IRCServer extends JPanel implements IRCServerBase
 {
@@ -49,7 +49,8 @@ public class IRCServer extends JPanel implements IRCServerBase
     // Icons
     public ImageIcon icon;
 
-    private FontPanel fontPanel;
+    private FontDialog fontDialog;
+
 
 
     // Connection Properties
@@ -112,9 +113,8 @@ public class IRCServer extends JPanel implements IRCServerBase
         serverTextArea.setEditable(false);
         serverTextBox.addActionListener(new SendServerText());
         serverTextArea.setFont(gui.getFont());
-        fontPanel = new FontPanel(this);
-        this.add(fontPanel, BorderLayout.NORTH);
-        fontPanel.setVisible(false);
+        fontDialog = new FontDialog(name, gui.getFont(), Constants.FRONTEND_PREFS);
+        fontDialog.setVisible(false);
     }
 
     @Override
@@ -256,7 +256,7 @@ public class IRCServer extends JPanel implements IRCServerBase
             add(quitItem);
             quitItem.addActionListener(new QuitItem());
             //
-            chooseFont = new JMenuItem("Toggle Font chooser");
+            chooseFont = new JMenuItem("Show Font Dialog");
             add(chooseFont);
             chooseFont.addActionListener(new ChooseFont());
         }
@@ -287,7 +287,7 @@ public class IRCServer extends JPanel implements IRCServerBase
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            fontPanel.setVisible(!fontPanel.isVisible());
+            fontDialog.setVisible(true);
         }
     }
 

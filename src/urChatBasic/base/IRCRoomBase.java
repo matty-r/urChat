@@ -7,6 +7,7 @@ import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.LineFormatter.ClickableText;
 import urChatBasic.frontend.components.FontPanel;
+import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.UsersListModel;
 import java.awt.event.*;
@@ -16,7 +17,7 @@ import java.text.*;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
-
+import java.util.prefs.Preferences;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.Timer;
@@ -33,13 +34,15 @@ public class IRCRoomBase extends JPanel
     // TODO: Rename to roomName
     private String roomName;
 
+    // Preferences
+    private Preferences roomPrefs;
+
     // IRCServer information (Owner of channel)
     protected IRCServerBase server;
-
     protected IRCActions myActions;
     protected UserGUI gui = DriverGUI.gui;
 
-    private FontPanel fontPanel;
+    private FontDialog fontDialog;
 
     // Icons
     public ImageIcon icon;
@@ -143,6 +146,8 @@ public class IRCRoomBase extends JPanel
     {
         this.server = server;
         this.roomName = roomName;
+        roomPrefs = Constants.FAVOURITES_PREFS.node(server.getName()).node(roomName);
+
         // Create the initial size of the panel
         // Set size of the overall panel
         setPreferredSize(new Dimension(Constants.MAIN_WIDTH, Constants.MAIN_HEIGHT));
@@ -153,10 +158,10 @@ public class IRCRoomBase extends JPanel
         this.add(mainPanel, BorderLayout.CENTER);
 
         this.myMenu = new ChannelPopUp();
-        this.setFont(gui.getFont());
-        fontPanel = new FontPanel(this);
-        mainPanel.add(fontPanel, BorderLayout.NORTH);
-        fontPanel.setVisible(false);
+        fontDialog = new FontDialog(roomName, getFont(), roomPrefs);
+        setFont(gui.getFont());
+        fontDialog.setVisible(false);
+        fontDialog.addSaveListener(new SaveFontListener());
         Image tempIcon = null;
         try
         {
@@ -195,6 +200,11 @@ public class IRCRoomBase extends JPanel
         mainPanel.add(mainResizer, BorderLayout.CENTER);
         setupBottomPanel();
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+    }
+
+    public FontPanel getFontPanel()
+    {
+        return fontDialog.getFontPanel();
     }
 
     private void setupMainTextArea()
@@ -681,7 +691,7 @@ public class IRCRoomBase extends JPanel
             add(addAsFavouriteItem);
             addAsFavouriteItem.addActionListener(new AddAsFavourite());
             //
-            chooseFont = new JMenuItem("Toggle Font chooser");
+            chooseFont = new JMenuItem("Show Font Dialog");
             add(chooseFont);
             chooseFont.addActionListener(new ChooseFont());
         }
@@ -770,7 +780,7 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            fontPanel.setVisible(!fontPanel.isVisible());
+            fontDialog.setVisible(true);
         }
     }
 
@@ -786,6 +796,29 @@ public class IRCRoomBase extends JPanel
                     userHistory.add(clientTextBox.getText());
             }
             clientTextBox.setText("");
+        }
+    }
+
+    @Override
+    public void setFont(Font f)
+    {
+        if(fontDialog != null)
+        {
+            fontDialog.getFontPanel().setDefaultFont(f);
+            super.setFont(fontDialog.getFontPanel().getFont());
+        } else {
+            super.setFont(f);
+        }
+    }
+
+    private class SaveFontListener implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent arg0)
+        {
+            // fontDialog.saveFont(fontDialog.getFont());
+            fontDialog.getFontPanel().setFont(fontDialog.getFontPanel().getFont(), true);
+            setFont(fontDialog.getFontPanel().getFont());
         }
     }
 

@@ -3,15 +3,19 @@ package urChatBasic.base;
 import javax.swing.*;
 import java.awt.*;
 
-public class DialogBase extends JDialog {
+public class DialogBase extends JDialog
+{
     protected JPanel dialogPanel;
 
-    public DialogBase(Frame parent, String title, Boolean isModal) {
+    public DialogBase(Frame parent, String title, Boolean isModal)
+    {
         super(parent, title, isModal);
     }
 
-    protected static Icon getIconForMessageType(int messageType) {
-        switch (messageType) {
+    protected static Icon getIconForMessageType(int messageType)
+    {
+        switch (messageType)
+        {
             case JOptionPane.ERROR_MESSAGE:
                 return UIManager.getIcon("OptionPane.errorIcon");
             case JOptionPane.INFORMATION_MESSAGE:

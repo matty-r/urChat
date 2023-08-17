@@ -14,7 +14,6 @@ import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
-import urChatBasic.base.DialogBase;
 import urChatBasic.base.UserGUIBase;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import javax.net.ssl.SSLSocketFactory;

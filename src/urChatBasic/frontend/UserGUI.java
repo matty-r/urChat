@@ -41,8 +41,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private DefaultListModel<String> optionsArray = new DefaultListModel<String>();
     private JList<String> optionsList = new JList<String>(optionsArray);
     private JPanel optionsRightPanel = new JPanel();
-    private Preferences clientSettings;
-
 
     // Client Options Panel
     private static final JPanel optionsClientPanel = new JPanel();
@@ -58,7 +56,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
     private static final JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
     private static final JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
-    private final JPanel clientFontPanel = new FontPanel(this);
+    private FontPanel clientFontPanel;
 
     private static final JTextField limitServerLinesCount = new JTextField();
     private static final JTextField limitChannelLinesCount = new JTextField();
@@ -679,7 +677,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         limitChannelLinesCount.setPreferredSize(new Dimension(50, 20));
         optionsClientPanel.add(enableTimeStamps);
 
+        clientFontPanel = new FontPanel(getFont(), Constants.FRONTEND_PREFS);
         clientFontPanel.setPreferredSize(new Dimension(500, 40));
+        clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
         optionsClientPanel.add(clientFontPanel);
 
         // Turn on labels at major tick mark.
@@ -831,6 +831,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         String favServer;
         String favChannel;
+        Preferences settingsPath;
         FavouritesPopUp myMenu;
         FontDialog favFontDialog;
 
@@ -838,7 +839,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         {
             this.favServer = favServer;
             this.favChannel = favChannel;
-            favFontDialog = new FontDialog("Font: "+favChannel);
+            settingsPath = Constants.FAVOURITES_PREFS.node(favServer).node(favChannel);
+
+            favFontDialog = new FontDialog("Font: "+favChannel, UserGUI.this.getFont(), settingsPath);
+            favFontDialog.addSaveListener(new SaveChannelFontListener());
             myMenu = new FavouritesPopUp();
         }
 
@@ -846,6 +850,28 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         public String toString()
         {
             return favServer + ":" + favChannel;
+        }
+
+
+        protected class SaveChannelFontListener implements ActionListener
+        {
+            @Override
+            public void actionPerformed(ActionEvent arg0)
+            {
+                for (int index = 0; index < tabbedPane.getComponents().length; index++) {
+                    Component tab = tabbedPane.getComponentAt(index);
+
+                    if(tab instanceof IRCRoomBase)
+                    {
+                        IRCRoomBase tabRoom = (IRCRoomBase) tab;
+                        if( tabRoom.getServer().equals(favServer) && tabRoom.getName().equals(favChannel))
+                        {
+                            tabRoom.getFontPanel().setFont(favFontDialog.getFontPanel().getFont(), true);
+                            tabRoom.setFont(favFontDialog.getFontPanel().getFont());
+                        }
+                    }
+                }
+            }
         }
 
         private class FavouritesPopUp extends JPopupMenu
@@ -883,6 +909,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 if (favouritesList.getSelectedIndex() > -1)
                 {
                     FavouritesItem tempItem = favouritesListModel.elementAt(favouritesList.getSelectedIndex());
+                    tempItem.favFontDialog.getFontPanel().loadFont();
                     tempItem.favFontDialog.setVisible(true);
                 }
             }
@@ -897,8 +924,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 {
                     FavouritesItem tempItem = favouritesListModel.elementAt(favouritesList.getSelectedIndex());
                     removeFavourite(tempItem.favServer, tempItem.favChannel);
-                    clientSettings.node(Constants.KEY_FAVOURITES_NODE).node(tempItem.favServer)
-                            .remove(tempItem.favChannel);
+                    Constants.FAVOURITES_PREFS.node(tempItem.favServer).remove(tempItem.favChannel);
                 }
             }
         }
@@ -914,10 +940,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         favouritesListModel.addElement(new FavouritesItem(favServer, favChannel));
 
-        clientSettings.node(Constants.KEY_FAVOURITES_NODE).node(favServer).node(favChannel).put("PORT",
-                getCreatedServer(favServer).getPort());
-
-
+        Constants.FAVOURITES_PREFS.node(favServer).node(favChannel).put("PORT", getCreatedServer(favServer).getPort());
     }
 
 
@@ -1142,39 +1165,39 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     public void setClientSettings()
     {
-        clientSettings.put(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText());
-        clientSettings.put(Constants.KEY_FIRST_SERVER, servernameTextField.getText());
-        clientSettings.put(Constants.KEY_FIRST_PORT, serverPortTextField.getText());
-        clientSettings.put(Constants.KEY_AUTH_TYPE, authenticationTypeChoice.getSelectedItem().toString());
-        clientSettings.putBoolean(Constants.KEY_USE_TLS, serverTLSCheckBox.isSelected());
-        clientSettings.put(Constants.KEY_PROXY_HOST, proxyHostNameTextField.getText());
-        clientSettings.put(Constants.KEY_PROXY_PORT, proxyPortTextField.getText());
-        clientSettings.putBoolean(Constants.KEY_USE_PROXY, serverProxyCheckBox.isSelected());
-        clientSettings.put(Constants.KEY_NICK_NAME, userNameTextField.getText());
-        clientSettings.put(Constants.KEY_REAL_NAME, realNameTextField.getText());
-        clientSettings.putBoolean(Constants.KEY_TIME_STAMPS, enableTimeStamps.isSelected());
-        clientSettings.putBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, showEventTicker.isSelected());
-        clientSettings.putBoolean(Constants.KEY_USERS_LIST_ACTIVE, showUsersList.isSelected());
-        clientSettings.putBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED, enableClickableLinks.isSelected());
-        clientSettings.putBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS, showJoinsQuitsEventTicker.isSelected());
-        clientSettings.putBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS, showJoinsQuitsMainWindow.isSelected());
-        clientSettings.putBoolean(Constants.KEY_LOG_CHANNEL_HISTORY, logChannelText.isSelected());
-        clientSettings.putBoolean(Constants.KEY_LOG_SERVER_ACTIVITY, logServerActivity.isSelected());
-        clientSettings.putBoolean(Constants.KEY_LIMIT_CHANNEL_LINES, limitChannelLines.isSelected());
-        clientSettings.putBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES, autoConnectToFavourites.isSelected());
-        clientSettings.put(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT, limitChannelLinesCount.getText());
-        clientSettings.putBoolean(Constants.KEY_LIMIT_SERVER_LINES, limitServerLines.isSelected());
-        clientSettings.put(Constants.KEY_LIMIT_SERVER_LINES_COUNT, limitServerLinesCount.getText());
-        clientSettings.putBoolean(Constants.KEY_LOG_CLIENT_TEXT, logClientText.isSelected());
-        clientSettings.put(Constants.KEY_FONT_GENERAL_FAMILY, clientFontPanel.getFont().getFamily());
-        clientSettings.putBoolean(Constants.KEY_FONT_GENERAL_BOLD, clientFontPanel.getFont().isBold());
-        clientSettings.putBoolean(Constants.KEY_FONT_GENERAL_ITALIC, clientFontPanel.getFont().isItalic());
-        clientSettings.putInt(Constants.KEY_FONT_GENERAL_SIZE, clientFontPanel.getFont().getSize());
-        clientSettings.putInt(Constants.KEY_EVENT_TICKER_DELAY, eventTickerDelay.getValue());
-        clientSettings.putInt(Constants.KEY_WINDOW_X, (int) DriverGUI.frame.getBounds().getX());
-        clientSettings.putInt(Constants.KEY_WINDOW_Y, (int) DriverGUI.frame.getBounds().getY());
-        clientSettings.putInt(Constants.KEY_WINDOW_WIDTH, (int) DriverGUI.frame.getBounds().getWidth());
-        clientSettings.putInt(Constants.KEY_WINDOW_HEIGHT, (int) DriverGUI.frame.getBounds().getHeight());
+        Constants.FRONTEND_PREFS.put(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText());
+        Constants.FRONTEND_PREFS.put(Constants.KEY_FIRST_SERVER, servernameTextField.getText());
+        Constants.FRONTEND_PREFS.put(Constants.KEY_FIRST_PORT, serverPortTextField.getText());
+        Constants.FRONTEND_PREFS.put(Constants.KEY_AUTH_TYPE, authenticationTypeChoice.getSelectedItem().toString());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_USE_TLS, serverTLSCheckBox.isSelected());
+        Constants.FRONTEND_PREFS.put(Constants.KEY_PROXY_HOST, proxyHostNameTextField.getText());
+        Constants.FRONTEND_PREFS.put(Constants.KEY_PROXY_PORT, proxyPortTextField.getText());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_USE_PROXY, serverProxyCheckBox.isSelected());
+        Constants.FRONTEND_PREFS.put(Constants.KEY_NICK_NAME, userNameTextField.getText());
+        Constants.FRONTEND_PREFS.put(Constants.KEY_REAL_NAME, realNameTextField.getText());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_TIME_STAMPS, enableTimeStamps.isSelected());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, showEventTicker.isSelected());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_USERS_LIST_ACTIVE, showUsersList.isSelected());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED, enableClickableLinks.isSelected());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS, showJoinsQuitsEventTicker.isSelected());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS, showJoinsQuitsMainWindow.isSelected());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_LOG_CHANNEL_HISTORY, logChannelText.isSelected());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_LOG_SERVER_ACTIVITY, logServerActivity.isSelected());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_LIMIT_CHANNEL_LINES, limitChannelLines.isSelected());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES, autoConnectToFavourites.isSelected());
+        Constants.FRONTEND_PREFS.put(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT, limitChannelLinesCount.getText());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_LIMIT_SERVER_LINES, limitServerLines.isSelected());
+        Constants.FRONTEND_PREFS.put(Constants.KEY_LIMIT_SERVER_LINES_COUNT, limitServerLinesCount.getText());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_LOG_CLIENT_TEXT, logClientText.isSelected());
+        Constants.FRONTEND_PREFS.put(Constants.KEY_FONT_FAMILY, clientFontPanel.getFont().getFamily());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_FONT_BOLD, clientFontPanel.getFont().isBold());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_FONT_ITALIC, clientFontPanel.getFont().isItalic());
+        Constants.FRONTEND_PREFS.putInt(Constants.KEY_FONT_SIZE, clientFontPanel.getFont().getSize());
+        Constants.FRONTEND_PREFS.putInt(Constants.KEY_EVENT_TICKER_DELAY, eventTickerDelay.getValue());
+        Constants.FRONTEND_PREFS.putInt(Constants.KEY_WINDOW_X, (int) DriverGUI.frame.getBounds().getX());
+        Constants.FRONTEND_PREFS.putInt(Constants.KEY_WINDOW_Y, (int) DriverGUI.frame.getBounds().getY());
+        Constants.FRONTEND_PREFS.putInt(Constants.KEY_WINDOW_WIDTH, (int) DriverGUI.frame.getBounds().getWidth());
+        Constants.FRONTEND_PREFS.putInt(Constants.KEY_WINDOW_HEIGHT, (int) DriverGUI.frame.getBounds().getHeight());
     }
 
     /**
@@ -1182,85 +1205,70 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     public void getClientSettings()
     {
-        firstChannelTextField.setText(clientSettings.get(Constants.KEY_FIRST_CHANNEL, Constants.DEFAULT_FIRST_CHANNEL));
-        servernameTextField.setText(clientSettings.get(Constants.KEY_FIRST_SERVER, Constants.DEFAULT_FIRST_SERVER));
-        serverPortTextField.setText(clientSettings.get(Constants.KEY_FIRST_PORT, Constants.DEFAULT_FIRST_PORT));
-        serverTLSCheckBox.setSelected(clientSettings.getBoolean(Constants.KEY_USE_TLS, Constants.DEFAULT_USE_TLS));
+        firstChannelTextField.setText(Constants.FRONTEND_PREFS.get(Constants.KEY_FIRST_CHANNEL, Constants.DEFAULT_FIRST_CHANNEL));
+        servernameTextField.setText(Constants.FRONTEND_PREFS.get(Constants.KEY_FIRST_SERVER, Constants.DEFAULT_FIRST_SERVER));
+        serverPortTextField.setText(Constants.FRONTEND_PREFS.get(Constants.KEY_FIRST_PORT, Constants.DEFAULT_FIRST_PORT));
+        serverTLSCheckBox.setSelected(Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_USE_TLS, Constants.DEFAULT_USE_TLS));
 
-        authenticationTypeChoice.setSelectedItem(CapabilityTypes.getCapType(clientSettings.get(Constants.KEY_AUTH_TYPE, Constants.DEFAULT_AUTH_TYPE)));
+        authenticationTypeChoice.setSelectedItem(CapabilityTypes.getCapType(Constants.FRONTEND_PREFS.get(Constants.KEY_AUTH_TYPE, Constants.DEFAULT_AUTH_TYPE)));
 
-        proxyHostNameTextField.setText(clientSettings.get(Constants.KEY_PROXY_HOST, Constants.DEFAULT_PROXY_HOST));
-        proxyPortTextField.setText(clientSettings.get(Constants.KEY_PROXY_PORT, Constants.DEFAULT_PROXY_PORT));
+        proxyHostNameTextField.setText(Constants.FRONTEND_PREFS.get(Constants.KEY_PROXY_HOST, Constants.DEFAULT_PROXY_HOST));
+        proxyPortTextField.setText(Constants.FRONTEND_PREFS.get(Constants.KEY_PROXY_PORT, Constants.DEFAULT_PROXY_PORT));
         serverProxyCheckBox
-                .setSelected(clientSettings.getBoolean(Constants.KEY_USE_PROXY, Constants.DEFAULT_USE_PROXY));
+                .setSelected(Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_USE_PROXY, Constants.DEFAULT_USE_PROXY));
 
-        userNameTextField.setText(clientSettings.get(Constants.KEY_NICK_NAME, Constants.DEFAULT_NICK_NAME));
-        realNameTextField.setText(clientSettings.get(Constants.KEY_REAL_NAME, Constants.DEFAULT_REAL_NAME));
+        userNameTextField.setText(Constants.FRONTEND_PREFS.get(Constants.KEY_NICK_NAME, Constants.DEFAULT_NICK_NAME));
+        realNameTextField.setText(Constants.FRONTEND_PREFS.get(Constants.KEY_REAL_NAME, Constants.DEFAULT_REAL_NAME));
 
         showUsersList.setSelected(
-                clientSettings.getBoolean(Constants.KEY_USERS_LIST_ACTIVE, Constants.DEFAULT_USERS_LIST_ACTIVE));
+                Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_USERS_LIST_ACTIVE, Constants.DEFAULT_USERS_LIST_ACTIVE));
 
         showEventTicker.setSelected(
-                clientSettings.getBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, Constants.DEFAULT_EVENT_TICKER_ACTIVE));
+                Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, Constants.DEFAULT_EVENT_TICKER_ACTIVE));
 
         enableClickableLinks.setSelected(
-                clientSettings.getBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED, Constants.DEFAULT_CLICKABLE_LINKS_ENABLED));
+                Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED, Constants.DEFAULT_CLICKABLE_LINKS_ENABLED));
 
         enableTimeStamps
-                .setSelected(clientSettings.getBoolean(Constants.KEY_TIME_STAMPS, Constants.DEFAULT_TIME_STAMPS));
-        showJoinsQuitsEventTicker.setSelected(clientSettings.getBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS,
+                .setSelected(Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_TIME_STAMPS, Constants.DEFAULT_TIME_STAMPS));
+        showJoinsQuitsEventTicker.setSelected(Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS,
                 Constants.DEFAULT_EVENT_TICKER_JOINS_QUITS));
-        showJoinsQuitsMainWindow.setSelected(clientSettings.getBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS,
+        showJoinsQuitsMainWindow.setSelected(Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS,
                 Constants.DEFAULT_MAIN_WINDOW_JOINS_QUITS));
         logChannelText.setSelected(
-                clientSettings.getBoolean(Constants.KEY_LOG_CHANNEL_HISTORY, Constants.DEFAULT_LOG_CHANNEL_HISTORY));
+                Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_LOG_CHANNEL_HISTORY, Constants.DEFAULT_LOG_CHANNEL_HISTORY));
         logServerActivity.setSelected(
-                clientSettings.getBoolean(Constants.KEY_LOG_SERVER_ACTIVITY, Constants.DEFAULT_LOG_SERVER_ACTIVITY));
+                Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_LOG_SERVER_ACTIVITY, Constants.DEFAULT_LOG_SERVER_ACTIVITY));
         limitChannelLines.setSelected(
-                clientSettings.getBoolean(Constants.KEY_LIMIT_CHANNEL_LINES, Constants.DEFAULT_LIMIT_CHANNEL_LINES));
-        limitChannelLinesCount.setText(clientSettings.get(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT,
+                Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_LIMIT_CHANNEL_LINES, Constants.DEFAULT_LIMIT_CHANNEL_LINES));
+        limitChannelLinesCount.setText(Constants.FRONTEND_PREFS.get(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT,
                 Constants.DEFAULT_LIMIT_CHANNEL_LINES_COUNT));
         limitServerLines.setSelected(
-                clientSettings.getBoolean(Constants.KEY_LIMIT_SERVER_LINES, Constants.DEFAULT_LIMIT_SERVER_LINES));
+                Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_LIMIT_SERVER_LINES, Constants.DEFAULT_LIMIT_SERVER_LINES));
         limitServerLinesCount.setText(
-                clientSettings.get(Constants.KEY_LIMIT_SERVER_LINES_COUNT, Constants.DEFAULT_LIMIT_SERVER_LINES_COUNT));
+                Constants.FRONTEND_PREFS.get(Constants.KEY_LIMIT_SERVER_LINES_COUNT, Constants.DEFAULT_LIMIT_SERVER_LINES_COUNT));
         logClientText.setSelected(
-                clientSettings.getBoolean(Constants.KEY_LOG_CLIENT_TEXT, Constants.DEFAULT_LOG_CLIENT_TEXT));
+                Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_LOG_CLIENT_TEXT, Constants.DEFAULT_LOG_CLIENT_TEXT));
 
-
-        // SAVED FONT STUFF
-        int savedFontBoldItalic = 0;
-
-        if (clientSettings.getBoolean(Constants.KEY_FONT_GENERAL_BOLD, Constants.DEFAULT_FONT_GENERAL.isBold()))
-            savedFontBoldItalic = Font.BOLD;
-        if (clientSettings.getBoolean(Constants.KEY_FONT_GENERAL_ITALIC, Constants.DEFAULT_FONT_GENERAL.isItalic()))
-            savedFontBoldItalic |= Font.ITALIC;
-
-        Font savedFont = new Font(
-            clientSettings.get(Constants.KEY_FONT_GENERAL_FAMILY, Constants.DEFAULT_FONT_GENERAL.getFamily()),
-            savedFontBoldItalic,
-            clientSettings.getInt(Constants.KEY_FONT_GENERAL_SIZE, Constants.DEFAULT_FONT_GENERAL.getSize())
-        );
-
-        clientFontPanel.setFont(savedFont);
+        loadFont();
 
         eventTickerDelay.setValue(
-                clientSettings.getInt(Constants.KEY_EVENT_TICKER_DELAY, Constants.DEFAULT_EVENT_TICKER_DELAY));
-        autoConnectToFavourites.setSelected(clientSettings.getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES,
+                Constants.FRONTEND_PREFS.getInt(Constants.KEY_EVENT_TICKER_DELAY, Constants.DEFAULT_EVENT_TICKER_DELAY));
+        autoConnectToFavourites.setSelected(Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES,
                 Constants.DEFAULT_AUTO_CONNECT_FAVOURITES));
-        DriverGUI.frame.setBounds(clientSettings.getInt(Constants.KEY_WINDOW_X, Constants.DEFAULT_WINDOW_X),
-                clientSettings.getInt(Constants.KEY_WINDOW_Y, Constants.DEFAULT_WINDOW_Y),
-                clientSettings.getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),
-                clientSettings.getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT));
+        DriverGUI.frame.setBounds(Constants.FRONTEND_PREFS.getInt(Constants.KEY_WINDOW_X, Constants.DEFAULT_WINDOW_X),
+                Constants.FRONTEND_PREFS.getInt(Constants.KEY_WINDOW_Y, Constants.DEFAULT_WINDOW_Y),
+                Constants.FRONTEND_PREFS.getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),
+                Constants.FRONTEND_PREFS.getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT));
         this.setPreferredSize(
-                new Dimension(clientSettings.getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),
-                        clientSettings.getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT)));
+                new Dimension(Constants.FRONTEND_PREFS.getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),
+                        Constants.FRONTEND_PREFS.getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT)));
 
         // TODO Add Port number to favourites.
         try
         {
-            for (String serverNode : clientSettings.node(Constants.KEY_FAVOURITES_NODE).childrenNames())
-                for (String channelNode : clientSettings.node(Constants.KEY_FAVOURITES_NODE).node(serverNode)
+            for (String serverNode : Constants.FAVOURITES_PREFS.childrenNames())
+                for (String channelNode : Constants.FAVOURITES_PREFS.node(serverNode)
                         .childrenNames())
                     favouritesListModel.addElement(new FavouritesItem(serverNode, channelNode));
         } catch (BackingStoreException e)
@@ -1277,7 +1285,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     @Override
     public void removeClientSetting(String node, String key)
     {
-        clientSettings.node(node).remove(key);
+        Constants.FRONTEND_PREFS.node(node).remove(key);
     }
 
     /*
@@ -1430,19 +1438,40 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
+    protected class SaveFontListener implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent arg0)
+        {
+            for (int index = 0; index < tabbedPane.getComponents().length; index++) {
+                Component tab = tabbedPane.getComponentAt(index);
+                tab.setFont(clientFontPanel.getFont());
+
+                if(tab instanceof IRCRoomBase)
+                {
+                    ((IRCRoomBase)tab).getFontPanel().setDefaultFont(clientFontPanel.getFont());
+                }
+            }
+
+            for (int index = 0; index < favouritesList.getModel().getSize(); index++) {
+                FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
+                favouriteItem.favFontDialog.getFontPanel().setDefaultFont(clientFontPanel.getFont());
+                favouriteItem.favFontDialog.getFontPanel().loadFont();
+            }
+        }
+    }
+
 
     public UserGUI()
     {
         // this.creationTime = (new Date()).toString();
-        // this.setPreferredSize (new Dimension(MAIN_WIDTH_INIT, MAIN_HEIGHT_INIT));
-        // this.setFont(universalFont); // might be worth having a different font area for the interface?
+
         // Create the initial size of the panel
         setupTabbedPane();
         this.setLayout(new BorderLayout());
         this.add(tabbedPane, BorderLayout.CENTER);
 
         this.setBackground(Color.gray);
-        clientSettings = Preferences.userNodeForPackage(this.getClass());
         getClientSettings();
     }
 
@@ -1455,6 +1484,25 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
 
         return super.getFont();
+    }
+
+    public void loadFont()
+    {
+        // SAVED FONT STUFF
+        int savedFontBoldItalic = 0;
+
+        if (Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_FONT_BOLD, Constants.DEFAULT_FONT_GENERAL.isBold()))
+            savedFontBoldItalic = Font.BOLD;
+        if (Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_FONT_ITALIC, Constants.DEFAULT_FONT_GENERAL.isItalic()))
+            savedFontBoldItalic |= Font.ITALIC;
+
+        Font savedFont = new Font(
+            Constants.FRONTEND_PREFS.get(Constants.KEY_FONT_FAMILY, Constants.DEFAULT_FONT_GENERAL.getFamily()),
+            savedFontBoldItalic,
+            Constants.FRONTEND_PREFS.getInt(Constants.KEY_FONT_SIZE, Constants.DEFAULT_FONT_GENERAL.getSize())
+        );
+
+        clientFontPanel.setFont(savedFont);
     }
 
     /*

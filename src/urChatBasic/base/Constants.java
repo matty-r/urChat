@@ -6,9 +6,11 @@ import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JLabel;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.frontend.UserGUI;
 
 /**
  * Used to store constants that are the same and do not change often. These are things used commonly
@@ -28,6 +30,10 @@ public class Constants
     public static Logger LOGGER = Logger.getLogger("Main");
     public static String LOGFILE_NAME = "Errors.log";
     private static final Font DEFAULT_FONT = new Font(new JLabel().getFont().getFamily(), 0, new JLabel().getFont().getSize());
+
+    // Preferences
+    public static final Preferences FRONTEND_PREFS = Preferences.userNodeForPackage(UserGUI.class);
+    public static final Preferences FAVOURITES_PREFS = FRONTEND_PREFS.parent().node("favourites");
 
     // Key Strings that are used when saving settings
     public static final String KEY_FIRST_CHANNEL = "first channel name";
@@ -55,11 +61,10 @@ public class Constants
     public static final String KEY_LIMIT_SERVER_LINES_COUNT = "limit number of server lines count";
     public static final String KEY_LOG_CLIENT_TEXT = "log client text";
     public static final String KEY_EVENT_TICKER_DELAY = "event ticker delay";
-    public static final String KEY_FONT_GENERAL_FAMILY = "font general family";
-    public static final String KEY_FONT_GENERAL_BOLD = "font general bold";
-    public static final String KEY_FONT_GENERAL_ITALIC = "font general italic";
-    public static final String KEY_FONT_GENERAL_SIZE = "font general size";
-    public static final String KEY_FAVOURITES_NODE = "favourites";
+    public static final String KEY_FONT_FAMILY = "font family";
+    public static final String KEY_FONT_BOLD = "font bold";
+    public static final String KEY_FONT_ITALIC = "font italic";
+    public static final String KEY_FONT_SIZE = "font size";
     public static final String KEY_WINDOW_X = "window position x";
     public static final String KEY_WINDOW_Y = "window position y";
     public static final String KEY_WINDOW_WIDTH = "window position width";
