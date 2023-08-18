@@ -44,7 +44,7 @@ public class IRCUser implements Comparable<IRCUser>
     @Override
     public String toString()
     {
-        return this.name;
+        return getName();
     }
 
     public String getUserStatus()

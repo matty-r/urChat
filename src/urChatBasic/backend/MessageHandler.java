@@ -368,7 +368,7 @@ public class MessageHandler
         @Override
         public void messageExec(Message myMessage)
         {
-            myMessage.messageHandler.serverBase.printChannelText(myMessage.channel, myMessage.body, myMessage.nick);
+            myMessage.messageHandler.serverBase.printChannelText(myMessage.channel, myMessage.body, Constants.EVENT_USER);
         }
     }
 

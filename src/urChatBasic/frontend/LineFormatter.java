@@ -9,11 +9,13 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
+import javax.swing.JPopupMenu;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import urChatBasic.base.Constants;
+import urChatBasic.frontend.IRCUser.UserPopUp;
 
 public class LineFormatter
 {
@@ -90,6 +92,7 @@ public class LineFormatter
     {
         SimpleAttributeSet tempStyle = new SimpleAttributeSet();
         tempStyle.addAttribute("name", "urlStyle");
+        tempStyle.addAttribute("type", "url");
         StyleConstants.setForeground(tempStyle, Color.BLUE);
         StyleConstants.setUnderline(tempStyle, true);
         StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
@@ -113,15 +116,23 @@ public class LineFormatter
     public class ClickableText extends AbstractAction
     {
         private String textLink;
+        private SimpleAttributeSet attributeSet;
+        private IRCUser fromUser;
 
-        ClickableText(String textLink)
+        ClickableText(String textLink, SimpleAttributeSet attributeSet, IRCUser fromUser)
         {
             this.textLink = textLink;
+            this.attributeSet = attributeSet;
+
+            if(fromUser != null)
+            {
+                this.fromUser = fromUser;
+            }
         }
 
         public void execute()
         {
-            if (!textLink.isEmpty() && gui.isClickableLinksEnabled())
+            if (!textLink.isEmpty() && gui.isClickableLinksEnabled() && attributeSet.getAttribute("type").equals("url"))
             {
                 // TODO: This should really pop up a dialog to confirm you want to open the link
                 try {
@@ -130,6 +141,25 @@ public class LineFormatter
                     e.printStackTrace();
                 }
             }
+        }
+
+        public JPopupMenu rightClickMenu()
+        {
+            System.out.println("right clicked on "+textLink+" which is type "+attributeSet.getAttribute("type"));
+
+            if(fromUser != null)
+            {
+                System.out.println("This was sent from "+fromUser);
+            }
+
+            if(attributeSet.getAttribute("type").equals("IRCUser"))
+            {
+                return fromUser.myMenu;
+            }
+
+            // TODO: Build the right-click menu for other types, i.e URLs
+
+            return null;
         }
 
         @Override
@@ -147,29 +177,48 @@ public class LineFormatter
      * @param fromUser
      * @param line
      */
-    public void formattedDocument(StyledDocument doc, String timeLine, String fromUser, String line)
+    public void formattedDocument(StyledDocument doc, String timeLine, IRCUser fromUser, String fromString, String line)
     {
 
-        if (myNick.equals(fromUser))
+
+        if (fromUser != null && myNick.equals(fromUser.toString()))
         {
             nameStyle = this.myStyle();
         } else
         {
             if (line.indexOf(myNick) > -1)
                 nameStyle = highStyle();
+            else
+                nameStyle = standardStyle();
         }
 
-        if (fromUser.equals(Constants.EVENT_USER))
+        if (fromUser == null && fromString.equals(Constants.EVENT_USER))
         {
             nameStyle = lowStyle();
             lineStyle = lowStyle();
+        } else {
+            lineStyle = standardStyle();
         }
+
+
+
 
         try
         {
             doc.insertString(doc.getLength(), timeLine, timeStyle);
             doc.insertString(doc.getLength(), " <", lineStyle);
-            doc.insertString(doc.getLength(), fromUser, nameStyle);
+
+            if(fromUser != null)
+            {
+                SimpleAttributeSet clickableNameStyle = nameStyle;
+                clickableNameStyle.addAttribute("type", "IRCUser");
+                clickableNameStyle.addAttribute("clickableText", new ClickableText(fromUser.toString(), nameStyle, fromUser));
+
+                doc.insertString(doc.getLength(), fromUser.toString(), clickableNameStyle);
+            } else {
+                doc.insertString(doc.getLength(), fromString, nameStyle);
+            }
+
             doc.insertString(doc.getLength(), "> ", lineStyle);
 
             // find and match against any URLs that may be in the text
@@ -183,7 +232,7 @@ public class LineFormatter
 
                 // http "clickableText"
                 String httpLine = line.substring(matcher.start(), matcher.end());
-                linkStyle.addAttribute("clickableText", new ClickableText(httpLine));
+                linkStyle.addAttribute("clickableText", new ClickableText(httpLine, linkStyle, fromUser));
                 doc.insertString(doc.getLength(), httpLine, linkStyle);
 
                 // post http

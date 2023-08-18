@@ -86,6 +86,8 @@ public class IRCRoomBase extends JPanel
     // Room Text Area
     private JTextPane channelTextArea = new JTextPane();
     private JScrollPane channelScroll = new JScrollPane(channelTextArea);
+    private LineFormatter lineFormatter;
+
 
     // Users list area
     // TODO: Users should be created per Server, and instead have a property to hold what channels they're in
@@ -162,6 +164,8 @@ public class IRCRoomBase extends JPanel
         setFont(gui.getFont());
         fontDialog.setVisible(false);
         fontDialog.addSaveListener(new SaveFontListener());
+
+        lineFormatter = new LineFormatter(this.getFont(), server.getNick());
         Image tempIcon = null;
         try
         {
@@ -281,9 +285,15 @@ public class IRCRoomBase extends JPanel
             Element ele = doc.getCharacterElement(channelTextArea.viewToModel2D((e.getPoint())));
             AttributeSet as = ele.getAttributes();
             ClickableText isClickableText = (ClickableText) as.getAttribute("clickableText");
-            if (isClickableText != null)
+            if(isClickableText != null)
             {
-                isClickableText.execute();
+                if (SwingUtilities.isRightMouseButton(e) && isClickableText.rightClickMenu() != null)
+                {
+                    isClickableText.rightClickMenu().show(e.getComponent(), e.getX(), e.getY());
+                } else if (SwingUtilities.isLeftMouseButton(e))
+                {
+                    isClickableText.execute();
+                }
             }
         }
     }
@@ -383,9 +393,8 @@ public class IRCRoomBase extends JPanel
 
         if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
         {
-            LineFormatter newLine = new LineFormatter(this.getFont(), server.getNick());
-            newLine.formattedDocument(doc, timeLine, fromUser, line);
-            if (newLine.nameStyle.getAttribute("name") == newLine.highStyle().getAttribute("name"))
+            lineFormatter.formattedDocument(doc, timeLine, fromIRCUser, fromUser, line);
+            if (lineFormatter.nameStyle.getAttribute("name") == lineFormatter.highStyle().getAttribute("name"))
             {
                 myActions.callForAttention();
             }

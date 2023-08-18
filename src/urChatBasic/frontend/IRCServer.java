@@ -71,6 +71,7 @@ public class IRCServer extends JPanel implements IRCServerBase
     private String proxyHost;
     private String proxyPort;
     private Boolean useSOCKS;
+    private LineFormatter lineFormatter;
 
     public ServerPopUp myMenu = new ServerPopUp();
 
@@ -115,6 +116,8 @@ public class IRCServer extends JPanel implements IRCServerBase
         serverTextArea.setFont(gui.getFont());
         fontDialog = new FontDialog(name, gui.getFont(), Constants.FRONTEND_PREFS);
         fontDialog.setVisible(false);
+
+        lineFormatter = new LineFormatter(gui.getFont(), nick);
     }
 
     @Override
@@ -724,8 +727,7 @@ public class IRCServer extends JPanel implements IRCServerBase
         if (gui.isTimeStampsEnabled())
             timeLine = "[" + chatDateFormat.format(chatDate) + "]";
 
-
-        new LineFormatter(gui.getFont(), getNick()).formattedDocument(doc, timeLine, "", line);
+        lineFormatter.formattedDocument(doc, timeLine, null, "", line);
 
         serverTextArea.setCaretPosition(serverTextArea.getDocument().getLength());
     }
