@@ -3,6 +3,14 @@ urChat
 
 urChat is a Java based IRC Client designed around usability and minimal resource impact on your system.
 
+Screenshots
+======
+
+![image](https://github.com/matty-r/urChat/assets/9965448/345d783c-9024-413e-9799-29702616ea0e)
+![image](https://github.com/matty-r/urChat/assets/9965448/43bfe3be-9b0e-43bc-905d-2aa4c50ffa10)
+![image](https://github.com/matty-r/urChat/assets/9965448/19adf311-c503-4401-86d0-ccc24c6a9bd5)
+![image](https://github.com/matty-r/urChat/assets/9965448/2439f4f9-8405-4161-9d6e-44794022f3b5)
+
 
 Contributions
 ======
