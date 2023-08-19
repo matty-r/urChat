@@ -65,13 +65,15 @@ public class MessageHandlerTests {
     @Test
     public void emojiMessage()
     {
-        String rawMessage = ":sd!~discord@user/sd PRIVMSG #reddit-sysadmin :02<username 🇦🇺> I know they were not new then, lol";
+        // test display of emojis in text
+        String rawMessage = ":sd!~discord@user/sd PRIVMSG #somechannel :02<textwithEMOJI 🇦🇺> this should show a flag";
     }
 
     @Test
     public void urlMessage()
     {
-        String rawMessage = "https://i.imgur.com/OcAYX2l.png";
-        String rawMessage2 = "https://www.google.com/search?q=where%27s%20the%20mariadb%20socket";
+        // test displaying urls
+        String rawMessage = "https://i.imgur.com/somepicture.png";
+        String rawMessage2 = "https://duckduckgo.com/?q=irc+urchat&kp=1&t=h_&ia=web";
     }
 }

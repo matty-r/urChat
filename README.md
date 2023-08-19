@@ -8,6 +8,14 @@ Contributions
 ======
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
+### Update (19 AUG 23)
+* Right-click user names in the text area to show the IRCUser popup menu
+* Font picker is now a dialog not a panel
+* Save fonts per room
+* Adds support for 328 (RPL_CHANNEL_URL) - just shows it as part of the notice message when joining a channel
+* Fixed QUIT handling, properly captures QUIT events instead of just PART events
+* Started adding some unit tests
+
 ### Update (13 AUG 23)
 
 * Add support for SASL (PLAIN) Authentication
@@ -16,7 +24,7 @@ If you would like to assist in the development of urChat take a look at the Issu
 * Clickable links have been implemented, and can be toggled
 * Tab now highlights/flashes if you're mentioned
 * Disconnecting/Reconnecting to the server is now done correctly
-* TLS/SSL has been implemented 
+* TLS/SSL has been implemented
 * Adds support for using a proxy
 * Users list is now resizeable
 
