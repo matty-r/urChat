@@ -126,7 +126,7 @@ public class IRCRoomBase extends JPanel
     public void hideEventTicker()
     {
         eventTickerShown = false;
-        tickerPanel.setVisible(eventTickerShown);
+        tickerPanel.setVisible(false);
         bottomPanel.setPreferredSize(clientTextBox.getPreferredSize());
     }
 
@@ -166,15 +166,16 @@ public class IRCRoomBase extends JPanel
         fontDialog.addSaveListener(new SaveFontListener());
 
         lineFormatter = new LineFormatter(this.getFont(), server.getNick());
-        Image tempIcon = null;
+
         try
         {
-            tempIcon = ImageIO.read(new File(Constants.RESOURCES_DIR + "Room.png"));
+            Image tempIcon = ImageIO.read(new File(Constants.RESOURCES_DIR + "Room.png"));
+            icon = new ImageIcon(tempIcon);
         } catch (IOException e)
         {
             Constants.LOGGER.log(Level.SEVERE, "FAILED TO LOAD Room.png: " + e.getLocalizedMessage());
         }
-        icon = new ImageIcon(tempIcon);
+
 
         myActions = new IRCActions(this);
     }
@@ -220,7 +221,7 @@ public class IRCRoomBase extends JPanel
         channelTextArea.addMouseMotionListener(new ChannelMovementListener());
         channelTextArea.setEditable(false);
         channelTextArea.setFont(gui.getFont());
-        channelTextArea.setEditorKit(new WrapEditorKit());
+        channelTextArea.setEditorKit(new StyledEditorKit());
     }
 
     private void setupUsersList()
@@ -267,6 +268,7 @@ public class IRCRoomBase extends JPanel
         /**
          *
          */
+        @Serial
         private static final long serialVersionUID = 1L;
         AlertType type;
 
@@ -320,7 +322,7 @@ public class IRCRoomBase extends JPanel
         if (gui.isJoinsQuitsTickerEnabled())
         {
             JLabel tempLabel = new JLabel(eventText);
-            int tempX = 0;
+            int tempX;
             if (!(eventLabels.isEmpty()))
             {
                 if (eventLabels.get(eventLabels.size() - 1).getPreferredSize().width
@@ -451,7 +453,7 @@ public class IRCRoomBase extends JPanel
     {
         for (IRCUser tempUser : usersArray)
         {
-            if (tempUser.getName().toLowerCase().equals(userName.toLowerCase()))
+            if (tempUser.getName().equalsIgnoreCase(userName))
                 return tempUser;
         } ;
 
@@ -477,6 +479,7 @@ public class IRCRoomBase extends JPanel
     public void addToUsersList(final String channel, final String[] users)
     {
         // Removed as Runnable(), not sure it was necessary
+        // TODO: maybe readd Runnable
         if (users.length >= 0)
                 {
                     for (int x = 0; x < users.length; x++)
@@ -534,14 +537,19 @@ public class IRCRoomBase extends JPanel
                 if (user.startsWith(":"))
                     thisUser = user.substring(1);
 
-                for (int x = 0; x < usersArray.size(); x++)
+
+                int index = 0;
+                while(index < usersArray.size())
                 {
-                    if (usersArray.get(x).getName().matches(thisUser))
+                    if (usersArray.get(index).getName().matches(thisUser))
                     {
-                        usersArray.remove(x);
+                        usersArray.remove(index);
                         createEvent("-- " + thisUser + " has quit " + channel);
+                    } else {
+                        index++;
                     }
                 }
+
                 usersListModel.sort();
             }
         });
@@ -619,28 +627,15 @@ public class IRCRoomBase extends JPanel
         public View create(Element elem)
         {
             String kind = elem.getName();
-            if (kind != null)
-            {
-                if (kind.equals(AbstractDocument.ContentElementName))
-                {
-                    return new WrapLabelView(elem);
-                } else if (kind.equals(AbstractDocument.ParagraphElementName))
-                {
-                    return new ParagraphView(elem);
-                } else if (kind.equals(AbstractDocument.SectionElementName))
-                {
-                    return new BoxView(elem, View.Y_AXIS);
-                } else if (kind.equals(StyleConstants.ComponentElementName))
-                {
-                    return new ComponentView(elem);
-                } else if (kind.equals(StyleConstants.IconElementName))
-                {
-                    return new IconView(elem);
-                }
-            }
 
-            // default to text display
-            return new LabelView(elem);
+            return switch (kind) {
+                case AbstractDocument.ContentElementName -> new WrapLabelView(elem);
+                case AbstractDocument.ParagraphElementName -> new ParagraphView(elem);
+                case AbstractDocument.SectionElementName -> new BoxView(elem, View.Y_AXIS);
+                case StyleConstants.ComponentElementName -> new ComponentView(elem);
+                case StyleConstants.IconElementName -> new IconView(elem);
+                default -> new LabelView(elem);
+            };
         }
     }
 
@@ -653,15 +648,11 @@ public class IRCRoomBase extends JPanel
 
         public float getMinimumSpan(int axis)
         {
-            switch (axis)
-            {
-                case View.X_AXIS:
-                    return 0;
-                case View.Y_AXIS:
-                    return super.getMinimumSpan(axis);
-                default:
-                    throw new IllegalArgumentException("Invalid axis: " + axis);
-            }
+            return switch (axis) {
+                case View.X_AXIS -> 0;
+                case View.Y_AXIS -> super.getMinimumSpan(axis);
+                default -> throw new IllegalArgumentException("Invalid axis: " + axis);
+            };
         }
     }
 
@@ -670,6 +661,7 @@ public class IRCRoomBase extends JPanel
         /**
          *
          */
+        @Serial
         private static final long serialVersionUID = 640768684923757684L;
         JMenuItem nameItem;
         JMenuItem quitItem;
@@ -916,8 +908,7 @@ public class IRCRoomBase extends JPanel
                             completionLength += 2;
                         } else
                         {
-                            String textAfterCaret = clientTextBox.getText().substring(clientTextBox.getCaretPosition(),
-                                    clientTextBox.getText().length());
+                            String textAfterCaret = clientTextBox.getText().substring(clientTextBox.getCaretPosition());
                             clientTextBox.setText(clientTextBox.getText().substring(0,
                                     (clientTextBox.getCaretPosition() - startingCharacters.length()))
                                     + (nextUser + ": ") + textAfterCaret);
@@ -929,39 +920,34 @@ public class IRCRoomBase extends JPanel
             } else
             {
                 int nextTextInt = 0;
-                switch (e.getKeyCode())
-                {
-                    case KeyEvent.VK_UP:
-                        if (!userHistory.isEmpty())
-                        {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_UP -> {
+                        if (!userHistory.isEmpty()) {
                             nextTextInt = userHistory.indexOf(clientTextBox.getText()) - 1;
                             if (nextTextInt < 0)
                                 nextTextInt = userHistory.size() - 1;
 
                             clientTextBox.setText(userHistory.get(nextTextInt));
                         }
-                        break;
-                    case KeyEvent.VK_DOWN:
-                        if (!userHistory.isEmpty())
-                        {
+                    }
+                    case KeyEvent.VK_DOWN -> {
+                        if (!userHistory.isEmpty()) {
                             nextTextInt = userHistory.indexOf(clientTextBox.getText()) + 1;
                             if (nextTextInt > userHistory.size() - 1)
                                 nextTextInt = 0;
 
                             clientTextBox.setText(userHistory.get(nextTextInt));
                         }
-                        break;
-                    case KeyEvent.VK_ESCAPE:
-                        clientTextBox.setText("");
-                        break;
-                    default:
+                    }
+                    case KeyEvent.VK_ESCAPE -> clientTextBox.setText("");
+                    default -> {
                         if (lastUserToComplete != null)
                             lastUserToComplete = null;
                         if (startingCharacters != null)
                             startingCharacters = null;
                         if (!autoCompleteNames.isEmpty())
                             autoCompleteNames.clear();
-                        break;
+                    }
                 }
             }
         }

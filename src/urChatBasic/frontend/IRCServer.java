@@ -27,6 +27,8 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.StyledEditorKit;
+
 import urChatBasic.backend.Connection;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
@@ -113,6 +115,7 @@ public class IRCServer extends JPanel implements IRCServerBase
         this.add(serverTextBox, BorderLayout.PAGE_END);
         serverTextArea.setEditable(false);
         serverTextBox.addActionListener(new SendServerText());
+        serverTextArea.setEditorKit(new StyledEditorKit());
         serverTextArea.setFont(gui.getFont());
         fontDialog = new FontDialog(name, gui.getFont(), Constants.FRONTEND_PREFS);
         fontDialog.setVisible(false);
@@ -632,7 +635,7 @@ public class IRCServer extends JPanel implements IRCServerBase
         if (user.startsWith(":"))
             thisUser = user.substring(1);
 
-        if (channelName.equals("Server"))
+        if (channelName.equals(getName()))
         {
             for (IRCChannel tempChannel : createdChannels)
             {

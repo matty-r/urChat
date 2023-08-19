@@ -4,11 +4,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import urChatBasic.base.Constants;
-import urChatBasic.base.IRCServerBase;
-import urChatBasic.base.MessageBase;
-import urChatBasic.base.UserGUIBase;
+import urChatBasic.base.*;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.base.capabilities.SaslCapSubTypes;
 import urChatBasic.frontend.DriverGUI;
@@ -78,10 +76,7 @@ public class MessageHandler
 
         public boolean inRange(int checkNumber)
         {
-            if (checkNumber >= this.min && checkNumber <= this.max)
-                return true;
-            else
-                return false;
+            return checkNumber >= this.min && checkNumber <= this.max;
         }
     }
 
@@ -150,11 +145,11 @@ public class MessageHandler
 
     private void addSingles()
     {
-        singleIDs.add(new IDSingle(5, new NoticeMessage()));
+        singleIDs.add(new IDSingle((new int[] {5, 328}), new NoticeMessage()));
         singleIDs.add(new IDSingle(353, new UsersListMessage()));
         singleIDs.add(new IDSingle(322, new CommandResponseMessage()));
         singleIDs.add(new IDSingle((new int[] {311, 319, 312, 317, 318, 301, 671, 330, 338, 378}), new WhoIsMessage()));
-        singleIDs.add(new IDSingle((new int[] {265, 266, 250, 328, 477, 331, 900}), new GeneralServerMessage()));
+        singleIDs.add(new IDSingle((new int[] {265, 266, 250, 477, 331, 900}), new GeneralServerMessage()));
         singleIDs.add(new IDSingle(366, new GeneralChannelMessage()));
         singleIDs.add(new IDSingle((new int[] {432, 433, 451}), new InvalidNickMessage()));
         singleIDs.add(new IDSingle(403, new NoSuchChannelMessage()));
@@ -198,6 +193,7 @@ public class MessageHandler
         {
             this.rawMessage = fullMessage;
             this.messageHandler = handler;
+            System.out.println(fullMessage);
             setPrefix();
             try{
                 setChannel();
@@ -232,6 +228,45 @@ public class MessageHandler
             return rawMessage;
         }
 
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public String getIdCommand() {
+            return idCommand;
+        }
+
+        public int getIdCommandNumber() {
+            return idCommandNumber;
+        }
+
+        public String getChannel() {
+            return channel;
+        }
+
+        public String getBody() {
+            return body;
+        }
+
+        public MessageIdType getType() {
+            return type;
+        }
+
+        public String getRawMessage() {
+            return rawMessage;
+        }
+
+        public String getNick() {
+            return nick;
+        }
+
+        public String getSubType() {
+            return subType;
+        }
+
+        public MessageBase getMessageBase() {
+            return messageBase;
+        }
 
         private void setPrefix()
         {
@@ -259,7 +294,18 @@ public class MessageHandler
             if (channelBegin < messageBegin && channelBegin > -1)
                 this.channel = withoutPrefix.substring(channelBegin, messageBegin).split(" ")[0].trim();
             else
-                this.channel = withoutPrefix.split(" ")[1];
+            {
+                String regex = ":\\[(#\\w+)]";
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(withoutPrefix);
+
+                if(matcher.find())
+                {
+                    this.channel = matcher.group(1);
+                } else {
+                    this.channel = withoutPrefix.split(" ")[1];
+                }
+            }
         }
 
         private void setMessageBody()
@@ -268,7 +314,7 @@ public class MessageHandler
             {
                 String withoutPrefixIdChannel = rawMessage.replace(prefix, "").trim();
 
-                if (withoutPrefixIdChannel.indexOf(":") > -1)
+                if (withoutPrefixIdChannel.contains(":"))
                     this.body = withoutPrefixIdChannel.substring(withoutPrefixIdChannel.indexOf(":") + 1).trim();
                 else
                     this.body = withoutPrefixIdChannel;
@@ -282,37 +328,29 @@ public class MessageHandler
         // TODO: This should be improved. Just flatten all the ids into a single list.
         private void setHandler()
         {
-            boolean handled = false;
 
-            if (!handled)
-                for (IDSingle testSingle : singleIDs)
-                    if (testSingle.type.equals(MessageIdType.NUMBER_ID) && testSingle.isEqual(this.idCommandNumber))
-                    {
-                        this.messageBase = testSingle.handlerType;
-                        handled = true;
-                        break;
-                    }
+            for (IDSingle testSingle : singleIDs)
+                if (testSingle.type.equals(MessageIdType.NUMBER_ID) && testSingle.isEqual(this.idCommandNumber))
+                {
+                    this.messageBase = testSingle.handlerType;
+                    return;
+                }
 
-            if (!handled)
-                for (IDSingle testSingle : singleIDs)
-                    if (testSingle.type.equals(MessageIdType.STRING_ID) && testSingle.isEqual(this.idCommand))
-                    {
-                        this.messageBase = testSingle.handlerType;
-                        handled = true;
-                        break;
-                    }
+            for (IDSingle testSingle : singleIDs)
+                if (testSingle.type.equals(MessageIdType.STRING_ID) && testSingle.isEqual(this.idCommand))
+                {
+                    this.messageBase = testSingle.handlerType;
+                    return;
+                }
 
-            if (!handled)
-                for (IDRange testRange : rangeIDs)
-                    if (testRange.type.equals(MessageIdType.NUMBER_ID) && testRange.inRange(this.idCommandNumber))
-                    {
-                        this.messageBase = testRange.handlerType;
-                        handled = true;
-                        break;
-                    }
+            for (IDRange testRange : rangeIDs)
+                if (testRange.type.equals(MessageIdType.NUMBER_ID) && testRange.inRange(this.idCommandNumber))
+                {
+                    this.messageBase = testRange.handlerType;
+                    return;
+                }
 
-            if (!handled)
-                this.messageBase = new MessageHandler.DefaultMesssage();
+            this.messageBase = new MessageHandler.DefaultMesssage();
         }
 
         private void setIdCommand()
@@ -520,35 +558,29 @@ public class MessageHandler
         {
             // CAP ACK or CAP LS?
             switch (myMessage.subType) {
-                case "LS":
-                        printServerText(myMessage.body);
-                        // TODO: If client enabled SASL authentication, check the myMessage for sasl='op'
-                        serverBase.setCapabilities(myMessage.body);
-
-                        if(serverBase.hasCapability(CapabilityTypes.SASL))
-                        {
-                            // Did the client have a sasl type selected?
-                            if(gui.authenticationType().equals(SaslCapSubTypes.PLAIN))
-                            {
-                                serverBase.saslRequestAuthentication();
-                                break;
-                            }
-                        }
-
-                        // end capability message
-                        serverBase.saslCompleteAuthentication();
-
-                        if(gui.authenticationType().equals(CapabilityTypes.NICKSERV.getType()))
-                        {
-                            serverBase.nickservRequestAuthentication();
-                        }
-                    break;
-                case "ACK":
-                        printServerText("Begin SASL Authentication");
-                        serverBase.saslDoAuthentication();
-                    break;
-                default:
+                case "LS" -> {
                     printServerText(myMessage.body);
+                    
+                    serverBase.setCapabilities(myMessage.body);
+                    if (serverBase.hasCapability(CapabilityTypes.SASL)) {
+                        // Did the client have a sasl type selected?
+                        if (gui.authenticationType().equals(SaslCapSubTypes.PLAIN)) {
+                            serverBase.saslRequestAuthentication();
+                            break;
+                        }
+                    }
+
+                    // end capability message
+                    serverBase.saslCompleteAuthentication();
+                    if (gui.authenticationType().equals(CapabilityTypes.NICKSERV.getType())) {
+                        serverBase.nickservRequestAuthentication();
+                    }
+                }
+                case "ACK" -> {
+                    printServerText("Begin SASL Authentication");
+                    serverBase.saslDoAuthentication();
+                }
+                default -> printServerText(myMessage.body);
             }
         }
     }
@@ -570,13 +602,19 @@ public class MessageHandler
         @Override
         public void messageExec(Message myMessage)
         {
-            if (myMessage.nick != null && myMessage.nick.toLowerCase().equals("NickServ".toLowerCase()))
+            if (myMessage.nick != null && myMessage.nick.equalsIgnoreCase("NickServ"))
             {
                 printPrivateText(myMessage.nick, myMessage.body, myMessage.nick);
                 gui.connectFavourites(myMessage.messageHandler.serverBase);
             } else
             {
-                printServerText(myMessage.body);
+                IRCRoomBase messageChannel = myMessage.messageHandler.serverBase.getCreatedChannel(myMessage.getChannel());
+                if(messageChannel != null)
+                {
+                    messageChannel.printText(myMessage.getBody(), Constants.EVENT_USER);
+                } else {
+                    printServerText(myMessage.body);
+                }
             }
         }
 

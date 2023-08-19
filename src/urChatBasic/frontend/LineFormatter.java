@@ -145,13 +145,6 @@ public class LineFormatter
 
         public JPopupMenu rightClickMenu()
         {
-            System.out.println("right clicked on "+textLink+" which is type "+attributeSet.getAttribute("type"));
-
-            if(fromUser != null)
-            {
-                System.out.println("This was sent from "+fromUser);
-            }
-
             if(attributeSet.getAttribute("type").equals("IRCUser"))
             {
                 return fromUser.myMenu;
