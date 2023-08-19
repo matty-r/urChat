@@ -924,7 +924,22 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 {
                     FavouritesItem tempItem = favouritesListModel.elementAt(favouritesList.getSelectedIndex());
                     removeFavourite(tempItem.favServer, tempItem.favChannel);
-                    Constants.FAVOURITES_PREFS.node(tempItem.favServer).remove(tempItem.favChannel);
+                    Preferences channelNode = Constants.FAVOURITES_PREFS.node(tempItem.favServer).node(tempItem.favChannel);
+                    try {
+                        String[] channelKeys = channelNode.keys();
+                        if(channelKeys.length > 0)
+                        {
+                            int keyLength = channelKeys.length;
+
+                            do {
+                                channelNode.remove(channelKeys[keyLength - 1]);
+                                keyLength = channelNode.keys().length;
+                            } while (keyLength > 0);
+                        }
+                    } catch (BackingStoreException e)
+                    {
+                        Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+                    }
                 }
             }
         }
@@ -1145,6 +1160,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             createdServers.remove(tempServer);
         }
 
+        cleanUpSettings();
     }
 
     /*
@@ -1268,9 +1284,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         try
         {
             for (String serverNode : Constants.FAVOURITES_PREFS.childrenNames())
-                for (String channelNode : Constants.FAVOURITES_PREFS.node(serverNode)
-                        .childrenNames())
-                    favouritesListModel.addElement(new FavouritesItem(serverNode, channelNode));
+            {
+                for (String channelNode : Constants.FAVOURITES_PREFS.node(serverNode).childrenNames())
+                {
+                    if(Constants.FAVOURITES_PREFS.node(serverNode).node(channelNode).keys().length > 0) {
+                        favouritesListModel.addElement(new FavouritesItem(serverNode, channelNode));
+                    }
+                }
+            }
         } catch (BackingStoreException e)
         {
             Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
@@ -1286,6 +1307,27 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public void removeClientSetting(String node, String key)
     {
         Constants.FRONTEND_PREFS.node(node).remove(key);
+    }
+
+    @Override
+    public void cleanUpSettings()
+    {
+        Constants.LOGGER.log(Level.INFO, "Cleaning up settings");
+        try
+        {
+            for (String serverNode : Constants.FAVOURITES_PREFS.childrenNames())
+            {
+                for (String channelNode : Constants.FAVOURITES_PREFS.node(serverNode).childrenNames())
+                {
+                    if(Constants.FAVOURITES_PREFS.node(serverNode).node(channelNode).keys().length == 0) {
+                        Constants.FAVOURITES_PREFS.node(serverNode).node(channelNode).removeNode();
+                    }
+                }
+            }
+        } catch (BackingStoreException e)
+        {
+            Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+        }
     }
 
     /*

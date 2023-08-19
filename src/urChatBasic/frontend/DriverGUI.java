@@ -48,8 +48,7 @@ public class DriverGUI
 
         gui = new UserGUI();
         new Thread(gui).start();
-
-
+        Constants.LOGGER.log(Level.INFO, "Starting up..");
 
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.getContentPane().add(gui);
@@ -61,6 +60,7 @@ public class DriverGUI
             public void windowClosing(WindowEvent e)
             {
                 gui.setClientSettings();
+                gui.cleanUpSettings();
                 if (!gui.isCreatedServersEmpty())
                     gui.sendGlobalMessage("/quit Goodbye cruel world", "Server");
                 for (Handler tempHandler : Constants.LOGGER.getHandlers())

@@ -52,6 +52,11 @@ public interface UserGUIBase
     public abstract void setupServerTab(IRCServerBase server);
 
     /**
+     * Deletes empty favourites
+     */
+    public abstract void cleanUpSettings();
+
+    /**
      * Creates a new server based on name
      *
      * @param serverName
