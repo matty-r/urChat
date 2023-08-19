@@ -193,9 +193,6 @@ public class LineFormatter
             lineStyle = standardStyle();
         }
 
-
-
-
         try
         {
             doc.insertString(doc.getLength(), timeLine, timeStyle);

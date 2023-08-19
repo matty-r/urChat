@@ -193,7 +193,7 @@ public class MessageHandler
         {
             this.rawMessage = fullMessage;
             this.messageHandler = handler;
-            System.out.println(fullMessage);
+
             setPrefix();
             try{
                 setChannel();
@@ -560,7 +560,7 @@ public class MessageHandler
             switch (myMessage.subType) {
                 case "LS" -> {
                     printServerText(myMessage.body);
-                    
+
                     serverBase.setCapabilities(myMessage.body);
                     if (serverBase.hasCapability(CapabilityTypes.SASL)) {
                         // Did the client have a sasl type selected?
