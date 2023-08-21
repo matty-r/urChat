@@ -16,6 +16,12 @@ Contributions
 ======
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
+### Update (22 AUG 23)
+* Moved 'Resources' to 'images'
+* Created an initial release on the GitHub page (https://github.com/matty-r/urChat/releases)
+* Updated the tab component
+* Fixed all rooms from showing under favourites
+
 ### Update (19 AUG 23)
 * Right-click user names in the text area to show the IRCUser popup menu
 * Font picker is now a dialog not a panel
