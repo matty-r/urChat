@@ -2,6 +2,7 @@ package urChatBasic.base;
 
 import java.awt.Font;
 import java.io.File;
+import java.net.URL;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -10,6 +11,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JLabel;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.UserGUI;
 
 /**
@@ -22,7 +24,7 @@ import urChatBasic.frontend.UserGUI;
 public class Constants
 {
 
-    public static final String RESOURCES_DIR = "Resources" + File.separator;
+    public static final URL RESOURCES_DIR = DriverGUI.class.getResource(File.separator + "images" + File.separator);
     public static String DIRECTORY_LOGS = "Logs" + File.separator;
     public static Class BACKEND_CLASS;
     public static String BACKEND_CLASS_FULLNAME = "urChatBasic.backend.Connection";

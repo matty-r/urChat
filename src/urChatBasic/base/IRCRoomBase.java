@@ -13,12 +13,12 @@ import urChatBasic.frontend.UsersListModel;
 import java.awt.event.*;
 import java.awt.*;
 import java.io.*;
+import java.net.URL;
 import java.text.*;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
@@ -169,8 +169,8 @@ public class IRCRoomBase extends JPanel
 
         try
         {
-            Image tempIcon = ImageIO.read(new File(Constants.RESOURCES_DIR + "Room.png"));
-            icon = new ImageIcon(tempIcon);
+            URL imgPath = new URL(Constants.RESOURCES_DIR + "Room.png");
+            icon = new ImageIcon(imgPath);
         } catch (IOException e)
         {
             Constants.LOGGER.log(Level.SEVERE, "FAILED TO LOAD Room.png: " + e.getLocalizedMessage());

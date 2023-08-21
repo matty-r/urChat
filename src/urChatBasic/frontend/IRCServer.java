@@ -1,14 +1,13 @@
 package urChatBasic.frontend;
 
 import java.awt.BorderLayout;
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -17,7 +16,6 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -101,11 +99,11 @@ public class IRCServer extends JPanel implements IRCServerBase
         this.login = login;
         this.nick = nick;
 
-        Image tempIcon = null;
+        URL imgPath = null;
         try
         {
-            tempIcon = ImageIO.read(new File(Constants.RESOURCES_DIR + "Server.png"));
-            icon = new ImageIcon(tempIcon);
+            imgPath =  new URL(Constants.RESOURCES_DIR + "Server.png");
+            icon = new ImageIcon(imgPath);
         } catch (IOException e)
         {
             Constants.LOGGER.log(Level.SEVERE, "COULD NOT LOAD Server.png " + e.getLocalizedMessage());

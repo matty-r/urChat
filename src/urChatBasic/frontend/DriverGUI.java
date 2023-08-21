@@ -3,28 +3,36 @@ package urChatBasic.frontend;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.net.URL;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
-
 import urChatBasic.base.Constants;
 
 public class DriverGUI
 {
     public static UserGUI gui = null;
     public static JFrame frame = null;
-    ImageIcon img = new ImageIcon(Constants.RESOURCES_DIR + "urChat Icon.png");
+    private static ImageIcon img;
 
     public static void main(String[] args) throws IOException
     {
 
         Constants.init();
+        URL imgPath = new URL(Constants.RESOURCES_DIR + "urChat Icon.png");
+        img = new ImageIcon(imgPath);
         try
         {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            boolean flatLafAvailable = false;
+
+            if(!flatLafAvailable)
+            {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
+
         } catch (Exception e)
         {
             Constants.LOGGER.log(Level.WARNING, "Failed to setLookAndFeel! " + e.getLocalizedMessage());

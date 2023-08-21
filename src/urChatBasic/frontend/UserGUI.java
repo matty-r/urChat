@@ -1395,6 +1395,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         tabbedPane.addMouseListener(new TabbedMouseListener());
         setupOptionsPanel();
         tabbedPane.addTab("Options", optionsMainPanel);
+        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
 
     /**
@@ -1428,7 +1429,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
         }
     }
-
 
     /**
      * Sets focus to the appropriate textBox when tab is changed

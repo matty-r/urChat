@@ -224,3 +224,5 @@ pip-log.txt
 *.iml
 Logs/*
 .vscode/*
+out/*
+lib/*
