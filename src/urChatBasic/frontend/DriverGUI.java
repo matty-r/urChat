@@ -20,7 +20,6 @@ public class DriverGUI
 {
     public static UserGUI gui = null;
     public static JFrame frame = null;
-    // public static LookAndFeelLoader lafLoader = new LookAndFeelLoader();
     private static ImageIcon img;
 
     public static void main(String[] args) throws IOException
@@ -34,7 +33,8 @@ public class DriverGUI
 
         try
         {
-            System.out.println("TODO: LookAndFeelLoader not yet implemented completely");
+            // TODO
+            // System.out.println("TODO: LookAndFeelLoader not yet implemented completely");
             // LookAndFeelLoader lafLoader = new LookAndFeelLoader(Thread.currentThread().getContextClassLoader());
             // Thread.currentThread().setContextClassLoader(lafLoader.newClassLoader);
             // Properties lafProps = lafLoader.loadedProps;

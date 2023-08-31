@@ -163,21 +163,21 @@ public class Connection implements ConnectionBase
         {
 
             String[] tempTextArray = clientText.split(" ");
-
+            String outText = "";
             if (!clientText.equals(""))
             {
                 if (clientText.startsWith("/join"))
                 {
-                    writer.write("JOIN " + clientText.replace("/join ", "") + "\r\n");
+                    outText = "JOIN " + clientText.replace("/join ", "") + "\r\n";
                 } else if (clientText.startsWith("/nick"))
                 {
-                    writer.write("NICK " + clientText.replace("/nick ", "") + "\r\n");
+                    outText = "NICK " + clientText.replace("/nick ", "") + "\r\n";
                     getServer().setNick(clientText.replace("/nick ", ""));
                 } else if (clientText.startsWith("/msg"))
                 {
                     tempTextArray = clientText.split(" ");
-                    writer.write("PRIVMSG " + tempTextArray[1] + " :"
-                            + clientText.replace("/msg " + tempTextArray[1] + " ", "") + "\r\n");
+                    outText = "PRIVMSG " + tempTextArray[1] + " :"
+                            + clientText.replace("/msg " + tempTextArray[1] + " ", "") + "\r\n";
 
                     if (clientText.toLowerCase().startsWith("/msg nickserv identify"))
                     {
@@ -189,25 +189,35 @@ public class Connection implements ConnectionBase
                     gui.setCurrentTab(tempTextArray[1]);
                 } else if (clientText.startsWith("/whois"))
                 {
-                    writer.write("WHOIS " + tempTextArray[1] + "\r\n");
+                    outText = "WHOIS " + tempTextArray[1] + "\r\n";
                 } else if (clientText.startsWith("/quit"))
                 {
-                    writer.write("QUIT :" + clientText.replace("/quit ", "") + "\r\n");
+                    outText = "QUIT :" + clientText.replace("/quit ", "") + "\r\n" ;
                 } else if (clientText.startsWith("/part"))
                 {
-                    writer.write("PART " + fromChannel + " :" + clientText.replace("/part  ", "") + "\r\n");
-                } else if (clientText.startsWith("/me"))
+                    outText = "PART " + fromChannel + " :" + clientText.replace("/part  ", "") + "\r\n";
+                } else if (clientText.startsWith("/me") || clientText.startsWith("/action"))
                 {
-                    writer.write("PRIVMSG " + fromChannel + " :" + '\001' + "ACTION" + '\001'
-                            + clientText.replace("/me ", "") + "\r\n");
+                    String tempText = clientText.replace("/me ", "").replace("/action ", "");
+                    outText = "PRIVMSG " + fromChannel + " :" + Constants.CTCP_DELIMITER + "ACTION "
+                            + tempText + Constants.CTCP_DELIMITER + "\r\n";
+
+                    if(fromChannel.startsWith("#"))
+                    {
+                        server.printChannelText(fromChannel, "> "+tempText, getServer().getNick());
+                    } else {
+                        server.printChannelText(fromChannel, "> "+tempText, fromChannel);
+                    }
+
                 } else if (clientText.startsWith("CAP") || clientText.startsWith("AUTHENTICATE"))
                 {
-                    writer.write(clientText + "\r\n");
+                    outText = clientText + "\r\n";
                 } else
                 {
-                    writer.write("PRIVMSG " + fromChannel + " :" + clientText + "\r\n");
+                    outText = "PRIVMSG " + fromChannel + " :" + clientText + "\r\n";
                     server.printChannelText(fromChannel, clientText, getServer().getNick());
                 }
+                writer.write(outText);
                 writer.flush();
 
                 Constants.LOGGER.log(Level.FINE, "Client Text:- " + fromChannel + " " + clientText);

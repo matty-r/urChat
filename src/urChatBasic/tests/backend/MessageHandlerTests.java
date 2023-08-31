@@ -3,11 +3,11 @@ package urChatBasic.tests.backend;
 import org.junit.Before;
 import org.junit.Test;
 import urChatBasic.backend.MessageHandler;
-import urChatBasic.backend.MessageHandler.ActionMessage;
 import urChatBasic.backend.MessageHandler.Message;
-import urChatBasic.backend.MessageHandler.PrivateMessage;
+import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCServer;
+import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.UserGUI;
 import static org.junit.Assert.assertEquals;
 
@@ -15,12 +15,17 @@ public class MessageHandlerTests {
     MessageHandler testHandler;
     IRCServer testServer;
     UserGUI testGUI;
+    IRCRoomBase testChannel;
+    IRCUser testUser;
 
     @Before
     public void setUp() throws Exception {
         DriverGUI.createGUI();
         testGUI = DriverGUI.gui;
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy", "1234", true);
+        testUser = new IRCUser(testServer, "testUser");
+        testServer.addToPrivateRooms(testUser);
+        testChannel = testServer.getCreatedPrivateRoom(testUser.toString());
         testHandler = new MessageHandler(testServer);
     }
 
@@ -37,7 +42,7 @@ public class MessageHandlerTests {
     @Test
     public void actionMessage()
     {
-        String rawMessage = ":channeluser!~channeluser@userHost PRIVMSG #urchatclient :ACTION claps hands";
+        String rawMessage = ":"+testUser+"!~"+testUser+"@userHost PRIVMSG "+testUser+" :ACTION claps hands";
         Message testMessage = testHandler.new Message(testHandler, rawMessage);
         testHandler.parseMessage(testMessage);
         assertEquals("> claps hands", testMessage.getBody());
