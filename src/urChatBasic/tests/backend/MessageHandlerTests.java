@@ -3,17 +3,25 @@ package urChatBasic.tests.backend;
 import org.junit.Before;
 import org.junit.Test;
 import urChatBasic.backend.MessageHandler;
+import urChatBasic.backend.MessageHandler.ActionMessage;
 import urChatBasic.backend.MessageHandler.Message;
-
+import urChatBasic.backend.MessageHandler.PrivateMessage;
+import urChatBasic.frontend.DriverGUI;
+import urChatBasic.frontend.IRCServer;
+import urChatBasic.frontend.UserGUI;
 import static org.junit.Assert.assertEquals;
 
 public class MessageHandlerTests {
     MessageHandler testHandler;
-
+    IRCServer testServer;
+    UserGUI testGUI;
 
     @Before
     public void setUp() throws Exception {
-        testHandler = new MessageHandler(null);
+        DriverGUI.createGUI();
+        testGUI = DriverGUI.gui;
+        testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy", "1234", true);
+        testHandler = new MessageHandler(testServer);
     }
 
     @Test
@@ -27,12 +35,22 @@ public class MessageHandlerTests {
     }
 
     @Test
+    public void actionMessage()
+    {
+        String rawMessage = ":channeluser!~channeluser@userHost PRIVMSG #urchatclient :ACTION claps hands";
+        Message testMessage = testHandler.new Message(testHandler, rawMessage);
+        testHandler.parseMessage(testMessage);
+        assertEquals("> claps hands", testMessage.getBody());
+    }
+
+    @Test
     public void noticeMessage2()
     {
         String rawMessage = ":channeluser!channelname@channelname/bot/primary NOTICE myUsername :this is just some notice message directed to this user from the ";
         Message testMessage = testHandler.new Message(testHandler, rawMessage);
 
         assertEquals("#channelname", testMessage.getChannel());
+        // TODO create this test
     }
 
     @Test
@@ -63,10 +81,20 @@ public class MessageHandlerTests {
     }
 
     @Test
+    public void testQuitServer()
+    {
+        String rawMessage = "ERROR :\"Goodbye cruel world\"";
+        Message testMessage = testHandler.new Message(testHandler, rawMessage);
+
+        assertEquals(MessageHandler.DisconnectMessage.class, testMessage.getMessageBase().getClass());
+    }
+
+    @Test
     public void emojiMessage()
     {
         // test display of emojis in text
         String rawMessage = ":sd!~discord@user/sd PRIVMSG #somechannel :02<textwithEMOJI 🇦🇺> this should show a flag";
+        // TODO create this test
     }
 
     @Test
@@ -75,5 +103,6 @@ public class MessageHandlerTests {
         // test displaying urls
         String rawMessage = "https://i.imgur.com/somepicture.png";
         String rawMessage2 = "https://duckduckgo.com/?q=irc+urchat&kp=1&t=h_&ia=web";
+        // TODO create this test
     }
 }

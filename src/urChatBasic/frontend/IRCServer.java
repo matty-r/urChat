@@ -216,7 +216,20 @@ public class IRCServer extends JPanel implements IRCServerBase
     @Override
     public String getNick()
     {
-        return serverConnection.getNick();
+        return nick;
+    }
+
+    @Override
+    public void setNick(String newNick)
+    {
+        nick = newNick;
+    }
+
+
+    @Override
+    public String getLogin()
+    {
+        return login;
     }
 
     @Override
@@ -235,6 +248,30 @@ public class IRCServer extends JPanel implements IRCServerBase
     public String getPort()
     {
         return this.port;
+    }
+
+    @Override
+    public Boolean usingSOCKS()
+    {
+        return useSOCKS;
+    }
+
+    @Override
+    public Boolean usingTLS()
+    {
+        return isTLS;
+    }
+
+    @Override
+    public String getProxyHost ()
+    {
+        return proxyHost;
+    }
+
+    @Override
+    public String getProxyPort ()
+    {
+        return proxyPort;
     }
 
     // The server tab right-click menu
@@ -308,7 +345,7 @@ public class IRCServer extends JPanel implements IRCServerBase
     {
         try
         {
-            serverConnection = new Connection(this, nick, login, port, isTLS, proxyHost, proxyPort, useSOCKS, gui);
+            serverConnection = new Connection(this);
         } catch (Exception e)
         {
             Constants.LOGGER.log(Level.SEVERE, "Failed to create backend! " + e.getLocalizedMessage());
@@ -643,7 +680,7 @@ public class IRCServer extends JPanel implements IRCServerBase
         {
             IRCChannel tempChannel = getCreatedChannel(channelName);
             if (tempChannel != null)
-                if (thisUser.equals(serverConnection.getNick()))
+                if (thisUser.equals(getNick()))
                     quitChannel(channelName);
                 else
                     tempChannel.removeFromUsersList(channelName, thisUser);

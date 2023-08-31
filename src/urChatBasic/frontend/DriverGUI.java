@@ -3,19 +3,24 @@ package urChatBasic.frontend;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.URL;
+import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+import urChatBasic.backend.LookAndFeelLoader;
 import urChatBasic.base.Constants;
 
 public class DriverGUI
 {
     public static UserGUI gui = null;
     public static JFrame frame = null;
+    // public static LookAndFeelLoader lafLoader = new LookAndFeelLoader();
     private static ImageIcon img;
 
     public static void main(String[] args) throws IOException
@@ -23,22 +28,79 @@ public class DriverGUI
 
         Constants.init();
         URL imgPath = new URL(Constants.RESOURCES_DIR + "urChat Icon.png");
+
         img = new ImageIcon(imgPath);
+        boolean flatLafAvailable = false;
+
         try
         {
-            boolean flatLafAvailable = false;
+            System.out.println("TODO: LookAndFeelLoader not yet implemented completely");
+            // LookAndFeelLoader lafLoader = new LookAndFeelLoader(Thread.currentThread().getContextClassLoader());
+            // Thread.currentThread().setContextClassLoader(lafLoader.newClassLoader);
+            // Properties lafProps = lafLoader.loadedProps;
 
-            if(!flatLafAvailable)
-            {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            }
+
+            // // Load all classes in the JAR?
+            // for (Object lafName : lafLoader.lafClasses.keySet()) {
+            //     // Whats the best way to load the needed classes correctly?
+            //     try{
+            //         // ((Class) lafLoader.lafClasses.get(lafName)).getClassLoader().loadClass((String) lafName);
+            //         Thread.currentThread().getContextClassLoader().loadClass((String) lafName);
+            //         // Thread.currentThread().getContextClassLoader().loadClass((String) lafName);
+            //         Class.forName((String) lafName, true, ((Class) lafLoader.lafClasses.get(lafName)).getClassLoader());
+            //     } catch (NoClassDefFoundError | Exception classDef)
+            //     {
+            //         System.out.println(classDef);
+            //     }
+            // }
+
+
+            // // 'Construct' and set LAF
+            // for (Object lafName : lafLoader.foundLAFs.keySet()) {
+            //     Constructor lafConstructor = (Constructor) lafLoader.foundLAFs.get(lafName);
+
+            //     LookAndFeel newLAF = (LookAndFeel) lafConstructor.newInstance();
+            //     try{
+
+            //             // UIManager.setLookAndFeel("FlatDarkLaf");
+            //             for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+            //                 System.out.println(info.getName());
+            //                 if ("FlatMacLightLaf".equals(info.getName())) {
+            //                     UIManager.setLookAndFeel(info.getClassName());
+            //                 }
+            //             }
+            //             flatLafAvailable = true;
+            //             break;
+            //     } catch(Exception  e) {
+            //         throw e;
+            //     }
+            //     // Figure out choosing and loading others later
+            //     // break;
+            // }
 
         } catch (Exception e)
         {
-            Constants.LOGGER.log(Level.WARNING, "Failed to setLookAndFeel! " + e.getLocalizedMessage());
+            Constants.LOGGER.log(Level.WARNING, "Failed to set FlatLAF! " + e.getLocalizedMessage());
+        } finally {
+            if(!flatLafAvailable)
+            {
+                try
+                {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                } catch (Exception e)
+                {
+                    Constants.LOGGER.log(Level.WARNING, "Failed to setLookAndFeel! " + e.getLocalizedMessage());
+                }
+            }
         }
-        DriverGUI driver = new DriverGUI();
-        driver.startGUI();
+
+        // Starts doing some Swing stuff
+        // UIManagerDefaults thisng = new UIManagerDefaults();
+        // thisng.createAndShowGUI();
+        Constants.LOGGER.log(Level.INFO, "Starting up..");
+        createGUI();
+
+        startGUI();
     }
 
 
@@ -50,18 +112,33 @@ public class DriverGUI
                 + " MB; space left in heap = " + (r.freeMemory() / (mb)) + " MB";
     }
 
-    public void startGUI()
+    public static void createGUI()
     {
         frame = new JFrame("urChat");
-
         gui = new UserGUI();
-        new Thread(gui).start();
-        Constants.LOGGER.log(Level.INFO, "Starting up..");
+    }
+
+    public static void startGUI()
+    {
+
+        // ClassLoader mainLoader = Thread.currentThread().getContextClassLoader();
+
+        // mainLoader = new JoinClassLoader(mainLoader, UCAuthTypeComboBox.class.getClassLoader(), DnDTabbedPane.class.getClassLoader());
+        // Thread.currentThread().setContextClassLoader(mainLoader);
+        // guiThread.setContextClassLoader(threadLoader);
 
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.getContentPane().add(gui);
         frame.pack();
-        frame.setIconImage(img.getImage());
+
+        if(img != null)
+            frame.setIconImage(img.getImage());
+
+        Thread guiThread = new Thread(gui);
+        guiThread.start();
+
+        Constants.LOGGER.log(Level.INFO, "Started");
+
         frame.setVisible(true);
         frame.addWindowListener(new WindowAdapter()
         {
@@ -75,8 +152,5 @@ public class DriverGUI
                     tempHandler.close();
             }
         });
-
-
-
     }
 }

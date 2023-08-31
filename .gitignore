@@ -226,3 +226,6 @@ Logs/*
 .vscode/*
 out/*
 lib/*
+themes/*
+src/urChatBasic/backend/JoinClassLoader.java
+src/urChatBasic/frontend/utils/UIManagerDefaults.java

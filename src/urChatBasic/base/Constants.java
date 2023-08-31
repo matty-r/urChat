@@ -25,6 +25,7 @@ public class Constants
 {
 
     public static final URL RESOURCES_DIR = DriverGUI.class.getResource(File.separator + "images" + File.separator);
+    public static final String THEMES_DIR = "themes" + File.separator;
     public static String DIRECTORY_LOGS = "Logs" + File.separator;
     public static Class BACKEND_CLASS;
     public static String BACKEND_CLASS_FULLNAME = "urChatBasic.backend.Connection";

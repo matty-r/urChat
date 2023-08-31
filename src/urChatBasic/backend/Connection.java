@@ -15,6 +15,7 @@ import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.UserGUIBase;
+import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import javax.net.ssl.SSLSocketFactory;
 import javax.swing.JOptionPane;
@@ -27,17 +28,11 @@ public class Connection implements ConnectionBase
     // private String creationTime = (new Date()).toString();
 
     private IRCServerBase server;
-    private String myNick;
-    private String login;
-    private boolean isTLS;
-    private String proxyHost;
-    private String proxyPort;
-    private boolean useSOCKS;
-    private String portNumber;
+
     private Socket mySocket;
 
     private MessageHandler messageHandler;
-    public UserGUIBase gui;
+    public UserGUIBase gui = DriverGUI.gui;
 
     // Used for Logging messages received by the server
     // Debug Mode
@@ -47,20 +42,9 @@ public class Connection implements ConnectionBase
     // private Date todayDate = new Date();
     // private String debugFile;
 
-    public Connection(IRCServerBase server, String nick, String login, String portNumber, Boolean isTLS,
-            String proxyHost, String proxyPort, Boolean useSOCKS, UserGUIBase ugb)
+    public Connection(IRCServerBase server)
     {
-        this.gui = ugb;
         this.server = server;
-        this.myNick = nick;
-        this.isTLS = isTLS;
-        this.proxyHost = proxyHost;
-        this.proxyPort = proxyPort;
-        this.useSOCKS = useSOCKS;
-        if (portNumber.trim().equals(""))
-            this.portNumber = Constants.DEFAULT_FIRST_PORT;
-        this.portNumber = portNumber;
-        this.login = login;
     }
 
     /*
@@ -86,40 +70,6 @@ public class Connection implements ConnectionBase
         return this.server;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.base.ConnectionBase#getServer()
-     */
-    @Override
-    public String getPortNumber()
-    {
-        return this.portNumber;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.base.ConnectionBase#getServer()
-     */
-    @Override
-    public String getLogin()
-    {
-        return this.login;
-    }
-
-    @Override
-    public boolean usingTLS()
-    {
-        return isTLS;
-    }
-
-    @Override
-    public boolean usingSOCKS()
-    {
-        return useSOCKS;
-    }
-
     private void startUp() throws IOException
     {
         BufferedReader reader;
@@ -128,13 +78,13 @@ public class Connection implements ConnectionBase
         localMessage("Attempting to connect to " + server);
 
         // Determine the socket type to be used
-        if (usingSOCKS())
+        if (getServer().usingSOCKS())
         {
-            Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort)));
+            Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(getServer().getProxyHost(), Integer.parseInt(getServer().getProxyPort())));
             Socket proxySocket = new Socket(proxy);
-            InetSocketAddress address = new InetSocketAddress(server.getName(), Integer.parseInt(getPortNumber()));
+            InetSocketAddress address = new InetSocketAddress(server.getName(), Integer.parseInt(getServer().getPort()));
 
-            if (usingTLS())
+            if (getServer().usingTLS())
             {
                 proxySocket.connect(address, 5000);
 
@@ -147,13 +97,13 @@ public class Connection implements ConnectionBase
             }
         } else
         {
-            if (usingTLS())
+            if (getServer().usingTLS())
             {
                 SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-                mySocket = sslsocketfactory.createSocket(server.getName(), Integer.parseInt(getPortNumber()));
+                mySocket = sslsocketfactory.createSocket(server.getName(), Integer.parseInt(getServer().getPort()));
             } else
             {
-                mySocket = new Socket(server.getName(), Integer.parseInt(getPortNumber()));
+                mySocket = new Socket(server.getName(), Integer.parseInt(getServer().getPort()));
             }
         }
 
@@ -169,9 +119,9 @@ public class Connection implements ConnectionBase
 
         // Initiate connection to the server.
         writer.write("CAP LS 302\r\n");
-        writer.write("NICK " + getNick() + "\r\n");
-        writer.write("USER " + login + " 8 * : " + getLogin() + "\r\n");
-        localMessage("Connect with nick " + getNick());
+        writer.write("NICK " + getServer().getNick() + "\r\n");
+        writer.write("USER " + getServer().getLogin() + " 8 * : " + getServer().getLogin() + "\r\n");
+        localMessage("Connect with nick " + getServer().getNick());
         writer.flush();
 
         while ((line = reader.readLine()) != null && !shutdown)
@@ -204,28 +154,6 @@ public class Connection implements ConnectionBase
     /*
      * (non-Javadoc)
      *
-     * @see urChatBasic.base.ConnectionBase#setNick(java.lang.String)
-     */
-    @Override
-    public void setNick(String newNick)
-    {
-        myNick = newNick;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.base.ConnectionBase#getNick()
-     */
-    @Override
-    public String getNick()
-    {
-        return myNick;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see urChatBasic.base.ConnectionBase#sendClientText(java.lang.String, java.lang.String)
      */
     @Override
@@ -244,7 +172,7 @@ public class Connection implements ConnectionBase
                 } else if (clientText.startsWith("/nick"))
                 {
                     writer.write("NICK " + clientText.replace("/nick ", "") + "\r\n");
-                    myNick = clientText.replace("/nick ", "");
+                    getServer().setNick(clientText.replace("/nick ", ""));
                 } else if (clientText.startsWith("/msg"))
                 {
                     tempTextArray = clientText.split(" ");
@@ -257,7 +185,7 @@ public class Connection implements ConnectionBase
                     }
 
                     server.printPrivateText(tempTextArray[1], clientText.replace("/msg " + tempTextArray[1] + " ", ""),
-                            myNick);
+                            getServer().getNick());
                     gui.setCurrentTab(tempTextArray[1]);
                 } else if (clientText.startsWith("/whois"))
                 {
@@ -278,7 +206,7 @@ public class Connection implements ConnectionBase
                 } else
                 {
                     writer.write("PRIVMSG " + fromChannel + " :" + clientText + "\r\n");
-                    server.printChannelText(fromChannel, clientText, myNick);
+                    server.printChannelText(fromChannel, clientText, getServer().getNick());
                 }
                 writer.flush();
 
@@ -316,16 +244,20 @@ public class Connection implements ConnectionBase
     {
         try
         {
-            if (getPortNumber() != null && getServer() != null && getNick() != null)
+            if (getServer().getPort() != null && getServer() != null && getServer().getNick() != null)
             {
                 startUp();
             } else
             {
-                Constants.LOGGER.log(Level.SEVERE, "Incomplete settings: (Port " + getPortNumber() + ") (Server "
-                        + getServer() + ") (Nick " + getNick() + ") ");
+                Constants.LOGGER.log(Level.SEVERE, "Incomplete settings: (Port " + getServer().getPort() + ") (Server "
+                        + getServer() + ") (Nick " + getServer().getNick() + ") ");
             }
 
-            Constants.LOGGER.log(Level.INFO, "Disconnected safely!");
+            if(shutdown)
+                Constants.LOGGER.log(Level.INFO, "Disconnected safely!");
+            else
+                Constants.LOGGER.log(Level.WARNING, "Disconnected unsafely!");
+
         } catch (IOException e)
         {
             Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());

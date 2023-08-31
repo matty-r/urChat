@@ -1,6 +1,5 @@
 package urChatBasic.base;
 
-import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.IRCChannel;
 import urChatBasic.frontend.IRCPrivate;
@@ -10,6 +9,12 @@ public interface IRCServerBase
 {
 
     public abstract String getNick ();
+
+    public abstract void setNick (String newNick);
+
+    public abstract String getName ();
+
+    public abstract String getLogin ();
 
     public abstract String getPassword ();
 
@@ -23,7 +28,17 @@ public interface IRCServerBase
 
     public abstract void setName (String serverName);
 
-    public abstract String getName ();
+    public abstract String getServer ();
+
+    public abstract String getPort ();
+
+    public abstract String getProxyHost ();
+
+    public abstract String getProxyPort ();
+
+    public abstract Boolean usingTLS ();
+
+    public abstract Boolean usingSOCKS ();
 
     /**
      * Check to see if there are any channels at all.
@@ -158,8 +173,4 @@ public interface IRCServerBase
      * @param newUser
      */
     public abstract void renameUser (String oldUserName, String newUserName);
-
-    public abstract String getServer ();
-
-    public abstract String getPort ();
 }

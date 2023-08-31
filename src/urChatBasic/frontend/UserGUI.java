@@ -77,7 +77,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     // Identification
     private static final JLabel userNameLabel = new JLabel("Nick:");
-    private static final JTextField userNameTextField = new JTextField("");
+    private static final JTextField userNameTextField = new JTextField("", 12);
     private static final JLabel realNameLabel = new JLabel("Real name:");
     private static final JTextField realNameTextField = new JTextField("");
 
@@ -89,9 +89,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     // Connection
     private static final JLabel serverNameLabel = new JLabel("Server:");
-    private static final JTextField servernameTextField = new JTextField("");
+    private static final JTextField servernameTextField = new JTextField("", 8);
     private static final JLabel serverPortLabel = new JLabel("Port:");
-    private static final JTextField serverPortTextField = new JTextField("");
+    private static final JTextField serverPortTextField = new JTextField("", 4);
     private static final JLabel serverUseTLSLabel = new JLabel("TLS:");
     private static final JCheckBox serverTLSCheckBox = new JCheckBox();
     private static final JButton connectButton = new JButton("Connect");
@@ -99,7 +99,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // Proxy
     private static final JLabel proxyHostLabel = new JLabel("Proxy Host:");
     private static final JTextField proxyHostNameTextField = new JTextField("");
-    private static final JLabel proxyPortLabel = new JLabel("Port:");
+    private static final JLabel proxyPortLabel = new JLabel("Port:", 4);
     private static final JTextField proxyPortTextField = new JTextField("");
     private static final JLabel serverUseProxyLabel = new JLabel("Use SOCKS:");
     private static final JCheckBox serverProxyCheckBox = new JCheckBox();
@@ -398,8 +398,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         optionsMainPanel.add(optionsRightPanel, BorderLayout.CENTER);
         optionsList.setSelectedIndex(OPTIONS_INDEX);
 
-        optionsClientPanel.setPreferredSize(new Dimension(500, 350));
-        serverOptionsPanel.setPreferredSize(new Dimension(200, 350));
+        optionsClientPanel.setPreferredSize(new Dimension(500, 0));
+        serverOptionsPanel.setPreferredSize(new Dimension(200, 0));
 
         optionsRightPanel.add(serverScroller, "Server");
         optionsRightPanel.add(clientScroller, "Client");
@@ -410,7 +410,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     private void setupLeftOptionsPanel()
     {
-        optionsLeftPanel.setBackground(Color.LIGHT_GRAY);
+        optionsLeftPanel.setBackground(optionsList.getBackground());
         optionsLeftPanel.setPreferredSize(new Dimension(100, 0));
         optionsLeftPanel.setLayout(new BorderLayout());
         // optionsLeftPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -423,7 +423,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         ListSelectionModel listSelectionModel = optionsList.getSelectionModel();
         listSelectionModel.addListSelectionListener(new OptionsListSelectionHandler());
 
-        optionsRightPanel.setBackground(Color.BLACK);
+        // optionsRightPanel.setBackground(Color.BLACK);
         optionsRightPanel.setLayout(new CardLayout());
 
         setupServerOptionsPanelComponents();
@@ -443,58 +443,59 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // User stuff
         serverOptionsPanel.add(userNameLabel);
         serverOptionsPanel.add(userNameTextField);
-        userNameTextField.setPreferredSize(new Dimension(100, 20));
+        // userNameTextField.setPreferredSize(new Dimension(100, 24));
+        // userNameTextField.setMinimumSize(new Dimension(100, 0));
 
         serverOptionsPanel.add(realNameLabel);
         serverOptionsPanel.add(realNameTextField);
-        realNameTextField.setPreferredSize(new Dimension(100, 20));
+        // realNameTextField.setMinimumSize(new Dimension(100, 0));
 
         serverOptionsPanel.add(authenticationTypeLabel);
         serverOptionsPanel.add(authenticationTypeChoice);
         authenticationTypeChoice.addActionListener(new UCAuthTypeComboBoxChangeHandler());
-        authenticationTypeChoice.setPreferredSize(new Dimension(200, 20));
+        // authenticationTypeChoice.setPreferredSize(new Dimension(200, 20));
 
         serverOptionsPanel.add(passwordLabel);
         serverOptionsPanel.add(passwordTextField);
         passwordTextField.setEchoChar('*');
-        passwordTextField.setPreferredSize(new Dimension(200, 20));
+        // passwordTextField.setPreferredSize(new Dimension(200, 20));
 
         // Server Stuff
         serverOptionsPanel.add(serverNameLabel);
         serverOptionsPanel.add(servernameTextField);
-        servernameTextField.setPreferredSize(new Dimension(100, 20));
+        // servernameTextField.setPreferredSize(new Dimension(100, 20));
 
         serverOptionsPanel.add(serverPortLabel);
         serverOptionsPanel.add(serverPortTextField);
-        serverPortTextField.setPreferredSize(new Dimension(50, 20));
+        // serverPortTextField.setPreferredSize(new Dimension(50, 20));
 
         serverOptionsPanel.add(serverUseTLSLabel);
         serverOptionsPanel.add(serverTLSCheckBox);
-        serverTLSCheckBox.setPreferredSize(new Dimension(50, 20));
+        // serverTLSCheckBox.setPreferredSize(new Dimension(50, 20));
 
         // Proxy Stuff
         serverOptionsPanel.add(proxyHostLabel);
         serverOptionsPanel.add(proxyHostNameTextField);
-        proxyHostNameTextField.setPreferredSize(new Dimension(100, 20));
+        // proxyHostNameTextField.setPreferredSize(new Dimension(100, 20));
 
         serverOptionsPanel.add(proxyPortLabel);
         serverOptionsPanel.add(proxyPortTextField);
-        proxyPortTextField.setPreferredSize(new Dimension(50, 20));
+        // proxyPortTextField.setPreferredSize(new Dimension(50, 20));
 
         serverOptionsPanel.add(serverUseProxyLabel);
         serverOptionsPanel.add(serverProxyCheckBox);
-        serverProxyCheckBox.setPreferredSize(new Dimension(50, 20));
+        // serverProxyCheckBox.setPreferredSize(new Dimension(50, 20));
 
         // Channel Stuff
         serverOptionsPanel.add(firstChannelLabel);
         serverOptionsPanel.add(firstChannelTextField);
-        firstChannelTextField.setPreferredSize(new Dimension(100, 20));
+        // firstChannelTextField.setPreferredSize(new Dimension(100, 20));
 
         serverOptionsPanel.add(connectButton);
         connectButton.addActionListener(new ConnectPressed());
         serverOptionsPanel.add(autoConnectToFavourites);
 
-        favouritesScroller.setPreferredSize(new Dimension(autoConnectToFavourites.getPreferredSize().width, 0));
+        favouritesScroller.setPreferredSize(new Dimension(200, 100));
         favouritesList.addMouseListener(new FavouritesPopClickListener());
         serverOptionsPanel.add(favouritesScroller);
     }
@@ -514,13 +515,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         final int TOP_SPACING = 6;
         final int TOP_ALIGNED = 0;
         final int LEFT_ALIGNED = 0;
-        final int LEFT_SPACING = 0;
+        final int RIGHT_ALIGNED = 0;
+        final int LEFT_SPACING = 6;
 
         // Components are aligned off the top label
         // User stuff
-        serverLayout.putConstraint(SpringLayout.WEST, userNameLabel, 6, SpringLayout.WEST,
+        serverLayout.putConstraint(SpringLayout.NORTH, userNameLabel, TOP_SPACING * 2, SpringLayout.NORTH,
                 serverOptionsPanel);
-        serverLayout.putConstraint(SpringLayout.NORTH, userNameLabel, 12, SpringLayout.NORTH,
+        serverLayout.putConstraint(SpringLayout.WEST, userNameLabel, LEFT_SPACING * 2, SpringLayout.WEST,
                 serverOptionsPanel);
 
         serverLayout.putConstraint(SpringLayout.NORTH, userNameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
@@ -537,6 +539,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 realNameLabel);
         serverLayout.putConstraint(SpringLayout.WEST, realNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
                 realNameLabel);
+        serverLayout.putConstraint(SpringLayout.EAST, realNameTextField, RIGHT_ALIGNED, SpringLayout.EAST,
+                userNameTextField);
 
         // Authentication Stuff
 
@@ -549,6 +553,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 authenticationTypeLabel);
         serverLayout.putConstraint(SpringLayout.WEST, authenticationTypeChoice, LEFT_ALIGNED, SpringLayout.WEST,
                 authenticationTypeLabel);
+        serverLayout.putConstraint(SpringLayout.EAST, authenticationTypeChoice, RIGHT_ALIGNED, SpringLayout.EAST,
+                realNameTextField);
 
         // Password
         serverLayout.putConstraint(SpringLayout.NORTH, passwordLabel, TOP_SPACING, SpringLayout.SOUTH,
@@ -560,6 +566,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 passwordLabel);
         serverLayout.putConstraint(SpringLayout.WEST, passwordTextField, LEFT_ALIGNED, SpringLayout.WEST,
                 passwordLabel);
+        serverLayout.putConstraint(SpringLayout.EAST, passwordTextField, RIGHT_ALIGNED, SpringLayout.EAST,
+                authenticationTypeChoice);
 
         // Server stuff
         serverLayout.putConstraint(SpringLayout.NORTH, serverNameLabel, TOP_SPACING, SpringLayout.SOUTH,
@@ -574,7 +582,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         serverLayout.putConstraint(SpringLayout.NORTH, serverPortLabel, TOP_ALIGNED, SpringLayout.NORTH,
                 serverNameLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, serverPortLabel, LEFT_SPACING, SpringLayout.EAST,
+        serverLayout.putConstraint(SpringLayout.WEST, serverPortLabel, LEFT_ALIGNED, SpringLayout.EAST,
                 servernameTextField);
 
         serverLayout.putConstraint(SpringLayout.NORTH, serverPortTextField, TOP_ALIGNED, SpringLayout.SOUTH,
@@ -584,7 +592,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         serverLayout.putConstraint(SpringLayout.NORTH, serverUseTLSLabel, TOP_ALIGNED, SpringLayout.NORTH,
                 serverPortLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, serverUseTLSLabel, LEFT_SPACING, SpringLayout.EAST,
+        serverLayout.putConstraint(SpringLayout.WEST, serverUseTLSLabel, LEFT_ALIGNED, SpringLayout.EAST,
                 serverPortTextField);
 
         serverLayout.putConstraint(SpringLayout.NORTH, serverTLSCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
@@ -602,9 +610,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 proxyHostLabel);
         serverLayout.putConstraint(SpringLayout.WEST, proxyHostNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
                 proxyHostLabel);
+        serverLayout.putConstraint(SpringLayout.EAST, proxyHostNameTextField, RIGHT_ALIGNED, SpringLayout.EAST,
+                servernameTextField);
 
         serverLayout.putConstraint(SpringLayout.NORTH, proxyPortLabel, TOP_ALIGNED, SpringLayout.NORTH, proxyHostLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, proxyPortLabel, LEFT_SPACING, SpringLayout.EAST,
+        serverLayout.putConstraint(SpringLayout.WEST, proxyPortLabel, LEFT_ALIGNED, SpringLayout.EAST,
                 proxyHostNameTextField);
 
         serverLayout.putConstraint(SpringLayout.NORTH, proxyPortTextField, TOP_ALIGNED, SpringLayout.SOUTH,
@@ -614,7 +624,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         serverLayout.putConstraint(SpringLayout.NORTH, serverUseProxyLabel, TOP_ALIGNED, SpringLayout.NORTH,
                 proxyPortLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, serverUseProxyLabel, LEFT_SPACING, SpringLayout.EAST,
+        serverLayout.putConstraint(SpringLayout.WEST, serverUseProxyLabel, LEFT_ALIGNED, SpringLayout.EAST,
                 proxyPortTextField);
 
         serverLayout.putConstraint(SpringLayout.NORTH, serverProxyCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
@@ -635,20 +645,22 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         serverLayout.putConstraint(SpringLayout.NORTH, connectButton, TOP_SPACING * TOP_SPACING, SpringLayout.SOUTH,
                 firstChannelTextField);
-        serverLayout.putConstraint(SpringLayout.WEST, connectButton, LEFT_SPACING, SpringLayout.WEST,
+        serverLayout.putConstraint(SpringLayout.WEST, connectButton, LEFT_ALIGNED, SpringLayout.WEST,
                 firstChannelTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, autoConnectToFavourites, TOP_SPACING, SpringLayout.SOUTH,
-                connectButton);
-        serverLayout.putConstraint(SpringLayout.WEST, autoConnectToFavourites, LEFT_SPACING, SpringLayout.WEST,
-                connectButton);
+        serverLayout.putConstraint(SpringLayout.NORTH, autoConnectToFavourites, TOP_ALIGNED, SpringLayout.NORTH,
+                userNameLabel);
+        serverLayout.putConstraint(SpringLayout.WEST, autoConnectToFavourites, LEFT_SPACING, SpringLayout.EAST,
+                serverUseProxyLabel);
 
         serverLayout.putConstraint(SpringLayout.NORTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
                 autoConnectToFavourites);
-        serverLayout.putConstraint(SpringLayout.SOUTH, favouritesScroller, TOP_ALIGNED, SpringLayout.SOUTH,
-                serverOptionsPanel);
-        serverLayout.putConstraint(SpringLayout.WEST, favouritesScroller, LEFT_SPACING, SpringLayout.WEST,
+        serverLayout.putConstraint(SpringLayout.WEST, favouritesScroller, LEFT_ALIGNED, SpringLayout.WEST,
                 autoConnectToFavourites);
+        serverLayout.putConstraint(SpringLayout.EAST, favouritesScroller, LEFT_ALIGNED, SpringLayout.EAST,
+                autoConnectToFavourites);
+        serverLayout.putConstraint(SpringLayout.SOUTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
+                connectButton);
     }
 
     private void setupClientOptionsPanelComponents()
@@ -669,16 +681,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         optionsClientPanel.add(limitServerLines);
         optionsClientPanel.add(limitServerLinesCount);
 
-        limitServerLinesCount.setPreferredSize(new Dimension(50, 20));
+        // limitServerLinesCount.setPreferredSize(new Dimension(50, 20));
         optionsClientPanel.add(limitChannelLines);
 
         optionsClientPanel.add(limitChannelLinesCount);
 
-        limitChannelLinesCount.setPreferredSize(new Dimension(50, 20));
+        // limitChannelLinesCount.setPreferredSize(new Dimension(50, 20));
         optionsClientPanel.add(enableTimeStamps);
 
         clientFontPanel = new FontPanel(getFont(), Constants.FRONTEND_PREFS);
-        clientFontPanel.setPreferredSize(new Dimension(500, 40));
+        clientFontPanel.setPreferredSize(new Dimension(500, 48));
         clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
         optionsClientPanel.add(clientFontPanel);
 
@@ -688,7 +700,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         eventTickerDelay.setPaintTicks(true);
 
         eventTickerDelay.setPaintLabels(true);
-        eventTickerDelay.setMaximumSize(new Dimension(400, 40));
+        // eventTickerDelay.setMaximumSize(new Dimension(400, 40));
 
         eventTickerDelay.setToolTipText("Event Ticker movement delay (Lower is faster)");
 
@@ -1513,7 +1525,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         this.setLayout(new BorderLayout());
         this.add(tabbedPane, BorderLayout.CENTER);
 
-        this.setBackground(Color.gray);
+        // this.setBackground(Color.gray);
         getClientSettings();
     }
 

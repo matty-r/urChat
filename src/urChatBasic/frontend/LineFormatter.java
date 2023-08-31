@@ -10,17 +10,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.JPopupMenu;
+import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import urChatBasic.base.Constants;
-import urChatBasic.frontend.IRCUser.UserPopUp;
+import urChatBasic.frontend.utils.URColour;
 
 public class LineFormatter
 {
     private String myNick;
     private Font myFont;
+    public SimpleAttributeSet defaultStyle;
     public SimpleAttributeSet timeStyle;
     public SimpleAttributeSet nameStyle;
     public SimpleAttributeSet lineStyle;
@@ -30,33 +32,38 @@ public class LineFormatter
     {
         this.myNick = myNick;
         this.myFont = myFont;
+        defaultStyle = defaultStyle();
         timeStyle = standardStyle();
         nameStyle = standardStyle();
         lineStyle = standardStyle();
     }
 
+    public SimpleAttributeSet defaultStyle()
+    {
+        SimpleAttributeSet defaultStyle = new SimpleAttributeSet();
+        defaultStyle.addAttribute("name", "defaultStyle");
+
+        // get the contrasting colour of the background colour
+        StyleConstants.setForeground(defaultStyle, URColour.getContrastColour(UIManager.getColor("Panel.background")));
+        StyleConstants.setFontFamily(defaultStyle, myFont.getFamily());
+        StyleConstants.setFontSize(defaultStyle, myFont.getSize());
+
+        return defaultStyle;
+    }
+
     public SimpleAttributeSet standardStyle()
     {
-
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+        SimpleAttributeSet tempStyle = defaultStyle();
         tempStyle.addAttribute("name", "standardStyle");
-        StyleConstants.setForeground(tempStyle, Color.BLACK);
-        StyleConstants.setBold(tempStyle, myFont.isBold());
-        StyleConstants.setItalic(tempStyle, myFont.isItalic());
-        StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
-        StyleConstants.setFontSize(tempStyle, myFont.getSize());
 
         return tempStyle;
     }
 
     public SimpleAttributeSet lowStyle()
     {
-
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+        SimpleAttributeSet tempStyle = defaultStyle();
         tempStyle.addAttribute("name", "lowStyle");
         StyleConstants.setForeground(tempStyle, Color.LIGHT_GRAY);
-        StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
-        StyleConstants.setFontSize(tempStyle, myFont.getSize());
 
         return tempStyle;
     }
@@ -64,51 +71,48 @@ public class LineFormatter
     public SimpleAttributeSet mediumStyle()
     {
 
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+        SimpleAttributeSet tempStyle = defaultStyle();
         tempStyle.addAttribute("name", "mediumStyle");
-        StyleConstants.setBackground(tempStyle, Color.YELLOW);
-        StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
-        StyleConstants.setFontSize(tempStyle, myFont.getSize());
+        // StyleConstants.setBackground(tempStyle, Color.YELLOW);
 
         return tempStyle;
     }
 
     public SimpleAttributeSet highStyle()
     {
-
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+        SimpleAttributeSet tempStyle = defaultStyle();
         tempStyle.addAttribute("name", "highStyle");
+
+        StyleConstants.setBackground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground")); // TODO: Get highlight colour?
+        StyleConstants.setForeground(tempStyle, URColour.getContrastColour(UIManager.getColor("CheckBoxMenuItem.selectionBackground")));
         StyleConstants.setBold(tempStyle, true);
-        StyleConstants.setBackground(tempStyle, Color.RED);
-        StyleConstants.setForeground(tempStyle, Color.WHITE);
         StyleConstants.setItalic(tempStyle, true);
-        StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
-        StyleConstants.setFontSize(tempStyle, myFont.getSize());
 
         return tempStyle;
     }
 
     public SimpleAttributeSet urlStyle()
     {
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+        SimpleAttributeSet tempStyle = defaultStyle();
+
         tempStyle.addAttribute("name", "urlStyle");
         tempStyle.addAttribute("type", "url");
-        StyleConstants.setForeground(tempStyle, Color.BLUE);
+        StyleConstants.setForeground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground"));
+
         StyleConstants.setUnderline(tempStyle, true);
-        StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
-        StyleConstants.setFontSize(tempStyle, myFont.getSize());
 
         return tempStyle;
     }
 
     public SimpleAttributeSet myStyle()
     {
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet();
+        SimpleAttributeSet tempStyle = defaultStyle();
         tempStyle.addAttribute("name", "myStyle");
-        StyleConstants.setForeground(tempStyle, Color.GREEN);
+        // StyleConstants.setForeground(tempStyle, Color.GREEN);
+        StyleConstants.setForeground(tempStyle, URColour.getInvertedColour(UIManager.getColor("CheckBoxMenuItem.selectionBackground")));
+
+        StyleConstants.setBold(tempStyle, true);
         StyleConstants.setUnderline(tempStyle, true);
-        StyleConstants.setFontFamily(tempStyle, myFont.getFamily());
-        StyleConstants.setFontSize(tempStyle, myFont.getSize());
 
         return tempStyle;
     }

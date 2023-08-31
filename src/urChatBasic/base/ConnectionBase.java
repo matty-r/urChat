@@ -10,18 +10,6 @@ public interface ConnectionBase extends Runnable
 
     public abstract IRCServerBase getServer();
 
-    public abstract void setNick(String newNick);
-
-    public abstract String getNick();
-
-    public abstract String getPortNumber();
-
-    public abstract String getLogin();
-
-    public abstract boolean usingTLS();
-
-    public abstract boolean usingSOCKS();
-
     public abstract void sendClientText(String clientText, String fromChannel) throws IOException;
 
     public abstract void run();

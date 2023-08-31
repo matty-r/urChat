@@ -8,6 +8,7 @@ import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.LineFormatter.ClickableText;
 import urChatBasic.frontend.components.FontPanel;
 import urChatBasic.frontend.dialogs.FontDialog;
+import urChatBasic.frontend.utils.URColour;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.UsersListModel;
 import java.awt.event.*;
@@ -43,6 +44,9 @@ public class IRCRoomBase extends JPanel
     protected UserGUI gui = DriverGUI.gui;
 
     private FontDialog fontDialog;
+
+    // Useful
+    private final Dimension labelSize = new JLabel("defaultLabel").getPreferredSize();
 
     // Icons
     public ImageIcon icon;
@@ -164,7 +168,6 @@ public class IRCRoomBase extends JPanel
         setFont(gui.getFont());
         fontDialog.setVisible(false);
         fontDialog.addSaveListener(new SaveFontListener());
-
         lineFormatter = new LineFormatter(this.getFont(), server.getNick());
 
         try
@@ -242,9 +245,9 @@ public class IRCRoomBase extends JPanel
 
         bottomPanel.setLayout(new BorderLayout());
         // Set initial sizes and colours
-        bottomPanel.setPreferredSize(new Dimension(Constants.MAIN_WIDTH, BOTTOM_HEIGHT));
-        bottomPanel.setBackground(Color.BLACK);
-        bottomPanel.setLocation(0, Constants.MAIN_WIDTH - BOTTOM_HEIGHT);
+        // bottomPanel.setPreferredSize(new Dimension(Constants.MAIN_WIDTH, BOTTOM_HEIGHT * 2));
+        // bottomPanel.setBackground(Color.BLACK);
+
         bottomPanel.add(clientTextBox, BorderLayout.NORTH);
         bottomPanel.add(tickerPanel);
 
@@ -344,7 +347,8 @@ public class IRCRoomBase extends JPanel
             // Ensures we don't get overlaps of labels. tempX is the width of the last label
             // which is then used as the x position plus the width of the frame
             tempLabel.setBounds(tempX, 0, tempLabelWidth, tempLabelHeight);
-            tempLabel.setBackground(Color.BLACK);
+            // tempLabel.setBackground(Color.BLACK);
+            tempLabel.setForeground(URColour.getInvertedColour(tickerPanel.getBackground()));
             // Add the label to the list of labels
             eventLabels.add(tempLabel);
             // Add it to the actual panel
@@ -437,9 +441,9 @@ public class IRCRoomBase extends JPanel
         {
             tickerPanel.setVisible(showIt);
             if (tickerPanel.isVisible())
-                bottomPanel.setPreferredSize(new Dimension(getWidth(), BOTTOM_HEIGHT));
+                tickerPanel.setPreferredSize(labelSize);
             else
-                bottomPanel.setPreferredSize(clientTextBox.getPreferredSize());
+                tickerPanel.setPreferredSize(new Dimension(0, 0));
         }
     }
 
