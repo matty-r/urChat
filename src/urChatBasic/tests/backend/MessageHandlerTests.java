@@ -2,6 +2,7 @@ package urChatBasic.tests.backend;
 
 import org.junit.Before;
 import org.junit.Test;
+import urChatBasic.backend.Connection;
 import urChatBasic.backend.MessageHandler;
 import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.IRCRoomBase;
@@ -10,6 +11,7 @@ import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.UserGUI;
 import static org.junit.Assert.assertEquals;
+import java.io.IOException;
 
 public class MessageHandlerTests {
     MessageHandler testHandler;
@@ -17,6 +19,7 @@ public class MessageHandlerTests {
     UserGUI testGUI;
     IRCRoomBase testChannel;
     IRCUser testUser;
+    Connection testConnection;
 
     @Before
     public void setUp() throws Exception {
@@ -27,32 +30,76 @@ public class MessageHandlerTests {
         testServer.addToPrivateRooms(testUser);
         testChannel = testServer.getCreatedPrivateRoom(testUser.toString());
         testHandler = new MessageHandler(testServer);
+        testConnection = new Connection(testServer);
     }
 
     @Test
     public void noticeMessageParseTest()
     {
         String rawMessage = ":ChanServ!ChanServ@services.libera.chat NOTICE userName :[#somechannel] Welcome to #someChannel.";
-        Message testMessage = testHandler.new Message(testHandler, rawMessage);
+        Message testMessage = testHandler.new Message(rawMessage);
 
         assertEquals("#somechannel", testMessage.getChannel());
         // assertEquals("Welcome to #somechannel.", testMessage.getBody());
     }
 
     @Test
-    public void actionMessage()
+    public void recvActionMessage()
     {
         String rawMessage = ":"+testUser+"!~"+testUser+"@userHost PRIVMSG "+testUser+" :ACTION claps hands";
-        Message testMessage = testHandler.new Message(testHandler, rawMessage);
+        Message testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
         assertEquals("> claps hands", testMessage.getBody());
+    }
+
+    @Test
+    public void sendActionMessageChannel()
+    {
+        String rawMessage = "/me claps hands";
+        try
+        {
+            testConnection.sendClientText(rawMessage, "#channelname");
+
+        } catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void sendActionMessageUser()
+    {
+        String rawMessage = "/me claps hands";
+        try
+        {
+            testConnection.sendClientText(rawMessage, "otheruser");
+        } catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void sendPrivateMessageMessageUser()
+    {
+        String rawMessage = "/msg otheruser hello, did you get this message?";
+        try
+        {
+            testConnection.sendClientText(rawMessage, "otheruser");
+        } catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Test
     public void noticeMessage2()
     {
         String rawMessage = ":channeluser!channelname@channelname/bot/primary NOTICE myUsername :this is just some notice message directed to this user from the ";
-        Message testMessage = testHandler.new Message(testHandler, rawMessage);
+        Message testMessage = testHandler.new Message(rawMessage);
 
         assertEquals("#channelname", testMessage.getChannel());
         // TODO create this test
@@ -62,7 +109,7 @@ public class MessageHandlerTests {
     public void handleChannelUrl()
     {
         String rawMessage = ":services. 328 userName #somechannel :https://somechannel.com/url";
-        Message testMessage = testHandler.new Message(testHandler, rawMessage);
+        Message testMessage = testHandler.new Message(rawMessage);
 
         assertEquals(MessageHandler.NoticeMessage.class, testMessage.getMessageBase().getClass());
     }
@@ -71,7 +118,7 @@ public class MessageHandlerTests {
     public void testQuitChannel1()
     {
         String rawMessage = ":userName!~userName@user/userName QUIT :Read error: Connection reset by peer";
-        Message testMessage = testHandler.new Message(testHandler, rawMessage);
+        Message testMessage = testHandler.new Message(rawMessage);
 
         assertEquals(MessageHandler.DisconnectMessage.class, testMessage.getMessageBase().getClass());
     }
@@ -80,7 +127,7 @@ public class MessageHandlerTests {
     public void testQuitChannel2()
     {
         String rawMessage = ":userName!~userName@user/userName QUIT :Remote host closed the connection";
-        Message testMessage = testHandler.new Message(testHandler, rawMessage);
+        Message testMessage = testHandler.new Message(rawMessage);
 
         assertEquals(MessageHandler.DisconnectMessage.class, testMessage.getMessageBase().getClass());
     }
@@ -89,7 +136,7 @@ public class MessageHandlerTests {
     public void testQuitServer()
     {
         String rawMessage = "ERROR :\"Goodbye cruel world\"";
-        Message testMessage = testHandler.new Message(testHandler, rawMessage);
+        Message testMessage = testHandler.new Message(rawMessage);
 
         assertEquals(MessageHandler.DisconnectMessage.class, testMessage.getMessageBase().getClass());
     }

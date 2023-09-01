@@ -44,6 +44,7 @@ public class Connection implements ConnectionBase
 
     public Connection(IRCServerBase server)
     {
+        messageHandler = new MessageHandler(server);
         this.server = server;
     }
 
@@ -74,15 +75,16 @@ public class Connection implements ConnectionBase
     {
         BufferedReader reader;
 
-        messageHandler = new MessageHandler(server);
         localMessage("Attempting to connect to " + server);
 
         // Determine the socket type to be used
         if (getServer().usingSOCKS())
         {
-            Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(getServer().getProxyHost(), Integer.parseInt(getServer().getProxyPort())));
+            Proxy proxy = new Proxy(Proxy.Type.SOCKS,
+                    new InetSocketAddress(getServer().getProxyHost(), Integer.parseInt(getServer().getProxyPort())));
             Socket proxySocket = new Socket(proxy);
-            InetSocketAddress address = new InetSocketAddress(server.getName(), Integer.parseInt(getServer().getPort()));
+            InetSocketAddress address =
+                    new InetSocketAddress(server.getName(), Integer.parseInt(getServer().getPort()));
 
             if (getServer().usingTLS())
             {
@@ -133,7 +135,7 @@ public class Connection implements ConnectionBase
                 writer.flush();
             } else
             {
-                serverMessage(messageHandler.new Message(messageHandler, line));
+                serverMessage(messageHandler.new Message(line));
             }
         }
 
@@ -159,68 +161,84 @@ public class Connection implements ConnectionBase
     @Override
     public void sendClientText(String clientText, String fromChannel) throws IOException
     {
-        if (isConnected())
+        String[] tempTextArray = clientText.split(" ");
+        String outText = "";
+        Message clientMessage = null;
+
+        if (!clientText.equals(""))
         {
-
-            String[] tempTextArray = clientText.split(" ");
-            String outText = "";
-            if (!clientText.equals(""))
+            if (clientText.startsWith("/join"))
             {
-                if (clientText.startsWith("/join"))
-                {
-                    outText = "JOIN " + clientText.replace("/join ", "") + "\r\n";
-                } else if (clientText.startsWith("/nick"))
-                {
-                    outText = "NICK " + clientText.replace("/nick ", "") + "\r\n";
-                    getServer().setNick(clientText.replace("/nick ", ""));
-                } else if (clientText.startsWith("/msg"))
-                {
-                    tempTextArray = clientText.split(" ");
-                    outText = "PRIVMSG " + tempTextArray[1] + " :"
-                            + clientText.replace("/msg " + tempTextArray[1] + " ", "") + "\r\n";
+                outText = "JOIN " + clientText.replace("/join ", "") + "\r\n";
+            } else if (clientText.startsWith("/nick"))
+            {
+                outText = "NICK " + clientText.replace("/nick ", "") + "\r\n";
+                getServer().setNick(clientText.replace("/nick ", ""));
+            } else if (clientText.startsWith("/msg"))
+            {
+                tempTextArray = clientText.split(" ");
+                outText = "PRIVMSG " + tempTextArray[1] + " :"
+                        + clientText.replace("/msg " + tempTextArray[1] + " ", "") + "\r\n";
 
-                    if (clientText.toLowerCase().startsWith("/msg nickserv identify"))
-                    {
-                        clientText = "*** HIDDEN NICKSERV IDENTIFY ***";
-                    }
+                // if (clientText.toLowerCase().startsWith("/msg nickserv identify"))
+                // {
+                //     clientText = "*** HIDDEN NICKSERV IDENTIFY ***";
+                // }
 
-                    server.printPrivateText(tempTextArray[1], clientText.replace("/msg " + tempTextArray[1] + " ", ""),
-                            getServer().getNick());
-                    gui.setCurrentTab(tempTextArray[1]);
-                } else if (clientText.startsWith("/whois"))
-                {
-                    outText = "WHOIS " + tempTextArray[1] + "\r\n";
-                } else if (clientText.startsWith("/quit"))
-                {
-                    outText = "QUIT :" + clientText.replace("/quit ", "") + "\r\n" ;
-                } else if (clientText.startsWith("/part"))
-                {
-                    outText = "PART " + fromChannel + " :" + clientText.replace("/part  ", "") + "\r\n";
-                } else if (clientText.startsWith("/me") || clientText.startsWith("/action"))
-                {
-                    String tempText = clientText.replace("/me ", "").replace("/action ", "");
-                    outText = "PRIVMSG " + fromChannel + " :" + Constants.CTCP_DELIMITER + "ACTION "
-                            + tempText + Constants.CTCP_DELIMITER + "\r\n";
+                // server.printPrivateText(tempTextArray[1], clientText.replace("/msg " + tempTextArray[1] + " ", ""),getServer().getNick());
 
-                    if(fromChannel.startsWith("#"))
-                    {
-                        server.printChannelText(fromChannel, "> "+tempText, getServer().getNick());
-                    } else {
-                        server.printChannelText(fromChannel, "> "+tempText, fromChannel);
-                    }
+                String msgPrefix = ":"+ getServer().getNick()+"!~"+ getServer().getNick()+"@urchatclient";
+                clientMessage = messageHandler.new Message(msgPrefix + " " +outText);
 
-                } else if (clientText.startsWith("CAP") || clientText.startsWith("AUTHENTICATE"))
-                {
-                    outText = clientText + "\r\n";
-                } else
-                {
-                    outText = "PRIVMSG " + fromChannel + " :" + clientText + "\r\n";
-                    server.printChannelText(fromChannel, clientText, getServer().getNick());
+                gui.setCurrentTab(tempTextArray[1]);
+            } else if (clientText.startsWith("/whois"))
+            {
+                outText = "WHOIS " + tempTextArray[1] + "\r\n";
+            } else if (clientText.startsWith("/quit"))
+            {
+                outText = "QUIT :" + clientText.replace("/quit ", "") + "\r\n";
+            } else if (clientText.startsWith("/part"))
+            {
+                outText = "PART " + fromChannel + " :" + clientText.replace("/part  ", "") + "\r\n";
+            } else if (clientText.startsWith("/me") || clientText.startsWith("/action"))
+            {
+                String tempText = clientText.replace("/me ", "").replace("/action ", "");
+                outText = "PRIVMSG " + fromChannel + " :" + Constants.CTCP_DELIMITER + "ACTION " + tempText
+                        + Constants.CTCP_DELIMITER + "\r\n";
+
+                String msgPrefix = ":"+ getServer().getNick()+"!~"+ getServer().getNick()+"@urchatclient";
+                clientMessage = messageHandler.new Message(msgPrefix + " " +outText);
+            } else if (clientText.startsWith("CAP") || clientText.startsWith("AUTHENTICATE"))
+            {
+                outText = clientText + "\r\n";
+            } else
+            {
+                outText = "PRIVMSG " + fromChannel + " :" + clientText + "\r\n";
+                server.printChannelText(fromChannel, clientText, getServer().getNick());
+            }
+
+            if (isConnected())
+            {
+                try {
+                    writer.write(outText);
+                    writer.flush();
+                } catch (Exception e) {
+                    Constants.LOGGER.log(Level.SEVERE, "Problem writing to socket: " + e.toString() + outText);
                 }
-                writer.write(outText);
-                writer.flush();
 
-                Constants.LOGGER.log(Level.FINE, "Client Text:- " + fromChannel + " " + clientText);
+                try {
+                    if(null != clientMessage)
+                    {
+                        clientMessage.exec();
+                    }
+                } catch (Exception e) {
+                    Constants.LOGGER.log(Level.SEVERE, "Problem writing out client message: " + e.toString() + clientMessage.getRawMessage());
+                }
+
+                Constants.LOGGER.log(Level.FINE, "Client Text:- " + fromChannel + " " + outText);
+            } else {
+
+                Constants.LOGGER.log(Level.WARNING, "Not connected. Unable to send text:- " + fromChannel + " " + clientMessage.getRawMessage());
             }
         }
     }
@@ -263,7 +281,7 @@ public class Connection implements ConnectionBase
                         + getServer() + ") (Nick " + getServer().getNick() + ") ");
             }
 
-            if(shutdown)
+            if (shutdown)
                 Constants.LOGGER.log(Level.INFO, "Disconnected safely!");
             else
                 Constants.LOGGER.log(Level.WARNING, "Disconnected unsafely!");
@@ -271,8 +289,9 @@ public class Connection implements ConnectionBase
         } catch (IOException e)
         {
             Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());
-            MessageDialog dialog = new MessageDialog("startUp() failed! " + e.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    dialog.setVisible(true);
+            MessageDialog dialog = new MessageDialog("startUp() failed! " + e.getLocalizedMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            dialog.setVisible(true);
         }
     }
 

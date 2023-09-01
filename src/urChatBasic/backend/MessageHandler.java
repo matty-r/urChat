@@ -187,17 +187,17 @@ public class MessageHandler
         String channel = "";
         String body = "";
         MessageIdType type;
-        String rawMessage = "";
+        private String rawMessage = "";
         String nick = "";
         String subType  = "";
         MessageBase messageBase;
         MessageBase subTypeBase;
         MessageHandler messageHandler;
 
-        public Message(MessageHandler handler, String fullMessage)
+        public Message(String fullMessage)
         {
             this.rawMessage = fullMessage;
-            this.messageHandler = handler;
+            this.messageHandler = MessageHandler.this;
             // System.out.println(fullMessage);
             setPrefix();
 

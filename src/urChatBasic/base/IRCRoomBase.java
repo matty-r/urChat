@@ -3,6 +3,7 @@ package urChatBasic.base;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCActions;
+import urChatBasic.frontend.IRCPrivate;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.LineFormatter.ClickableText;
@@ -401,6 +402,12 @@ public class IRCRoomBase extends JPanel
         {
             lineFormatter.formattedDocument(doc, timeLine, fromIRCUser, fromUser, line);
             if (lineFormatter.nameStyle.getAttribute("name") == lineFormatter.highStyle().getAttribute("name"))
+            {
+                myActions.callForAttention();
+            }
+
+            // Always alert on IRCPrivate messages
+            if(this instanceof IRCPrivate)
             {
                 myActions.callForAttention();
             }

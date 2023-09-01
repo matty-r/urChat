@@ -30,6 +30,7 @@ import javax.swing.text.StyledEditorKit;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
+import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
@@ -565,12 +566,15 @@ public class IRCServer extends JPanel implements IRCServerBase
     @Override
     public void printChannelText(String channelName, String line, String fromUser)
     {
-        if (channelName.equals(fromUser))
+
+        IRCRoomBase tempChannel = getCreatedChannel(channelName);
+
+        if (channelName.equals(fromUser) || null == tempChannel)
         {
             printPrivateText(channelName, line, fromUser);
         } else
         {
-            getCreatedChannel(channelName).printText(line, fromUser);
+            tempChannel.printText(line, fromUser);
         }
     }
 
