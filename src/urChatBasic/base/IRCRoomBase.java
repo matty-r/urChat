@@ -486,6 +486,16 @@ public class IRCRoomBase extends JPanel
         }
     }
 
+    public void disableFocus()
+    {
+        channelTextArea.setFocusable(false);
+    }
+
+    public void enableFocus()
+    {
+        channelTextArea.setFocusable(true);
+    }
+
     // Adds users to the list in the users array[]
     public void addToUsersList(final String channel, final String[] users)
     {
