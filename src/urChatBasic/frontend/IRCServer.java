@@ -1,6 +1,7 @@
 package urChatBasic.frontend;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -530,8 +531,25 @@ public class IRCServer extends JPanel implements IRCServerBase
             IRCChannel tempChannel = new IRCChannel(this, channelName);
             createdChannels.add(tempChannel);
             gui.tabbedPane.addTab(channelName, tempChannel.icon, tempChannel);
-            gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempChannel));
-            tempChannel.getUserTextBox().requestFocus();
+            Component currentTab = gui.tabbedPane.getSelectedComponent();
+            if(currentTab instanceof IRCRoomBase)
+            {
+                if(!((IRCRoomBase) currentTab).userIsTyping())
+                {
+                    gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempChannel));
+                    tempChannel.getUserTextBox().requestFocus();
+                } else {
+                    tempChannel.callForAttention();
+                }
+            } else if(currentTab instanceof IRCServer) {
+                if(serverTextBox.getText().isEmpty())
+                {
+                    gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempChannel));
+                    tempChannel.getUserTextBox().requestFocus();
+                } else {
+                    tempChannel.callForAttention();
+                }
+            }
         }
     }
 
@@ -549,8 +567,8 @@ public class IRCServer extends JPanel implements IRCServerBase
             privateRoom = new IRCPrivate(this, fromUser);
             createdPrivateRooms.add(privateRoom);
             gui.tabbedPane.addTab(privateRoom.getName(), privateRoom.icon, privateRoom);
-            gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(privateRoom));
-            privateRoom.getUserTextBox().requestFocus();
+            // gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(privateRoom));
+            // privateRoom.getUserTextBox().requestFocus();
             return privateRoom;
         }
 

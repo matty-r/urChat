@@ -363,6 +363,11 @@ public class IRCRoomBase extends JPanel
             printText(eventText, Constants.EVENT_USER);
     }
 
+    public void callForAttention()
+    {
+        myActions.callForAttention();
+    }
+
     // TODO: Change this to accept IRCUser instead
     public void printText(String line, String fromUser)
     {
@@ -403,13 +408,13 @@ public class IRCRoomBase extends JPanel
             lineFormatter.formattedDocument(doc, timeLine, fromIRCUser, fromUser, line);
             if (lineFormatter.nameStyle.getAttribute("name") == lineFormatter.highStyle().getAttribute("name"))
             {
-                myActions.callForAttention();
+                callForAttention();
             }
 
             // Always alert on IRCPrivate messages
             if(this instanceof IRCPrivate)
             {
-                myActions.callForAttention();
+                callForAttention();
             }
 
             // TODO: Scrolls to the bottom of the channelTextArea on message received, this should be disabled
@@ -842,6 +847,11 @@ public class IRCRoomBase extends JPanel
             fontDialog.getFontPanel().setFont(fontDialog.getFontPanel().getFont(), true);
             setFont(fontDialog.getFontPanel().getFont());
         }
+    }
+
+    public boolean userIsTyping ()
+    {
+        return !clientTextBox.getText().isEmpty();
     }
 
     /**

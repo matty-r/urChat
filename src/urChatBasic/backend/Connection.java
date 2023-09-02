@@ -167,14 +167,14 @@ public class Connection implements ConnectionBase
 
         if (!clientText.equals(""))
         {
-            if (clientText.startsWith("/join"))
+            if (clientText.toLowerCase().startsWith("/join"))
             {
                 outText = "JOIN " + clientText.replace("/join ", "") + "\r\n";
-            } else if (clientText.startsWith("/nick"))
+            } else if (clientText.toLowerCase().startsWith("/nick"))
             {
                 outText = "NICK " + clientText.replace("/nick ", "") + "\r\n";
                 getServer().setNick(clientText.replace("/nick ", ""));
-            } else if (clientText.startsWith("/msg"))
+            } else if (clientText.toLowerCase().startsWith("/msg"))
             {
                 tempTextArray = clientText.split(" ");
                 outText = "PRIVMSG " + tempTextArray[1] + " :"
@@ -191,16 +191,16 @@ public class Connection implements ConnectionBase
                 clientMessage = messageHandler.new Message(msgPrefix + " " +outText);
 
                 gui.setCurrentTab(tempTextArray[1]);
-            } else if (clientText.startsWith("/whois"))
+            } else if (clientText.toLowerCase().startsWith("/whois"))
             {
                 outText = "WHOIS " + tempTextArray[1] + "\r\n";
-            } else if (clientText.startsWith("/quit"))
+            } else if (clientText.toLowerCase().startsWith("/quit"))
             {
                 outText = "QUIT :" + clientText.replace("/quit ", "") + "\r\n";
-            } else if (clientText.startsWith("/part"))
+            } else if (clientText.toLowerCase().startsWith("/part"))
             {
                 outText = "PART " + fromChannel + " :" + clientText.replace("/part  ", "") + "\r\n";
-            } else if (clientText.startsWith("/me") || clientText.startsWith("/action"))
+            } else if (clientText.toLowerCase().startsWith("/me") || clientText.toLowerCase().startsWith("/action"))
             {
                 String tempText = clientText.replace("/me ", "").replace("/action ", "");
                 outText = "PRIVMSG " + fromChannel + " :" + Constants.CTCP_DELIMITER + "ACTION " + tempText
