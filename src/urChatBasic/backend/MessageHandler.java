@@ -152,7 +152,7 @@ public class MessageHandler
         singleIDs.add(new IDSingle((new int[] {004, 265, 266, 250, 422, 477, 331, 900}), new GeneralServerMessage()));
         singleIDs.add(new IDSingle(366, new GeneralChannelMessage()));
         singleIDs.add(new IDSingle((new int[] {432, 433, 451}), new InvalidNickMessage()));
-        singleIDs.add(new IDSingle(403, new NoSuchChannelMessage()));
+        singleIDs.add(new IDSingle((new int[] {401, 403}), new NoSuchChannelMessage()));
         singleIDs.add(new IDSingle(461, new NotEnoughParametersMesssage()));
         singleIDs.add(new IDSingle(903, new SASLAuthenticateSuccessMessage()));
         singleIDs.add(new IDSingle(904, new SASLAuthenticateFailedMessage()));

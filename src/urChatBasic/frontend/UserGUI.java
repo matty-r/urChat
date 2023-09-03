@@ -1106,7 +1106,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         {
             tabbedPane.addTab(server.getName(), ((IRCServer) server).icon, ((IRCServer) server));
             tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(((IRCServer) server)));
-            ((IRCServer) server).serverTextBox.requestFocus();
+            ((IRCServer) server).getUserTextBox().requestFocus();
         }
     }
 
@@ -1170,9 +1170,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     @Override
     public void quitServers()
     {
-        while (createdServers.iterator().hasNext())
+        Iterator<IRCServerBase> serverIterator = createdServers.iterator();
+        while (serverIterator.hasNext())
         {
-            IRCServerBase tempServer = createdServers.iterator().next();
+            IRCServerBase tempServer = serverIterator.next();
             tempServer.disconnect();
             if (tempServer instanceof IRCServerBase)
             {
@@ -1446,22 +1447,18 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             final int index = tabbedPane.getUI().tabForCoordinate(tabbedPane, e.getX(), e.getY());
             if (index > -1)
             {
-                String tabName = tabbedPane.getTitleAt(index);
                 if (SwingUtilities.isRightMouseButton(e))
                 {
                     Component selectedComponent = tabbedPane.getComponentAt(index);
 
-                    if (selectedComponent instanceof IRCChannel)
-                    {
-                        ((IRCChannel) selectedComponent).myMenu.show(tabbedPane, e.getX(), e.getY());
-                    } else if (selectedComponent instanceof IRCPrivate)
+                    if (selectedComponent instanceof IRCPrivate)
                     {
                         IRCServerBase tempServer =
-                                getCreatedServer(((IRCPrivate) selectedComponent).getServer());
-                        tempServer.quitPrivateRooms(tabName);
-                    } else if (selectedComponent instanceof IRCServer)
+                                getCreatedServer(((IRCPrivate) selectedComponent).getServer().getName());
+                        tempServer.quitPrivateRooms((IRCPrivate) selectedComponent);
+                    } else
                     {
-                        ((IRCServer) selectedComponent).myMenu.show(tabbedPane, e.getX(), e.getY());
+                        ((IRCRoomBase) selectedComponent).myMenu.show(tabbedPane, e.getX(), e.getY());
                     }
                 }
             }
@@ -1493,9 +1490,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
                 tempTab.getUserTextBox().requestFocus();
                 tempTab.enableFocus();
-            } else if (selectedComponent instanceof IRCServer)
-            {
-                ((IRCServer) selectedComponent).serverTextBox.requestFocus();
             }
         }
     }

@@ -28,8 +28,6 @@ public interface IRCServerBase
 
     public abstract void setName (String serverName);
 
-    public abstract String getServer ();
-
     public abstract String getPort ();
 
     public abstract String getProxyHost ();
@@ -76,7 +74,7 @@ public interface IRCServerBase
      */
     public abstract void quitPrivateRooms ();
 
-    public abstract void quitPrivateRooms (String roomName);
+    public abstract void quitPrivateRooms (IRCPrivate ircRoom);
 
     /**
      * Return the appropriate created channel
@@ -145,6 +143,9 @@ public interface IRCServerBase
     // Adds a single user, good for when a user joins the channel
     public abstract void addToUsersList (String channelName, String user);
 
+
+    public abstract void setChannelTopic (String channelName, String channelTopic);
+
     /**
      * Removes a single user from the specified channel. If the call is from "Server" as the channelName
      * it will loop through all createdChannels and remove the user. But only if they were in there to
@@ -156,14 +157,6 @@ public interface IRCServerBase
     public abstract void removeFromUsersList (String channelName, String user);
 
     public abstract void sendClientText (String line, String source);
-
-    public abstract void doLimitLines ();
-
-    public abstract void printText (String line);
-
-    public abstract String getChannelTopic (String channelName);
-
-    public abstract void setChannelTopic (String channelName, String channelTopic);
 
     /**
      * This is a forwarding method used to direct the call to the IRCChannel, filters through

@@ -7,7 +7,6 @@ import org.junit.Test;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import urChatBasic.backend.MessageHandler;
 import urChatBasic.base.Constants;
 
 import static org.junit.Assert.*;

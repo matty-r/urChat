@@ -178,12 +178,12 @@ public class LineFormatter
     {
 
 
-        if (fromUser != null && myNick.equals(fromUser.toString()))
+        if (fromUser != null && null != myNick && myNick.equals(fromUser.toString()))
         {
             nameStyle = this.myStyle();
         } else
         {
-            if (line.indexOf(myNick) > -1)
+            if (null != myNick && line.indexOf(myNick) > -1)
                 nameStyle = highStyle();
             else
                 nameStyle = standardStyle();

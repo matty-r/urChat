@@ -213,8 +213,15 @@ public class Connection implements ConnectionBase
                 outText = clientText + "\r\n";
             } else
             {
-                outText = "PRIVMSG " + fromChannel + " :" + clientText + "\r\n";
-                server.printChannelText(fromChannel, clientText, getServer().getNick());
+                if(null != getServer().getCreatedChannel(fromChannel))
+                {
+                    outText = "PRIVMSG " + fromChannel + " :" + clientText + "\r\n";
+
+                    String msgPrefix = ":"+ getServer().getNick()+"!~"+ getServer().getNick()+"@urchatclient";
+                    clientMessage = messageHandler.new Message(msgPrefix + " " +outText);
+
+                    // server.printChannelText(fromChannel, clientText, getServer().getNick());
+                }
             }
 
             if (isConnected())

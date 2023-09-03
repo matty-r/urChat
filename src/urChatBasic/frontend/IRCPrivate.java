@@ -2,7 +2,11 @@ package urChatBasic.frontend;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.Level;
+import javax.swing.ImageIcon;
+import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
 
 public class IRCPrivate extends IRCRoomBase
@@ -18,6 +22,16 @@ public class IRCPrivate extends IRCRoomBase
         hideUsersList();
         hideEventTicker();
         clientTextBox.addActionListener(new SendTextListener());
+
+        URL imgPath = null;
+        try
+        {
+            imgPath =  new URL(Constants.RESOURCES_DIR + "User.png");
+            icon = new ImageIcon(imgPath);
+        } catch (IOException e)
+        {
+            Constants.LOGGER.log(Level.SEVERE, "COULD NOT LOAD Server.png " + e.getLocalizedMessage());
+        }
     }
 
 

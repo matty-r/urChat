@@ -4,6 +4,7 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCActions;
 import urChatBasic.frontend.IRCPrivate;
+import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.LineFormatter.ClickableText;
@@ -52,7 +53,7 @@ public class IRCRoomBase extends JPanel
     // Icons
     public ImageIcon icon;
 
-    public ChannelPopUp myMenu;
+    public JPopupMenu myMenu;
 
     // Main Panel
     protected JPanel mainPanel = new JPanel();
@@ -111,9 +112,9 @@ public class IRCRoomBase extends JPanel
         return clientTextBox;
     }
 
-    public String getServer()
+    public IRCServerBase getServer()
     {
-        return this.server.getName();
+        return this.server;
     }
 
     @Override
@@ -149,11 +150,34 @@ public class IRCRoomBase extends JPanel
         toggleUsersList();
     }
 
+    public IRCRoomBase(String roomName)
+    {
+        this.roomName = roomName;
+        initRoom();
+    }
+
     public IRCRoomBase(IRCServerBase server, String roomName)
     {
-        this.server = server;
         this.roomName = roomName;
-        roomPrefs = Constants.FAVOURITES_PREFS.node(server.getName()).node(roomName);
+        setServer(server);
+        initRoom();
+    }
+
+    public void setServer(IRCServerBase server)
+    {
+        this.server = server;
+    }
+
+    private void initRoom()
+    {
+        if(null != getServer())
+        {
+            roomPrefs = Constants.FAVOURITES_PREFS.node(getServer().getName()).node(roomName);
+            lineFormatter = new LineFormatter(this.getFont(), getServer().getNick());
+        } else {
+            roomPrefs = Constants.FAVOURITES_PREFS.node(roomName);
+            lineFormatter = new LineFormatter(this.getFont(), null);
+        }
 
         // Create the initial size of the panel
         // Set size of the overall panel
@@ -169,17 +193,6 @@ public class IRCRoomBase extends JPanel
         setFont(gui.getFont());
         fontDialog.setVisible(false);
         fontDialog.addSaveListener(new SaveFontListener());
-        lineFormatter = new LineFormatter(this.getFont(), server.getNick());
-
-        try
-        {
-            URL imgPath = new URL(Constants.RESOURCES_DIR + "Room.png");
-            icon = new ImageIcon(imgPath);
-        } catch (IOException e)
-        {
-            Constants.LOGGER.log(Level.SEVERE, "FAILED TO LOAD Room.png: " + e.getLocalizedMessage());
-        }
-
 
         myActions = new IRCActions(this);
     }
@@ -506,21 +519,21 @@ public class IRCRoomBase extends JPanel
     {
         // Removed as Runnable(), not sure it was necessary
         // TODO: maybe readd Runnable
-        if (users.length >= 0)
-                {
-                    for (int x = 0; x < users.length; x++)
-                    {
-                        String tempUserName = users[x];
-                        if (users[x].startsWith(":"))
-                            tempUserName = tempUserName.substring(1);
+        if (users.length >= 0 && null != getServer())
+        {
+            for (int x = 0; x < users.length; x++)
+            {
+                String tempUserName = users[x];
+                if (users[x].startsWith(":"))
+                    tempUserName = tempUserName.substring(1);
 
-                        IRCUser newUser = server.getIRCUser(tempUserName);
+                IRCUser newUser = getServer().getIRCUser(tempUserName);
 
-                        if (!usersArray.contains(newUser))
-                            usersArray.add(newUser);
-                    }
-                }
-                usersListModel.sort();
+                if (!usersArray.contains(newUser))
+                    usersArray.add(newUser);
+            }
+        }
+        usersListModel.sort();
     }
 
     // Adds a single user, good for when a user joins the channel
@@ -531,7 +544,7 @@ public class IRCRoomBase extends JPanel
         if (user.startsWith(":"))
             thisUser = user.substring(1);
 
-        IRCUser newUser = server.getIRCUser(thisUser);
+        IRCUser newUser = getServer().getIRCUser(thisUser);
 
         if (!usersArray.contains(newUser))
         {
@@ -728,10 +741,10 @@ public class IRCRoomBase extends JPanel
         {
             if (gui.isFavourite(IRCRoomBase.this))
             {
-                IRCRoomBase.this.myMenu.addAsFavouriteItem.setText("Remove as Favourite");
+                ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Remove as Favourite");
             } else
             {
-                IRCRoomBase.this.myMenu.addAsFavouriteItem.setText("Add as Favourite");
+                ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Add as Favourite");
             }
 
             super.show(arg0, arg1, arg2);
@@ -744,12 +757,15 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            if (!gui.isFavourite(IRCRoomBase.this))
+            if(null != getServer())
             {
-                gui.addFavourite(server.getName(), getName());
-            } else
-            {
-                gui.removeFavourite(server.getName(), getName());
+                if (!gui.isFavourite(IRCRoomBase.this))
+                {
+                    gui.addFavourite(getServer().getName(), getName());
+                } else
+                {
+                    gui.removeFavourite(getServer().getName(), getName());
+                }
             }
         }
     }
@@ -759,7 +775,10 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            server.sendClientText("/part i'm outta here", getName());
+            if(null != getServer())
+            {
+                getServer().sendClientText("/part i'm outta here", getName());
+            }
         }
     }
 
@@ -816,13 +835,21 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            if (!clientTextBox.getText().trim().isEmpty())
-            {
-                server.sendClientText(clientTextBox.getText(), getName());
-                if (gui.isClientHistoryEnabled())
-                    userHistory.add(clientTextBox.getText());
-            }
-            clientTextBox.setText("");
+                if (!getUserTextBox().getText().trim().isEmpty())
+                {
+                    sendClientText(clientTextBox.getText(), getName());
+                    if (gui.isClientHistoryEnabled())
+                        userHistory.add(clientTextBox.getText());
+                }
+                clientTextBox.setText("");
+        }
+    }
+
+    public void sendClientText(String line, String source)
+    {
+        if (null != getServer() && getServer().isConnected())
+        {
+            getServer().sendClientText(line, source);
         }
     }
 
@@ -995,34 +1022,42 @@ public class IRCRoomBase extends JPanel
     {
         public void actionPerformed(ActionEvent event)
         {
-            if (IRCRoomBase.this.tickerPanel.isVisible())
+            SwingUtilities.invokeLater(new Runnable()
             {
-                for (JLabel tempLabel : eventLabels)
+                public void run()
                 {
-                    tempLabel.setLocation(tempLabel.getX() - EVENT_VELOCITY, 0);
-                    if (tempLabel.getX() + tempLabel.getWidth() < 0)
+                    if (IRCRoomBase.this.tickerPanel.isVisible())
                     {
-                        tickerPanel.remove(tempLabel);
-                        eventLabels.remove(tempLabel);
-                        break;
+                        Iterator<JLabel> labelIterator = eventLabels.iterator();
+                        while (labelIterator.hasNext()) {
+                            JLabel tempLabel = labelIterator.next();
+                            tempLabel.setLocation(tempLabel.getX() - EVENT_VELOCITY, 0);
+                            if (tempLabel.getX() + tempLabel.getWidth() < 0) {
+                                labelIterator.remove(); // Safely remove the element
+                                tickerPanel.remove(tempLabel);
+                            }
+                        }
+
+                        if (eventLabels.isEmpty())
+                            eventTickerTimer.stop();
+
+                        if(DriverGUI.frame.isFocused())
+                        {
+                            tickerPanel.repaint();
+                            tickerPanel.revalidate();
+                        }
+                    } else
+                    {
+                        eventTickerTimer.stop();
+
+                        for (JLabel tempLabel : eventLabels) {
+                            tickerPanel.remove(tempLabel);
+                        }
+
+                        eventLabels.clear();
                     }
                 }
-
-                if (eventLabels.isEmpty())
-                    eventTickerTimer.stop();
-
-                repaint();
-            } else
-            {
-                while (eventLabels.iterator().hasNext())
-                {
-                    JLabel tempLabel = eventLabels.iterator().next();
-                    tickerPanel.remove(tempLabel);
-                    eventLabels.remove(tempLabel);
-                }
-
-                eventTickerTimer.stop();
-            }
+            });
         }
     }
 
