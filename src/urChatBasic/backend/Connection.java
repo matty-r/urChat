@@ -289,9 +289,12 @@ public class Connection implements ConnectionBase
             }
 
             if (shutdown)
+            {
                 Constants.LOGGER.log(Level.INFO, "Disconnected safely!");
-            else
+            } else
+            {
                 Constants.LOGGER.log(Level.WARNING, "Disconnected unsafely!");
+            }
 
         } catch (IOException e)
         {

@@ -21,8 +21,7 @@ import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.base.UserGUIBase;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
-import urChatBasic.frontend.components.FontPanel;
-import urChatBasic.frontend.components.UCAuthTypeComboBox;
+import urChatBasic.frontend.components.*;
 
 public class UserGUI extends JPanel implements Runnable, UserGUIBase
 {
@@ -32,7 +31,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final long serialVersionUID = 2595649865577419300L;
     // private String creationTime = (new Date()).toString();
     // Tabs
-    public DnDTabbedPane tabbedPane = new DnDTabbedPane();
+    public JTabbedPane tabbedPane = new DnDTabbedPane();
     private final int OPTIONS_INDEX = 0;
 
     // Options Panel
@@ -86,6 +85,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final UCAuthTypeComboBox authenticationTypeChoice = new UCAuthTypeComboBox();
     private static final JLabel passwordLabel = new JLabel("Password:");
     private static final JPasswordField passwordTextField = new JPasswordField("");
+    private static final JLabel rememberPassLabel = new JLabel("Remember:");
+    private static final JCheckBox rememberPassCheckBox = new JCheckBox();
 
     // Connection
     private static final JLabel serverNameLabel = new JLabel("Server:");
@@ -459,6 +460,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         serverOptionsPanel.add(passwordLabel);
         serverOptionsPanel.add(passwordTextField);
         passwordTextField.setEchoChar('*');
+
+        serverOptionsPanel.add(rememberPassLabel);
+        serverOptionsPanel.add(rememberPassCheckBox);
         // passwordTextField.setPreferredSize(new Dimension(200, 20));
 
         // Server Stuff
@@ -570,6 +574,17 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         serverLayout.putConstraint(SpringLayout.EAST, passwordTextField, RIGHT_ALIGNED, SpringLayout.EAST,
                 authenticationTypeChoice);
 
+        serverLayout.putConstraint(SpringLayout.NORTH, rememberPassLabel, TOP_ALIGNED, SpringLayout.NORTH,
+                passwordLabel);
+        serverLayout.putConstraint(SpringLayout.WEST, rememberPassLabel, LEFT_ALIGNED, SpringLayout.EAST,
+                passwordTextField);
+
+        serverLayout.putConstraint(SpringLayout.NORTH, rememberPassCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
+                rememberPassLabel);
+        serverLayout.putConstraint(SpringLayout.WEST, rememberPassCheckBox, LEFT_ALIGNED, SpringLayout.EAST,
+                passwordTextField);
+
+
         // Server stuff
         serverLayout.putConstraint(SpringLayout.NORTH, serverNameLabel, TOP_SPACING, SpringLayout.SOUTH,
                 passwordTextField);
@@ -622,6 +637,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 proxyPortLabel);
         serverLayout.putConstraint(SpringLayout.WEST, proxyPortTextField, LEFT_ALIGNED, SpringLayout.WEST,
                 proxyPortLabel);
+        serverLayout.putConstraint(SpringLayout.EAST, proxyPortTextField, RIGHT_ALIGNED, SpringLayout.EAST,
+                serverPortTextField);
 
         serverLayout.putConstraint(SpringLayout.NORTH, serverUseProxyLabel, TOP_ALIGNED, SpringLayout.NORTH,
                 proxyPortLabel);
@@ -1207,6 +1224,17 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         Constants.FRONTEND_PREFS.put(Constants.KEY_FIRST_SERVER, servernameTextField.getText());
         Constants.FRONTEND_PREFS.put(Constants.KEY_FIRST_PORT, serverPortTextField.getText());
         Constants.FRONTEND_PREFS.put(Constants.KEY_AUTH_TYPE, authenticationTypeChoice.getSelectedItem().toString());
+        Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_PASSWORD_REMEMBER, rememberPassCheckBox.isSelected());
+
+        String rememberString = "";
+
+        if(rememberPassCheckBox.isSelected())
+        {
+            rememberString = new String(passwordTextField.getPassword());
+        }
+
+        Constants.FRONTEND_PREFS.put(Constants.KEY_PASSWORD, rememberString);
+
         Constants.FRONTEND_PREFS.putBoolean(Constants.KEY_USE_TLS, serverTLSCheckBox.isSelected());
         Constants.FRONTEND_PREFS.put(Constants.KEY_PROXY_HOST, proxyHostNameTextField.getText());
         Constants.FRONTEND_PREFS.put(Constants.KEY_PROXY_PORT, proxyPortTextField.getText());
@@ -1257,6 +1285,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         authenticationTypeChoice.setSelectedItem(CapabilityTypes
                 .getCapType(Constants.FRONTEND_PREFS.get(Constants.KEY_AUTH_TYPE, Constants.DEFAULT_AUTH_TYPE)));
+
+        rememberPassCheckBox
+                .setSelected(Constants.FRONTEND_PREFS.getBoolean(Constants.KEY_PASSWORD_REMEMBER, Constants.DEFAULT_PASSWORD_REMEMBER));
+
+        if(rememberPassCheckBox.isSelected())
+        {
+            passwordTextField
+                .setText(Constants.FRONTEND_PREFS.get(Constants.KEY_PASSWORD, Constants.DEFAULT_PASSWORD));
+        }
 
         proxyHostNameTextField
                 .setText(Constants.FRONTEND_PREFS.get(Constants.KEY_PROXY_HOST, Constants.DEFAULT_PROXY_HOST));
@@ -1455,7 +1492,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     {
                         IRCServerBase tempServer =
                                 getCreatedServer(((IRCPrivate) selectedComponent).getServer().getName());
-                        tempServer.quitPrivateRooms((IRCPrivate) selectedComponent);
+                        tempServer.quitChannel((IRCPrivate) selectedComponent);
                     } else
                     {
                         ((IRCRoomBase) selectedComponent).myMenu.show(tabbedPane, e.getX(), e.getY());

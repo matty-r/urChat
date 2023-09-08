@@ -1,6 +1,5 @@
 package urChatBasic.frontend;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -10,24 +9,15 @@ import java.io.Serial;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.StyledEditorKit;
 
 import urChatBasic.backend.Connection;
 import urChatBasic.base.ConnectionBase;
@@ -36,7 +26,6 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
-import urChatBasic.frontend.dialogs.FontDialog;
 
 public class IRCServer extends IRCRoomBase implements IRCServerBase
 {
@@ -44,18 +33,6 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      *
      */
     private static final long serialVersionUID = -4685985875752613136L;
-    ////////////////
-    // GUI ELEMENTS//
-    ////////////////
-    protected UserGUI gui = DriverGUI.gui;
-
-    // Icons
-    public ImageIcon icon;
-
-    private FontDialog fontDialog;
-
-
-
     // Connection Properties
     // TODO: Should remove the connection stuff from here into Connection instead of being in IRCServer?
     // Should also probably be called IRCNetwork?
@@ -304,8 +281,9 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         {
             if (IRCServer.this.isConnected())
             {
+                System.out.println("send quit message");
                 // Send the /quit message, which disconnects and remove the gui elements
-                sendClientText("/quit Goodbye cruel world", IRCServer.this.getName());
+                sendClientText("/quit Goodbye cruel world", getName());
             } else
             {
                 // We aren't connected, so just remove the GUI elements
@@ -349,9 +327,9 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     @Override
     public void disconnect()
     {
+        serverConnection.disconnect();
         quitChannels();
         quitPrivateRooms();
-        serverConnection.disconnect();
     }
 
     /*
@@ -442,9 +420,9 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         Iterator<IRCChannel> channelIterator = createdChannels.iterator();
         while (channelIterator.hasNext())
         {
-            IRCChannel tempChannel = channelIterator.next();
-            createdChannels.remove(tempChannel);
-            gui.tabbedPane.remove(tempChannel);
+            IRCChannel removeChannel = channelIterator.next();
+            channelIterator.remove();
+            quitChannel(removeChannel);
         }
     }
 
@@ -454,13 +432,11 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#quitChannel(java.lang.String)
      */
     @Override
-    public void quitChannel(String channelName)
+    public void quitChannel(IRCRoomBase ircRoom)
     {
-        if (getCreatedChannel(channelName) != null)
-        {
-            createdChannels.remove(getCreatedChannel(channelName));
-            gui.tabbedPane.remove(gui.getTabIndex(channelName));
-        }
+        ircRoom.quitChannel();
+        createdChannels.remove(ircRoom);
+        gui.tabbedPane.remove(ircRoom);
     }
 
     /*
@@ -475,21 +451,9 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         while (privateIterator.hasNext())
         {
             IRCPrivate tempPrivateRoom = privateIterator.next();
-            gui.tabbedPane.remove(tempPrivateRoom);
-            createdPrivateRooms.remove(tempPrivateRoom);
+            privateIterator.remove();
+            quitChannel(tempPrivateRoom);
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.backend.IRCServerBase#quitPrivateRooms(java.lang.String)
-     */
-    @Override
-    public void quitPrivateRooms(IRCPrivate room)
-    {
-            createdPrivateRooms.remove(room);
-            gui.tabbedPane.remove(room);
     }
 
     /*
@@ -692,7 +656,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             IRCChannel tempChannel = getCreatedChannel(channelName);
             if (tempChannel != null)
                 if (thisUser.equals(getNick()))
-                    quitChannel(channelName);
+                    quitChannel(tempChannel);
                 else
                     tempChannel.removeFromUsersList(channelName, thisUser);
         }

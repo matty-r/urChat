@@ -757,7 +757,9 @@ public class MessageHandler
             {
                 gui.quitServer(myMessage.messageHandler.serverBase);
             } else
+            {
                 myMessage.messageHandler.serverBase.removeFromUsersList(myMessage.messageHandler.serverBase.getName(), myMessage.nick);
+            }
         }
     }
 

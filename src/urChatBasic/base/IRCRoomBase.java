@@ -4,7 +4,6 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCActions;
 import urChatBasic.frontend.IRCPrivate;
-import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.LineFormatter.ClickableText;
@@ -16,7 +15,6 @@ import urChatBasic.frontend.UsersListModel;
 import java.awt.event.*;
 import java.awt.*;
 import java.io.*;
-import java.net.URL;
 import java.text.*;
 import java.util.*;
 import java.util.List;
@@ -45,10 +43,10 @@ public class IRCRoomBase extends JPanel
     protected IRCActions myActions;
     protected UserGUI gui = DriverGUI.gui;
 
-    private FontDialog fontDialog;
+    protected FontDialog fontDialog;
 
     // Useful
-    private final Dimension labelSize = new JLabel("defaultLabel").getPreferredSize();
+
 
     // Icons
     public ImageIcon icon;
@@ -72,6 +70,7 @@ public class IRCRoomBase extends JPanel
     private TickerListener eventTickerListener = new TickerListener();
     private final int EVENT_BUFFER = 20;
     private Boolean eventTickerShown = null;
+    private final Dimension labelSize = new JLabel("defaultLabel").getPreferredSize();
 
     // TODO: Rename to sentHistory
     private List<String> userHistory = new ArrayList<String>();
@@ -173,11 +172,17 @@ public class IRCRoomBase extends JPanel
         if(null != getServer())
         {
             roomPrefs = Constants.FAVOURITES_PREFS.node(getServer().getName()).node(roomName);
-            lineFormatter = new LineFormatter(this.getFont(), getServer().getNick());
+            fontDialog = new FontDialog(roomName, gui.getFont(), roomPrefs);
+
+            lineFormatter = new LineFormatter(getFontPanel().getFont(), getServer().getNick());
         } else {
             roomPrefs = Constants.FAVOURITES_PREFS.node(roomName);
-            lineFormatter = new LineFormatter(this.getFont(), null);
+            fontDialog = new FontDialog(roomName, gui.getFont(), roomPrefs);
+
+            lineFormatter = new LineFormatter(getFontPanel().getFont(), null);
         }
+
+        setFont(getFontPanel().getFont());
 
         // Create the initial size of the panel
         // Set size of the overall panel
@@ -189,8 +194,6 @@ public class IRCRoomBase extends JPanel
         this.add(mainPanel, BorderLayout.CENTER);
 
         this.myMenu = new ChannelPopUp();
-        fontDialog = new FontDialog(roomName, getFont(), roomPrefs);
-        setFont(gui.getFont());
         fontDialog.setVisible(false);
         fontDialog.addSaveListener(new SaveFontListener());
 
@@ -237,13 +240,13 @@ public class IRCRoomBase extends JPanel
         channelTextArea.addMouseListener(new ChannelClickListener());
         channelTextArea.addMouseMotionListener(new ChannelMovementListener());
         channelTextArea.setEditable(false);
-        channelTextArea.setFont(gui.getFont());
+        channelTextArea.setFont(getFontPanel().getFont());
         channelTextArea.setEditorKit(new StyledEditorKit());
     }
 
     private void setupUsersList()
     {
-        usersList.setFont(getFont());
+        usersList.setFont(getFontPanel().getFont());
         usersList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         usersList.setLayoutOrientation(JList.VERTICAL);
         usersList.setVisibleRowCount(-1);
@@ -265,7 +268,7 @@ public class IRCRoomBase extends JPanel
         bottomPanel.add(clientTextBox, BorderLayout.NORTH);
         bottomPanel.add(tickerPanel);
 
-        clientTextBox.setFont(getFont());
+        clientTextBox.setFont(getFontPanel().getFont());
         clientTextBox.addActionListener(new SendTextListener());
         clientTextBox.addKeyListener(new ChannelKeyListener());
         clientTextBox.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, Collections.EMPTY_SET);
@@ -273,8 +276,8 @@ public class IRCRoomBase extends JPanel
 
     private void setupTickerPanel()
     {
-        tickerPanel.setFont(getFont());
-        tickerPanel.setPreferredSize(clientTextBox.getPreferredSize());
+        tickerPanel.setFont(getFontPanel().getFont());
+        tickerPanel.setPreferredSize(labelSize);
         tickerPanel.setBackground(Color.LIGHT_GRAY);
         tickerPanel.setLayout(null);
         tickerPanel.addMouseListener(eventTickerListener);
@@ -384,6 +387,11 @@ public class IRCRoomBase extends JPanel
     // TODO: Change this to accept IRCUser instead
     public void printText(String line, String fromUser)
     {
+        if(null == channelTextArea)
+        {
+            System.out.println("Cant print, shutting down");
+            return;
+        }
 
         DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
         Date chatDate = new Date();
@@ -391,6 +399,7 @@ public class IRCRoomBase extends JPanel
 
         if (gui.isTimeStampsEnabled())
             timeLine = "[" + chatDateFormat.format(chatDate) + "]";
+
         if (gui.isChannelHistoryEnabled())
         {
             try
@@ -401,8 +410,10 @@ public class IRCRoomBase extends JPanel
                 Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
             }
         }
+
         StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
         IRCUser fromIRCUser = getCreatedUsers(fromUser);
+
         // If we received a message from a user that isn't in the channel
         // then add them to the users list.
         // But don't add them if it's from the Event Ticker
@@ -419,6 +430,7 @@ public class IRCRoomBase extends JPanel
         if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
         {
             lineFormatter.formattedDocument(doc, timeLine, fromIRCUser, fromUser, line);
+
             if (lineFormatter.nameStyle.getAttribute("name") == lineFormatter.highStyle().getAttribute("name"))
             {
                 callForAttention();
@@ -876,6 +888,16 @@ public class IRCRoomBase extends JPanel
         }
     }
 
+    public void quitChannel ()
+    {
+        eventTickerTimer.stop();
+        tickerPanel.setVisible(false);
+        usersList.setVisible(false);
+        removeAll();
+        revalidate();
+        repaint();
+    }
+
     public boolean userIsTyping ()
     {
         return !clientTextBox.getText().isEmpty();
@@ -1043,8 +1065,8 @@ public class IRCRoomBase extends JPanel
 
                         if(DriverGUI.frame.isFocused())
                         {
-                            tickerPanel.repaint();
                             tickerPanel.revalidate();
+                            tickerPanel.repaint();
                         }
                     } else
                     {

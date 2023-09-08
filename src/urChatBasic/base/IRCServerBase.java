@@ -67,14 +67,12 @@ public interface IRCServerBase
      */
     public abstract void quitChannels ();
 
-    public abstract void quitChannel (String channelName);
+    public abstract void quitChannel (IRCRoomBase ircRoom);
 
     /**
      * Closes and removes all private rooms that have been created.
      */
     public abstract void quitPrivateRooms ();
-
-    public abstract void quitPrivateRooms (IRCPrivate ircRoom);
 
     /**
      * Return the appropriate created channel

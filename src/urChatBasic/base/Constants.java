@@ -43,6 +43,8 @@ public class Constants
     public static final String KEY_FIRST_SERVER = "first server name";
     public static final String KEY_FIRST_PORT = "first server port";
     public static final String KEY_AUTH_TYPE = "authentication type";
+    public static final String KEY_PASSWORD_REMEMBER = "remember password";
+    public static final String KEY_PASSWORD = "saved password";
     public static final String KEY_USE_TLS = "use tls";
     public static final String KEY_USE_PROXY = "use proxy";
     public static final String KEY_PROXY_HOST = "proxy host";
@@ -78,6 +80,8 @@ public class Constants
     public static final String DEFAULT_FIRST_SERVER = "irc.libera.chat";
     public static final String DEFAULT_FIRST_PORT = "6697";
     public static final String DEFAULT_AUTH_TYPE = CapabilityTypes.NONE.toString();
+    public static final String DEFAULT_PASSWORD = "";
+    public static final Boolean DEFAULT_PASSWORD_REMEMBER = false;
     public static final Boolean DEFAULT_USE_TLS = true;
     public static final Boolean DEFAULT_USE_PROXY = false;
     public static final String DEFAULT_PROXY_HOST = "";

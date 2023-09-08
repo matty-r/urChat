@@ -4,18 +4,17 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.net.URL;
-import java.util.Properties;
+// import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
-import urChatBasic.backend.LookAndFeelLoader;
+// import javax.swing.UIManager.LookAndFeelInfo;
+// import urChatBasic.backend.LookAndFeelLoader;
 import urChatBasic.base.Constants;
+// import urChatBasic.frontend.utils.UIManagerDefaults;
 
 public class DriverGUI
 {
@@ -34,50 +33,44 @@ public class DriverGUI
 
         try
         {
-            // TODO
-            System.out.println("TODO: LookAndFeelLoader not yet implemented completely");
-            LookAndFeelLoader lafLoader = new LookAndFeelLoader(Thread.currentThread().getContextClassLoader());
-            Thread.currentThread().setContextClassLoader(lafLoader.newClassLoader);
-            Properties lafProps = lafLoader.loadedProps;
+            // // TODO
+            // System.out.println("TODO: LookAndFeelLoader not yet implemented completely");
+            // LookAndFeelLoader lafLoader = new LookAndFeelLoader(Thread.currentThread().getContextClassLoader());
+            // Thread.currentThread().setContextClassLoader(lafLoader.newClassLoader);
+            // Properties lafProps = lafLoader.loadedProps;
 
 
-            // Load all classes in the JAR?
-            for (Object lafName : lafLoader.lafClasses.keySet()) {
-                // Whats the best way to load the needed classes correctly?
-                try{
-                    // ((Class) lafLoader.lafClasses.get(lafName)).getClassLoader().loadClass((String) lafName);
-                    Thread.currentThread().getContextClassLoader().loadClass((String) lafName);
-                    // Thread.currentThread().getContextClassLoader().loadClass((String) lafName);
-                    Class.forName((String) lafName, true, ((Class) lafLoader.lafClasses.get(lafName)).getClassLoader());
-                } catch (NoClassDefFoundError | Exception classDef)
-                {
-                    System.out.println(classDef);
-                }
-            }
+            // // Load all classes in the JAR?
+            // for (Object lafName : lafLoader.lafClasses.keySet()) {
+            //     // Whats the best way to load the needed classes correctly?
+            //     try{
+            //         // ((Class) lafLoader.lafClasses.get(lafName)).getClassLoader().loadClass((String) lafName);
+            //         Thread.currentThread().getContextClassLoader().loadClass((String) lafName);
+            //         // Thread.currentThread().getContextClassLoader().loadClass((String) lafName);
+            //         Class.forName((String) lafName, true, ((Class) lafLoader.lafClasses.get(lafName)).getClassLoader());
+            //     } catch (NoClassDefFoundError | Exception classDef)
+            //     {
+            //         System.out.println(classDef);
+            //     }
+            // }
 
 
-            // 'Construct' and set LAF
-            for (Object lafName : lafLoader.foundLAFs.keySet()) {
-                Constructor lafConstructor = (Constructor) lafLoader.foundLAFs.get(lafName);
+            // // 'Construct' and set LAF
+            // try{
 
-                LookAndFeel newLAF = (LookAndFeel) lafConstructor.newInstance();
-                try{
-
-                        // UIManager.setLookAndFeel("FlatDarkLaf");
-                        for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                            System.out.println(info.getName());
-                            if ("FlatMacLightLaf".equals(info.getName())) {
-                                UIManager.setLookAndFeel(info.getClassName());
-                            }
-                        }
-                        flatLafAvailable = true;
-                        break;
-                } catch(Exception  e) {
-                    throw e;
-                }
-                // Figure out choosing and loading others later
-                // break;
-            }
+            //         // UIManager.setLookAndFeel("FlatDarkLaf");
+            //         for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+            //             System.out.println(info.getName());
+            //             if ("FlatMacLightLaf".equals(info.getName())) {
+            //                 UIManager.setLookAndFeel(info.getClassName());
+            //             }
+            //         }
+            //         flatLafAvailable = true;
+            // } catch(Exception  e) {
+            //     throw e;
+            // }
+            // Figure out choosing and loading others later
+            // break;
 
         } catch (Exception e)
         {
@@ -94,6 +87,8 @@ public class DriverGUI
                 }
             }
         }
+
+        // UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
         // Starts doing some Swing stuff
         // UIManagerDefaults thisng = new UIManagerDefaults();
