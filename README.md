@@ -1,7 +1,7 @@
 urChat
 ======
 
-urChat is a Java based IRC Client designed around usability and minimal resource impact on your system.
+urChat is a Java based IRC Client designed around simplicity and minimal resource impact on your system.
 
 Screenshots
 ======
