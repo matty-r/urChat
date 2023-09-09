@@ -18,7 +18,7 @@ public class UserGUITest {
 
     @Before
     public void setUp() throws Exception {
-        baseTestPreference = Constants.FRONTEND_PREFS.parent().node("testing");
+        baseTestPreference = Constants.BASE_PREFS.parent().node("testing");
         serverTestPreference = baseTestPreference.node("servername");
         roomTestPreference = serverTestPreference.node("#channel");
     }
