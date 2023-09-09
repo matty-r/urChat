@@ -33,6 +33,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // Tabs
     public JTabbedPane tabbedPane = new DnDTabbedPane();
     private final int OPTIONS_INDEX = 0;
+    public Component previousSelectedTab;
+    public Component currentSelectedTab;
 
     // Profile Preferences
     private static String profileName = "Default";
@@ -1515,8 +1517,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     if (selectedComponent instanceof IRCPrivate)
                     {
                         IRCServerBase tempServer =
-                                getCreatedServer(((IRCPrivate) selectedComponent).getServer().getName());
-                        tempServer.quitChannel((IRCPrivate) selectedComponent);
+                                getCreatedServer(((IRCRoomBase) selectedComponent).getServer().getName());
+                        tempServer.quitRoom((IRCRoomBase) selectedComponent);
                     } else
                     {
                         ((IRCRoomBase) selectedComponent).myMenu.show(tabbedPane, e.getX(), e.getY());
@@ -1549,6 +1551,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 tempTab.getUserTextBox().requestFocus();
                 tempTab.enableFocus();
             }
+            currentSelectedTab = selectedComponent;
         }
     }
 
@@ -1563,6 +1566,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         public void stateChanged(ChangeEvent e)
         {
+            previousSelectedTab = currentSelectedTab;
             adaptee.TabbedPanel_stateChanged(e);
         }
     }

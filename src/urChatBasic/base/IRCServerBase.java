@@ -39,14 +39,6 @@ public interface IRCServerBase
     public abstract Boolean usingSOCKS ();
 
     /**
-     * Check to see if there are any channels at all.
-     *
-     * @param channelName
-     * @return IRCChannel
-     */
-    public abstract Boolean isCreatedChannelsEmpty ();
-
-    /**
      * Get the IRCUser object from the userName - if the IRCUser isn't found, then create it.
      *
      * @param userName
@@ -54,25 +46,14 @@ public interface IRCServerBase
      */
     public abstract IRCUser getIRCUser (String userName);
 
-    /**
-     * Return the appropriate created server
-     *
-     * @param serverName
-     * @return IRCServer
-     */
-    public abstract IRCPrivate getCreatedPrivateRoom (String privateRoom);
+    public abstract void quitRooms();
 
-    /**
-     * Closes and removes all channels that have been created.
-     */
-    public abstract void quitChannels ();
-
-    public abstract void quitChannel (IRCRoomBase ircRoom);
+    public abstract void quitRoom (IRCRoomBase ircRoom);
 
     /**
      * Closes and removes all private rooms that have been created.
      */
-    public abstract void quitPrivateRooms ();
+
 
     /**
      * Return the appropriate created channel
@@ -83,11 +64,27 @@ public interface IRCServerBase
     public abstract IRCChannel getCreatedChannel (String channelName);
 
     /**
-     * Creates a new channel based on name
+     * Return the appropriate created server
      *
-     * @param channelName
+     * @param serverName
+     * @return IRCServer
      */
-    public abstract void addToCreatedChannels (String channelName);
+    public abstract IRCPrivate getCreatedPrivateRoom (String privateRoom);
+
+    /**
+     * Return the appropriate created channel
+     *
+     * @param roomName
+     * @return IRCRoomBase
+     */
+    public abstract IRCRoomBase getCreatedRoom (String roomName, boolean asPrivate);
+
+    /**
+     * Creates a new room based on name
+     *
+     * @param roomName
+     */
+    public abstract void addToCreatedRooms (String roomName, boolean asPrivate);
 
     /**
      * Creates a new Private Room based on IRCUser

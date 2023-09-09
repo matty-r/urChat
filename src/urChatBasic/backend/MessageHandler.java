@@ -486,7 +486,7 @@ public class MessageHandler
         {
             if (myMessage.nick.equals(myMessage.messageHandler.serverBase.getNick()))
             {
-                myMessage.messageHandler.serverBase.addToCreatedChannels(myMessage.channel);
+                myMessage.messageHandler.serverBase.addToCreatedRooms(myMessage.channel, false);
                 myMessage.messageHandler.serverBase.printEventTicker(myMessage.channel, "You have joined " + myMessage.channel);
             } else
                 myMessage.messageHandler.serverBase.addToUsersList(myMessage.channel, myMessage.nick);

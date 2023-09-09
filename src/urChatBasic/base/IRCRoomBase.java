@@ -889,7 +889,7 @@ public class IRCRoomBase extends JPanel
         }
     }
 
-    public void quitChannel ()
+    public void quitRoom ()
     {
         eventTickerTimer.stop();
         tickerPanel.setVisible(false);

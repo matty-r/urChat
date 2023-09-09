@@ -48,12 +48,8 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     private String proxyPort;
     private Boolean useSOCKS;
 
-
-
-    // Created Private Rooms/Tabs
-    private List<IRCPrivate> createdPrivateRooms = new ArrayList<IRCPrivate>();
     // Created channels/tabs
-    private List<IRCChannel> createdChannels = new ArrayList<IRCChannel>();
+    private List<IRCRoomBase> createdRooms = new ArrayList<IRCRoomBase>();
 
     // Server capabilities
     private ArrayList<CapabilityTypes> capabilities = new ArrayList<CapabilityTypes>();
@@ -328,8 +324,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     public void disconnect()
     {
         serverConnection.disconnect();
-        quitChannels();
-        quitPrivateRooms();
+        quitRooms();
     }
 
     /*
@@ -369,23 +364,12 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     /*
      * (non-Javadoc)
      *
-     * @see urChatBasic.backend.IRCServerBase#isCreatedChannelsEmpty()
-     */
-    @Override
-    public Boolean isCreatedChannelsEmpty()
-    {
-        return createdChannels.isEmpty();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see urChatBasic.base.IRCServerBase#getIRCUser(java.lang.String)
      */
     @Override
     public IRCUser getIRCUser(String userName)
     {
-        for (IRCChannel tempChannel : createdChannels)
+        for (IRCRoomBase tempChannel : createdRooms)
             if (tempChannel.getCreatedUsers(userName) != null)
                 return tempChannel.getCreatedUsers(userName);
         return new IRCUser(this, userName);
@@ -400,72 +384,60 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     @Override
     public IRCPrivate getCreatedPrivateRoom(String privateRoom)
     {
-        for (IRCPrivate tempPrivate : createdPrivateRooms)
+        IRCRoomBase tempRoom = getCreatedRoom(privateRoom, true);
+
+        if(tempRoom != null)
         {
-            if (tempPrivate.getName().equalsIgnoreCase(privateRoom))
-                return tempPrivate;
+            return (IRCPrivate) tempRoom;
         }
 
         return null;
     }
 
-    /*
+        /*
      * (non-Javadoc)
      *
-     * @see urChatBasic.backend.IRCServerBase#quitChannels()
-     */
-    @Override
-    public void quitChannels()
-    {
-        Iterator<IRCChannel> channelIterator = createdChannels.iterator();
-        while (channelIterator.hasNext())
-        {
-            IRCChannel removeChannel = channelIterator.next();
-            channelIterator.remove();
-            quitChannel(removeChannel);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.backend.IRCServerBase#quitChannel(java.lang.String)
-     */
-    @Override
-    public void quitChannel(IRCRoomBase ircRoom)
-    {
-        ircRoom.quitChannel();
-        createdChannels.remove(ircRoom);
-        gui.tabbedPane.remove(ircRoom);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.backend.IRCServerBase#quitPrivateRooms()
-     */
-    @Override
-    public void quitPrivateRooms()
-    {
-        Iterator<IRCPrivate> privateIterator = createdPrivateRooms.iterator();
-        while (privateIterator.hasNext())
-        {
-            IRCPrivate tempPrivateRoom = privateIterator.next();
-            privateIterator.remove();
-            quitChannel(tempPrivateRoom);
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.backend.IRCServerBase#getCreatedChannel(java.lang.String)
+     * @see urChatBasic.backend.IRCServerBase#getCreatedPrivateRoom(java.lang.String)
      */
     @Override
     public IRCChannel getCreatedChannel(String channelName)
     {
-        for (IRCChannel tempChannel : createdChannels)
-            if (tempChannel.getName().equals(channelName))
+        IRCRoomBase tempRoom = getCreatedRoom(channelName, false);
+
+        if(tempRoom != null)
+        {
+            return (IRCChannel) tempRoom;
+        }
+
+        return null;
+    }
+
+    @Override
+    public void quitRooms()
+    {
+        Iterator<IRCRoomBase> channelIterator = createdRooms.iterator();
+        while (channelIterator.hasNext())
+        {
+            IRCRoomBase removeChannel = channelIterator.next();
+            channelIterator.remove();
+            quitRoom(removeChannel);
+        }
+    }
+
+    @Override
+    public void quitRoom(IRCRoomBase ircRoom)
+    {
+        ircRoom.quitRoom();
+        createdRooms.remove(ircRoom);
+        gui.tabbedPane.setSelectedComponent(gui.previousSelectedTab);
+        gui.tabbedPane.remove(ircRoom);
+    }
+
+    @Override
+    public IRCRoomBase getCreatedRoom(String roomName, boolean asPrivate)
+    {
+        for (IRCRoomBase tempChannel : createdRooms)
+            if ((tempChannel instanceof IRCPrivate && asPrivate) || tempChannel.getName().equals(roomName))
                 return tempChannel;
         return null;
     }
@@ -477,13 +449,15 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#addToCreatedChannels(java.lang.String)
      */
     @Override
-    public void addToCreatedChannels(String channelName)
+    public void addToCreatedRooms(String roomName, boolean asPrivate)
     {
-        if (getCreatedChannel(channelName) == null)
+        if (getCreatedRoom(roomName, asPrivate) == null)
         {
-            IRCChannel tempChannel = new IRCChannel(this, channelName);
-            createdChannels.add(tempChannel);
-            gui.tabbedPane.addTab(channelName, tempChannel.icon, tempChannel);
+            IRCRoomBase tempChannel = asPrivate ? new IRCPrivate(this, getIRCUser(roomName)) : new IRCChannel(this, roomName);
+            createdRooms.add(tempChannel);
+
+            gui.tabbedPane.insertTab(roomName, tempChannel.icon, tempChannel, null, gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1);
+            //gui.tabbedPane.addTab(roomName, tempChannel.icon, tempChannel);
             Component currentTab = gui.tabbedPane.getSelectedComponent();
             if(currentTab instanceof IRCRoomBase)
             {
@@ -517,9 +491,9 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         IRCPrivate privateRoom = getCreatedPrivateRoom(fromUser.getName());
         if (privateRoom == null)
         {
-            privateRoom = new IRCPrivate(this, fromUser);
-            createdPrivateRooms.add(privateRoom);
-            gui.tabbedPane.addTab(privateRoom.getName(), privateRoom.icon, privateRoom);
+            addToCreatedRooms(fromUser.getName(), true);
+            privateRoom = getCreatedPrivateRoom(fromUser.getName());
+            // gui.tabbedPane.addTab(privateRoom.getName(), privateRoom.icon, privateRoom);
             // gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(privateRoom));
             // privateRoom.getUserTextBox().requestFocus();
             return privateRoom;
@@ -538,7 +512,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     public void printChannelText(String channelName, String line, String fromUser)
     {
 
-        IRCRoomBase tempChannel = getCreatedChannel(channelName);
+        IRCRoomBase tempChannel = getCreatedRoom(channelName, false);
 
         if (channelName.equals(fromUser) || null == tempChannel)
         {
@@ -647,7 +621,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
 
         if (channelName.equals(getName()))
         {
-            for (IRCChannel tempChannel : createdChannels)
+            for (IRCRoomBase tempChannel : createdRooms)
             {
                 tempChannel.removeFromUsersList(tempChannel.getName(), thisUser);
             }
@@ -656,7 +630,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             IRCChannel tempChannel = getCreatedChannel(channelName);
             if (tempChannel != null)
                 if (thisUser.equals(getNick()))
-                    quitChannel(tempChannel);
+                    quitRoom(tempChannel);
                 else
                     tempChannel.removeFromUsersList(channelName, thisUser);
         }
@@ -705,7 +679,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         {
             public void run()
             {
-                for (IRCChannel tempChannel : createdChannels)
+                for (IRCRoomBase tempChannel : createdRooms)
                 {
                     tempChannel.renameUser(oldUserName.replace(":", ""), newUserName);
                 }
