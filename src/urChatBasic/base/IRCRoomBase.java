@@ -139,14 +139,14 @@ public class IRCRoomBase extends JPanel
     {
         usersListShown = false;
         // userScroller.setVisible(usersListShown);
-        toggleUsersList();
+        toggleUsersList(usersListShown);
     }
 
     public void showUsersList()
     {
         usersListShown = true;
         // userScroller.setVisible(usersListShown);
-        toggleUsersList();
+        toggleUsersList(usersListShown);
     }
 
     public IRCRoomBase(String roomName)
@@ -171,12 +171,12 @@ public class IRCRoomBase extends JPanel
     {
         if(null != getServer())
         {
-            roomPrefs = Constants.FAVOURITES_PREFS.node(getServer().getName()).node(roomName);
+            roomPrefs = gui.getFavouritesPath().node(getServer().getName()).node(roomName);
             fontDialog = new FontDialog(roomName, gui.getFont(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getFont(), getServer().getNick());
         } else {
-            roomPrefs = Constants.FAVOURITES_PREFS.node(roomName);
+            roomPrefs = gui.getFavouritesPath().node(roomName);
             fontDialog = new FontDialog(roomName, gui.getFont(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getFont(), null);
@@ -455,14 +455,15 @@ public class IRCRoomBase extends JPanel
      *
      * @param showIt
      */
-    public void toggleUsersList()
+    public void toggleUsersList(Boolean showIt)
     {
-        if (usersListShown == null || !usersListShown)
+        if (usersListShown == showIt || usersListShown == null)
         {
             // userScroller.setVisible(showIt);
-            mainResizer.setDividerLocation(gui.getWidth());
-        } else {
-            mainResizer.setDividerLocation(gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
+            if(showIt)
+                mainResizer.setDividerLocation(gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
+            else
+                mainResizer.setDividerLocation(gui.getWidth());
         }
     }
 
@@ -472,7 +473,7 @@ public class IRCRoomBase extends JPanel
      *
      * @param showIt
      */
-    public void showEventTicker(Boolean showIt)
+    public void toggleEventTicker(Boolean showIt)
     {
         if (eventTickerShown == showIt || eventTickerShown == null)
         {
@@ -806,7 +807,7 @@ public class IRCRoomBase extends JPanel
         public void actionPerformed(ActionEvent arg0)
         {
             eventTickerShown = !tickerPanel.isVisible();
-            showEventTicker(!tickerPanel.isVisible());
+            toggleEventTicker(!tickerPanel.isVisible());
         }
     }
 
@@ -828,7 +829,7 @@ public class IRCRoomBase extends JPanel
             } else {
                 usersListShown = true;
             }
-            toggleUsersList();
+            toggleUsersList(usersListShown);
         }
     }
 

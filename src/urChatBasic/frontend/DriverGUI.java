@@ -138,15 +138,22 @@ public class DriverGUI
         frame.setVisible(true);
 
         frame.addWindowFocusListener(new WindowFocusListener() {
+            static final int REFOCUS_BUFFER_MS = 3000;
+            long lostFocusTime;
 
             @Override
             public void windowLostFocus(WindowEvent e) {
+                lostFocusTime = System.currentTimeMillis();
                 gui.lostFocus();
             }
 
             @Override
             public void windowGainedFocus(WindowEvent e) {
-                gui.regainedFocus();
+                // Prevent losing focus and triggering the regainedFocus function too quickly
+                // pretty much only a problem when debugging the code and we hit a breakpoint
+                // which steals focus to the IDE
+                if(System.currentTimeMillis() > lostFocusTime + REFOCUS_BUFFER_MS)
+                    gui.regainedFocus();
             }
         });
 

@@ -35,8 +35,7 @@ public class Constants
     private static final Font DEFAULT_FONT = new Font(new JLabel().getFont().getFamily(), 0, new JLabel().getFont().getSize());
 
     // Preferences
-    public static final Preferences FRONTEND_PREFS = Preferences.userNodeForPackage(UserGUI.class);
-    public static final Preferences FAVOURITES_PREFS = FRONTEND_PREFS.parent().node("favourites");
+    public static final Preferences BASE_PREFS = Preferences.userNodeForPackage(DriverGUI.class).node("profiles");
 
     // Key Strings that are used when saving settings
     public static final String KEY_FIRST_CHANNEL = "first channel name";
