@@ -252,7 +252,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         // change the profile name
         profileName = newProfileName;
-
+        clientFontPanel.setSettingsPath(getProfilePath());
         // now load the new profile settings
         getClientSettings(false);
     }
@@ -1351,7 +1351,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         logClientText.setSelected(
                 getProfilePath().getBoolean(Constants.KEY_LOG_CLIENT_TEXT, Constants.DEFAULT_LOG_CLIENT_TEXT));
 
-        loadFont();
+        clientFontPanel.loadFont();
 
         eventTickerDelay.setValue(
                 getProfilePath().getInt(Constants.KEY_EVENT_TICKER_DELAY, Constants.DEFAULT_EVENT_TICKER_DELAY));
@@ -1576,13 +1576,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            for (int index = 0; index < tabbedPane.getComponents().length; index++)
+            for (int index = 0; index < tabbedPane.getTabCount(); index++)
             {
                 Component tab = tabbedPane.getComponentAt(index);
-                tab.setFont(clientFontPanel.getFont());
 
                 if (tab instanceof IRCRoomBase)
                 {
+                    tab.setFont(clientFontPanel.getFont());
                     ((IRCRoomBase) tab).getFontPanel().setDefaultFont(clientFontPanel.getFont());
                 }
             }
@@ -1649,24 +1649,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
 
         return super.getFont();
-    }
-
-    public void loadFont()
-    {
-        // SAVED FONT STUFF
-        int savedFontBoldItalic = 0;
-
-        if (getProfilePath().getBoolean(Constants.KEY_FONT_BOLD, Constants.DEFAULT_FONT_GENERAL.isBold()))
-            savedFontBoldItalic = Font.BOLD;
-        if (getProfilePath().getBoolean(Constants.KEY_FONT_ITALIC, Constants.DEFAULT_FONT_GENERAL.isItalic()))
-            savedFontBoldItalic |= Font.ITALIC;
-
-        Font savedFont =
-                new Font(getProfilePath().get(Constants.KEY_FONT_FAMILY, Constants.DEFAULT_FONT_GENERAL.getFamily()),
-                        savedFontBoldItalic,
-                        getProfilePath().getInt(Constants.KEY_FONT_SIZE, Constants.DEFAULT_FONT_GENERAL.getSize()));
-
-        clientFontPanel.setFont(savedFont);
     }
 
     /*

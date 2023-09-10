@@ -5,6 +5,7 @@ import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,7 +15,6 @@ import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import urChatBasic.base.Constants;
@@ -35,9 +35,9 @@ public class LineFormatter
         this.myNick = myNick;
         this.myFont = myFont;
         defaultStyle = defaultStyle();
-        timeStyle = standardStyle();
-        nameStyle = standardStyle();
-        lineStyle = standardStyle();
+        timeStyle = defaultStyle();
+        nameStyle = defaultStyle();
+        lineStyle = defaultStyle();
     }
 
     public void setFont(StyledDocument doc, Font newFont)
@@ -62,19 +62,9 @@ public class LineFormatter
         return defaultStyle;
     }
 
-    public SimpleAttributeSet standardStyle()
-    {
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
-        tempStyle.addAttribute("name", "standardStyle");
-        tempStyle.addAttribute("styleStart", 0);
-        tempStyle.addAttribute("styleEnd", 0);
-
-        return tempStyle;
-    }
-
     public SimpleAttributeSet lowStyle()
     {
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
+        SimpleAttributeSet tempStyle = defaultStyle();
         tempStyle.addAttribute("name", "lowStyle");
         StyleConstants.setForeground(tempStyle, Color.LIGHT_GRAY);
 
@@ -84,7 +74,7 @@ public class LineFormatter
     public SimpleAttributeSet mediumStyle()
     {
 
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
+        SimpleAttributeSet tempStyle = defaultStyle();
         tempStyle.addAttribute("name", "mediumStyle");
         // StyleConstants.setBackground(tempStyle, Color.YELLOW);
 
@@ -93,7 +83,7 @@ public class LineFormatter
 
     public SimpleAttributeSet highStyle()
     {
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
+        SimpleAttributeSet tempStyle = defaultStyle();
         tempStyle.addAttribute("name", "highStyle");
 
         StyleConstants.setBackground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground")); // TODO: Get highlight colour?
@@ -106,7 +96,7 @@ public class LineFormatter
 
     public SimpleAttributeSet urlStyle()
     {
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
+        SimpleAttributeSet tempStyle = defaultStyle();
 
         tempStyle.addAttribute("name", "urlStyle");
         tempStyle.addAttribute("type", "url");
@@ -119,7 +109,7 @@ public class LineFormatter
 
     public SimpleAttributeSet myStyle()
     {
-        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
+        SimpleAttributeSet tempStyle = defaultStyle();
         tempStyle.addAttribute("name", "myStyle");
         // StyleConstants.setForeground(tempStyle, Color.GREEN);
         StyleConstants.setForeground(tempStyle, URColour.getInvertedColour(UIManager.getColor("CheckBoxMenuItem.selectionBackground")));
@@ -196,8 +186,6 @@ public class LineFormatter
                 return mediumStyle();
             case "highStyle":
                 return highStyle();
-            case "timeStyle":
-                return timeStyle;
             case "myStyle":
                 return myStyle();
             case "lowStyle":
@@ -218,8 +206,17 @@ public class LineFormatter
 
         SimpleAttributeSet matchingStyle = getStyle(styleName);
 
-        matchingStyle.addAttribute("styleStart", styleStart);
-        matchingStyle.addAttribute("styleLength", styleLength);
+        // Copy the attributes, but only if they aren't already set
+        Iterator attributeIterator = textStyle.getAttributeNames().asIterator();
+        while(attributeIterator.hasNext())
+        {
+            String nextAttributeName = attributeIterator.next().toString();
+            if(matchingStyle.getAttribute(nextAttributeName) == null)
+            {
+                matchingStyle.addAttribute(nextAttributeName, textStyle.getAttribute(nextAttributeName));
+            }
+        }
+
 
         doc.setCharacterAttributes(styleStart, styleLength, matchingStyle, true);
 
@@ -237,8 +234,6 @@ public class LineFormatter
      */
     public void formattedDocument(StyledDocument doc, String timeLine, IRCUser fromUser, String fromString, String line)
     {
-
-
         if (fromUser != null && null != myNick && myNick.equals(fromUser.toString()))
         {
             nameStyle = this.myStyle();
@@ -247,7 +242,7 @@ public class LineFormatter
             if (null != myNick && line.indexOf(myNick) > -1)
                 nameStyle = highStyle();
             else
-                nameStyle = standardStyle();
+                nameStyle = defaultStyle();
         }
 
         if (fromUser == null && fromString.equals(Constants.EVENT_USER))
@@ -255,7 +250,7 @@ public class LineFormatter
             nameStyle = lowStyle();
             lineStyle = lowStyle();
         } else {
-            lineStyle = standardStyle();
+            lineStyle = defaultStyle();
         }
 
         try

@@ -80,7 +80,7 @@ public class FontPanel extends JPanel
         savedFont = new Font(settingsPath.get(Constants.KEY_FONT_FAMILY, defaultFont.getFamily()),
                 savedFontBoldItalic, settingsPath.getInt(Constants.KEY_FONT_SIZE, defaultFont.getSize()));
 
-        this.setFont(savedFont, false);
+        setFont(savedFont, false);
     }
 
     @Override
@@ -121,6 +121,8 @@ public class FontPanel extends JPanel
                 settingsPath.putInt(Constants.KEY_FONT_SIZE, newFont.getSize());
             }
 
+            revalidate();
+            repaint();
             previewFont();
         }
     }
