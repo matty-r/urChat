@@ -11,8 +11,10 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import urChatBasic.base.Constants;
@@ -38,6 +40,13 @@ public class LineFormatter
         lineStyle = standardStyle();
     }
 
+    public void setFont(StyledDocument doc, Font newFont)
+    {
+        myFont = newFont;
+        if(doc.getLength() > 0)
+            updateStyles(doc, 0);
+    }
+
     public SimpleAttributeSet defaultStyle()
     {
         SimpleAttributeSet defaultStyle = new SimpleAttributeSet();
@@ -47,21 +56,25 @@ public class LineFormatter
         StyleConstants.setForeground(defaultStyle, URColour.getContrastColour(UIManager.getColor("Panel.background")));
         StyleConstants.setFontFamily(defaultStyle, myFont.getFamily());
         StyleConstants.setFontSize(defaultStyle, myFont.getSize());
+        StyleConstants.setBold(defaultStyle, myFont.isBold());
+        StyleConstants.setItalic(defaultStyle, myFont.isItalic());
 
         return defaultStyle;
     }
 
     public SimpleAttributeSet standardStyle()
     {
-        SimpleAttributeSet tempStyle = defaultStyle();
+        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
         tempStyle.addAttribute("name", "standardStyle");
+        tempStyle.addAttribute("styleStart", 0);
+        tempStyle.addAttribute("styleEnd", 0);
 
         return tempStyle;
     }
 
     public SimpleAttributeSet lowStyle()
     {
-        SimpleAttributeSet tempStyle = defaultStyle();
+        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
         tempStyle.addAttribute("name", "lowStyle");
         StyleConstants.setForeground(tempStyle, Color.LIGHT_GRAY);
 
@@ -71,7 +84,7 @@ public class LineFormatter
     public SimpleAttributeSet mediumStyle()
     {
 
-        SimpleAttributeSet tempStyle = defaultStyle();
+        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
         tempStyle.addAttribute("name", "mediumStyle");
         // StyleConstants.setBackground(tempStyle, Color.YELLOW);
 
@@ -80,7 +93,7 @@ public class LineFormatter
 
     public SimpleAttributeSet highStyle()
     {
-        SimpleAttributeSet tempStyle = defaultStyle();
+        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
         tempStyle.addAttribute("name", "highStyle");
 
         StyleConstants.setBackground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground")); // TODO: Get highlight colour?
@@ -93,7 +106,7 @@ public class LineFormatter
 
     public SimpleAttributeSet urlStyle()
     {
-        SimpleAttributeSet tempStyle = defaultStyle();
+        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
 
         tempStyle.addAttribute("name", "urlStyle");
         tempStyle.addAttribute("type", "url");
@@ -106,7 +119,7 @@ public class LineFormatter
 
     public SimpleAttributeSet myStyle()
     {
-        SimpleAttributeSet tempStyle = defaultStyle();
+        SimpleAttributeSet tempStyle = new SimpleAttributeSet(defaultStyle().copyAttributes());
         tempStyle.addAttribute("name", "myStyle");
         // StyleConstants.setForeground(tempStyle, Color.GREEN);
         StyleConstants.setForeground(tempStyle, URColour.getInvertedColour(UIManager.getColor("CheckBoxMenuItem.selectionBackground")));
@@ -166,6 +179,54 @@ public class LineFormatter
         }
     }
 
+    private void appendString(StyledDocument doc, String insertedString, SimpleAttributeSet style) throws BadLocationException
+    {
+        int position = doc.getLength();
+        // add an attribute so we know when the style is expected to start and end.
+        style.addAttribute("styleStart", position);
+        style.addAttribute("styleLength", insertedString.length());
+        style.addAttribute("docLength", doc.getLength());
+        doc.insertString(position, insertedString, style);
+    }
+
+    private SimpleAttributeSet getStyle(String styleName)
+    {
+        switch (styleName) {
+            case "mediumStyle":
+                return mediumStyle();
+            case "highStyle":
+                return highStyle();
+            case "timeStyle":
+                return timeStyle;
+            case "myStyle":
+                return myStyle();
+            case "lowStyle":
+                return lowStyle();
+            default:
+                return defaultStyle();
+        }
+    }
+
+
+    public void updateStyles(StyledDocument doc, int startPosition)
+    {
+        AttributeSet textStyle = doc.getCharacterElement(startPosition).getAttributes();
+
+        String styleName = textStyle.getAttribute("name").toString();
+        int styleStart = Integer.parseInt(textStyle.getAttribute("styleStart").toString());
+        int styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
+
+        SimpleAttributeSet matchingStyle = getStyle(styleName);
+
+        matchingStyle.addAttribute("styleStart", styleStart);
+        matchingStyle.addAttribute("styleLength", styleLength);
+
+        doc.setCharacterAttributes(styleStart, styleLength, matchingStyle, true);
+
+        if((styleStart + styleLength) < doc.getLength())
+            updateStyles(doc, (styleStart + styleLength));
+    }
+
     /**
      * Inserts a string onto the end of the doc.
      *
@@ -199,8 +260,10 @@ public class LineFormatter
 
         try
         {
-            doc.insertString(doc.getLength(), timeLine, timeStyle);
-            doc.insertString(doc.getLength(), " <", lineStyle);
+
+            // doc.insertString(doc.getLength(), timeLine, timeStyle);
+            appendString(doc, timeLine, timeStyle);
+            appendString(doc, " <", lineStyle);
 
             if(fromUser != null)
             {
@@ -208,12 +271,13 @@ public class LineFormatter
                 clickableNameStyle.addAttribute("type", "IRCUser");
                 clickableNameStyle.addAttribute("clickableText", new ClickableText(fromUser.toString(), nameStyle, fromUser));
 
-                doc.insertString(doc.getLength(), fromUser.toString(), clickableNameStyle);
+                // doc.insertString(doc.getLength(), fromUser.toString(), clickableNameStyle);
+                appendString(doc, fromUser.toString(), clickableNameStyle);
             } else {
-                doc.insertString(doc.getLength(), fromString, nameStyle);
+                appendString(doc, fromString, nameStyle);
             }
 
-            doc.insertString(doc.getLength(), "> ", lineStyle);
+            appendString(doc, "> ", lineStyle);
 
             // find and match against any URLs that may be in the text
             Pattern pattern = Pattern.compile(Constants.URL_REGEX);
@@ -222,12 +286,12 @@ public class LineFormatter
 
             while (matcher.find()) {
                 // pre http
-                doc.insertString(doc.getLength(), line.substring(0, matcher.start()), lineStyle);
+                appendString(doc, line.substring(0, matcher.start()), lineStyle);
 
                 // http "clickableText"
                 String httpLine = line.substring(matcher.start(), matcher.end());
                 linkStyle.addAttribute("clickableText", new ClickableText(httpLine, linkStyle, fromUser));
-                doc.insertString(doc.getLength(), httpLine, linkStyle);
+                appendString(doc, httpLine, linkStyle);
 
                 // post http
                 line = line.substring(matcher.end());
@@ -237,9 +301,9 @@ public class LineFormatter
             }
 
             // print the remaining text
-            doc.insertString(doc.getLength(), line, lineStyle);
+            appendString(doc, line, lineStyle);
 
-            doc.insertString(doc.getLength(), System.getProperty("line.separator"), lineStyle);
+            appendString(doc, System.getProperty("line.separator"), lineStyle);
         } catch (BadLocationException e)
         {
             Constants.LOGGER.log(Level.SEVERE, e.getLocalizedMessage());

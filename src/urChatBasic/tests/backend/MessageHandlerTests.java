@@ -12,6 +12,8 @@ import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.UserGUI;
 import static org.junit.Assert.assertEquals;
 import java.io.IOException;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 
 public class MessageHandlerTests {
     MessageHandler testHandler;
@@ -20,6 +22,31 @@ public class MessageHandlerTests {
     IRCRoomBase testChannel;
     IRCUser testUser;
     Connection testConnection;
+
+    // helper functions
+    private String getLatestLine(StyledDocument doc)
+    {
+        int length = doc.getLength();
+
+        if (length == 0) {
+            return ""; // Return an empty string if the document is empty
+        }
+
+        try {
+            int start = doc.getText(0, length).trim().lastIndexOf('\n') + 1;
+            int end = length;
+
+            if (end == -1) {
+                end = length;
+            }
+
+            return doc.getText(start, end - start);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
 
     @Before
     public void setUp() throws Exception {
@@ -50,6 +77,17 @@ public class MessageHandlerTests {
         Message testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
         assertEquals("> claps hands", testMessage.getBody());
+    }
+
+    @Test
+    public void lineAnatomyTest1()
+    {
+        String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG testUser :hello testUser!";
+        Message testMessage = testHandler.new Message(rawMessage);
+        testHandler.parseMessage(testMessage);
+        StyledDocument testDoc = testChannel.getchannelTextArea().getStyledDocument();
+        String testLine = getLatestLine(testDoc);
+        System.out.println(testLine);
     }
 
     @Test

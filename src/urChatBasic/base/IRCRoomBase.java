@@ -27,12 +27,7 @@ import javax.swing.text.*;
 
 public class IRCRoomBase extends JPanel
 {
-
-    //
-    // TODO: private boolean hasClientTextBox = true;
-
     // Room information
-    // TODO: Rename to roomName
     private String roomName;
 
     // Preferences
@@ -44,9 +39,6 @@ public class IRCRoomBase extends JPanel
     protected UserGUI gui = DriverGUI.gui;
 
     protected FontDialog fontDialog;
-
-    // Useful
-
 
     // Icons
     public ImageIcon icon;
@@ -447,7 +439,6 @@ public class IRCRoomBase extends JPanel
             channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
         }
     }
-
 
     /**
      * First checks to make sure the user hasn't set it manually for this channel. usersListShown is
@@ -873,6 +864,7 @@ public class IRCRoomBase extends JPanel
         {
             fontDialog.getFontPanel().setDefaultFont(f);
             super.setFont(fontDialog.getFontPanel().getFont());
+            lineFormatter.setFont((StyledDocument) channelTextArea.getDocument(), fontDialog.getFontPanel().getFont());
         } else {
             super.setFont(f);
         }
