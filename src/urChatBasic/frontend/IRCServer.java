@@ -10,10 +10,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.IntStream;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -429,7 +431,12 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     {
         ircRoom.quitRoom();
         createdRooms.remove(ircRoom);
-        gui.tabbedPane.setSelectedComponent(gui.previousSelectedTab);
+
+        boolean tabExists = Arrays.stream(gui.tabbedPane.getComponents()).anyMatch(room -> room.equals(gui.previousSelectedTab));
+
+        if(tabExists)
+            gui.tabbedPane.setSelectedComponent(gui.previousSelectedTab);
+
         gui.tabbedPane.remove(ircRoom);
     }
 

@@ -259,6 +259,7 @@ public class Connection implements ConnectionBase
     private void serverMessage(Message newMessage)
     {
         if (isConnected())
+        {
             try
             {
                 messageHandler.parseMessage(newMessage);
@@ -267,6 +268,7 @@ public class Connection implements ConnectionBase
             {
                 Constants.LOGGER.log(Level.WARNING, e.toString() + newMessage);
             }
+        }
     }
 
     /*
