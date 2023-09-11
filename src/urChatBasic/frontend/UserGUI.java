@@ -114,7 +114,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JTextField firstChannelTextField = new JTextField("");
 
     // Favourites Panel
-    private static final JCheckBox autoConnectToFavourites = new JCheckBox("Automatically connect to favourites");
+    private static final JCheckBox autoConnectToFavourites = new JCheckBox("Automatically join favourite channels");
     private static final DefaultListModel<FavouritesItem> favouritesListModel = new DefaultListModel<FavouritesItem>();
     private static final JList<FavouritesItem> favouritesList = new JList<FavouritesItem>(favouritesListModel);
     private static final JScrollPane favouritesScroller = new JScrollPane(favouritesList);

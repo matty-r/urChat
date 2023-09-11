@@ -860,12 +860,20 @@ public class IRCRoomBase extends JPanel
     @Override
     public void setFont(Font f)
     {
-        if(fontDialog != null)
+        if (fontDialog != null)
         {
-            fontDialog.getFontPanel().setDefaultFont(f);
             super.setFont(fontDialog.getFontPanel().getFont());
-            lineFormatter.setFont((StyledDocument) channelTextArea.getDocument(), fontDialog.getFontPanel().getFont());
-        } else {
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                public void run()
+                {
+
+                    fontDialog.getFontPanel().setDefaultFont(f);
+                    lineFormatter.setFont((StyledDocument) channelTextArea.getDocument(),fontDialog.getFontPanel().getFont());
+                }
+            });
+        } else
+        {
             super.setFont(f);
         }
     }

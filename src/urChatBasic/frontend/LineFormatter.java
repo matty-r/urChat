@@ -253,6 +253,8 @@ public class LineFormatter
             lineStyle = defaultStyle();
         }
 
+        timeStyle = defaultStyle();
+
         try
         {
 
