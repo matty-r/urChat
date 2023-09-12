@@ -857,6 +857,16 @@ public class IRCRoomBase extends JPanel
         }
     }
 
+    public JTextPane getChannelTextPane()
+    {
+        return channelTextArea;
+    }
+
+    public LineFormatter getLineFormatter()
+    {
+        return lineFormatter;
+    }
+
     @Override
     public void setFont(Font f)
     {

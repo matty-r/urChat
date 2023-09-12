@@ -14,6 +14,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -222,6 +223,68 @@ public class LineFormatter
 
         if((styleStart + styleLength) < doc.getLength())
             updateStyles(doc, (styleStart + styleLength));
+    }
+
+    public String getLatestLine(StyledDocument doc) throws BadLocationException
+    {
+        Element root = doc.getDefaultRootElement();
+        int lines = root.getElementCount();
+
+        String finalLine = "";
+
+        while(finalLine.isEmpty())
+        {
+
+            if(lines < 0)
+                break;
+
+            Element line = root.getElement( lines-- );
+
+            if(null == line)
+                continue;
+
+            int start = line.getStartOffset();
+            int end = line.getEndOffset();
+            String text = doc.getText(start, end - start);
+            finalLine = text.trim();
+        }
+
+        return finalLine;
+    }
+
+    private int getLinePosition(StyledDocument doc, String targetLine) throws BadLocationException
+    {
+        Element root = doc.getDefaultRootElement();
+        int lines = root.getElementCount();
+
+        for (int i = 0; i < lines; i++)
+        {
+            Element line = root.getElement(i);
+
+            if(null == line)
+                continue;
+
+            int start = line.getStartOffset();
+            int end = line.getEndOffset();
+            String text = doc.getText(start, end - start);
+
+            if(text.trim().equals(targetLine.trim()))
+            {
+                return start;
+            }
+        }
+
+        return 0;
+    }
+
+    public SimpleAttributeSet getStyleAtPosition(StyledDocument doc, int position, String relativeLine) throws BadLocationException
+    {
+        if(!relativeLine.isBlank())
+            position = position + getLinePosition(doc, relativeLine);
+
+        AttributeSet textStyle = doc.getCharacterElement(position).getAttributes();
+        String styleName = textStyle.getAttribute("name").toString();
+        return getStyle(styleName);
     }
 
     /**

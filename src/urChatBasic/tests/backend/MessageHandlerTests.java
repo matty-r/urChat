@@ -40,7 +40,7 @@ public class MessageHandlerTests {
                 end = length;
             }
 
-            return doc.getText(start, end - start);
+            return doc.getText(start, end - start).trim();
         } catch (BadLocationException e) {
             e.printStackTrace();
             return "";
@@ -80,14 +80,29 @@ public class MessageHandlerTests {
     }
 
     @Test
-    public void lineAnatomyTest1()
+    public void nickIsHighStyleTest() throws BadLocationException
     {
         String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG testUser :hello testUser!";
         Message testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
-        StyledDocument testDoc = testChannel.getchannelTextArea().getStyledDocument();
-        String testLine = getLatestLine(testDoc);
-        System.out.println(testLine);
+        StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
+        String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "[0629] <someuser> hello testUser!"
+
+        // Should be highStyle because someuser mentioned my nick, testUser
+        assertEquals("highStyle", testChannel.getLineFormatter().getStyleAtPosition(testDoc, 11, testLine).getAttribute("name"));
+    }
+
+    @Test
+    public void nickIsDefaultStyleTest() throws BadLocationException
+    {
+        String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG #somechannel :Welcome to somechannel!";
+        Message testMessage = testHandler.new Message(rawMessage);
+        testHandler.parseMessage(testMessage);
+        StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
+        String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "[0629] <someuser> hello world!"
+
+        // Should be defaultStyle because the user didn't mention testUser and is just a normal message
+        assertEquals("defaultStyle", testChannel.getLineFormatter().getStyleAtPosition(testDoc, 11, testLine).getAttribute("name"));
     }
 
     @Test
