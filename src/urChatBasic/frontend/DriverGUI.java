@@ -31,7 +31,7 @@ public class DriverGUI
         Constants.LOGGER.log(Level.INFO, "Starting up..");
 
         LookAndFeelLoader lafLoader = new LookAndFeelLoader(Thread.currentThread().getContextClassLoader());
-        contextClassLoader = lafLoader.newClassLoader;
+        contextClassLoader = lafLoader.cl;
         Thread.currentThread().setContextClassLoader(contextClassLoader);
 
         createGUI();

@@ -9,7 +9,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
-
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.event.*;
@@ -1691,7 +1690,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         boolean flatLafAvailable = false;
         try
         {
-            // TODO
+            // TODO: reset colours in text boxes (workaround is to resave the font)
+            // TODO: reset colours in context menus (seems to only affect the context menu on the username in chat)
             try{
                 for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                     System.out.println(info.getName());

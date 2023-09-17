@@ -3,13 +3,9 @@ package urChatBasic.backend;
 import java.io.File;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Properties;
 
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -19,14 +15,9 @@ import javax.swing.UIManager;
 import urChatBasic.base.Constants;
 
 public class LookAndFeelLoader<C extends LookAndFeel> {
-    public HashMap<String, Constructor> foundLAFs = new HashMap<>();
-    public HashMap<String, Class> lafClasses = new HashMap<>();
-    public HashMap<String, String> foundProps = new HashMap<>();
-    public final Properties loadedProps = new Properties();
-    public ClassLoader newClassLoader;
+    public URLClassLoader cl;
 
     public LookAndFeelLoader(ClassLoader parentLoader) throws IOException {
-        URLClassLoader cl = null;
         try {
             File[] libFiles = new File(Constants.THEMES_DIR).listFiles();
             if (libFiles != null) {
@@ -94,7 +85,5 @@ public class LookAndFeelLoader<C extends LookAndFeel> {
             e.printStackTrace();
         }
         Constants.LOGGER.log(Level.INFO, "Done loading JARs! ");
-
-        this.newClassLoader = cl;
     }
 }

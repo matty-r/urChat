@@ -94,7 +94,7 @@ public class FontPanel extends JPanel
 
     public void setFont(Font newFont, Boolean saveToSettings)
     {
-        if (getFont() != newFont)
+        if (getFont() != newFont || saveToSettings)
         {
             MAKE_BOLD.setSelected(newFont.isBold());
             if (saveToSettings)
