@@ -30,64 +30,57 @@ public class LookAndFeelLoader<C extends LookAndFeel> {
         try {
             File[] libFiles = new File(Constants.THEMES_DIR).listFiles();
             if (libFiles != null) {
+
+                // Load JAR file URLs
                 URL[] urls = new URL[libFiles.length];
+
                 for (int i = 0; i < libFiles.length; i++) {
                     String pathToJar = libFiles[i].getAbsolutePath();
                     urls[i] = new URL("jar:file:" + pathToJar + "!/");
                 }
+
                 cl = URLClassLoader.newInstance(urls, parentLoader);
-                // Thread.currentThread().setContextClassLoader(cl);
+
                 UIManager.getLookAndFeelDefaults().put("ClassLoader", cl);
+
                 for (File libFile : libFiles) {
+                    // create the file as a jarfile
                     try (JarFile jarFile = new JarFile(libFile.getAbsolutePath())) {
+
                         Enumeration<JarEntry> e = jarFile.entries();
+
+                        // iterate over each definition within the jarfile
                         while (e.hasMoreElements()) {
                             JarEntry je = e.nextElement();
-                            // System.out.println(je.getName());
+
+                            // don't do anything if it's a directory
                             if (je.isDirectory()) {
                                 continue;
                             }
 
-                            if(je.getName().toLowerCase().endsWith(".properties")) {
-                                foundProps.put(je.getName().replaceAll(".*/([^/]+)\\.properties", "$1"),je.getName());
-                                continue;
-                            } else if(!je.getName().endsWith(".class"))
+                            // Don't do anything that isn't a class
+                            if(!je.getName().endsWith(".class"))
                             {
                                 continue;
                             }
 
                             // -6 because of .class
                             String className = je.getName().substring(0, je.getName().length() - 6);
+
                             String classShortName = className.replaceAll(".*/([^/]+)", "$1");
+
                             className = className.replace('/', '.');
                             Class c = cl.loadClass(className);
 
-
-                            for (String propName : foundProps.keySet()) {
-                                if(propName.equals(classShortName))
-                                {
-                                    // FileInputStream in = new FileInputStream( "." + File.separator + "themes" + File.separator + foundProps.get(propName) );
-                                    InputStream resourceStream = cl.getResourceAsStream(foundProps.get(propName));
-                                    // in.close( );
-                                    loadedProps.load(resourceStream);
-                                    // resourceStream.close();
-                                }
-                            }
-                            // Put all of the available classes in the HashMap for loading in DriverGUI
-                            lafClasses.put(className, c);
                             // We only want LAF classes
                             Class parentClass = LookAndFeel.class;
 
                             // Class is a LookAndFeel
                             if (parentClass.isAssignableFrom(c)) {
-                                Class<?> clazz = Class.forName(className, true, c.getClassLoader());
-                                Class<? extends C> newClass = clazz.asSubclass(parentClass);
                                 try {
-                                    Constructor<? extends C> constructor = newClass.getConstructor();
-                                    foundLAFs.put(className, constructor);
                                     UIManager.installLookAndFeel(classShortName, className);
-                                } catch (NoClassDefFoundError | NoSuchMethodException constructorEx) {
-                                    // Handle constructor not found
+                                } catch (Exception installEx) {
+                                    System.out.println(installEx.getMessage());
                                 }
                             }
                         }

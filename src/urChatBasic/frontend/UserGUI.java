@@ -11,8 +11,8 @@ import java.util.*;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.event.*;
-
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
@@ -51,6 +51,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // Client Options Panel
     private static final JPanel optionsClientPanel = new JPanel();
     private static final JScrollPane clientScroller = new JScrollPane(optionsClientPanel);
+    private static final JLabel lafOptionsLabel = new JLabel("Theme:");
+    private static final JComboBox<LookAndFeelInfo> lafOptions = new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
     private static final JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
     private static final JCheckBox showUsersList = new JCheckBox("Show Users List");
     private static final JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
@@ -736,6 +738,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // clientScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         // Settings for these are loaded with the settings API
         // found in getClientSettings()
+        optionsClientPanel.add(lafOptionsLabel);
+        optionsClientPanel.add(lafOptions);
+
+        lafOptions.addActionListener(new ChangeLAFListener());
+
         optionsClientPanel.add(showEventTicker);
         optionsClientPanel.add(showUsersList);
         optionsClientPanel.add(enableClickableLinks);
@@ -795,8 +802,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         final int LEFT_SPACING = 0;
 
         // Components are aligned off the top label
-        clientLayout.putConstraint(SpringLayout.WEST, showEventTicker, 6, SpringLayout.WEST, optionsClientPanel);
-        clientLayout.putConstraint(SpringLayout.NORTH, showEventTicker, 12, SpringLayout.NORTH, optionsClientPanel);
+
+        clientLayout.putConstraint(SpringLayout.WEST, lafOptionsLabel, 6, SpringLayout.WEST, optionsClientPanel);
+        clientLayout.putConstraint(SpringLayout.NORTH, lafOptionsLabel, 12, SpringLayout.NORTH, optionsClientPanel);
+
+        clientLayout.putConstraint(SpringLayout.WEST, lafOptions, LEFT_ALIGNED, SpringLayout.EAST, lafOptionsLabel);
+        clientLayout.putConstraint(SpringLayout.NORTH, lafOptions, TOP_ALIGNED, SpringLayout.NORTH, lafOptionsLabel);
+
+        clientLayout.putConstraint(SpringLayout.WEST, showEventTicker, LEFT_ALIGNED, SpringLayout.WEST, lafOptionsLabel);
+        clientLayout.putConstraint(SpringLayout.NORTH, showEventTicker, TOP_SPACING, SpringLayout.SOUTH, lafOptions);
 
         clientLayout.putConstraint(SpringLayout.NORTH, showUsersList, TOP_SPACING, SpringLayout.SOUTH, showEventTicker);
         clientLayout.putConstraint(SpringLayout.WEST, showUsersList, LEFT_ALIGNED, SpringLayout.WEST, showEventTicker);
@@ -1458,6 +1472,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
+    class ChangeLAFListener implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getName());
+        }
+    }
+
     /**
      * Used to change which panel to show when you choose an option under the Options Tab.
      *
@@ -1663,6 +1686,46 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     }
 
+    private void setNewLAF(String newLAFname)
+    {
+        boolean flatLafAvailable = false;
+        try
+        {
+            // TODO
+            try{
+                for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                    System.out.println(info.getName());
+                    if (newLAFname.equals(info.getName())) {
+                        UIManager.setLookAndFeel(info.getClassName());
+                        flatLafAvailable = true;
+                    }
+                }
+            } catch(Exception  e) {
+                throw e;
+            }
+        } catch (Exception e)
+        {
+            Constants.LOGGER.log(Level.WARNING, "Failed to set Pluggable LAF! " + e.getLocalizedMessage());
+        } finally {
+            if(!flatLafAvailable)
+            {
+                try
+                {
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                } catch (Exception e)
+                {
+                    Constants.LOGGER.log(Level.WARNING, "Failed to setLookAndFeel! " + e.getLocalizedMessage());
+                }
+            }
+        }
+
+        // Required because it doesn't pickup the default ui
+        tabbedPane.setUI((new JTabbedPane()).getUI());
+
+        SwingUtilities.updateComponentTreeUI(DriverGUI.frame);
+        // DriverGUI.frame.dispose();
+        DriverGUI.frame.validate();
+    }
 
     /*
      * (non-Javadoc)
@@ -1673,5 +1736,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public void run()
     {
         // Auto-generated method stub
+        Thread.currentThread().setContextClassLoader(DriverGUI.contextClassLoader);
     }
 }
