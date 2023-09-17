@@ -1279,6 +1279,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         getProfilePath().put(Constants.KEY_NICK_NAME, userNameTextField.getText());
         getProfilePath().put(Constants.KEY_REAL_NAME, realNameTextField.getText());
         getProfilePath().putBoolean(Constants.KEY_TIME_STAMPS, enableTimeStamps.isSelected());
+        getProfilePath().put(Constants.KEY_LAF_NAME, ((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
         getProfilePath().putBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, showEventTicker.isSelected());
         getProfilePath().putBoolean(Constants.KEY_USERS_LIST_ACTIVE, showUsersList.isSelected());
         getProfilePath().putBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED, enableClickableLinks.isSelected());
@@ -1345,6 +1346,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         enableTimeStamps
                 .setSelected(getProfilePath().getBoolean(Constants.KEY_TIME_STAMPS, Constants.DEFAULT_TIME_STAMPS));
+
+        lafOptions.setSelectedItem(getLAF(getProfilePath().get(Constants.KEY_LAF_NAME, Constants.DEFAULT_LAF_NAME)));
+
         showJoinsQuitsEventTicker.setSelected(getProfilePath().getBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS,
                 Constants.DEFAULT_EVENT_TICKER_JOINS_QUITS));
         showJoinsQuitsMainWindow.setSelected(getProfilePath().getBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS,
@@ -1476,7 +1480,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         @Override
         public void actionPerformed(ActionEvent e)
         {
-            setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getName());
+            setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
         }
     }
 
@@ -1685,8 +1689,23 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     }
 
+    private LookAndFeelInfo getLAF(String lafClassName)
+    {
+        for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+            if (lafClassName.equals(info.getClassName())) {
+                return info;
+            }
+        }
+
+        Constants.LOGGER.log(Level.SEVERE, "Unable to set LAF to " + lafClassName);
+
+        // Set to the System LAF if we've chosen an invalid/unavailable LAF theme
+        return getLAF(UIManager.getSystemLookAndFeelClassName());
+    }
+
     private void setNewLAF(String newLAFname)
     {
+        // System.out.println("Setting to "+newLAFname);
         boolean flatLafAvailable = false;
         try
         {
@@ -1694,8 +1713,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             // TODO: reset colours in context menus (seems to only affect the context menu on the username in chat)
             try{
                 for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                    System.out.println(info.getName());
-                    if (newLAFname.equals(info.getName())) {
+                    // System.out.println(info.getName());
+                    if (newLAFname.equals(info.getClassName())) {
                         UIManager.setLookAndFeel(info.getClassName());
                         flatLafAvailable = true;
                     }
@@ -1737,5 +1756,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         // Auto-generated method stub
         Thread.currentThread().setContextClassLoader(DriverGUI.contextClassLoader);
+        setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
     }
 }

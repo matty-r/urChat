@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JLabel;
+import javax.swing.UIManager;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.DriverGUI;
@@ -51,6 +52,7 @@ public class Constants
     public static final String KEY_NICK_NAME = "nick name";
     public static final String KEY_REAL_NAME = "real name";
     public static final String KEY_TIME_STAMPS = "show time stamps";
+    public static final String KEY_LAF_NAME = "laf name";
     public static final String KEY_EVENT_TICKER_ACTIVE = "show event ticker";
     public static final String KEY_USERS_LIST_ACTIVE = "show users list";
     public static final String KEY_CLICKABLE_LINKS_ENABLED = "clickable links";
@@ -88,6 +90,7 @@ public class Constants
     public static final String DEFAULT_NICK_NAME = "urChatClient";
     public static final String DEFAULT_REAL_NAME = "urChatClient";
     public static final Boolean DEFAULT_TIME_STAMPS = true;
+    public static final String DEFAULT_LAF_NAME = UIManager.getSystemLookAndFeelClassName();
     public static final Boolean DEFAULT_EVENT_TICKER_ACTIVE = true;
     public static final Boolean DEFAULT_CLICKABLE_LINKS_ENABLED = true;
     public static final Boolean DEFAULT_USERS_LIST_ACTIVE = true;
