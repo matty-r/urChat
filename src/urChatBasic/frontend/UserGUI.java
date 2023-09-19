@@ -51,6 +51,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JPanel optionsClientPanel = new JPanel();
     private static final JScrollPane clientScroller = new JScrollPane(optionsClientPanel);
     private static final JLabel lafOptionsLabel = new JLabel("Theme:");
+
     private static final JComboBox<LookAndFeelInfo> lafOptions = new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
     private static final JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
     private static final JCheckBox showUsersList = new JCheckBox("Show Users List");
@@ -740,6 +741,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         optionsClientPanel.add(lafOptionsLabel);
         optionsClientPanel.add(lafOptions);
 
+        // Set a custom renderer to display the look and feel names
+        lafOptions.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                LookAndFeelInfo info = (LookAndFeelInfo) value;
+                return super.getListCellRendererComponent(list, info.getName(), index, isSelected, cellHasFocus);
+            }
+        });
+
         lafOptions.addActionListener(new ChangeLAFListener());
 
         optionsClientPanel.add(showEventTicker);
@@ -752,13 +762,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         optionsClientPanel.add(logClientText);
         optionsClientPanel.add(limitServerLines);
         optionsClientPanel.add(limitServerLinesCount);
-
-        // limitServerLinesCount.setPreferredSize(new Dimension(50, 20));
         optionsClientPanel.add(limitChannelLines);
-
         optionsClientPanel.add(limitChannelLinesCount);
-
-        // limitChannelLinesCount.setPreferredSize(new Dimension(50, 20));
         optionsClientPanel.add(enableTimeStamps);
 
         clientFontPanel = new FontPanel(getFont(), getProfilePath());
@@ -798,15 +803,18 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         final int TOP_SPACING = 6;
         final int TOP_ALIGNED = 0;
         final int LEFT_ALIGNED = 0;
-        final int LEFT_SPACING = 0;
+        final int LEFT_SPACING = 6;
 
         // Components are aligned off the top label
 
-        clientLayout.putConstraint(SpringLayout.WEST, lafOptionsLabel, 6, SpringLayout.WEST, optionsClientPanel);
-        clientLayout.putConstraint(SpringLayout.NORTH, lafOptionsLabel, 12, SpringLayout.NORTH, optionsClientPanel);
+        clientLayout.putConstraint(SpringLayout.WEST, lafOptionsLabel, LEFT_SPACING, SpringLayout.WEST, optionsClientPanel);
 
-        clientLayout.putConstraint(SpringLayout.WEST, lafOptions, LEFT_ALIGNED, SpringLayout.EAST, lafOptionsLabel);
-        clientLayout.putConstraint(SpringLayout.NORTH, lafOptions, TOP_ALIGNED, SpringLayout.NORTH, lafOptionsLabel);
+        clientLayout.putConstraint(SpringLayout.WEST, lafOptions, LEFT_SPACING, SpringLayout.EAST, lafOptionsLabel);
+        clientLayout.putConstraint(SpringLayout.NORTH, lafOptions, TOP_SPACING * 2, SpringLayout.NORTH, optionsClientPanel);
+
+        int centeredLabelPosition= (int) ((int) (lafOptions.getPreferredSize().getHeight() / 2) - (lafOptions.getPreferredSize().getHeight() - lafOptionsLabel.getPreferredSize().getHeight()));
+
+        clientLayout.putConstraint(SpringLayout.NORTH, lafOptionsLabel, centeredLabelPosition, SpringLayout.NORTH, lafOptions);
 
         clientLayout.putConstraint(SpringLayout.WEST, showEventTicker, LEFT_ALIGNED, SpringLayout.WEST, lafOptionsLabel);
         clientLayout.putConstraint(SpringLayout.NORTH, showEventTicker, TOP_SPACING, SpringLayout.SOUTH, lafOptions);
