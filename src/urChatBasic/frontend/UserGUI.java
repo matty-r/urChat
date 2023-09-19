@@ -919,7 +919,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
             favFontDialog = new FontDialog("Font: " + favChannel, UserGUI.this.getFont(), settingsPath);
             favFontDialog.addSaveListener(new SaveChannelFontListener());
-            myMenu = new FavouritesPopUp();
+            createPopUp();
         }
 
         @Override
@@ -928,6 +928,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             return favServer + ":" + favChannel;
         }
 
+        public void createPopUp()
+        {
+            myMenu = new FavouritesPopUp();
+        }
 
         protected class SaveChannelFontListener implements ActionListener
         {
@@ -1685,18 +1689,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return super.getFont();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#paintComponent(java.awt.Graphics)
-     */
-    @Override
-    public void paintComponent(Graphics g)
-    {
-        super.paintComponent(g);
-
-    }
-
     private LookAndFeelInfo getLAF(String lafClassName)
     {
         for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -1750,8 +1742,32 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         tabbedPane.setUI((new JTabbedPane()).getUI());
 
         SwingUtilities.updateComponentTreeUI(DriverGUI.frame);
+        updateExtras();
         // DriverGUI.frame.dispose();
         DriverGUI.frame.validate();
+    }
+
+    // Update the fonts and popup menus - these aren't under the component tree
+    private void updateExtras()
+    {
+        for (int index = 0; index < tabbedPane.getTabCount(); index++)
+        {
+            Component tab = tabbedPane.getComponentAt(index);
+
+            if (tab instanceof IRCRoomBase)
+            {
+                tab.setFont(clientFontPanel.getFont());
+                ((IRCRoomBase) tab).getFontPanel().setDefaultFont(clientFontPanel.getFont());
+                SwingUtilities.updateComponentTreeUI(((IRCRoomBase) tab).myMenu);
+                SwingUtilities.updateComponentTreeUI(((IRCRoomBase) tab).getFontPanel());
+            }
+        }
+
+        for (int index = 0; index < favouritesList.getModel().getSize(); index++)
+        {
+            FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
+            SwingUtilities.updateComponentTreeUI(favouriteItem.myMenu);
+        }
     }
 
     /*

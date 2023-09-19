@@ -193,8 +193,6 @@ public interface UserGUIBase
 
     public abstract int getEventTickerDelay();
 
-    public abstract void paintComponent(Graphics g);
-
     public abstract void setClientSettings();
 
     public abstract Preferences getProfilePath();

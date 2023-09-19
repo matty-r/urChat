@@ -185,11 +185,17 @@ public class IRCRoomBase extends JPanel
         this.setLayout(new BorderLayout());
         this.add(mainPanel, BorderLayout.CENTER);
 
-        this.myMenu = new ChannelPopUp();
+        // this.myMenu = new ChannelPopUp();
+        createChannelPopUp();
         fontDialog.setVisible(false);
         fontDialog.addSaveListener(new SaveFontListener());
 
         myActions = new IRCActions(this);
+    }
+
+    public void createChannelPopUp()
+    {
+        myMenu = new ChannelPopUp();
     }
 
     private void setupMainPanel()
@@ -1108,7 +1114,7 @@ public class IRCRoomBase extends JPanel
     }
 
     /**
-     * Used for when you right click on a user - displays the menu.
+     * Used for when you right click on a user - create and display the menu.
      *
      * @author Matt
      *
@@ -1117,14 +1123,15 @@ public class IRCRoomBase extends JPanel
     {
         public void mouseClicked(MouseEvent e)
         {
-            final int index = usersList.locationToIndex(e.getPoint());
-            if (index > -1)
-            {
-                usersList.setSelectedIndex(index);
-                IRCUser userName = usersList.getSelectedValue();
-
-                if (SwingUtilities.isRightMouseButton(e))
+            if (SwingUtilities.isRightMouseButton(e)){
+                final int index = usersList.locationToIndex(e.getPoint());
+                if (index > -1)
+                {
+                    usersList.setSelectedIndex(index);
+                    IRCUser userName = usersList.getSelectedValue();
+                    userName.createPopUp();
                     userName.myMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
             }
         }
     }

@@ -155,6 +155,7 @@ public class LineFormatter
         {
             if(attributeSet.getAttribute("type").equals("IRCUser"))
             {
+                fromUser.createPopUp();
                 return fromUser.myMenu;
             }
 
