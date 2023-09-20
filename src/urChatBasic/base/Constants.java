@@ -13,7 +13,6 @@ import javax.swing.UIManager;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.DriverGUI;
-import urChatBasic.frontend.UserGUI;
 
 /**
  * Used to store constants that are the same and do not change often. These are things used commonly
@@ -24,7 +23,7 @@ import urChatBasic.frontend.UserGUI;
  */
 public class Constants
 {
-
+    public static String UR_VERSION = "v0.3.0";
     public static final URL RESOURCES_DIR = DriverGUI.class.getResource(File.separator + "images" + File.separator);
     public static final String THEMES_DIR = "themes" + File.separator;
     public static String DIRECTORY_LOGS = "Logs" + File.separator;

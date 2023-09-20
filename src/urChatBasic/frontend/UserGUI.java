@@ -45,6 +45,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private JList<String> optionsList = new JList<String>(optionsArray);
     private JPanel optionsRightPanel = new JPanel();
 
+    private URVersionLabel urVersionLabel;
     private ProfilePicker profilePicker;
 
     // Client Options Panel
@@ -464,8 +465,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         optionsLeftPanel.setLayout(new BorderLayout());
 
         optionsLeftPanel.add(optionsList, BorderLayout.NORTH);
+
+        // urVersionLabel = new URVersionLabel(optionsLeftPanel);
         profilePicker = new ProfilePicker(optionsLeftPanel);
 
+        // optionsLeftPanel.add(urVersionLabel, BorderLayout.SOUTH);
         optionsLeftPanel.add(profilePicker, BorderLayout.SOUTH);
     }
 

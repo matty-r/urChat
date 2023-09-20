@@ -50,7 +50,7 @@ public class DriverGUI
 
     public static void createGUI()
     {
-        frame = new JFrame("urChat");
+        frame = new JFrame("urChat (" + Constants.UR_VERSION + ")");
         gui = new UserGUI();
     }
 

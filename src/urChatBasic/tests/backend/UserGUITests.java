@@ -11,7 +11,7 @@ import urChatBasic.base.Constants;
 
 import static org.junit.Assert.*;
 
-public class UserGUITest {
+public class UserGUITests {
     Preferences baseTestPreference;
     Preferences serverTestPreference;
     Preferences roomTestPreference;
