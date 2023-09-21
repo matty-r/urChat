@@ -2,14 +2,15 @@ package urChatBasic.frontend;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.UIManager;
+import javax.swing.SwingUtilities;
+import urChatBasic.backend.LookAndFeelLoader;
 import urChatBasic.base.Constants;
 
 public class DriverGUI
@@ -17,28 +18,25 @@ public class DriverGUI
     public static UserGUI gui = null;
     public static JFrame frame = null;
     private static ImageIcon img;
+    public static ClassLoader contextClassLoader;
 
     public static void main(String[] args) throws IOException
     {
 
         Constants.init();
         URL imgPath = new URL(Constants.RESOURCES_DIR + "urChat Icon.png");
+
         img = new ImageIcon(imgPath);
-        try
-        {
-            boolean flatLafAvailable = false;
 
-            if(!flatLafAvailable)
-            {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            }
+        Constants.LOGGER.log(Level.INFO, "Starting up..");
 
-        } catch (Exception e)
-        {
-            Constants.LOGGER.log(Level.WARNING, "Failed to setLookAndFeel! " + e.getLocalizedMessage());
-        }
-        DriverGUI driver = new DriverGUI();
-        driver.startGUI();
+        LookAndFeelLoader lafLoader = new LookAndFeelLoader(Thread.currentThread().getContextClassLoader());
+        contextClassLoader = lafLoader.cl;
+        Thread.currentThread().setContextClassLoader(contextClassLoader);
+
+        createGUI();
+
+        startGUI();
     }
 
 
@@ -50,19 +48,63 @@ public class DriverGUI
                 + " MB; space left in heap = " + (r.freeMemory() / (mb)) + " MB";
     }
 
-    public void startGUI()
+    public static void createGUI()
     {
         frame = new JFrame("urChat");
-
         gui = new UserGUI();
-        new Thread(gui).start();
-        Constants.LOGGER.log(Level.INFO, "Starting up..");
+    }
+
+    public static void startGUI()
+    {
+
+        // ClassLoader mainLoader = Thread.currentThread().getContextClassLoader();
+
+        // mainLoader = new JoinClassLoader(mainLoader, UCAuthTypeComboBox.class.getClassLoader(),
+        // DnDTabbedPane.class.getClassLoader());
+        // Thread.currentThread().setContextClassLoader(mainLoader);
+        // guiThread.setContextClassLoader(threadLoader);
 
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.getContentPane().add(gui);
+        frame.setContentPane(gui);
         frame.pack();
-        frame.setIconImage(img.getImage());
+
+
+        if (img != null)
+            frame.setIconImage(img.getImage());
+
+        // Thread guiThread = new Thread(gui);
+        // guiThread.setContextClassLoader(contextClassLoader);
+        // guiThread.start();
+
+        SwingUtilities.invokeLater(gui);
+
+        Constants.LOGGER.log(Level.INFO, "Started");
+
         frame.setVisible(true);
+
+        frame.addWindowFocusListener(new WindowFocusListener()
+        {
+            static final int REFOCUS_BUFFER_MS = 3000;
+            long lostFocusTime;
+
+            @Override
+            public void windowLostFocus(WindowEvent e)
+            {
+                lostFocusTime = System.currentTimeMillis();
+                gui.lostFocus();
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e)
+            {
+                // Prevent losing focus and triggering the regainedFocus function too quickly
+                // pretty much only a problem when debugging the code and we hit a breakpoint
+                // which steals focus to the IDE
+                if (System.currentTimeMillis() > lostFocusTime + REFOCUS_BUFFER_MS)
+                    gui.regainedFocus();
+            }
+        });
+
         frame.addWindowListener(new WindowAdapter()
         {
             public void windowClosing(WindowEvent e)
@@ -74,9 +116,8 @@ public class DriverGUI
                 for (Handler tempHandler : Constants.LOGGER.getHandlers())
                     tempHandler.close();
             }
+
+
         });
-
-
-
     }
 }

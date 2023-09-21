@@ -1,6 +1,5 @@
 package urChatBasic.base;
 
-import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.IRCChannel;
 import urChatBasic.frontend.IRCPrivate;
@@ -10,6 +9,12 @@ public interface IRCServerBase
 {
 
     public abstract String getNick ();
+
+    public abstract void setNick (String newNick);
+
+    public abstract String getName ();
+
+    public abstract String getLogin ();
 
     public abstract String getPassword ();
 
@@ -23,15 +28,15 @@ public interface IRCServerBase
 
     public abstract void setName (String serverName);
 
-    public abstract String getName ();
+    public abstract String getPort ();
 
-    /**
-     * Check to see if there are any channels at all.
-     *
-     * @param channelName
-     * @return IRCChannel
-     */
-    public abstract Boolean isCreatedChannelsEmpty ();
+    public abstract String getProxyHost ();
+
+    public abstract String getProxyPort ();
+
+    public abstract Boolean usingTLS ();
+
+    public abstract Boolean usingSOCKS ();
 
     /**
      * Get the IRCUser object from the userName - if the IRCUser isn't found, then create it.
@@ -41,27 +46,14 @@ public interface IRCServerBase
      */
     public abstract IRCUser getIRCUser (String userName);
 
-    /**
-     * Return the appropriate created server
-     *
-     * @param serverName
-     * @return IRCServer
-     */
-    public abstract IRCPrivate getCreatedPrivateRoom (String privateRoom);
+    public abstract void quitRooms();
 
-    /**
-     * Closes and removes all channels that have been created.
-     */
-    public abstract void quitChannels ();
-
-    public abstract void quitChannel (String channelName);
+    public abstract void quitRoom (IRCRoomBase ircRoom);
 
     /**
      * Closes and removes all private rooms that have been created.
      */
-    public abstract void quitPrivateRooms ();
 
-    public abstract void quitPrivateRooms (String roomName);
 
     /**
      * Return the appropriate created channel
@@ -72,11 +64,27 @@ public interface IRCServerBase
     public abstract IRCChannel getCreatedChannel (String channelName);
 
     /**
-     * Creates a new channel based on name
+     * Return the appropriate created server
      *
-     * @param channelName
+     * @param serverName
+     * @return IRCServer
      */
-    public abstract void addToCreatedChannels (String channelName);
+    public abstract IRCPrivate getCreatedPrivateRoom (String privateRoom);
+
+    /**
+     * Return the appropriate created channel
+     *
+     * @param roomName
+     * @return IRCRoomBase
+     */
+    public abstract IRCRoomBase getCreatedRoom (String roomName, boolean asPrivate);
+
+    /**
+     * Creates a new room based on name
+     *
+     * @param roomName
+     */
+    public abstract void addToCreatedRooms (String roomName, boolean asPrivate);
 
     /**
      * Creates a new Private Room based on IRCUser
@@ -130,6 +138,9 @@ public interface IRCServerBase
     // Adds a single user, good for when a user joins the channel
     public abstract void addToUsersList (String channelName, String user);
 
+
+    public abstract void setChannelTopic (String channelName, String channelTopic);
+
     /**
      * Removes a single user from the specified channel. If the call is from "Server" as the channelName
      * it will loop through all createdChannels and remove the user. But only if they were in there to
@@ -142,14 +153,6 @@ public interface IRCServerBase
 
     public abstract void sendClientText (String line, String source);
 
-    public abstract void doLimitLines ();
-
-    public abstract void printText (String line);
-
-    public abstract String getChannelTopic (String channelName);
-
-    public abstract void setChannelTopic (String channelName, String channelTopic);
-
     /**
      * This is a forwarding method used to direct the call to the IRCChannel, filters through
      *
@@ -158,8 +161,4 @@ public interface IRCServerBase
      * @param newUser
      */
     public abstract void renameUser (String oldUserName, String newUserName);
-
-    public abstract String getServer ();
-
-    public abstract String getPort ();
 }

@@ -9,10 +9,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JLabel;
+import javax.swing.UIManager;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.DriverGUI;
-import urChatBasic.frontend.UserGUI;
+import urChatBasic.frontend.components.URVersionLabel;
 
 /**
  * Used to store constants that are the same and do not change often. These are things used commonly
@@ -23,8 +24,9 @@ import urChatBasic.frontend.UserGUI;
  */
 public class Constants
 {
-
+    public static String UR_VERSION = "v0.3.0";
     public static final URL RESOURCES_DIR = DriverGUI.class.getResource(File.separator + "images" + File.separator);
+    public static final String THEMES_DIR = "themes" + File.separator;
     public static String DIRECTORY_LOGS = "Logs" + File.separator;
     public static Class BACKEND_CLASS;
     public static String BACKEND_CLASS_FULLNAME = "urChatBasic.backend.Connection";
@@ -34,14 +36,15 @@ public class Constants
     private static final Font DEFAULT_FONT = new Font(new JLabel().getFont().getFamily(), 0, new JLabel().getFont().getSize());
 
     // Preferences
-    public static final Preferences FRONTEND_PREFS = Preferences.userNodeForPackage(UserGUI.class);
-    public static final Preferences FAVOURITES_PREFS = FRONTEND_PREFS.parent().node("favourites");
+    public static final Preferences BASE_PREFS = Preferences.userNodeForPackage(DriverGUI.class).node("profiles");
 
     // Key Strings that are used when saving settings
     public static final String KEY_FIRST_CHANNEL = "first channel name";
     public static final String KEY_FIRST_SERVER = "first server name";
     public static final String KEY_FIRST_PORT = "first server port";
     public static final String KEY_AUTH_TYPE = "authentication type";
+    public static final String KEY_PASSWORD_REMEMBER = "remember password";
+    public static final String KEY_PASSWORD = "saved password";
     public static final String KEY_USE_TLS = "use tls";
     public static final String KEY_USE_PROXY = "use proxy";
     public static final String KEY_PROXY_HOST = "proxy host";
@@ -49,6 +52,7 @@ public class Constants
     public static final String KEY_NICK_NAME = "nick name";
     public static final String KEY_REAL_NAME = "real name";
     public static final String KEY_TIME_STAMPS = "show time stamps";
+    public static final String KEY_LAF_NAME = "laf name";
     public static final String KEY_EVENT_TICKER_ACTIVE = "show event ticker";
     public static final String KEY_USERS_LIST_ACTIVE = "show users list";
     public static final String KEY_CLICKABLE_LINKS_ENABLED = "clickable links";
@@ -77,6 +81,8 @@ public class Constants
     public static final String DEFAULT_FIRST_SERVER = "irc.libera.chat";
     public static final String DEFAULT_FIRST_PORT = "6697";
     public static final String DEFAULT_AUTH_TYPE = CapabilityTypes.NONE.toString();
+    public static final String DEFAULT_PASSWORD = "";
+    public static final Boolean DEFAULT_PASSWORD_REMEMBER = false;
     public static final Boolean DEFAULT_USE_TLS = true;
     public static final Boolean DEFAULT_USE_PROXY = false;
     public static final String DEFAULT_PROXY_HOST = "";
@@ -84,6 +90,7 @@ public class Constants
     public static final String DEFAULT_NICK_NAME = "urChatClient";
     public static final String DEFAULT_REAL_NAME = "urChatClient";
     public static final Boolean DEFAULT_TIME_STAMPS = true;
+    public static final String DEFAULT_LAF_NAME = UIManager.getSystemLookAndFeelClassName();
     public static final Boolean DEFAULT_EVENT_TICKER_ACTIVE = true;
     public static final Boolean DEFAULT_CLICKABLE_LINKS_ENABLED = true;
     public static final Boolean DEFAULT_USERS_LIST_ACTIVE = true;
@@ -128,6 +135,8 @@ public class Constants
      */
     public static void init()
     {
+        URVersionLabel.setVersion();
+
         try
         {
             File logDir = new File(DIRECTORY_LOGS);

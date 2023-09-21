@@ -2,8 +2,6 @@ package urChatBasic.frontend.components;
 
 import java.util.Arrays;
 import javax.swing.JComboBox;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.base.capabilities.NickServType;

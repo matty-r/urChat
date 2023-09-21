@@ -1,6 +1,7 @@
 package urChatBasic.base;
 
 import java.awt.Graphics;
+import java.util.prefs.Preferences;
 import urChatBasic.base.capabilities.CapTypeBase;
 
 public interface UserGUIBase
@@ -177,6 +178,10 @@ public interface UserGUIBase
      */
     public abstract void shutdownAll();
 
+    public abstract void setProfileName(String newProfileName);
+
+    public abstract String getProfileName();
+
     /**
      * Loops through all servers and disconnects and deletes the tab
      */
@@ -188,7 +193,9 @@ public interface UserGUIBase
 
     public abstract int getEventTickerDelay();
 
-    public abstract void paintComponent(Graphics g);
+    public abstract void setClientSettings();
+
+    public abstract Preferences getProfilePath();
 
     public abstract void run();
 

@@ -7,19 +7,18 @@ import org.junit.Test;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import urChatBasic.backend.MessageHandler;
 import urChatBasic.base.Constants;
 
 import static org.junit.Assert.*;
 
-public class UserGUITest {
+public class UserGUITests {
     Preferences baseTestPreference;
     Preferences serverTestPreference;
     Preferences roomTestPreference;
 
     @Before
     public void setUp() throws Exception {
-        baseTestPreference = Constants.FRONTEND_PREFS.parent().node("testing");
+        baseTestPreference = Constants.BASE_PREFS.parent().node("testing");
         serverTestPreference = baseTestPreference.node("servername");
         roomTestPreference = serverTestPreference.node("#channel");
     }

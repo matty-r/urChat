@@ -14,14 +14,23 @@ public class IRCActions implements IRCActionsBase {
     // IRCActions stuff
     private boolean wantsAttention = false;
     private Timer wantsAttentionTimer = new Timer(0, new FlashTab());
-    private Color originalColor;
+    private Color originalColour;
     protected UserGUI gui = DriverGUI.gui;
     protected IRCRoomBase ircRoom;
 
     public IRCActions(IRCRoomBase ircRoom)
     {
         this.ircRoom = ircRoom;
-        originalColor = ircRoom.getBackground();
+        // originalColour = ircRoom.getBackground();
+
+        for(int i = 0; i < gui.tabbedPane.getTabCount(); i++)
+        {
+            if(gui.tabbedPane.getComponentAt(i) == ircRoom)
+            {
+                originalColour = gui.tabbedPane.getBackgroundAt(i);
+                break;
+            }
+        }
     }
 
     private class FlashTab implements ActionListener
@@ -31,14 +40,13 @@ public class IRCActions implements IRCActionsBase {
             Component selectedComponent = gui.tabbedPane.getSelectedComponent();
             int tabIndex = gui.tabbedPane.indexOfComponent(ircRoom);
 
-            if (wantsAttention && selectedComponent != ircRoom)
+            if (tabIndex >= 0 && wantsAttention && selectedComponent != ircRoom)
             {
                 ircRoom.getUserTextBox().requestFocus();
 
                 if (gui.tabbedPane.getBackgroundAt(tabIndex) == Color.red)
                 {
-
-                    gui.tabbedPane.setBackgroundAt(tabIndex, originalColor);
+                    gui.tabbedPane.setBackgroundAt(tabIndex, originalColour);
                 } else
                 {
                     gui.tabbedPane.setBackgroundAt(tabIndex, Color.red);
@@ -47,7 +55,10 @@ public class IRCActions implements IRCActionsBase {
                 // repaint();
             } else
             {
-                gui.tabbedPane.setBackgroundAt(tabIndex, originalColor);
+                if(null != selectedComponent && tabIndex >= 0)
+                {
+                    gui.tabbedPane.setBackgroundAt(tabIndex, originalColour);
+                }
                 wantsAttentionTimer.stop();
             }
         }
@@ -58,15 +69,6 @@ public class IRCActions implements IRCActionsBase {
     {
         wantsAttentionTimer.setDelay(1000);
         wantsAttention = true;
-
-        for(int i = 0; i < gui.tabbedPane.getTabCount(); i++)
-        {
-            if(gui.tabbedPane.getComponentAt(i) == ircRoom)
-            {
-                originalColor = gui.tabbedPane.getBackgroundAt(i);
-                break;
-            }
-        }
 
         if (!(wantsAttentionTimer.isRunning()))
             wantsAttentionTimer.start();

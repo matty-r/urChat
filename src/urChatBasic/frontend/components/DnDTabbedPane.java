@@ -1,4 +1,4 @@
-package urChatBasic.frontend;
+package urChatBasic.frontend.components;
 
 import javax.swing.*;
 import javax.swing.plaf.metal.MetalTabbedPaneUI;
@@ -15,7 +15,7 @@ import java.util.stream.IntStream;
 
 // See https://github.com/aterai/java-swing-tips/tree/master/DnDTabbedPane for DnDTabbedPane
 
-class DnDTabbedPane extends JTabbedPane {
+public class DnDTabbedPane extends JTabbedPane {
   private static final int LINE_SIZE = 3;
   private static final int RWH = 20;
   private static final int BUTTON_SIZE = 30; // XXX 30 is magic number of scroll button size
@@ -80,7 +80,7 @@ class DnDTabbedPane extends JTabbedPane {
     }
   }
 
-  protected DnDTabbedPane() {
+  public DnDTabbedPane() {
     super();
     addMouseWheelListener(new MouseWheelListener() {
         @Override
