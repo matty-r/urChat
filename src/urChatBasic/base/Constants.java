@@ -25,9 +25,10 @@ import urChatBasic.frontend.components.URVersionLabel;
 public class Constants
 {
     public static String UR_VERSION = "v0.3.0";
-    public static final URL RESOURCES_DIR = DriverGUI.class.getResource(File.separator + "images" + File.separator);
-    public static final String THEMES_DIR = "themes" + File.separator;
-    public static String DIRECTORY_LOGS = "Logs" + File.separator;
+    public static String URL_SEPARATOR = "/";
+    public static final URL RESOURCES_DIR = DriverGUI.class.getResource(URL_SEPARATOR + "images" + URL_SEPARATOR);
+    public static final String THEMES_DIR = "themes" + URL_SEPARATOR;
+    public static String DIRECTORY_LOGS = "Logs" + URL_SEPARATOR;
     public static Class BACKEND_CLASS;
     public static String BACKEND_CLASS_FULLNAME = "urChatBasic.backend.Connection";
     private static Handler LOGGER_TO_FILE;

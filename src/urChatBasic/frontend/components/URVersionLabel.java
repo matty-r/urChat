@@ -8,6 +8,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 
 public class URVersionLabel extends JPanel
@@ -50,7 +52,7 @@ public class URVersionLabel extends JPanel
     }
 
     private static String parseVersionString(String gitFolderPath) throws IOException {
-        String headFilePath = gitFolderPath + "/HEAD";
+        String headFilePath = gitFolderPath + File.separator  + "HEAD";
         String newVersionString = Constants.UR_VERSION;
 
         BufferedReader reader = new BufferedReader(new FileReader(headFilePath));
@@ -63,14 +65,16 @@ public class URVersionLabel extends JPanel
             newVersionString = null;  // Failed to parse ref path
         }
 
-        String origHeadPath = gitFolderPath + "/ORIG_HEAD";
-
-        reader = new BufferedReader(new FileReader(origHeadPath));
-        line = reader.readLine();
-        if (line != null) {
-            newVersionString += "-" + line.substring(0, 6);
-        } else {
-            newVersionString = null;
+        String origHeadPath = gitFolderPath + File.separator + "ORIG_HEAD";
+        if(Files.exists(Paths.get(origHeadPath)))
+        {
+            reader = new BufferedReader(new FileReader(origHeadPath));
+            line = reader.readLine();
+            if (line != null) {
+                newVersionString += "-" + line.substring(0, 6);
+            } else {
+                newVersionString = null;
+            }
         }
 
         reader.close();
