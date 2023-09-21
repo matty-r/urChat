@@ -3,18 +3,25 @@ urChat
 
 urChat is a Java based IRC Client designed around simplicity and minimal resource impact on your system.
 
-Screenshots
-======
-
-![image](https://github.com/matty-r/urChat/assets/9965448/345d783c-9024-413e-9799-29702616ea0e)
-![image](https://github.com/matty-r/urChat/assets/9965448/43bfe3be-9b0e-43bc-905d-2aa4c50ffa10)
-![image](https://github.com/matty-r/urChat/assets/9965448/19adf311-c503-4401-86d0-ccc24c6a9bd5)
-![image](https://github.com/matty-r/urChat/assets/9965448/2439f4f9-8405-4161-9d6e-44794022f3b5)
-
-
 Contributions
 ======
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
+
+Screenshots
+======
+
+![image](https://github.com/matty-r/urChat/assets/9965448/49bed442-8472-4f8a-a5c8-422ce5f8ca0d)
+
+### Update - v0.3.0 (22 SEP 23)
+* Bug fixes and performance improvements
+* UI tweaks - reduce repaints, focus handling, new tabs, layout etc..
+* Added support for Profiles, create a Profile to save individual settings/favourites and Theme
+* Refactoring for better handling and avoiding race conditions
+* Adds support for Themeing through LookAndFeel plugins - just drop the LAF jar in a themes directory alongside the urchat.jar (tested with FlatLAF)
+* Improved color handling for theme support.
+* Font changes are now also applied to all previously sent text
+* Added support for 401 error handling.
+* Added option to save passwords (currently is plain-text).
 
 ### Update (22 AUG 23)
 * Moved 'Resources' to 'images'
