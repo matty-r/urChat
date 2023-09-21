@@ -13,6 +13,7 @@ import javax.swing.UIManager;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.DriverGUI;
+import urChatBasic.frontend.components.URVersionLabel;
 
 /**
  * Used to store constants that are the same and do not change often. These are things used commonly
@@ -134,6 +135,8 @@ public class Constants
      */
     public static void init()
     {
+        URVersionLabel.setVersion();
+
         try
         {
             File logDir = new File(DIRECTORY_LOGS);

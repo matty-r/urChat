@@ -3,33 +3,39 @@ package urChatBasic.frontend.components;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import urChatBasic.base.Constants;
-import java.awt.GridLayout;
+import java.awt.BorderLayout;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.logging.Level;
 
 public class URVersionLabel extends JPanel
 {
-    private JLabel versionLabel = new JLabel("Version: " + Constants.UR_VERSION);
+    private JLabel versionLabel = new JLabel(Constants.UR_VERSION);
 
     public URVersionLabel(JPanel parentPanel)
     {
         setVersion();
-        setBackground(parentPanel.getBackground());
-        setLayout(new GridLayout(3, 1));
-
-        versionLabel.setText("Version: " + Constants.UR_VERSION);
+        setLayout(new BorderLayout());
+        versionLabel.setText(Constants.UR_VERSION);
         // Add components to the panel
-        add(versionLabel);
+        add(versionLabel, BorderLayout.SOUTH);
     }
 
     public static void setVersion() {
         String gitFolderPath = findGitFolder();
         if (gitFolderPath != null) {
-            String headFilePath = gitFolderPath + "/HEAD";
-            String refPath = parseRefPath(headFilePath);
-            Constants.UR_VERSION = refPath;
+            try {
+                String newVersionString = parseVersionString(gitFolderPath);
+
+                if(null != newVersionString)
+                {
+                    Constants.UR_VERSION = newVersionString;
+                }
+            } catch(IOException $ex) {
+                Constants.LOGGER.log(Level.INFO, "Unable to determine .git folder. Not setting version string.", $ex);
+            }
         }
     }
 
@@ -43,16 +49,31 @@ public class URVersionLabel extends JPanel
         return null;  // .git folder not found
     }
 
-    private static String parseRefPath(String headFilePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(headFilePath))) {
-            String line = reader.readLine();
-            if (line != null && line.startsWith("ref: ")) {
+    private static String parseVersionString(String gitFolderPath) throws IOException {
+        String headFilePath = gitFolderPath + "/HEAD";
+        String newVersionString = Constants.UR_VERSION;
 
-                return line.split("/")[line.split("/").length - 1];
-            }
-        } catch (IOException e) {
-            e.printStackTrace();  // Handle the exception according to your requirements
+        BufferedReader reader = new BufferedReader(new FileReader(headFilePath));
+        String line = reader.readLine();
+
+        if (line != null && line.startsWith("ref: ")) {
+
+            newVersionString = line.split("/")[line.split("/").length - 1];
+        } else {
+            newVersionString = null;  // Failed to parse ref path
         }
-        return null;  // Failed to parse ref path
+
+        String origHeadPath = gitFolderPath + "/ORIG_HEAD";
+
+        reader = new BufferedReader(new FileReader(origHeadPath));
+        line = reader.readLine();
+        if (line != null) {
+            newVersionString += "-" + line.substring(0, 6);
+        } else {
+            newVersionString = null;
+        }
+
+        reader.close();
+        return newVersionString;
     }
 }

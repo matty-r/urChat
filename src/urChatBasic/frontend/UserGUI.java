@@ -466,11 +466,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         optionsLeftPanel.add(optionsList, BorderLayout.NORTH);
 
-        // urVersionLabel = new URVersionLabel(optionsLeftPanel);
-        profilePicker = new ProfilePicker(optionsLeftPanel);
+        JPanel extrasPanel = new JPanel(new BorderLayout());
+        extrasPanel.setBackground(optionsLeftPanel.getBackground());
 
-        // optionsLeftPanel.add(urVersionLabel, BorderLayout.SOUTH);
-        optionsLeftPanel.add(profilePicker, BorderLayout.SOUTH);
+        urVersionLabel = new URVersionLabel(extrasPanel);
+        profilePicker = new ProfilePicker(extrasPanel);
+
+        extrasPanel.add(profilePicker, BorderLayout.NORTH);
+        extrasPanel.add(urVersionLabel, BorderLayout.SOUTH);
+
+        optionsLeftPanel.add(extrasPanel, BorderLayout.SOUTH);
     }
 
     private void setupRightOptionsPanel()
