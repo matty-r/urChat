@@ -1718,8 +1718,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         boolean flatLafAvailable = false;
         try
         {
-            // TODO: reset colours in text boxes (workaround is to resave the font)
-            // TODO: reset colours in context menus (seems to only affect the context menu on the username in chat)
+
             try{
                 for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                     // System.out.println(info.getName());
