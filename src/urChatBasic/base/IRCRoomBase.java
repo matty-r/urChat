@@ -22,6 +22,8 @@ import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.*;
 
@@ -87,7 +89,8 @@ public class IRCRoomBase extends JPanel
 
 
     // Users list area
-    // TODO: Users should be created per Server, and instead have a property to hold what channels they're in
+    // TODO: Users should be created per Server, and instead have a property to hold what channels
+    // they're in
     private List<IRCUser> usersArray = new ArrayList<IRCUser>();
     private UsersListModel usersListModel = new UsersListModel(usersArray);
     @SuppressWarnings("unchecked")
@@ -161,13 +164,14 @@ public class IRCRoomBase extends JPanel
 
     private void initRoom()
     {
-        if(null != getServer())
+        if (null != getServer())
         {
             roomPrefs = gui.getFavouritesPath().node(getServer().getName()).node(roomName);
             fontDialog = new FontDialog(roomName, gui.getFont(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getFont(), getServer().getNick());
-        } else {
+        } else
+        {
             roomPrefs = gui.getFavouritesPath().node(roomName);
             fontDialog = new FontDialog(roomName, gui.getFont(), roomPrefs);
 
@@ -206,13 +210,13 @@ public class IRCRoomBase extends JPanel
         setupUsersList();
         // mainPanel.add(userScroller, BorderLayout.LINE_END);
 
-        //Create a split pane with the two scroll panes in it.
-        mainResizer = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                        channelScroll, userScroller);
+        // Create a split pane with the two scroll panes in it.
+        mainResizer = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, channelScroll, userScroller);
         mainResizer.setOneTouchExpandable(true);
 
         // This should be set to where the minimum size of the userScroller would end up
-        mainResizer.setDividerLocation(gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
+        mainResizer.setDividerLocation(
+                gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
 
         // Left most panel (channelScroll pane), gets the extra space when resizing the window
         mainResizer.setResizeWeight(1);
@@ -232,11 +236,14 @@ public class IRCRoomBase extends JPanel
 
     private void setupMainTextArea()
     {
-        channelScroll.setPreferredSize(new Dimension(Constants.MAIN_WIDTH - usersListWidth, Constants.MAIN_HEIGHT - BOTTOM_HEIGHT));
+        channelScroll.setPreferredSize(
+                new Dimension(Constants.MAIN_WIDTH - usersListWidth, Constants.MAIN_HEIGHT - BOTTOM_HEIGHT));
         channelScroll.setLocation(0, 0);
         channelScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         channelTextArea.addMouseListener(new ChannelClickListener());
         channelTextArea.addMouseMotionListener(new ChannelMovementListener());
+        // channelTextArea.getDocument().addDocumentListener(new LimitLinesDocumentListener(gui.getLimitChannelLinesCount()));
+        // channelTextArea.getDocument().addDocumentListener(new LineLimitListener());
         channelTextArea.setEditable(false);
         channelTextArea.setFont(getFontPanel().getFont());
         channelTextArea.setEditorKit(new StyledEditorKit());
@@ -305,7 +312,7 @@ public class IRCRoomBase extends JPanel
             Element ele = doc.getCharacterElement(channelTextArea.viewToModel2D((e.getPoint())));
             AttributeSet as = ele.getAttributes();
             ClickableText isClickableText = (ClickableText) as.getAttribute("clickableText");
-            if(isClickableText != null)
+            if (isClickableText != null)
             {
                 if (SwingUtilities.isRightMouseButton(e) && isClickableText.rightClickMenu() != null)
                 {
@@ -320,7 +327,8 @@ public class IRCRoomBase extends JPanel
 
     class ChannelMovementListener extends MouseAdapter
     {
-        public void mouseMoved(MouseEvent e) {
+        public void mouseMoved(MouseEvent e)
+        {
             StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
             Element wordElement = doc.getCharacterElement(channelTextArea.viewToModel2D((e.getPoint())));
             AttributeSet wordAttributeSet = wordElement.getAttributes();
@@ -328,7 +336,8 @@ public class IRCRoomBase extends JPanel
             if (isClickableText != null && gui.isClickableLinksEnabled())
             {
                 channelTextArea.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            } else {
+            } else
+            {
                 channelTextArea.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
         }
@@ -385,7 +394,7 @@ public class IRCRoomBase extends JPanel
     // TODO: Change this to accept IRCUser instead
     public void printText(String line, String fromUser)
     {
-        if(null == channelTextArea)
+        if (null == channelTextArea)
         {
             System.out.println("Cant print, shutting down");
             return;
@@ -435,7 +444,7 @@ public class IRCRoomBase extends JPanel
             }
 
             // Always alert on IRCPrivate messages
-            if(this instanceof IRCPrivate)
+            if (this instanceof IRCPrivate)
             {
                 callForAttention();
             }
@@ -457,8 +466,9 @@ public class IRCRoomBase extends JPanel
         if (usersListShown == showIt || usersListShown == null)
         {
             // userScroller.setVisible(showIt);
-            if(showIt)
-                mainResizer.setDividerLocation(gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
+            if (showIt)
+                mainResizer.setDividerLocation(
+                        gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
             else
                 mainResizer.setDividerLocation(gui.getWidth());
         }
@@ -497,21 +507,6 @@ public class IRCRoomBase extends JPanel
         } ;
 
         return null;
-    }
-
-    public void doLimitLines()
-    {
-        if (gui.isLimitedChannelActivity())
-        {
-            String[] tempText = channelTextArea.getText().split("\n");
-            int linesCount = tempText.length;
-
-            if (linesCount >= gui.getLimitChannelLinesCount())
-            {
-                String newText = channelTextArea.getText().replace(tempText[0] + "\n", "");
-                channelTextArea.setText(newText);
-            }
-        }
     }
 
     public void disableFocus()
@@ -588,13 +583,14 @@ public class IRCRoomBase extends JPanel
 
 
                 int index = 0;
-                while(index < usersArray.size())
+                while (index < usersArray.size())
                 {
                     if (usersArray.get(index).getName().matches(thisUser))
                     {
                         usersArray.remove(index);
                         createEvent("-- " + thisUser + " has quit " + channel);
-                    } else {
+                    } else
+                    {
                         index++;
                     }
                 }
@@ -626,7 +622,7 @@ public class IRCRoomBase extends JPanel
     {
         if (gui.saveChannelHistory())
         {
-            if(historyFileName == null || historyFileName.isEmpty())
+            if (historyFileName == null || historyFileName.isEmpty())
             {
                 historyFileName = historyDateFormat.format(todayDate) + " " + getName() + ".log";
             }
@@ -677,7 +673,8 @@ public class IRCRoomBase extends JPanel
         {
             String kind = elem.getName();
 
-            return switch (kind) {
+            return switch (kind)
+            {
                 case AbstractDocument.ContentElementName -> new WrapLabelView(elem);
                 case AbstractDocument.ParagraphElementName -> new ParagraphView(elem);
                 case AbstractDocument.SectionElementName -> new BoxView(elem, View.Y_AXIS);
@@ -697,7 +694,8 @@ public class IRCRoomBase extends JPanel
 
         public float getMinimumSpan(int axis)
         {
-            return switch (axis) {
+            return switch (axis)
+            {
                 case View.X_AXIS -> 0;
                 case View.Y_AXIS -> super.getMinimumSpan(axis);
                 default -> throw new IllegalArgumentException("Invalid axis: " + axis);
@@ -767,7 +765,7 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            if(null != getServer())
+            if (null != getServer())
             {
                 if (!gui.isFavourite(IRCRoomBase.this))
                 {
@@ -785,7 +783,7 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            if(null != getServer())
+            if (null != getServer())
             {
                 getServer().sendClientText("/part i'm outta here", getName());
             }
@@ -820,10 +818,12 @@ public class IRCRoomBase extends JPanel
         public void actionPerformed(ActionEvent arg0)
         {
 
-            if(mainResizer.getDividerLocation() <= gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()) )
+            if (mainResizer.getDividerLocation() <= gui.getWidth()
+                    - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()))
             {
                 usersListShown = false;
-            } else {
+            } else
+            {
                 usersListShown = true;
             }
             toggleUsersList(usersListShown);
@@ -845,13 +845,13 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-                if (!getUserTextBox().getText().trim().isEmpty())
-                {
-                    sendClientText(clientTextBox.getText(), getName());
-                    if (gui.isClientHistoryEnabled())
-                        userHistory.add(clientTextBox.getText());
-                }
-                clientTextBox.setText("");
+            if (!getUserTextBox().getText().trim().isEmpty())
+            {
+                sendClientText(clientTextBox.getText(), getName());
+                if (gui.isClientHistoryEnabled())
+                    userHistory.add(clientTextBox.getText());
+            }
+            clientTextBox.setText("");
         }
     }
 
@@ -885,7 +885,8 @@ public class IRCRoomBase extends JPanel
                 {
 
                     fontDialog.getFontPanel().setDefaultFont(f);
-                    lineFormatter.setFont((StyledDocument) channelTextArea.getDocument(),fontDialog.getFontPanel().getFont());
+                    lineFormatter.setFont((StyledDocument) channelTextArea.getDocument(),
+                            fontDialog.getFontPanel().getFont());
                 }
             });
         } else
@@ -905,7 +906,7 @@ public class IRCRoomBase extends JPanel
         }
     }
 
-    public void quitRoom ()
+    public void quitRoom()
     {
         eventTickerTimer.stop();
         tickerPanel.setVisible(false);
@@ -915,7 +916,7 @@ public class IRCRoomBase extends JPanel
         repaint();
     }
 
-    public boolean userIsTyping ()
+    public boolean userIsTyping()
     {
         return !clientTextBox.getText().isEmpty();
     }
@@ -1017,9 +1018,12 @@ public class IRCRoomBase extends JPanel
             } else
             {
                 int nextTextInt = 0;
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_UP -> {
-                        if (!userHistory.isEmpty()) {
+                switch (e.getKeyCode())
+                {
+                    case KeyEvent.VK_UP ->
+                    {
+                        if (!userHistory.isEmpty())
+                        {
                             nextTextInt = userHistory.indexOf(clientTextBox.getText()) - 1;
                             if (nextTextInt < 0)
                                 nextTextInt = userHistory.size() - 1;
@@ -1027,8 +1031,10 @@ public class IRCRoomBase extends JPanel
                             clientTextBox.setText(userHistory.get(nextTextInt));
                         }
                     }
-                    case KeyEvent.VK_DOWN -> {
-                        if (!userHistory.isEmpty()) {
+                    case KeyEvent.VK_DOWN ->
+                    {
+                        if (!userHistory.isEmpty())
+                        {
                             nextTextInt = userHistory.indexOf(clientTextBox.getText()) + 1;
                             if (nextTextInt > userHistory.size() - 1)
                                 nextTextInt = 0;
@@ -1037,7 +1043,8 @@ public class IRCRoomBase extends JPanel
                         }
                     }
                     case KeyEvent.VK_ESCAPE -> clientTextBox.setText("");
-                    default -> {
+                    default ->
+                    {
                         if (lastUserToComplete != null)
                             lastUserToComplete = null;
                         if (startingCharacters != null)
@@ -1068,10 +1075,12 @@ public class IRCRoomBase extends JPanel
                     if (IRCRoomBase.this.tickerPanel.isVisible())
                     {
                         Iterator<JLabel> labelIterator = eventLabels.iterator();
-                        while (labelIterator.hasNext()) {
+                        while (labelIterator.hasNext())
+                        {
                             JLabel tempLabel = labelIterator.next();
                             tempLabel.setLocation(tempLabel.getX() - EVENT_VELOCITY, 0);
-                            if (tempLabel.getX() + tempLabel.getWidth() < 0) {
+                            if (tempLabel.getX() + tempLabel.getWidth() < 0)
+                            {
                                 labelIterator.remove(); // Safely remove the element
                                 tickerPanel.remove(tempLabel);
                             }
@@ -1080,7 +1089,7 @@ public class IRCRoomBase extends JPanel
                         if (eventLabels.isEmpty())
                             eventTickerTimer.stop();
 
-                        if(DriverGUI.frame.isFocused())
+                        if (DriverGUI.frame.isFocused())
                         {
                             tickerPanel.revalidate();
                             tickerPanel.repaint();
@@ -1089,7 +1098,8 @@ public class IRCRoomBase extends JPanel
                     {
                         eventTickerTimer.stop();
 
-                        for (JLabel tempLabel : eventLabels) {
+                        for (JLabel tempLabel : eventLabels)
+                        {
                             tickerPanel.remove(tempLabel);
                         }
 
@@ -1123,7 +1133,8 @@ public class IRCRoomBase extends JPanel
     {
         public void mouseClicked(MouseEvent e)
         {
-            if (SwingUtilities.isRightMouseButton(e)){
+            if (SwingUtilities.isRightMouseButton(e))
+            {
                 final int index = usersList.locationToIndex(e.getPoint());
                 if (index > -1)
                 {
