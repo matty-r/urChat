@@ -18,12 +18,12 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.Timer;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.*;
 
@@ -85,6 +85,7 @@ public class IRCRoomBase extends JPanel
     // Room Text Area
     private JTextPane channelTextArea = new JTextPane();
     private JScrollPane channelScroll = new JScrollPane(channelTextArea);
+    private BlockingQueue<MessagePair> channelMessageQueue = new ArrayBlockingQueue<>(20);
     private LineFormatter lineFormatter;
 
 
@@ -247,6 +248,7 @@ public class IRCRoomBase extends JPanel
         channelTextArea.setEditable(false);
         channelTextArea.setFont(getFontPanel().getFont());
         channelTextArea.setEditorKit(new StyledEditorKit());
+        handleMessageQueue();
     }
 
     private void setupUsersList()
@@ -391,68 +393,137 @@ public class IRCRoomBase extends JPanel
         myActions.callForAttention();
     }
 
-    // TODO: Change this to accept IRCUser instead
-    public void printText(String line, String fromUser)
+    class MessagePair {
+        private String line;
+        private String fromUser;
+
+        public MessagePair(String line, String fromUser) {
+            this.line = line;
+            this.fromUser = fromUser;
+        }
+
+        public String getLine() {
+            return line;
+        }
+
+        public String getUser() {
+            return fromUser;
+        }
+    }
+
+    public void printText(String line, String fromUser) {
+        try {
+            channelMessageQueue.put(new MessagePair(line, fromUser));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean channelQueueEmpty()
     {
-        if (null == channelTextArea)
-        {
-            System.out.println("Cant print, shutting down");
-            return;
-        }
+        return channelMessageQueue.isEmpty();
+    }
 
-        DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
-        Date chatDate = new Date();
-        String timeLine = "";
-
-        if (gui.isTimeStampsEnabled())
-            timeLine = "[" + chatDateFormat.format(chatDate) + "]";
-
-        if (gui.isChannelHistoryEnabled())
-        {
-            try
+    // TODO: Change this to accept IRCUser instead
+    public void handleMessageQueue()
+    {
+        new Thread(() -> {
+            while (true)
             {
-                writeHistoryFile(line);
-            } catch (IOException e)
-            {
-                Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+                try
+                {
+                    MessagePair messagePair = channelMessageQueue.take();
+
+                    Document document = channelTextArea.getDocument();
+                    Element root = document.getDefaultRootElement();
+
+
+                    while (root.getElementCount() > gui.getLimitChannelLinesCount())
+                    {
+                        Element line = root.getElement(0);
+                        int end = line.getEndOffset();
+
+                        try
+                        {
+                            document.remove(0, end);
+                        }
+                        catch(BadLocationException ble)
+                        {
+                            System.out.println(ble);
+                        }
+                    }
+
+                    String line = messagePair.getLine();
+                    String fromUser = messagePair.getUser();
+
+                    if (null == channelTextArea)
+                    {
+                        System.out.println("Cant print, shutting down");
+                        return;
+                    }
+
+                    DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
+                    Date chatDate = new Date();
+                    String timeLine = "";
+
+                    if (gui.isTimeStampsEnabled())
+                        timeLine = "[" + chatDateFormat.format(chatDate) + "]";
+
+                    if (gui.isChannelHistoryEnabled())
+                    {
+                        try
+                        {
+                            writeHistoryFile(line);
+                        } catch (IOException e)
+                        {
+                            Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+                        }
+                    }
+
+                    StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
+                    IRCUser fromIRCUser = getCreatedUsers(fromUser);
+
+                    // If we received a message from a user that isn't in the channel
+                    // then add them to the users list.
+                    // But don't add them if it's from the Event Ticker
+                    if (fromIRCUser == null)
+                    {
+                        if (!fromUser.equals(Constants.EVENT_USER))
+                        {
+                            addToUsersList(getName(), fromUser);
+                            fromIRCUser = getCreatedUsers(fromUser);
+                        }
+                    }
+
+
+                    if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
+                    {
+                        lineFormatter.formattedDocument(doc, timeLine, fromIRCUser, fromUser, line);
+
+                        if (lineFormatter.nameStyle.getAttribute("name") == lineFormatter.highStyle()
+                                .getAttribute("name"))
+                        {
+                            callForAttention();
+                        }
+
+                        // Always alert on IRCPrivate messages
+                        if (this instanceof IRCPrivate)
+                        {
+                            callForAttention();
+                        }
+
+                        // TODO: Scrolls to the bottom of the channelTextArea on message received, this should be
+                        // disabled
+                        // when the user has scrolled up
+                        channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
+                    }
+                } catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
             }
-        }
+        }).start();
 
-        StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
-        IRCUser fromIRCUser = getCreatedUsers(fromUser);
-
-        // If we received a message from a user that isn't in the channel
-        // then add them to the users list.
-        // But don't add them if it's from the Event Ticker
-        if (fromIRCUser == null)
-        {
-            if (!fromUser.equals(Constants.EVENT_USER))
-            {
-                addToUsersList(getName(), fromUser);
-                fromIRCUser = getCreatedUsers(fromUser);
-            }
-        }
-
-
-        if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
-        {
-            lineFormatter.formattedDocument(doc, timeLine, fromIRCUser, fromUser, line);
-
-            if (lineFormatter.nameStyle.getAttribute("name") == lineFormatter.highStyle().getAttribute("name"))
-            {
-                callForAttention();
-            }
-
-            // Always alert on IRCPrivate messages
-            if (this instanceof IRCPrivate)
-            {
-                callForAttention();
-            }
-
-            // TODO: Scrolls to the bottom of the channelTextArea on message received, this should be disabled
-            // when the user has scrolled up
-            channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
-        }
     }
 
     /**
