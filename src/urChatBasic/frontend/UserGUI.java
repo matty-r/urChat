@@ -146,7 +146,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public void setLimitChanneLines(int limit)
     {
         limitChannelLinesCount.setText(Integer.toString(limit));
-
     }
 
     /*
@@ -372,6 +371,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public Boolean isJoinsQuitsMainEnabled()
     {
         return showJoinsQuitsMainWindow.isSelected();
+    }
+
+    public void setJoinsQuitsMain(boolean enable)
+    {
+        showJoinsQuitsMainWindow.setSelected(enable);
     }
 
     /*
@@ -960,7 +964,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     if (tab instanceof IRCRoomBase)
                     {
                         IRCRoomBase tabRoom = (IRCRoomBase) tab;
-                        if (tabRoom.getServer().equals(favServer) && tabRoom.getName().equals(favChannel))
+                        if (tabRoom.getServer().getName().equals(favServer) && tabRoom.getName().equals(favChannel))
                         {
                             tabRoom.getFontPanel().setFont(favFontDialog.getFontPanel().getFont(), true);
                             tabRoom.setFont(favFontDialog.getFontPanel().getFont());

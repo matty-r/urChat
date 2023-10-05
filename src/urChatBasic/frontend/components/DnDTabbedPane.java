@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
 public class DnDTabbedPane extends JTabbedPane {
   private static final int LINE_SIZE = 3;
   private static final int RWH = 20;
-  private static final int BUTTON_SIZE = 30; // XXX 30 is magic number of scroll button size
+  private static final int BUTTON_SIZE = 30; 
 
   private final GhostGlassPane glassPane = new GhostGlassPane(this);
   protected int dragTabIndex = -1;
@@ -221,7 +221,6 @@ public class DnDTabbedPane extends JTabbedPane {
 
   protected Rectangle getTabAreaBounds() {
     Rectangle tabbedRect = getBounds();
-    // XXX: Rectangle compRect = getSelectedComponent().getBounds();
     // pointed out by daryl. NullPointerException: i.e. addTab("Tab", null)
     // Component comp = getSelectedComponent();
     // int idx = 0;
@@ -393,7 +392,6 @@ class TabDropTargetListener implements DropTargetListener {
     // Component c = e.getDropTargetContext().getComponent();
     // System.out.println("DropTargetListener#dragExit: " + c.getName());
     getGhostGlassPane(e.getDropTargetContext().getComponent()).ifPresent(glassPane -> {
-      // XXX: glassPane.setVisible(false);
       glassPane.setPoint(HIDDEN_POINT);
       glassPane.setTargetRect(0, 0, 0, 0);
       glassPane.repaint();

@@ -1,14 +1,10 @@
 package urChatBasic.tests.backend;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import urChatBasic.base.DialogBase;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.frontend.dialogs.YesNoDialog;
 import static org.junit.Assert.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.prefs.BackingStoreException;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 

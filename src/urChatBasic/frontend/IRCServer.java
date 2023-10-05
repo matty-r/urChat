@@ -15,7 +15,6 @@ import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.stream.IntStream;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;

@@ -86,6 +86,7 @@ public class IRCRoomBase extends JPanel
     private JTextPane channelTextArea = new JTextPane();
     private JScrollPane channelScroll = new JScrollPane(channelTextArea);
     private BlockingQueue<MessagePair> channelMessageQueue = new ArrayBlockingQueue<>(20);
+    public boolean channelQueueInProgress = false;
     private LineFormatter lineFormatter;
 
 
@@ -347,6 +348,9 @@ public class IRCRoomBase extends JPanel
 
     public void createEvent(String eventText)
     {
+        if (gui.isJoinsQuitsMainEnabled())
+            printText(eventText, Constants.EVENT_USER);
+
         eventTickerTimer.setDelay(gui.getEventTickerDelay());
         if (gui.isJoinsQuitsTickerEnabled())
         {
@@ -383,9 +387,6 @@ public class IRCRoomBase extends JPanel
             if (!(eventTickerTimer.isRunning()))
                 eventTickerTimer.start();
         }
-
-        if (gui.isJoinsQuitsMainEnabled())
-            printText(eventText, Constants.EVENT_USER);
     }
 
     public void callForAttention()
@@ -411,6 +412,7 @@ public class IRCRoomBase extends JPanel
         }
     }
 
+    // TODO: Change this to accept IRCUser instead
     public void printText(String line, String fromUser) {
         try {
             channelMessageQueue.put(new MessagePair(line, fromUser));
@@ -419,12 +421,11 @@ public class IRCRoomBase extends JPanel
         }
     }
 
-    public boolean channelQueueEmpty()
+    public boolean channelQueueWorking()
     {
-        return channelMessageQueue.isEmpty();
+        return (!channelMessageQueue.isEmpty() || channelQueueInProgress);
     }
 
-    // TODO: Change this to accept IRCUser instead
     public void handleMessageQueue()
     {
         new Thread(() -> {
@@ -434,31 +435,35 @@ public class IRCRoomBase extends JPanel
                 {
                     MessagePair messagePair = channelMessageQueue.take();
 
-                    Document document = channelTextArea.getDocument();
-                    Element root = document.getDefaultRootElement();
-
-
-                    while (root.getElementCount() > gui.getLimitChannelLinesCount())
+                    if(null != messagePair)
                     {
-                        Element line = root.getElement(0);
-                        int end = line.getEndOffset();
-
-                        try
-                        {
-                            document.remove(0, end);
-                        }
-                        catch(BadLocationException ble)
-                        {
-                            System.out.println(ble);
-                        }
+                        channelQueueInProgress = true;
                     }
 
                     String line = messagePair.getLine();
                     String fromUser = messagePair.getUser();
 
+                    Document document = channelTextArea.getDocument();
+                    Element root = document.getDefaultRootElement();
+
+                    if(null != messagePair && root.getElementCount() > gui.getLimitChannelLinesCount())
+                    {
+                        Element firstLine = root.getElement(0);
+                        int endIndex = firstLine.getEndOffset();
+
+                        try
+                        {
+                            document.remove(0, endIndex);
+                        }
+                        catch(BadLocationException ble)
+                        {
+                            Constants.LOGGER.log(Level.WARNING, ble.getLocalizedMessage());
+                        }
+                    }
+
                     if (null == channelTextArea)
                     {
-                        System.out.println("Cant print, shutting down");
+                        Constants.LOGGER.log(Level.WARNING, "ChannelTextArea hasn't initialized or has disappeared.. not printing text.");
                         return;
                     }
 
@@ -516,10 +521,11 @@ public class IRCRoomBase extends JPanel
                         // disabled
                         // when the user has scrolled up
                         channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
+                        channelQueueInProgress = false;
                     }
                 } catch (InterruptedException e)
                 {
-                    e.printStackTrace();
+                    Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
                 }
             }
         }).start();
