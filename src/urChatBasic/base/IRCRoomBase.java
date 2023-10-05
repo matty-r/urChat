@@ -4,6 +4,7 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCActions;
 import urChatBasic.frontend.IRCPrivate;
+import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.LineFormatter.ClickableText;
@@ -82,11 +83,11 @@ public class IRCRoomBase extends JPanel
     private String lastUserToComplete = null;
     private List<String> autoCompleteNames = new ArrayList<String>();
 
-    // Room Text Area
+    // Text Area
     private JTextPane channelTextArea = new JTextPane();
     private JScrollPane channelScroll = new JScrollPane(channelTextArea);
-    private BlockingQueue<MessagePair> channelMessageQueue = new ArrayBlockingQueue<>(20);
-    public boolean channelQueueInProgress = false;
+    private BlockingQueue<MessagePair> messageQueue = new ArrayBlockingQueue<>(20);
+    public boolean messageQueueInProgress = false;
     private LineFormatter lineFormatter;
 
 
@@ -415,15 +416,15 @@ public class IRCRoomBase extends JPanel
     // TODO: Change this to accept IRCUser instead
     public void printText(String line, String fromUser) {
         try {
-            channelMessageQueue.put(new MessagePair(line, fromUser));
+            messageQueue.put(new MessagePair(line, fromUser));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    public boolean channelQueueWorking()
+    public boolean messageQueueWorking()
     {
-        return (!channelMessageQueue.isEmpty() || channelQueueInProgress);
+        return (!messageQueue.isEmpty() || messageQueueInProgress);
     }
 
     public void handleMessageQueue()
@@ -433,11 +434,14 @@ public class IRCRoomBase extends JPanel
             {
                 try
                 {
-                    MessagePair messagePair = channelMessageQueue.take();
+                    MessagePair messagePair = messageQueue.take();
 
                     if(null != messagePair)
                     {
-                        channelQueueInProgress = true;
+                        messageQueueInProgress = true;
+                    } else
+                    {
+                        continue;
                     }
 
                     String line = messagePair.getLine();
@@ -446,7 +450,12 @@ public class IRCRoomBase extends JPanel
                     Document document = channelTextArea.getDocument();
                     Element root = document.getDefaultRootElement();
 
-                    if(null != messagePair && root.getElementCount() > gui.getLimitChannelLinesCount())
+                    int lineLimit = gui.getLimitChannelLinesCount();
+
+                    if(this instanceof IRCServer)
+                        lineLimit = gui.getLimitServerLinesCount();
+
+                    if(null != messagePair && root.getElementCount() > lineLimit)
                     {
                         Element firstLine = root.getElement(0);
                         int endIndex = firstLine.getEndOffset();
@@ -521,7 +530,7 @@ public class IRCRoomBase extends JPanel
                         // disabled
                         // when the user has scrolled up
                         channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
-                        channelQueueInProgress = false;
+                        messageQueueInProgress = false;
                     }
                 } catch (InterruptedException e)
                 {

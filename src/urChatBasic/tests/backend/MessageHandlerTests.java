@@ -66,7 +66,7 @@ public class MessageHandlerTests {
         StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
         String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "[0629] <someuser> hello testUser!"
 
-        while(testChannel.channelQueueWorking())
+        while(testChannel.messageQueueWorking())
         {
             TimeUnit.SECONDS.sleep(1);
         }
@@ -84,7 +84,7 @@ public class MessageHandlerTests {
         StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
         String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "[0629] <someuser> hello world!"
 
-        while(testChannel.channelQueueWorking())
+        while(testChannel.messageQueueWorking())
         {
             TimeUnit.SECONDS.sleep(1);
         }
@@ -183,22 +183,20 @@ public class MessageHandlerTests {
     }
 
     @Test
-    public void testLineLimit() throws BadLocationException, InterruptedException
+    public void testChannelLineLimit() throws BadLocationException, InterruptedException
     {
-        testGUI.setLimitChanneLines(10);
+        testGUI.setLimitChannelLines(10);
         testGUI.setJoinsQuitsMain(false);
         int channelLinesLimit = testGUI.getLimitChannelLinesCount();
-        // int serverLinesLimit = testGUI.getLimitServerLinesCount();
 
         String channelMessage = ":"+testUser+"!~"+testUser+"@urchatclient PRIVMSG #somechannel :line # ";
-        // String serverMessage = ":"+testServer.getName()+" 001 "+testUser+" :line # ";
 
         for (int i = 0; i < channelLinesLimit+10; i++) {
             Message testMessage = testHandler.new Message(channelMessage + i);
             testHandler.parseMessage(testMessage);
         }
 
-        while(testChannel.channelQueueWorking())
+        while(testChannel.messageQueueWorking())
         {
             TimeUnit.SECONDS.sleep(1);
         }
@@ -214,10 +212,40 @@ public class MessageHandlerTests {
         StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
         String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "<testUser> line # 509"
 
-        assertTrue("Last line should line # 19 but it was"+testLine, testLine.endsWith("<testUser> line # 19"));
+        assertTrue("Last line should line # 19 but it was"+testLine, testLine.endsWith("line # 19"));
 
-        assertTrue("First line should be line # 10 but it was "+testChannel.getChannelTextPane().getText().split("\n")[0], testChannel.getChannelTextPane().getText().split("\n")[0].endsWith("<testUser> line # 10"));
+        assertTrue("First line should be line # 10 but it was "+testChannel.getChannelTextPane().getText().split("\n")[0], testChannel.getChannelTextPane().getText().split("\n")[0].endsWith("line # 10"));
         assertSame("Channel line count should equal the line limit", channelLinesLimit, channelLinesCount - 1);
+    }
+
+    @Test
+    public void testServerLineLimit() throws BadLocationException, InterruptedException
+    {
+        testGUI.setLimitServerLines(10);
+        testGUI.setJoinsQuitsMain(false);
+        int serverLinesLimit = testGUI.getLimitServerLinesCount();
+
+        String serverMessage = ":"+testServer.getName()+" 001 "+testUser+" :line # ";
+
+        for (int i = 0; i < serverLinesLimit+10; i++) {
+            Message testMessage = testHandler.new Message(serverMessage + i);
+            testHandler.parseMessage(testMessage);
+        }
+
+        while(testServer.messageQueueWorking())
+        {
+            TimeUnit.SECONDS.sleep(1);
+        }
+
+        int serverLinesCount = testServer.getChannelTextPane().getStyledDocument().getDefaultRootElement().getElementCount();
+
+        StyledDocument testDoc = testServer.getChannelTextPane().getStyledDocument();
+        String testLine = testServer.getLineFormatter().getLatestLine(testDoc); // "<testUser> line # 19"
+
+        assertTrue("Last line should line # 19 but it was"+testLine, testLine.endsWith("line # 19"));
+
+        assertTrue("First line should be line # 10 but it was "+testServer.getChannelTextPane().getText().split("\n")[0], testServer.getChannelTextPane().getText().split("\n")[0].endsWith("line # 10"));
+        assertSame("Channel line count should equal the line limit", serverLinesLimit, serverLinesCount - 1);
     }
 
     @Test

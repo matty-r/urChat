@@ -143,9 +143,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    public void setLimitChanneLines(int limit)
+    public void setLimitChannelLines(int limit)
     {
         limitChannelLinesCount.setText(Integer.toString(limit));
+    }
+
+    public void setLimitServerLines(int limit)
+    {
+        limitServerLinesCount.setText(Integer.toString(limit));
     }
 
     /*
