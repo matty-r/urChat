@@ -24,7 +24,7 @@ import urChatBasic.frontend.components.URVersionLabel;
  */
 public class Constants
 {
-    public static String UR_VERSION = "v0.3.0";
+    public static String UR_VERSION = "v0.4.0";
     public static String URL_SEPARATOR = "/";
     public static final URL RESOURCES_DIR = DriverGUI.class.getResource(URL_SEPARATOR + "images" + URL_SEPARATOR);
     public static final String THEMES_DIR = "themes" + URL_SEPARATOR;
