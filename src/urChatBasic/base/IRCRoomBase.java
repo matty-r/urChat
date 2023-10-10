@@ -513,8 +513,7 @@ public class IRCRoomBase extends JPanel
                                 // TODO: Re-add later?
                                 // addToUsersList(getName(), fromUser);
                                 // fromIRCUser = getCreatedUsers(fromUser);
-                                // System.out.println();
-                                Constants.LOGGER.log(Level.WARNING, "Message from a user that isn't in the user list!");
+                                // Constants.LOGGER.log(Level.WARNING, "Message from a user that isn't in the user list!");
                                 fromIRCUser = new IRCUser(server, fromUser);
                             }
                         }

@@ -42,12 +42,12 @@ public class IRCPrivate extends IRCRoomBase
         {
             if (!clientTextBox.getText().trim().isEmpty())
             {
-                String messagePrefix = "";
                 if (!clientTextBox.getText().startsWith("/"))
-                    messagePrefix = "/msg " + getName() + " ";
-                server.sendClientText(messagePrefix + clientTextBox.getText(), getName());
+                {
+                    String messagePrefix = "/msg " + getName() + " ";
+                    clientTextBox.setText(messagePrefix + clientTextBox.getText());
+                }
             }
-            clientTextBox.setText("");
         }
     }
 }

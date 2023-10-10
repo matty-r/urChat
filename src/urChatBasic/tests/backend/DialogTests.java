@@ -10,7 +10,7 @@ import javax.swing.JOptionPane;
 
 public class DialogTests
 {
-    protected boolean automateTests = false;
+    protected boolean automateTests = true;
 
     protected void utilFunction()
     {

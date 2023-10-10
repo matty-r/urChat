@@ -190,7 +190,8 @@ public class Connection implements ConnectionBase
                 String msgPrefix = ":"+ getServer().getNick()+"!~"+ getServer().getNick()+"@urchatclient";
                 clientMessage = messageHandler.new Message(msgPrefix + " " +outText);
 
-                gui.setCurrentTab(tempTextArray[1]);
+                // TODO: Set current tab to this new priv tab
+                // gui.setCurrentTab(tempTextArray[1]);
             } else if (clientText.toLowerCase().startsWith("/whois"))
             {
                 outText = "WHOIS " + tempTextArray[1] + "\r\n";
