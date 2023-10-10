@@ -416,7 +416,7 @@ public class IRCRoomBase extends JPanel
     public void printText(String line, String fromUser) {
         try {
             messageQueue.put(new MessagePair(line, fromUser));
-
+            // test
             if(!messageQueueInProgress)
                 handleMessageQueue();
 
