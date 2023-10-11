@@ -14,7 +14,7 @@ import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import urChatBasic.base.Constants;
 
-public class LookAndFeelLoader<C extends LookAndFeel> {
+public class LookAndFeelLoader {
     public URLClassLoader cl;
 
     public LookAndFeelLoader(ClassLoader parentLoader) throws IOException {

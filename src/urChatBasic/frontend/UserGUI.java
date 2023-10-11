@@ -12,6 +12,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.event.*;
+import urChatBasic.backend.utils.URUncaughtExceptionHandler;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
@@ -1803,6 +1804,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         // Auto-generated method stub
         Thread.currentThread().setContextClassLoader(DriverGUI.contextClassLoader);
+        Thread.currentThread().setUncaughtExceptionHandler(new URUncaughtExceptionHandler());
+        
         setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
     }
 }
