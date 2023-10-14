@@ -371,8 +371,8 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     public IRCUser getIRCUser(String userName)
     {
         for (IRCRoomBase tempChannel : createdRooms)
-            if (tempChannel.getCreatedUsers(userName) != null)
-                return tempChannel.getCreatedUsers(userName);
+            if (tempChannel.getCreatedUser(userName) != null)
+                return tempChannel.getCreatedUser(userName);
         return new IRCUser(this, userName);
     }
 

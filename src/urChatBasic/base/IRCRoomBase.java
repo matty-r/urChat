@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.*;
@@ -94,8 +95,8 @@ public class IRCRoomBase extends JPanel
     // Users list area
     // TODO: Users should be created per Server, and instead have a property to hold what channels
     // they're in
-    private List<IRCUser> usersArray = new ArrayList<IRCUser>();
-    private UsersListModel usersListModel = new UsersListModel(usersArray);
+    private ConcurrentHashMap<String, IRCUser> usersMap = new ConcurrentHashMap<>();
+    private UsersListModel usersListModel = new UsersListModel(usersMap.values());
     @SuppressWarnings("unchecked")
     private JList<IRCUser> usersList = new JList<IRCUser>(usersListModel);
     private JScrollPane userScroller = new JScrollPane(usersList);
@@ -416,7 +417,7 @@ public class IRCRoomBase extends JPanel
     public void printText(String line, String fromUser) {
         try {
             messageQueue.put(new MessagePair(line, fromUser));
-            
+
             if(!messageQueueInProgress)
                 handleMessageQueue();
 
@@ -501,7 +502,7 @@ public class IRCRoomBase extends JPanel
                         }
 
                         StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
-                        IRCUser fromIRCUser = getCreatedUsers(fromUser);
+                        IRCUser fromIRCUser = getCreatedUser(fromUser);
 
                         // If we received a message from a user that isn't in the channel
                         // then add them to the users list.
@@ -595,15 +596,8 @@ public class IRCRoomBase extends JPanel
      * @param roomName
      * @return IRCChannel
      */
-    public IRCUser getCreatedUsers(String userName)
-    {
-        for (IRCUser tempUser : usersArray)
-        {
-            if (tempUser.getName().equalsIgnoreCase(userName))
-                return tempUser;
-        } ;
-
-        return null;
+    public IRCUser getCreatedUser(String userName) {
+        return usersMap.get(userName.toLowerCase());
     }
 
     public void disableFocus()
@@ -631,8 +625,11 @@ public class IRCRoomBase extends JPanel
 
                 IRCUser newUser = getServer().getIRCUser(tempUserName);
 
-                if (!usersArray.contains(newUser))
-                    usersArray.add(newUser);
+                if (null != getCreatedUser(tempUserName))
+                {
+                    usersMap.put(newUser.getName().toLowerCase(), newUser);
+                    usersListModel.addElement(newUser);
+                }
             }
         }
         usersListModel.sort();
@@ -651,11 +648,12 @@ public class IRCRoomBase extends JPanel
 
                 IRCUser newUser = getServer().getIRCUser(thisUser);
 
-                if (!usersArray.contains(newUser))
+                if (null != getCreatedUser(thisUser))
                 {
-                    usersArray.add(newUser);
+                    usersMap.put(newUser.getName().toLowerCase(), newUser);
                     usersList.setSelectedIndex(0);
                     createEvent("++ " + thisUser + " has entered " + channel);
+                    usersListModel.addElement(newUser);
                     usersListModel.sort();
                 }
             }
@@ -684,28 +682,17 @@ public class IRCRoomBase extends JPanel
                     thisUser = user.substring(1);
 
 
-                int index = 0;
-                while (index < usersArray.size())
-                {
-                    if (usersArray.get(index).getName().matches(thisUser))
-                    {
-                        usersArray.remove(index);
-                        createEvent("-- " + thisUser + " has quit " + channel);
-                    } else
-                    {
-                        index++;
-                    }
-                }
-
+                usersMap.remove(thisUser.toLowerCase());
+                usersListModel.removeUser(thisUser);
                 usersListModel.sort();
             }
         });
     }
 
     /** Clear the users list */
-    public void clearUsersList(String channel)
+    public void clearUsersList()
     {
-        usersArray.clear();
+        usersMap.clear();
     }
 
 
@@ -744,7 +731,7 @@ public class IRCRoomBase extends JPanel
         {
             public void run()
             {
-                IRCUser tempUser = getCreatedUsers(oldUserName);
+                IRCUser tempUser = getCreatedUser(oldUserName);
                 if (tempUser != null)
                 {
                     createEvent("!! " + oldUserName + " changed name to " + newUserName);
@@ -1066,9 +1053,8 @@ public class IRCRoomBase extends JPanel
                 }
 
                 // If usersArray and clientText isn't empty.
-                if (usersArray.size() > 0 && clientTextBox.getText().length() > 0)
-                {
-                    usersArray.stream()
+                if (!usersMap.isEmpty() && clientTextBox.getText().length() > 0) {
+                    usersMap.values().stream()
                             .filter(user -> user.getName().toLowerCase().replace("@", "")
                                     .startsWith(startingCharacters.toLowerCase()))
                             .forEach(user -> autoCompleteNames.add(user.getName()));
