@@ -96,7 +96,7 @@ public class IRCRoomBase extends JPanel
     // TODO: Users should be created per Server, and instead have a property to hold what channels
     // they're in
     private ConcurrentHashMap<String, IRCUser> usersMap = new ConcurrentHashMap<>();
-    private UsersListModel usersListModel = new UsersListModel(usersMap.values());
+    private UsersListModel usersListModel = new UsersListModel();
     @SuppressWarnings("unchecked")
     private JList<IRCUser> usersList = new JList<IRCUser>(usersListModel);
     private JScrollPane userScroller = new JScrollPane(usersList);
@@ -611,53 +611,34 @@ public class IRCRoomBase extends JPanel
     }
 
     // Adds users to the list in the users array[]
-    public void addToUsersList(final String channel, final String[] users)
-    {
-        // Removed as Runnable(), not sure it was necessary
-        // TODO: maybe readd Runnable
-        if (users.length >= 0 && null != getServer())
-        {
-            for (int x = 0; x < users.length; x++)
-            {
-                String tempUserName = users[x];
-                if (users[x].startsWith(":"))
-                    tempUserName = tempUserName.substring(1);
+    public void addToUsersList(final String[] users) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // Removed as Runnable(), not sure it was necessary
+                // TODO: maybe readd Runnable
+                if (users.length >= 0 && null != getServer()) {
+                    for (int x = 0; x < users.length; x++) {
+                        String tempUserName = users[x];
+                        if (users[x].startsWith(":"))
+                            tempUserName = tempUserName.substring(1);
 
-                IRCUser newUser = getServer().getIRCUser(tempUserName);
+                        IRCUser newUser = getServer().getIRCUser(tempUserName);
 
-                if (null != getCreatedUser(tempUserName))
-                {
-                    usersMap.put(newUser.getName().toLowerCase(), newUser);
-                    usersListModel.addElement(newUser);
+                        if (null != newUser) {
+                            usersMap.put(newUser.getName().toLowerCase(), newUser);
+                            usersListModel.addUser(newUser);
+                        }
+                    }
                 }
+                usersListModel.sort();
             }
-        }
-        usersListModel.sort();
+        });
     }
 
     // Adds a single user, good for when a user joins the channel
-    public void addToUsersList(final String channel, final String user)
+    public void addToUsersList(final String user)
     {
-        SwingUtilities.invokeLater(new Runnable()
-        {
-            public void run()
-            {
-                String thisUser = user;
-                if (user.startsWith(":"))
-                    thisUser = user.substring(1);
-
-                IRCUser newUser = getServer().getIRCUser(thisUser);
-
-                if (null != getCreatedUser(thisUser))
-                {
-                    usersMap.put(newUser.getName().toLowerCase(), newUser);
-                    usersList.setSelectedIndex(0);
-                    createEvent("++ " + thisUser + " has entered " + channel);
-                    usersListModel.addElement(newUser);
-                    usersListModel.sort();
-                }
-            }
-        });
+        addToUsersList(new String[]{user});
     }
 
     public String getChannelTopic(String roomName)

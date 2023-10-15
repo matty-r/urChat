@@ -590,7 +590,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         {
             IRCChannel tempChannel = getCreatedChannel(channelName);
             if (tempChannel != null)
-                tempChannel.addToUsersList(tempChannel.getName(), users);
+                tempChannel.addToUsersList(users);
         }
     }
 
@@ -603,13 +603,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     @Override
     public void addToUsersList(final String channelName, final String user)
     {
-        String thisUser = user;
-        if (user.startsWith(":"))
-            thisUser = user.substring(1);
-
-        IRCChannel tempChannel = getCreatedChannel(channelName);
-        if (tempChannel != null)
-            tempChannel.addToUsersList(tempChannel.getName(), thisUser);
+        addToUsersList(channelName, new String[]{user});
     }
 
 

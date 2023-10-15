@@ -4,22 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 
-import javax.swing.DefaultListModel;
+import javax.swing.AbstractListModel;
 
 @SuppressWarnings("rawtypes")
-public class UsersListModel extends DefaultListModel
+public class UsersListModel extends AbstractListModel
 {
     /**
      *
      */
     private static final long serialVersionUID = 1L;
     // ArrayList<IRCUser> users;
-    List users = new ArrayList<IRCUser>();
-
-    public UsersListModel(List<IRCUser> array)
-    {
-        users = array;
-    }
+    List<IRCUser> users = new ArrayList<IRCUser>();
 
     public int getSize()
     {
@@ -31,7 +26,21 @@ public class UsersListModel extends DefaultListModel
         return (IRCUser) users.get(index);
     }
 
-    @SuppressWarnings("unchecked")
+    public void addUser(IRCUser newUser)
+    {
+        users.add(newUser);
+    }
+
+    public void removeUser(String userName)
+    {
+        users.removeIf(n -> n.getName().equalsIgnoreCase(userName));
+    }
+
+    public void removeUser(IRCUser targetUser)
+    {
+        users.remove(targetUser);
+    }
+
     public List<IRCUser> getUsersList()
     {
         return users;
@@ -48,7 +57,6 @@ public class UsersListModel extends DefaultListModel
         users = array;
     }
 
-    @SuppressWarnings("unchecked")
     public void sort()
     {
         Collections.sort(users);
