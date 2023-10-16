@@ -6,10 +6,12 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
@@ -19,6 +21,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import urChatBasic.base.Constants;
+import urChatBasic.frontend.dialogs.YesNoDialog;
 import urChatBasic.frontend.utils.URColour;
 
 public class LineFormatter
@@ -144,7 +147,15 @@ public class LineFormatter
             {
                 // TODO: This should really pop up a dialog to confirm you want to open the link
                 try {
-                    Desktop.getDesktop().browse(new URL(textLink).toURI());
+                    AtomicBoolean doOpenLink = new AtomicBoolean(false);
+
+                    YesNoDialog confirmOpenLink = new YesNoDialog("Are you sure you want to open "+textLink+"?", "Open Link",
+                        JOptionPane.QUESTION_MESSAGE, e -> doOpenLink.set(e.getActionCommand().equalsIgnoreCase("Yes")));
+
+                    confirmOpenLink.setVisible(true);
+
+                    if(doOpenLink.get())
+                        Desktop.getDesktop().browse(new URL(textLink).toURI());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
