@@ -5,17 +5,23 @@ import org.junit.Test;
 import urChatBasic.backend.Connection;
 import urChatBasic.backend.MessageHandler;
 import urChatBasic.backend.MessageHandler.Message;
+import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
+import urChatBasic.frontend.LineFormatter.ClickableText;
 import urChatBasic.frontend.UserGUI;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
 public class MessageHandlerTests {
@@ -143,11 +149,10 @@ public class MessageHandlerTests {
         Message testMessage = testHandler.new Message(rawMessage);
 
         assertEquals("#channelname", testMessage.getChannel());
-        // TODO create this test
     }
 
     @Test
-    public void handleChannelUrl()
+    public void handleChannelNoticeUrl()
     {
         String rawMessage = ":services. 328 userName #somechannel :https://somechannel.com/url";
         Message testMessage = testHandler.new Message(rawMessage);
@@ -257,11 +262,63 @@ public class MessageHandlerTests {
     }
 
     @Test
-    public void urlMessage()
+    public void urlInMessage() throws BadLocationException, InterruptedException
     {
         // test displaying urls
-        String rawMessage = "https://i.imgur.com/somepicture.png";
-        String rawMessage2 = "https://duckduckgo.com/?q=irc+urchat&kp=1&t=h_&ia=web";
-        // TODO create this test
+
+        String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG #somechannel :https://i.imgur.com/somepicture.png";
+        // String rawMessage2 = "https://duckduckgo.com/?q=irc+urchat&kp=1&t=h_&ia=web";
+
+        Message testMessage = testHandler.new Message(rawMessage);
+        testHandler.parseMessage(testMessage);
+        StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
+
+        while(testChannel.messageQueueWorking())
+        {
+            TimeUnit.SECONDS.sleep(1);
+        }
+
+        String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "[0629] <someuser> https://google.com"
+        // Should be urlStyle, i.e a clickable link
+        assertEquals("urlStyle", testChannel.getLineFormatter().getStyleAtPosition(testDoc, 19, testLine).getAttribute("name"));
+    }
+
+    @Test
+    public void channelRegex()
+    {
+        // find and match against any URLs that may be in the text
+        String line = "join #urchatclient to test the regex";
+
+        Pattern pattern = Pattern.compile(Constants.CHANNEL_REGEX);
+        Matcher matcher = pattern.matcher(line);
+
+
+        String regexLine = "";
+        while (matcher.find()) {
+            regexLine = line.substring(matcher.start(), matcher.end());
+        }
+
+        assertTrue(regexLine.equalsIgnoreCase("#urchatclient"));
+    }
+
+    @Test
+    public void channelInMessage() throws BadLocationException, InterruptedException
+    {
+        // test displaying channel
+
+        String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG #somechannel :Please join #urchatclient";
+
+        Message testMessage = testHandler.new Message(rawMessage);
+        testHandler.parseMessage(testMessage);
+        StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
+
+        while(testChannel.messageQueueWorking())
+        {
+            TimeUnit.SECONDS.sleep(1);
+        }
+
+        String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "[0629] <someuser> Please join #urchatclient"
+        // Should be channel, i.e clickable name which allows you to join the channel
+        assertEquals("channelStyle", testChannel.getLineFormatter().getStyleAtPosition(testDoc, 19, testLine).getAttribute("name"));
     }
 }

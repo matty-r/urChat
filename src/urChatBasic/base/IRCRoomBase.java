@@ -441,13 +441,12 @@ public class IRCRoomBase extends JPanel
                 {
                     try
                     {
+                        messageQueueInProgress = true;
                         MessagePair messagePair = messageQueue.take();
 
-                        if(null != messagePair)
+                        if(null == messagePair)
                         {
-                            messageQueueInProgress = true;
-                        } else
-                        {
+                            messageQueueInProgress = false;
                             continue;
                         }
 

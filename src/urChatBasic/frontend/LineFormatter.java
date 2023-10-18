@@ -203,6 +203,8 @@ public class LineFormatter
                 return myStyle();
             case "lowStyle":
                 return lowStyle();
+            case "urlStyle":
+                return urlStyle();
             default:
                 return defaultStyle();
         }
