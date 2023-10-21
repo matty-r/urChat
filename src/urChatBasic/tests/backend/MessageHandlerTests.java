@@ -21,7 +21,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
 public class MessageHandlerTests {
@@ -305,10 +304,12 @@ public class MessageHandlerTests {
     public void channelInMessage() throws BadLocationException, InterruptedException
     {
         // test displaying channel
+        Message testMessage = testHandler.new Message(":someuser!~someuser@urchatclient PRIVMSG #somechannel :first line");
+        testHandler.parseMessage(testMessage);
 
-        String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG #somechannel :Please join #urchatclient";
+        String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG #somechannel :Please join #urchatclient and go to https://github.com/matty-r/urChat then go back to #anotherchannel";
 
-        Message testMessage = testHandler.new Message(rawMessage);
+        testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
         StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
 
@@ -317,8 +318,10 @@ public class MessageHandlerTests {
             TimeUnit.SECONDS.sleep(1);
         }
 
-        String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "[0629] <someuser> Please join #urchatclient"
+        String testLine = testChannel.getLineFormatter().getLatestLine(testDoc);
         // Should be channel, i.e clickable name which allows you to join the channel
-        assertEquals("channelStyle", testChannel.getLineFormatter().getStyleAtPosition(testDoc, 19, testLine).getAttribute("name"));
+        assertEquals("channelStyle", testChannel.getLineFormatter().getStyleAtPosition(testDoc, 33, testLine).getAttribute("name"));
+        assertEquals("urlStyle", testChannel.getLineFormatter().getStyleAtPosition(testDoc, 58, testLine).getAttribute("name"));
+        assertEquals("channelStyle", testChannel.getLineFormatter().getStyleAtPosition(testDoc, 110, testLine).getAttribute("name"));
     }
 }

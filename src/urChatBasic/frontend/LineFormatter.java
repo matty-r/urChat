@@ -5,7 +5,9 @@ import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -21,6 +23,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import urChatBasic.base.Constants;
+import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.YesNoDialog;
 import urChatBasic.frontend.utils.URColour;
 
@@ -28,15 +31,27 @@ public class LineFormatter
 {
     private String myNick;
     private Font myFont;
+    private IRCServerBase myServer;
     public SimpleAttributeSet defaultStyle;
     public SimpleAttributeSet timeStyle;
     public SimpleAttributeSet nameStyle;
     public SimpleAttributeSet lineStyle;
     protected UserGUI gui = DriverGUI.gui;
 
-    public LineFormatter(Font myFont, String myNick)
+    public LineFormatter(Font myFont, final IRCServerBase server)
     {
-        this.myNick = myNick;
+        // myNick = server.getNick();
+
+        if(null != server)
+        {
+            myNick = server.getNick();
+            myServer = server;
+        }
+        else
+        {
+            myNick = null;
+        }
+
         this.myFont = myFont;
         defaultStyle = defaultStyle();
         timeStyle = defaultStyle();
@@ -55,7 +70,7 @@ public class LineFormatter
     {
         SimpleAttributeSet defaultStyle = new SimpleAttributeSet();
         defaultStyle.addAttribute("name", "defaultStyle");
-
+        defaultStyle.addAttribute("type", "default");
         // get the contrasting colour of the background colour
         StyleConstants.setForeground(defaultStyle, URColour.getContrastColour(UIManager.getColor("Panel.background")));
         StyleConstants.setFontFamily(defaultStyle, myFont.getFamily());
@@ -111,6 +126,16 @@ public class LineFormatter
         return tempStyle;
     }
 
+    public SimpleAttributeSet channelStyle()
+    {
+        SimpleAttributeSet tempStyle = urlStyle();
+
+        tempStyle.addAttribute("name", "channelStyle");
+        tempStyle.addAttribute("type", "channel");
+
+        return tempStyle;
+    }
+
     public SimpleAttributeSet myStyle()
     {
         SimpleAttributeSet tempStyle = defaultStyle();
@@ -145,7 +170,6 @@ public class LineFormatter
         {
             if (!textLink.isEmpty() && gui.isClickableLinksEnabled() && attributeSet.getAttribute("type").equals("url"))
             {
-                // TODO: This should really pop up a dialog to confirm you want to open the link
                 try {
                     AtomicBoolean doOpenLink = new AtomicBoolean(false);
 
@@ -156,6 +180,24 @@ public class LineFormatter
 
                     if(doOpenLink.get())
                         Desktop.getDesktop().browse(new URL(textLink).toURI());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else if(!textLink.isEmpty() && attributeSet.getAttribute("type").equals("channel"))
+            {
+                try {
+                    AtomicBoolean doJoinChannel = new AtomicBoolean(false);
+
+                    YesNoDialog confirmOpenLink = new YesNoDialog("Are you sure you want to join channel "+textLink+"?", "Join Channel",
+                        JOptionPane.QUESTION_MESSAGE, e -> doJoinChannel.set(e.getActionCommand().equalsIgnoreCase("Yes")));
+
+                    confirmOpenLink.setVisible(true);
+
+                    // TODO: Join channel
+                    if(doJoinChannel.get())
+                    {
+                        myServer.sendClientText("/join " + textLink, "");
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -205,11 +247,12 @@ public class LineFormatter
                 return lowStyle();
             case "urlStyle":
                 return urlStyle();
+            case "channelStyle":
+                return channelStyle();
             default:
                 return defaultStyle();
         }
     }
-
 
     public void updateStyles(StyledDocument doc, int startPosition)
     {
@@ -231,7 +274,6 @@ public class LineFormatter
                 matchingStyle.addAttribute(nextAttributeName, textStyle.getAttribute(nextAttributeName));
             }
         }
-
 
         doc.setCharacterAttributes(styleStart, styleLength, matchingStyle, true);
 
@@ -297,8 +339,40 @@ public class LineFormatter
             position = position + getLinePosition(doc, relativeLine);
 
         AttributeSet textStyle = doc.getCharacterElement(position).getAttributes();
-        String styleName = textStyle.getAttribute("name").toString();
-        return getStyle(styleName);
+
+        // String styleName = textStyle.getAttribute("name").toString();
+        return new SimpleAttributeSet(textStyle);
+    }
+
+    private String parseClickableText(StyledDocument doc, IRCUser fromUser) throws BadLocationException
+    {
+        HashMap<String, SimpleAttributeSet> regexStrings = new HashMap<>();
+        regexStrings.put(Constants.URL_REGEX, urlStyle());
+        regexStrings.put(Constants.CHANNEL_REGEX, channelStyle());
+        final String line = getLatestLine(doc);
+        final int relativePosition = getLinePosition(doc, getLatestLine(doc));
+
+        for (Map.Entry<String, SimpleAttributeSet> entry : regexStrings.entrySet()) {
+            String regex = entry.getKey();
+            SimpleAttributeSet linkStyle = entry.getValue();
+
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(line);
+
+            // do stuff for each match
+            while (matcher.find()) {
+
+                String clickableLine = line.substring(matcher.start(), matcher.end());
+                linkStyle.addAttribute("clickableText", new ClickableText(clickableLine, linkStyle, fromUser));
+
+                int styleStart = relativePosition + matcher.start();
+                int styleLength = matcher.end() - matcher.start();
+
+                doc.setCharacterAttributes(styleStart, styleLength, linkStyle, true);
+            }
+        }
+
+        return line;
     }
 
     /**
@@ -353,29 +427,11 @@ public class LineFormatter
 
             appendString(doc, "> ", lineStyle);
 
-            // find and match against any URLs that may be in the text
-            Pattern pattern = Pattern.compile(Constants.URL_REGEX);
-            Matcher matcher = pattern.matcher(line);
-            SimpleAttributeSet linkStyle = urlStyle();
-
-            while (matcher.find()) {
-                // pre http
-                appendString(doc, line.substring(0, matcher.start()), lineStyle);
-
-                // http "clickableText"
-                String httpLine = line.substring(matcher.start(), matcher.end());
-                linkStyle.addAttribute("clickableText", new ClickableText(httpLine, linkStyle, fromUser));
-                appendString(doc, httpLine, linkStyle);
-
-                // post http
-                line = line.substring(matcher.end());
-
-                // search again
-                matcher = pattern.matcher(line);
-            }
-
             // print the remaining text
             appendString(doc, line, lineStyle);
+
+            // parse the outputted line for clickable text
+            parseClickableText(doc, fromUser);
 
             appendString(doc, System.getProperty("line.separator"), lineStyle);
         } catch (BadLocationException e)

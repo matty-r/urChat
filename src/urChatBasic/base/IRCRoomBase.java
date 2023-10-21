@@ -173,7 +173,7 @@ public class IRCRoomBase extends JPanel
             roomPrefs = gui.getFavouritesPath().node(getServer().getName()).node(roomName);
             fontDialog = new FontDialog(roomName, gui.getFont(), roomPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getFont(), getServer().getNick());
+            lineFormatter = new LineFormatter(getFontPanel().getFont(), getServer());
         } else
         {
             roomPrefs = gui.getFavouritesPath().node(roomName);
