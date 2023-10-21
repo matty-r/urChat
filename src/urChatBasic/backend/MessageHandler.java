@@ -140,7 +140,7 @@ public class MessageHandler
         rangeIDs.add(new IDRange(412, 415, new BadPrivateMessage()));
         rangeIDs.add(new IDRange(371, 376, new GeneralServerMessage()));
         rangeIDs.add(new IDRange(251, 256, new GeneralServerMessage()));
-        rangeIDs.add(new IDRange(471, 475, new JoinFailureMessage()));
+        rangeIDs.add(new IDRange(471, 477, new JoinFailureMessage()));
     }
 
     private void addSingles()
@@ -149,7 +149,7 @@ public class MessageHandler
         singleIDs.add(new IDSingle(353, new UsersListMessage()));
         singleIDs.add(new IDSingle(322, new CommandResponseMessage()));
         singleIDs.add(new IDSingle((new int[] {311, 319, 312, 317, 318, 301, 671, 330, 338, 378}), new WhoIsMessage()));
-        singleIDs.add(new IDSingle((new int[] {004, 265, 266, 250, 422, 477, 331, 900}), new GeneralServerMessage()));
+        singleIDs.add(new IDSingle((new int[] {004, 265, 266, 250, 422, 331, 900}), new GeneralServerMessage()));
         singleIDs.add(new IDSingle(366, new GeneralChannelMessage()));
         singleIDs.add(new IDSingle((new int[] {432, 433, 451}), new InvalidNickMessage()));
         singleIDs.add(new IDSingle((new int[] {401, 403}), new NoSuchChannelMessage()));
@@ -532,6 +532,7 @@ public class MessageHandler
         public void messageExec(Message myMessage)
         {
             printServerText(myMessage.body);
+            serverBase.callForAttention();
         }
 
     }

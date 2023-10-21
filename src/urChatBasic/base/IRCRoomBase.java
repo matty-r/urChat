@@ -238,6 +238,11 @@ public class IRCRoomBase extends JPanel
         return fontDialog.getFontPanel();
     }
 
+    public void resetLineFormatter()
+    {
+        lineFormatter = new LineFormatter(getFontPanel().getFont(), getServer());
+    }
+
     private void setupMainTextArea()
     {
         channelScroll.setPreferredSize(

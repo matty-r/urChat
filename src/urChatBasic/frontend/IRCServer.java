@@ -60,6 +60,8 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             String proxyPort, Boolean useSOCKS)
     {
         super(serverName);
+        setServer(this);
+        resetLineFormatter();
 
         myMenu = new ServerPopUp();
         hideUsersList();
@@ -447,7 +449,6 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
                 return tempChannel;
         return null;
     }
-
 
     /*
      * (non-Javadoc)
