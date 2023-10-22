@@ -193,7 +193,6 @@ public class LineFormatter
 
                     confirmOpenLink.setVisible(true);
 
-                    // TODO: Join channel
                     if(doJoinChannel.get())
                     {
                         myServer.sendClientText("/join " + textLink, "");

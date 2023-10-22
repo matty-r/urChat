@@ -50,8 +50,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private ProfilePicker profilePicker;
 
     // Client Options Panel
-    private static final JPanel optionsClientPanel = new JPanel();
-    private static final JScrollPane clientScroller = new JScrollPane(optionsClientPanel);
+    private static final JPanel interfacePanel = new JPanel();
+    private static final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
     private static final JLabel lafOptionsLabel = new JLabel("Theme:");
 
     private static final JComboBox<LookAndFeelInfo> lafOptions = new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
@@ -80,8 +80,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             new JSlider(JSlider.HORIZONTAL, TICKER_DELAY_MIN, TICKER_DELAY_MAX, TICKER_DELAY_INIT);
 
     // Server Options Panel
-    private static final JPanel serverOptionsPanel = new JPanel();
-    private static final JScrollPane serverScroller = new JScrollPane(serverOptionsPanel);
+    private static final JPanel connectionPanel = new JPanel();
+    private static final JScrollPane connectionScroller = new JScrollPane(connectionPanel);
+
+    // Appearance Options Panel
+    private static final JPanel appearancePanel = new JPanel();
+    private static final JScrollPane appearanceScroller = new JScrollPane(appearancePanel);
 
     // Identification
     private static final JLabel userNameLabel = new JLabel("Nick:");
@@ -454,8 +458,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         optionsMainPanel.setLayout(new BorderLayout());
 
-        optionsArray.addElement("Server");
-        optionsArray.addElement("Client");
+        optionsArray.addElement("Connection");
+        optionsArray.addElement("Interface");
+        optionsArray.addElement("Appearance");
 
         setupLeftOptionsPanel();
         setupRightOptionsPanel();
@@ -464,11 +469,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         optionsMainPanel.add(optionsRightPanel, BorderLayout.CENTER);
         optionsList.setSelectedIndex(OPTIONS_INDEX);
 
-        // optionsClientPanel.setPreferredSize(new Dimension(500, 0));
-        // serverOptionsPanel.setPreferredSize(new Dimension(200, 0));
-
-        optionsRightPanel.add(serverScroller, "Server");
-        optionsRightPanel.add(clientScroller, "Client");
+        optionsRightPanel.add(connectionScroller, "Connection");
+        optionsRightPanel.add(interfaceScroller, "Interface");
+        optionsRightPanel.add(appearanceScroller, "Appearance");
     }
 
     /**
@@ -502,89 +505,89 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // optionsRightPanel.setBackground(Color.BLACK);
         optionsRightPanel.setLayout(new CardLayout());
 
-        setupServerOptionsPanelComponents();
-        setupClientOptionsPanelComponents();
+        setupConnectionPanel();
+        setupInterfacePanel();
+        setupAppearancePanel();
     }
-
 
     /**
      * Add the components to the Server Options Panel.
      */
-    private void setupServerOptionsPanelComponents()
+    private void setupConnectionPanel()
     {
-        // serverOptionsPanel.setLayout(new BoxLayout(serverOptionsPanel, BoxLayout.PAGE_AXIS));
-        setupServerOptionsLayout();
+        // connectionPanel.setLayout(new BoxLayout(connectionPanel, BoxLayout.PAGE_AXIS));
+        setupConnectionLayout();
 
         // User stuff
-        serverOptionsPanel.add(userNameLabel);
-        serverOptionsPanel.add(userNameTextField);
+        connectionPanel.add(userNameLabel);
+        connectionPanel.add(userNameTextField);
         // userNameTextField.setPreferredSize(new Dimension(100, 24));
         // userNameTextField.setMinimumSize(new Dimension(100, 0));
 
-        serverOptionsPanel.add(realNameLabel);
-        serverOptionsPanel.add(realNameTextField);
+        connectionPanel.add(realNameLabel);
+        connectionPanel.add(realNameTextField);
         // realNameTextField.setMinimumSize(new Dimension(100, 0));
 
-        serverOptionsPanel.add(authenticationTypeLabel);
-        serverOptionsPanel.add(authenticationTypeChoice);
+        connectionPanel.add(authenticationTypeLabel);
+        connectionPanel.add(authenticationTypeChoice);
         authenticationTypeChoice.addActionListener(new UCAuthTypeComboBoxChangeHandler());
         // authenticationTypeChoice.setPreferredSize(new Dimension(200, 20));
 
-        serverOptionsPanel.add(passwordLabel);
-        serverOptionsPanel.add(passwordTextField);
+        connectionPanel.add(passwordLabel);
+        connectionPanel.add(passwordTextField);
         passwordTextField.setEchoChar('*');
 
-        serverOptionsPanel.add(rememberPassLabel);
-        serverOptionsPanel.add(rememberPassCheckBox);
+        connectionPanel.add(rememberPassLabel);
+        connectionPanel.add(rememberPassCheckBox);
         // passwordTextField.setPreferredSize(new Dimension(200, 20));
 
         // Server Stuff
-        serverOptionsPanel.add(serverNameLabel);
-        serverOptionsPanel.add(servernameTextField);
+        connectionPanel.add(serverNameLabel);
+        connectionPanel.add(servernameTextField);
         // servernameTextField.setPreferredSize(new Dimension(100, 20));
 
-        serverOptionsPanel.add(serverPortLabel);
-        serverOptionsPanel.add(serverPortTextField);
+        connectionPanel.add(serverPortLabel);
+        connectionPanel.add(serverPortTextField);
         // serverPortTextField.setPreferredSize(new Dimension(50, 20));
 
-        serverOptionsPanel.add(serverUseTLSLabel);
-        serverOptionsPanel.add(serverTLSCheckBox);
+        connectionPanel.add(serverUseTLSLabel);
+        connectionPanel.add(serverTLSCheckBox);
         // serverTLSCheckBox.setPreferredSize(new Dimension(50, 20));
 
         // Proxy Stuff
-        serverOptionsPanel.add(proxyHostLabel);
-        serverOptionsPanel.add(proxyHostNameTextField);
+        connectionPanel.add(proxyHostLabel);
+        connectionPanel.add(proxyHostNameTextField);
         // proxyHostNameTextField.setPreferredSize(new Dimension(100, 20));
 
-        serverOptionsPanel.add(proxyPortLabel);
-        serverOptionsPanel.add(proxyPortTextField);
+        connectionPanel.add(proxyPortLabel);
+        connectionPanel.add(proxyPortTextField);
         // proxyPortTextField.setPreferredSize(new Dimension(50, 20));
 
-        serverOptionsPanel.add(serverUseProxyLabel);
-        serverOptionsPanel.add(serverProxyCheckBox);
+        connectionPanel.add(serverUseProxyLabel);
+        connectionPanel.add(serverProxyCheckBox);
         // serverProxyCheckBox.setPreferredSize(new Dimension(50, 20));
 
         // Channel Stuff
-        serverOptionsPanel.add(firstChannelLabel);
-        serverOptionsPanel.add(firstChannelTextField);
+        connectionPanel.add(firstChannelLabel);
+        connectionPanel.add(firstChannelTextField);
         // firstChannelTextField.setPreferredSize(new Dimension(100, 20));
 
-        serverOptionsPanel.add(connectButton);
+        connectionPanel.add(connectButton);
         connectButton.addActionListener(new ConnectPressed());
-        serverOptionsPanel.add(autoConnectToFavourites);
+        connectionPanel.add(autoConnectToFavourites);
 
         favouritesScroller.setPreferredSize(new Dimension(200, 100));
         favouritesList.addMouseListener(new FavouritesPopClickListener());
-        serverOptionsPanel.add(favouritesScroller);
+        connectionPanel.add(favouritesScroller);
     }
 
     /**
      * Aligns components on the Server Options Panel
      */
-    private void setupServerOptionsLayout()
+    private void setupConnectionLayout()
     {
-        SpringLayout serverLayout = new SpringLayout();
-        serverOptionsPanel.setLayout(serverLayout);
+        SpringLayout connectionLayout = new SpringLayout();
+        connectionPanel.setLayout(connectionLayout);
 
         // Used to make it more obvious what is going on -
         // and perhaps more readable.
@@ -598,173 +601,168 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         // Components are aligned off the top label
         // User stuff
-        serverLayout.putConstraint(SpringLayout.NORTH, userNameLabel, TOP_SPACING * 2, SpringLayout.NORTH,
-                serverOptionsPanel);
-        serverLayout.putConstraint(SpringLayout.WEST, userNameLabel, LEFT_SPACING * 2, SpringLayout.WEST,
-                serverOptionsPanel);
+        connectionLayout.putConstraint(SpringLayout.NORTH, userNameLabel, TOP_SPACING * 2, SpringLayout.NORTH,
+                connectionPanel);
+        connectionLayout.putConstraint(SpringLayout.WEST, userNameLabel, LEFT_SPACING * 2, SpringLayout.WEST,
+                connectionPanel);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, userNameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, userNameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
                 userNameLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, userNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, userNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
                 userNameLabel);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, realNameLabel, TOP_SPACING, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, realNameLabel, TOP_SPACING, SpringLayout.SOUTH,
                 userNameTextField);
-        serverLayout.putConstraint(SpringLayout.WEST, realNameLabel, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, realNameLabel, LEFT_ALIGNED, SpringLayout.WEST,
                 userNameTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, realNameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, realNameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
                 realNameLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, realNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, realNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
                 realNameLabel);
-        serverLayout.putConstraint(SpringLayout.EAST, realNameTextField, RIGHT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.EAST, realNameTextField, RIGHT_ALIGNED, SpringLayout.EAST,
                 userNameTextField);
 
         // Authentication Stuff
 
-        serverLayout.putConstraint(SpringLayout.NORTH, authenticationTypeLabel, TOP_SPACING, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, authenticationTypeLabel, TOP_SPACING, SpringLayout.SOUTH,
                 realNameTextField);
-        serverLayout.putConstraint(SpringLayout.WEST, authenticationTypeLabel, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, authenticationTypeLabel, LEFT_ALIGNED, SpringLayout.WEST,
                 realNameTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, authenticationTypeChoice, TOP_ALIGNED, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, authenticationTypeChoice, TOP_ALIGNED, SpringLayout.SOUTH,
                 authenticationTypeLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, authenticationTypeChoice, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, authenticationTypeChoice, LEFT_ALIGNED, SpringLayout.WEST,
                 authenticationTypeLabel);
-        serverLayout.putConstraint(SpringLayout.EAST, authenticationTypeChoice, RIGHT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.EAST, authenticationTypeChoice, RIGHT_ALIGNED, SpringLayout.EAST,
                 realNameTextField);
 
         // Password
-        serverLayout.putConstraint(SpringLayout.NORTH, passwordLabel, TOP_SPACING, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, passwordLabel, TOP_SPACING, SpringLayout.SOUTH,
                 authenticationTypeChoice);
-        serverLayout.putConstraint(SpringLayout.WEST, passwordLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                authenticationTypeChoice);
-
-        serverLayout.putConstraint(SpringLayout.NORTH, passwordTextField, TOP_ALIGNED, SpringLayout.SOUTH,
-                passwordLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, passwordTextField, LEFT_ALIGNED, SpringLayout.WEST,
-                passwordLabel);
-        serverLayout.putConstraint(SpringLayout.EAST, passwordTextField, RIGHT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.WEST, passwordLabel, LEFT_ALIGNED, SpringLayout.WEST,
                 authenticationTypeChoice);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, rememberPassLabel, TOP_ALIGNED, SpringLayout.NORTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, passwordTextField, TOP_ALIGNED, SpringLayout.SOUTH,
                 passwordLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, rememberPassLabel, LEFT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.WEST, passwordTextField, LEFT_ALIGNED, SpringLayout.WEST,
+                passwordLabel);
+        connectionLayout.putConstraint(SpringLayout.EAST, passwordTextField, RIGHT_ALIGNED, SpringLayout.EAST,
+                authenticationTypeChoice);
+
+        connectionLayout.putConstraint(SpringLayout.NORTH, rememberPassLabel, TOP_ALIGNED, SpringLayout.NORTH,
+                passwordLabel);
+        connectionLayout.putConstraint(SpringLayout.WEST, rememberPassLabel, LEFT_ALIGNED, SpringLayout.EAST,
                 passwordTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, rememberPassCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, rememberPassCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
                 rememberPassLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, rememberPassCheckBox, LEFT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.WEST, rememberPassCheckBox, LEFT_ALIGNED, SpringLayout.EAST,
                 passwordTextField);
 
 
         // Server stuff
-        serverLayout.putConstraint(SpringLayout.NORTH, serverNameLabel, TOP_SPACING, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, serverNameLabel, TOP_SPACING, SpringLayout.SOUTH,
                 passwordTextField);
-        serverLayout.putConstraint(SpringLayout.WEST, serverNameLabel, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, serverNameLabel, LEFT_ALIGNED, SpringLayout.WEST,
                 passwordTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, servernameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, servernameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
                 serverNameLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, servernameTextField, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, servernameTextField, LEFT_ALIGNED, SpringLayout.WEST,
                 serverNameLabel);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, serverPortLabel, TOP_ALIGNED, SpringLayout.NORTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, serverPortLabel, TOP_ALIGNED, SpringLayout.NORTH,
                 serverNameLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, serverPortLabel, LEFT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.WEST, serverPortLabel, LEFT_ALIGNED, SpringLayout.EAST,
                 servernameTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, serverPortTextField, TOP_ALIGNED, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, serverPortTextField, TOP_ALIGNED, SpringLayout.SOUTH,
                 serverPortLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, serverPortTextField, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, serverPortTextField, LEFT_ALIGNED, SpringLayout.WEST,
                 serverPortLabel);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, serverUseTLSLabel, TOP_ALIGNED, SpringLayout.NORTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, serverUseTLSLabel, TOP_ALIGNED, SpringLayout.NORTH,
                 serverPortLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, serverUseTLSLabel, LEFT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.WEST, serverUseTLSLabel, LEFT_ALIGNED, SpringLayout.EAST,
                 serverPortTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, serverTLSCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, serverTLSCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
                 serverUseTLSLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, serverTLSCheckBox, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, serverTLSCheckBox, LEFT_ALIGNED, SpringLayout.WEST,
                 serverUseTLSLabel);
 
         // Proxy stuff
-        serverLayout.putConstraint(SpringLayout.NORTH, proxyHostLabel, TOP_SPACING, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, proxyHostLabel, TOP_SPACING, SpringLayout.SOUTH,
                 servernameTextField);
-        serverLayout.putConstraint(SpringLayout.WEST, proxyHostLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                servernameTextField);
-
-        serverLayout.putConstraint(SpringLayout.NORTH, proxyHostNameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
-                proxyHostLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, proxyHostNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
-                proxyHostLabel);
-        serverLayout.putConstraint(SpringLayout.EAST, proxyHostNameTextField, RIGHT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.WEST, proxyHostLabel, LEFT_ALIGNED, SpringLayout.WEST,
                 servernameTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, proxyPortLabel, TOP_ALIGNED, SpringLayout.NORTH, proxyHostLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, proxyPortLabel, LEFT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.NORTH, proxyHostNameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
+                proxyHostLabel);
+        connectionLayout.putConstraint(SpringLayout.WEST, proxyHostNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
+                proxyHostLabel);
+        connectionLayout.putConstraint(SpringLayout.EAST, proxyHostNameTextField, RIGHT_ALIGNED, SpringLayout.EAST,
+                servernameTextField);
+
+        connectionLayout.putConstraint(SpringLayout.NORTH, proxyPortLabel, TOP_ALIGNED, SpringLayout.NORTH, proxyHostLabel);
+        connectionLayout.putConstraint(SpringLayout.WEST, proxyPortLabel, LEFT_ALIGNED, SpringLayout.EAST,
                 proxyHostNameTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, proxyPortTextField, TOP_ALIGNED, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, proxyPortTextField, TOP_ALIGNED, SpringLayout.SOUTH,
                 proxyPortLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, proxyPortTextField, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, proxyPortTextField, LEFT_ALIGNED, SpringLayout.WEST,
                 proxyPortLabel);
-        serverLayout.putConstraint(SpringLayout.EAST, proxyPortTextField, RIGHT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.EAST, proxyPortTextField, RIGHT_ALIGNED, SpringLayout.EAST,
                 serverPortTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, serverUseProxyLabel, TOP_ALIGNED, SpringLayout.NORTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, serverUseProxyLabel, TOP_ALIGNED, SpringLayout.NORTH,
                 proxyPortLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, serverUseProxyLabel, LEFT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.WEST, serverUseProxyLabel, LEFT_ALIGNED, SpringLayout.EAST,
                 proxyPortTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, serverProxyCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, serverProxyCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
                 serverUseProxyLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, serverProxyCheckBox, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, serverProxyCheckBox, LEFT_ALIGNED, SpringLayout.WEST,
                 serverUseProxyLabel);
 
         // Channel Stuff
-        serverLayout.putConstraint(SpringLayout.NORTH, firstChannelLabel, TOP_SPACING, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, firstChannelLabel, TOP_SPACING, SpringLayout.SOUTH,
                 proxyHostNameTextField);
-        serverLayout.putConstraint(SpringLayout.WEST, firstChannelLabel, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, firstChannelLabel, LEFT_ALIGNED, SpringLayout.WEST,
                 proxyHostNameTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, firstChannelTextField, TOP_ALIGNED, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, firstChannelTextField, TOP_ALIGNED, SpringLayout.SOUTH,
                 firstChannelLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, firstChannelTextField, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, firstChannelTextField, LEFT_ALIGNED, SpringLayout.WEST,
                 firstChannelLabel);
-        serverLayout.putConstraint(SpringLayout.EAST, firstChannelTextField, RIGHT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.EAST, firstChannelTextField, RIGHT_ALIGNED, SpringLayout.EAST,
                 proxyHostNameTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, connectButton, TOP_SPACING * TOP_SPACING, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, connectButton, TOP_SPACING * TOP_SPACING, SpringLayout.SOUTH,
                 firstChannelTextField);
-        serverLayout.putConstraint(SpringLayout.WEST, connectButton, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, connectButton, LEFT_ALIGNED, SpringLayout.WEST,
                 firstChannelTextField);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, autoConnectToFavourites, TOP_ALIGNED, SpringLayout.NORTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, autoConnectToFavourites, TOP_ALIGNED, SpringLayout.NORTH,
                 userNameLabel);
-        serverLayout.putConstraint(SpringLayout.WEST, autoConnectToFavourites, LEFT_SPACING, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.WEST, autoConnectToFavourites, LEFT_SPACING, SpringLayout.EAST,
                 serverUseProxyLabel);
 
-        serverLayout.putConstraint(SpringLayout.NORTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.NORTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
                 autoConnectToFavourites);
-        serverLayout.putConstraint(SpringLayout.WEST, favouritesScroller, LEFT_ALIGNED, SpringLayout.WEST,
+        connectionLayout.putConstraint(SpringLayout.WEST, favouritesScroller, LEFT_ALIGNED, SpringLayout.WEST,
                 autoConnectToFavourites);
-        serverLayout.putConstraint(SpringLayout.EAST, favouritesScroller, LEFT_ALIGNED, SpringLayout.EAST,
+        connectionLayout.putConstraint(SpringLayout.EAST, favouritesScroller, LEFT_ALIGNED, SpringLayout.EAST,
                 autoConnectToFavourites);
-        serverLayout.putConstraint(SpringLayout.SOUTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
+        connectionLayout.putConstraint(SpringLayout.SOUTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
                 connectButton);
     }
 
-    private void setupClientOptionsPanelComponents()
+    private void setupAppearancePanel()
     {
-
-        // clientScroller.setPreferredSize(new Dimension(this.getSize()));
-        // clientScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        // Settings for these are loaded with the settings API
-        // found in getClientSettings()
-        optionsClientPanel.add(lafOptionsLabel);
-        optionsClientPanel.add(lafOptions);
+        appearancePanel.add(lafOptionsLabel);
+        appearancePanel.add(lafOptions);
 
         // Set a custom renderer to display the look and feel names
         lafOptions.setRenderer(new DefaultListCellRenderer() {
@@ -777,24 +775,65 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         lafOptions.addActionListener(new ChangeLAFListener());
 
-        optionsClientPanel.add(showEventTicker);
-        optionsClientPanel.add(showUsersList);
-        optionsClientPanel.add(enableClickableLinks);
-        optionsClientPanel.add(showJoinsQuitsEventTicker);
-        optionsClientPanel.add(showJoinsQuitsMainWindow);
-        optionsClientPanel.add(logChannelText);
-        optionsClientPanel.add(logServerActivity);
-        optionsClientPanel.add(logClientText);
-        optionsClientPanel.add(limitServerLines);
-        optionsClientPanel.add(limitServerLinesCount);
-        optionsClientPanel.add(limitChannelLines);
-        optionsClientPanel.add(limitChannelLinesCount);
-        optionsClientPanel.add(enableTimeStamps);
-
         clientFontPanel = new FontPanel(getFont(), getProfilePath());
         clientFontPanel.setPreferredSize(new Dimension(500, 48));
         clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
-        optionsClientPanel.add(clientFontPanel);
+        appearancePanel.add(clientFontPanel);
+
+        setupAppearanceLayout();
+    }
+
+    private void setupAppearanceLayout()
+    {
+        SpringLayout appearanceLayout = new SpringLayout();
+        appearancePanel.setLayout(appearanceLayout);
+
+        // Used to make it more obvious what is going on -
+        // and perhaps more readable.
+        // 0 means THAT edge will be flush with the opposing components edge
+        // Yes, negative numbers will make it overlap
+        final int TOP_SPACING = 6;
+        final int TOP_ALIGNED = 0;
+        final int LEFT_ALIGNED = 0;
+        final int LEFT_SPACING = 6;
+
+
+        appearanceLayout.putConstraint(SpringLayout.WEST, lafOptionsLabel, LEFT_SPACING * 2, SpringLayout.WEST, appearancePanel);
+
+        appearanceLayout.putConstraint(SpringLayout.WEST, lafOptions, LEFT_SPACING, SpringLayout.EAST, lafOptionsLabel);
+        appearanceLayout.putConstraint(SpringLayout.NORTH, lafOptions, TOP_SPACING * 2, SpringLayout.NORTH, appearancePanel);
+
+        int centeredLabelPosition= (int) ((int) (lafOptions.getPreferredSize().getHeight() / 2) - (lafOptions.getPreferredSize().getHeight() - lafOptionsLabel.getPreferredSize().getHeight()));
+
+        appearanceLayout.putConstraint(SpringLayout.NORTH, lafOptionsLabel, centeredLabelPosition, SpringLayout.NORTH, lafOptions);
+
+        appearanceLayout.putConstraint(SpringLayout.NORTH, clientFontPanel, TOP_SPACING, SpringLayout.SOUTH,
+                lafOptionsLabel);
+        appearanceLayout.putConstraint(SpringLayout.WEST, clientFontPanel, LEFT_ALIGNED, SpringLayout.WEST,
+                lafOptionsLabel);
+    }
+
+    private void setupInterfacePanel()
+    {
+
+        // clientScroller.setPreferredSize(new Dimension(this.getSize()));
+        // clientScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        // Settings for these are loaded with the settings API
+        // found in getClientSettings()
+
+        interfacePanel.add(showEventTicker);
+        interfacePanel.add(showUsersList);
+        interfacePanel.add(enableClickableLinks);
+        interfacePanel.add(showJoinsQuitsEventTicker);
+        interfacePanel.add(showJoinsQuitsMainWindow);
+        interfacePanel.add(logChannelText);
+        interfacePanel.add(logServerActivity);
+        interfacePanel.add(logClientText);
+        interfacePanel.add(limitServerLines);
+        interfacePanel.add(limitServerLinesCount);
+        interfacePanel.add(limitChannelLines);
+        interfacePanel.add(limitChannelLinesCount);
+        interfacePanel.add(enableTimeStamps);
 
         // Turn on labels at major tick mark.
         eventTickerDelay.setMajorTickSpacing(10);
@@ -806,20 +845,19 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         eventTickerDelay.setToolTipText("Event Ticker movement delay (Lower is faster)");
 
-        optionsClientPanel.add(eventTickerLabel);
-        optionsClientPanel.add(eventTickerDelay);
+        interfacePanel.add(eventTickerLabel);
+        interfacePanel.add(eventTickerDelay);
 
-        setupClientOptionsLayout();
-        // optionsRightPanel.add(optionsClientPanel, "Client");
+        setupInterfaceLayout();
     }
 
     /**
      * Aligns components on the Client Options Panel
      */
-    private void setupClientOptionsLayout()
+    private void setupInterfaceLayout()
     {
-        SpringLayout clientLayout = new SpringLayout();
-        optionsClientPanel.setLayout(clientLayout);
+        SpringLayout interfaceLayout = new SpringLayout();
+        interfacePanel.setLayout(interfaceLayout);
 
         // Used to make it more obvious what is going on -
         // and perhaps more readable.
@@ -832,90 +870,75 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         // Components are aligned off the top label
 
-        clientLayout.putConstraint(SpringLayout.WEST, lafOptionsLabel, LEFT_SPACING, SpringLayout.WEST, optionsClientPanel);
+        interfaceLayout.putConstraint(SpringLayout.WEST, showEventTicker,  LEFT_SPACING * 2, SpringLayout.WEST, interfacePanel);
+        interfaceLayout.putConstraint(SpringLayout.NORTH, showEventTicker, TOP_SPACING * 2, SpringLayout.NORTH, interfacePanel);
 
-        clientLayout.putConstraint(SpringLayout.WEST, lafOptions, LEFT_SPACING, SpringLayout.EAST, lafOptionsLabel);
-        clientLayout.putConstraint(SpringLayout.NORTH, lafOptions, TOP_SPACING * 2, SpringLayout.NORTH, optionsClientPanel);
+        interfaceLayout.putConstraint(SpringLayout.NORTH, showUsersList, TOP_SPACING, SpringLayout.SOUTH, showEventTicker);
+        interfaceLayout.putConstraint(SpringLayout.WEST, showUsersList, LEFT_ALIGNED, SpringLayout.WEST, showEventTicker);
 
-        int centeredLabelPosition= (int) ((int) (lafOptions.getPreferredSize().getHeight() / 2) - (lafOptions.getPreferredSize().getHeight() - lafOptionsLabel.getPreferredSize().getHeight()));
-
-        clientLayout.putConstraint(SpringLayout.NORTH, lafOptionsLabel, centeredLabelPosition, SpringLayout.NORTH, lafOptions);
-
-        clientLayout.putConstraint(SpringLayout.WEST, showEventTicker, LEFT_ALIGNED, SpringLayout.WEST, lafOptionsLabel);
-        clientLayout.putConstraint(SpringLayout.NORTH, showEventTicker, TOP_SPACING, SpringLayout.SOUTH, lafOptions);
-
-        clientLayout.putConstraint(SpringLayout.NORTH, showUsersList, TOP_SPACING, SpringLayout.SOUTH, showEventTicker);
-        clientLayout.putConstraint(SpringLayout.WEST, showUsersList, LEFT_ALIGNED, SpringLayout.WEST, showEventTicker);
-
-        clientLayout.putConstraint(SpringLayout.NORTH, enableClickableLinks, TOP_SPACING, SpringLayout.SOUTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, enableClickableLinks, TOP_SPACING, SpringLayout.SOUTH,
                 showUsersList);
 
-        clientLayout.putConstraint(SpringLayout.WEST, enableClickableLinks, LEFT_ALIGNED, SpringLayout.WEST,
+        interfaceLayout.putConstraint(SpringLayout.WEST, enableClickableLinks, LEFT_ALIGNED, SpringLayout.WEST,
                 showUsersList);
 
-        clientLayout.putConstraint(SpringLayout.NORTH, showJoinsQuitsEventTicker, TOP_SPACING, SpringLayout.SOUTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, showJoinsQuitsEventTicker, TOP_SPACING, SpringLayout.SOUTH,
                 enableClickableLinks);
-        clientLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsEventTicker, LEFT_ALIGNED, SpringLayout.WEST,
+        interfaceLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsEventTicker, LEFT_ALIGNED, SpringLayout.WEST,
                 enableClickableLinks);
 
-        clientLayout.putConstraint(SpringLayout.NORTH, showJoinsQuitsMainWindow, TOP_SPACING, SpringLayout.SOUTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, showJoinsQuitsMainWindow, TOP_SPACING, SpringLayout.SOUTH,
                 showJoinsQuitsEventTicker);
-        clientLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsMainWindow, LEFT_ALIGNED, SpringLayout.WEST,
+        interfaceLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsMainWindow, LEFT_ALIGNED, SpringLayout.WEST,
                 showJoinsQuitsEventTicker);
 
-        clientLayout.putConstraint(SpringLayout.NORTH, logChannelText, TOP_SPACING, SpringLayout.SOUTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, logChannelText, TOP_SPACING, SpringLayout.SOUTH,
                 showJoinsQuitsMainWindow);
-        clientLayout.putConstraint(SpringLayout.WEST, logChannelText, LEFT_ALIGNED, SpringLayout.WEST,
+        interfaceLayout.putConstraint(SpringLayout.WEST, logChannelText, LEFT_ALIGNED, SpringLayout.WEST,
                 showJoinsQuitsMainWindow);
 
-        clientLayout.putConstraint(SpringLayout.NORTH, logServerActivity, TOP_SPACING, SpringLayout.SOUTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, logServerActivity, TOP_SPACING, SpringLayout.SOUTH,
                 logChannelText);
-        clientLayout.putConstraint(SpringLayout.WEST, logServerActivity, LEFT_ALIGNED, SpringLayout.WEST,
+        interfaceLayout.putConstraint(SpringLayout.WEST, logServerActivity, LEFT_ALIGNED, SpringLayout.WEST,
                 logChannelText);
 
-        clientLayout.putConstraint(SpringLayout.NORTH, logClientText, TOP_SPACING, SpringLayout.SOUTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, logClientText, TOP_SPACING, SpringLayout.SOUTH,
                 logServerActivity);
-        clientLayout.putConstraint(SpringLayout.WEST, logClientText, LEFT_ALIGNED, SpringLayout.WEST,
+        interfaceLayout.putConstraint(SpringLayout.WEST, logClientText, LEFT_ALIGNED, SpringLayout.WEST,
                 logServerActivity);
 
-        clientLayout.putConstraint(SpringLayout.NORTH, limitServerLines, TOP_SPACING, SpringLayout.SOUTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, limitServerLines, TOP_SPACING, SpringLayout.SOUTH,
                 logClientText);
-        clientLayout.putConstraint(SpringLayout.WEST, limitServerLines, LEFT_ALIGNED, SpringLayout.WEST, logClientText);
+        interfaceLayout.putConstraint(SpringLayout.WEST, limitServerLines, LEFT_ALIGNED, SpringLayout.WEST, logClientText);
 
-        clientLayout.putConstraint(SpringLayout.NORTH, limitServerLinesCount, TOP_ALIGNED, SpringLayout.NORTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, limitServerLinesCount, TOP_ALIGNED, SpringLayout.NORTH,
                 limitServerLines);
-        clientLayout.putConstraint(SpringLayout.WEST, limitServerLinesCount, TOP_SPACING, SpringLayout.EAST,
-                limitServerLines);
-
-        clientLayout.putConstraint(SpringLayout.NORTH, limitChannelLines, TOP_SPACING, SpringLayout.SOUTH,
-                limitServerLines);
-        clientLayout.putConstraint(SpringLayout.WEST, limitChannelLines, LEFT_ALIGNED, SpringLayout.WEST,
+        interfaceLayout.putConstraint(SpringLayout.WEST, limitServerLinesCount, TOP_SPACING, SpringLayout.EAST,
                 limitServerLines);
 
-        clientLayout.putConstraint(SpringLayout.NORTH, limitChannelLinesCount, TOP_ALIGNED, SpringLayout.NORTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, limitChannelLines, TOP_SPACING, SpringLayout.SOUTH,
+                limitServerLines);
+        interfaceLayout.putConstraint(SpringLayout.WEST, limitChannelLines, LEFT_ALIGNED, SpringLayout.WEST,
+                limitServerLines);
+
+        interfaceLayout.putConstraint(SpringLayout.NORTH, limitChannelLinesCount, TOP_ALIGNED, SpringLayout.NORTH,
                 limitChannelLines);
-        clientLayout.putConstraint(SpringLayout.WEST, limitChannelLinesCount, LEFT_SPACING, SpringLayout.EAST,
+        interfaceLayout.putConstraint(SpringLayout.WEST, limitChannelLinesCount, LEFT_SPACING, SpringLayout.EAST,
                 limitChannelLines);
 
-        clientLayout.putConstraint(SpringLayout.NORTH, enableTimeStamps, TOP_SPACING, SpringLayout.SOUTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, enableTimeStamps, TOP_SPACING, SpringLayout.SOUTH,
                 limitChannelLines);
-        clientLayout.putConstraint(SpringLayout.WEST, enableTimeStamps, LEFT_ALIGNED, SpringLayout.WEST,
+        interfaceLayout.putConstraint(SpringLayout.WEST, enableTimeStamps, LEFT_ALIGNED, SpringLayout.WEST,
                 limitChannelLines);
 
-        clientLayout.putConstraint(SpringLayout.NORTH, clientFontPanel, TOP_SPACING, SpringLayout.SOUTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, eventTickerLabel, TOP_SPACING, SpringLayout.SOUTH,
                 enableTimeStamps);
-        clientLayout.putConstraint(SpringLayout.WEST, clientFontPanel, LEFT_SPACING, SpringLayout.WEST,
+        interfaceLayout.putConstraint(SpringLayout.WEST, eventTickerLabel, LEFT_ALIGNED, SpringLayout.WEST,
                 enableTimeStamps);
 
-
-        clientLayout.putConstraint(SpringLayout.NORTH, eventTickerLabel, TOP_SPACING, SpringLayout.SOUTH,
-                clientFontPanel);
-        clientLayout.putConstraint(SpringLayout.WEST, eventTickerLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                clientFontPanel);
-
-        clientLayout.putConstraint(SpringLayout.NORTH, eventTickerDelay, TOP_SPACING, SpringLayout.SOUTH,
+        interfaceLayout.putConstraint(SpringLayout.NORTH, eventTickerDelay, TOP_SPACING, SpringLayout.SOUTH,
                 eventTickerLabel);
-        clientLayout.putConstraint(SpringLayout.WEST, eventTickerDelay, LEFT_ALIGNED, SpringLayout.WEST,
+        interfaceLayout.putConstraint(SpringLayout.WEST, eventTickerDelay, LEFT_ALIGNED, SpringLayout.WEST,
                 eventTickerLabel);
     }
 
@@ -1805,7 +1828,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // Auto-generated method stub
         Thread.currentThread().setContextClassLoader(DriverGUI.contextClassLoader);
         Thread.currentThread().setUncaughtExceptionHandler(new URUncaughtExceptionHandler());
-        
+
         setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
     }
 }
