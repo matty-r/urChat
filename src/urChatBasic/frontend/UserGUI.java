@@ -775,8 +775,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         lafOptions.addActionListener(new ChangeLAFListener());
 
-        clientFontPanel = new FontPanel(getFont(), getProfilePath());
-        clientFontPanel.setPreferredSize(new Dimension(500, 48));
+        clientFontPanel = new FontPanel(getFont(), getProfilePath(), "Global Font:");
+        clientFontPanel.setPreferredSize(new Dimension(500, 64));
         clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
         appearancePanel.add(clientFontPanel);
 

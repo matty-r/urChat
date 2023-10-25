@@ -3,6 +3,8 @@ package urChatBasic.frontend.components;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,7 +19,7 @@ public class FontPanel extends JPanel
     /**
      *
      */
-    private static final long serialVersionUID = 4044242988594083226L;
+    // private static final long serialVersionUID = 4044242988594083226L;
     private final JLabel TEXT_PREVIEW = new JLabel("A quick brown fox 0123456789");
     private final String[] FONT_LIST = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
     private final JComboBox<String> FONT_COMBO_BOX = new JComboBox<String>(FONT_LIST);
@@ -26,34 +28,59 @@ public class FontPanel extends JPanel
     private final JCheckBox MAKE_BOLD = new JCheckBox("BOLD");
     private final JCheckBox MAKE_ITALIC = new JCheckBox("ITALIC");
     private final JButton SAVE_BUTTON = new JButton("Save Font");
+    // private String fontType = "New Font:";
+    private JLabel fontTypeLabel = new JLabel("New Font:");
+    private final JPanel TITLE_PANEL = new JPanel(new GridLayout(1,1));
+    private final JPanel MAIN_PANEL = new JPanel(new GridLayout(2, 3));
     private Font defaultFont;
     // private final JButton CANCEL_BUTTON = new JButton("Cancel");
 
     private Preferences settingsPath;
 
-    public FontPanel(Font defaultFont, Preferences settingsPath)
+    public FontPanel(Font defaultFont, Preferences settingsPath, String fontName)
     {
-        setPreferredSize(new Dimension(0, 50));
-        setLayout(new GridLayout(2, 6));
+        // setPreferredSize(new Dimension(0, 100));
+        fontTypeLabel = new JLabel(fontName);
+        setLayout(new GridBagLayout());
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+
+        c.gridx = 0;
+        c.gridy = 0;
+
+        TITLE_PANEL.add(fontTypeLabel);
+        add(TITLE_PANEL, c);
 
         setSettingsPath(settingsPath);
         setDefaultFont(defaultFont);
         loadFont();
 
-        add(FONT_COMBO_BOX);
-        add(SIZES_COMBO_BOX);
-        add(MAKE_BOLD);
-        add(MAKE_ITALIC);
-        add(TEXT_PREVIEW);
-        add(SAVE_BUTTON);
-
-
+        MAIN_PANEL.add(FONT_COMBO_BOX);
+        MAIN_PANEL.add(SIZES_COMBO_BOX);
+        MAIN_PANEL.add(MAKE_BOLD);
+        MAIN_PANEL.add(MAKE_ITALIC);
+        MAIN_PANEL.add(TEXT_PREVIEW);
+        MAIN_PANEL.add(SAVE_BUTTON);
 
         SAVE_BUTTON.addActionListener(new SaveListener());
         FONT_COMBO_BOX.addItemListener(new FontSelectionChange());
         SIZES_COMBO_BOX.addItemListener(new FontSelectionChange());
         MAKE_BOLD.addActionListener(new CheckListener());
         MAKE_ITALIC.addActionListener(new CheckListener());
+
+        // Reset the GridBagConstraints for MAIN_PANEL
+        c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        c.gridy = 1;
+
+        // Set constraints for MAIN_PANEL
+        c.gridwidth = 1; // Assuming you want MAIN_PANEL to span two columns
+        c.weightx = 1.0;
+        c.weighty = 1.0;
+
+        add(MAIN_PANEL, c);
     }
 
     public JButton getSaveButton()

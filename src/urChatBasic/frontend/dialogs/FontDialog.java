@@ -25,7 +25,7 @@ public class FontDialog extends DialogBase
         setMaximumSize(new Dimension(600, 100));
         setLocationRelativeTo(super.getParent());
 
-        fontPanel = new FontPanel(defaultFont, settingsPath);
+        fontPanel = new FontPanel(defaultFont, settingsPath, "Default Font:");
 
         add(fontPanel);
     }
