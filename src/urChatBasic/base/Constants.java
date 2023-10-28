@@ -91,6 +91,7 @@ public class Constants
     public static final String DEFAULT_NICK_NAME = "urChatClient";
     public static final String DEFAULT_REAL_NAME = "urChatClient";
     public static final Boolean DEFAULT_TIME_STAMPS = true;
+    public static final String DEFAULT_TIME_STAMP_FORMAT = "HHmm";
     public static final String DEFAULT_LAF_NAME = UIManager.getSystemLookAndFeelClassName();
     public static final Boolean DEFAULT_EVENT_TICKER_ACTIVE = true;
     public static final Boolean DEFAULT_CLICKABLE_LINKS_ENABLED = true;
@@ -129,10 +130,15 @@ public class Constants
     public static final int MAIN_WIDTH = 500;
     public static final int MAIN_HEIGHT = 400;
 
+    public enum Size {
+        LARGE,
+        MEDIUM,
+        SMALL,
+        NONE
+    }
+
     /**
      * Used to initialize some values that may throw exceptions.
-     *
-     * @author goofybud16
      */
     public static void init()
     {

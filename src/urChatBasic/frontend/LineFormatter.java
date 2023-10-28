@@ -367,6 +367,9 @@ public class LineFormatter
                 int styleStart = relativePosition + matcher.start();
                 int styleLength = matcher.end() - matcher.start();
 
+                linkStyle.addAttribute("startStyle", styleStart);
+                linkStyle.addAttribute("styleLength", styleLength);
+
                 doc.setCharacterAttributes(styleStart, styleLength, linkStyle, true);
             }
         }

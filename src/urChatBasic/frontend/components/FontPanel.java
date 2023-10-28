@@ -1,6 +1,5 @@
 package urChatBasic.frontend.components;
 
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
@@ -58,9 +57,9 @@ public class FontPanel extends JPanel
 
         MAIN_PANEL.add(FONT_COMBO_BOX);
         MAIN_PANEL.add(SIZES_COMBO_BOX);
+        MAIN_PANEL.add(TEXT_PREVIEW);
         MAIN_PANEL.add(MAKE_BOLD);
         MAIN_PANEL.add(MAKE_ITALIC);
-        MAIN_PANEL.add(TEXT_PREVIEW);
         MAIN_PANEL.add(SAVE_BUTTON);
 
         SAVE_BUTTON.addActionListener(new SaveListener());

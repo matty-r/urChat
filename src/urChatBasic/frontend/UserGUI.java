@@ -19,6 +19,7 @@ import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.base.UserGUIBase;
+import urChatBasic.base.Constants.Size;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.components.*;
@@ -52,9 +53,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // Client Options Panel
     private static final JPanel interfacePanel = new JPanel();
     private static final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
-    private static final JLabel lafOptionsLabel = new JLabel("Theme:");
 
     private static final JComboBox<LookAndFeelInfo> lafOptions = new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
+    private static final URComponent lafOptionsComponent = new URComponent("Theme:", lafOptions, Size.LARGE);
+
     private static final JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
     private static final JCheckBox showUsersList = new JCheckBox("Show Users List");
     private static final JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
@@ -66,7 +68,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
     private static final JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
     private static final JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
+
+    // Appearance Panel
     private FontPanel clientFontPanel;
+    private static final JTextField timeStampFormat = new JTextField(Constants.DEFAULT_TIME_STAMP_FORMAT);
+    private static final URComponent timeStampComponent = new URComponent("Timestamp Format:", timeStampFormat, Size.MEDIUM);
 
     private static final JTextField limitServerLinesCount = new JTextField();
     private static final JTextField limitChannelLinesCount = new JTextField();
@@ -510,6 +516,42 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         setupAppearancePanel();
     }
 
+    private static void addToPanel(JPanel targetPanel, Component newComponent)
+    {
+
+        final int TOP_SPACING = 6;
+        final int TOP_ALIGNED = 0;
+        final int LEFT_ALIGNED = 0;
+        final int LEFT_SPACING = 6;
+
+        if(targetPanel.getLayout().getClass() != SpringLayout.class)
+        {
+            targetPanel.setLayout(new SpringLayout());
+        }
+
+        SpringLayout layout = (SpringLayout) targetPanel.getLayout();
+        Component[] components = targetPanel.getComponents();
+
+        if (components.length > 0) {
+            Component previousComponent = components[components.length - 1];
+
+            // Add newComponent to the targetPanel
+            targetPanel.add(newComponent);
+
+            // Set constraints for newComponent
+            layout.putConstraint(SpringLayout.NORTH, newComponent, TOP_SPACING, SpringLayout.SOUTH, previousComponent);
+            layout.putConstraint(SpringLayout.WEST, newComponent, LEFT_ALIGNED, SpringLayout.WEST, previousComponent);
+        } else {
+            // If it's the first component, align it against the targetPanel
+            targetPanel.add(newComponent);
+
+            // Set constraints for newComponent when it's the first component
+            layout.putConstraint(SpringLayout.NORTH, newComponent, TOP_SPACING * 2, SpringLayout.NORTH, targetPanel);
+            layout.putConstraint(SpringLayout.WEST, newComponent, LEFT_SPACING * 2, SpringLayout.WEST, targetPanel);
+        }
+    }
+
+
     /**
      * Add the components to the Server Options Panel.
      */
@@ -761,8 +803,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     private void setupAppearancePanel()
     {
-        appearancePanel.add(lafOptionsLabel);
-        appearancePanel.add(lafOptions);
+        addToPanel(appearancePanel, lafOptionsComponent);
 
         // Set a custom renderer to display the look and feel names
         lafOptions.setRenderer(new DefaultListCellRenderer() {
@@ -778,49 +819,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         clientFontPanel = new FontPanel(getFont(), getProfilePath(), "Global Font:");
         clientFontPanel.setPreferredSize(new Dimension(500, 64));
         clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
-        appearancePanel.add(clientFontPanel);
 
-        setupAppearanceLayout();
-    }
-
-    private void setupAppearanceLayout()
-    {
-        SpringLayout appearanceLayout = new SpringLayout();
-        appearancePanel.setLayout(appearanceLayout);
-
-        // Used to make it more obvious what is going on -
-        // and perhaps more readable.
-        // 0 means THAT edge will be flush with the opposing components edge
-        // Yes, negative numbers will make it overlap
-        final int TOP_SPACING = 6;
-        final int TOP_ALIGNED = 0;
-        final int LEFT_ALIGNED = 0;
-        final int LEFT_SPACING = 6;
-
-
-        appearanceLayout.putConstraint(SpringLayout.WEST, lafOptionsLabel, LEFT_SPACING * 2, SpringLayout.WEST, appearancePanel);
-
-        appearanceLayout.putConstraint(SpringLayout.WEST, lafOptions, LEFT_SPACING, SpringLayout.EAST, lafOptionsLabel);
-        appearanceLayout.putConstraint(SpringLayout.NORTH, lafOptions, TOP_SPACING * 2, SpringLayout.NORTH, appearancePanel);
-
-        int centeredLabelPosition= (int) ((int) (lafOptions.getPreferredSize().getHeight() / 2) - (lafOptions.getPreferredSize().getHeight() - lafOptionsLabel.getPreferredSize().getHeight()));
-
-        appearanceLayout.putConstraint(SpringLayout.NORTH, lafOptionsLabel, centeredLabelPosition, SpringLayout.NORTH, lafOptions);
-
-        appearanceLayout.putConstraint(SpringLayout.NORTH, clientFontPanel, TOP_SPACING, SpringLayout.SOUTH,
-                lafOptionsLabel);
-        appearanceLayout.putConstraint(SpringLayout.WEST, clientFontPanel, LEFT_ALIGNED, SpringLayout.WEST,
-                lafOptionsLabel);
+        addToPanel(appearancePanel, clientFontPanel);
+        addToPanel(appearancePanel, timeStampComponent);
     }
 
     private void setupInterfacePanel()
     {
-
-        // clientScroller.setPreferredSize(new Dimension(this.getSize()));
-        // clientScroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        // Settings for these are loaded with the settings API
-        // found in getClientSettings()
-
         interfacePanel.add(showEventTicker);
         interfacePanel.add(showUsersList);
         interfacePanel.add(enableClickableLinks);
