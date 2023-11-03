@@ -284,7 +284,7 @@ public class LineFormatter
         AttributeSet textStyle = doc.getCharacterElement(startPosition).getAttributes();
 
         String styleName = textStyle.getAttribute("name").toString();
-        int styleStart = Integer.parseInt(textStyle.getAttribute("styleStart").toString());
+        int styleStart = startPosition;
         int styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
 
         SimpleAttributeSet matchingStyle = getStyle(styleName);
