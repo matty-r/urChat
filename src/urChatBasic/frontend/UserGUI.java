@@ -7,11 +7,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.event.*;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.StyledEditorKit;
 import urChatBasic.backend.utils.URUncaughtExceptionHandler;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
@@ -73,6 +77,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private FontPanel clientFontPanel;
     private static final JTextField timeStampFormat = new JTextField(Constants.DEFAULT_TIME_STAMP_FORMAT);
     private static final URComponent timeStampComponent = new URComponent("Timestamp Format:", timeStampFormat, Size.MEDIUM);
+    private static final JLabel timeStampFontLabel = new JLabel("Timestamp Font");
+    private static final JButton otherNickFontLabel = new JButton("Other Nick Font");
+    private static final JButton userNickFontLabel = new JButton("My Nick Font");
+    private static final JButton lowStyleFontLabel = new JButton("Low Priority Text Font");
+    private static final JButton mediumStyleFontLabel = new JButton("Medium Priority Text Font");
+    private static final JButton highStyleFontLabel = new JButton("High Priority Text Font");
+    private static final JTextPane previewTextArea = new JTextPane();
+    private static final JScrollPane previewTextScroll = new JScrollPane(previewTextArea);
+    private static LineFormatter previewLineFormatter;
+
 
     private static final JTextField limitServerLinesCount = new JTextField();
     private static final JTextField limitChannelLinesCount = new JTextField();
@@ -516,13 +530,20 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         setupAppearancePanel();
     }
 
-    private static void addToPanel(JPanel targetPanel, Component newComponent)
+    private static void addToPanel(JPanel targetPanel, Component newComponent, String label)
     {
 
-        final int TOP_SPACING = 6;
+        int topSpacing = 6;
         final int TOP_ALIGNED = 0;
         final int LEFT_ALIGNED = 0;
         final int LEFT_SPACING = 6;
+
+        if(null != label && !label.isBlank())
+        {
+            addToPanel(targetPanel, new JLabel(label + ":"), null);
+            // There is a label, so we want the added component to be aligned with the label
+            topSpacing = 0;
+        }
 
         if(targetPanel.getLayout().getClass() != SpringLayout.class)
         {
@@ -539,14 +560,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             targetPanel.add(newComponent);
 
             // Set constraints for newComponent
-            layout.putConstraint(SpringLayout.NORTH, newComponent, TOP_SPACING, SpringLayout.SOUTH, previousComponent);
+            layout.putConstraint(SpringLayout.NORTH, newComponent, topSpacing, SpringLayout.SOUTH, previousComponent);
             layout.putConstraint(SpringLayout.WEST, newComponent, LEFT_ALIGNED, SpringLayout.WEST, previousComponent);
         } else {
             // If it's the first component, align it against the targetPanel
             targetPanel.add(newComponent);
 
             // Set constraints for newComponent when it's the first component
-            layout.putConstraint(SpringLayout.NORTH, newComponent, TOP_SPACING * 2, SpringLayout.NORTH, targetPanel);
+            layout.putConstraint(SpringLayout.NORTH, newComponent, topSpacing * 2, SpringLayout.NORTH, targetPanel);
             layout.putConstraint(SpringLayout.WEST, newComponent, LEFT_SPACING * 2, SpringLayout.WEST, targetPanel);
         }
     }
@@ -803,7 +824,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     private void setupAppearancePanel()
     {
-        addToPanel(appearancePanel, lafOptionsComponent);
+        addToPanel(appearancePanel, lafOptionsComponent, null);
 
         // Set a custom renderer to display the look and feel names
         lafOptions.setRenderer(new DefaultListCellRenderer() {
@@ -820,8 +841,41 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         clientFontPanel.setPreferredSize(new Dimension(500, 64));
         clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
 
-        addToPanel(appearancePanel, clientFontPanel);
-        addToPanel(appearancePanel, timeStampComponent);
+        // FontDialog timeStampFontDialog = new FontDialog("Timestamp Font:", UserGUI.this.getFont(), getProfilePath());
+        // timeStampFontLabel.setFont
+
+        StyledDocument previewDoc = (StyledDocument) previewTextArea.getDocument();
+
+        previewTextScroll.setPreferredSize(new Dimension(500, 200));
+        previewTextArea.setEditable(false);
+        // previewTextArea.setFont(clientFontPanel.getFont());
+        previewLineFormatter = new LineFormatter(clientFontPanel.getFont(), null);
+
+        previewTextArea.setCaretPosition(previewTextArea.getDocument().getLength());
+
+        DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
+        Date chatDate = new Date();
+        String timeLine = "[" + chatDateFormat.format(chatDate) + "]";
+
+
+        previewLineFormatter.setNick("urChatClient");
+        previewLineFormatter.formattedDocument(previewDoc, timeLine, null, "matty_r", "Hello, world!");
+        previewLineFormatter.formattedDocument(previewDoc, timeLine, null, "matty_r", "Hello, urChatClient!");
+        previewLineFormatter.formattedDocument(previewDoc, timeLine, null, "urChatClient", "Go to https://github.com/matty-r/urChat");
+        previewLineFormatter.formattedDocument(previewDoc, timeLine, null, "urChatClient", "Join #urchatclient on irc.libera.chat");
+
+        // private static final JLabel timeStampFontLabel = new JLabel("Timestamp Font");
+        // private static final JButton otherNickFontLabel = new JButton("Other Nick Font");
+        // private static final JButton userNickFontLabel = new JButton("My Nick Font");
+        // private static final JButton lowStyleFontLabel = new JButton("Low Priority Text Font");
+        // private static final JButton mediumStyleFontLabel = new JButton("Medium Priority Text Font");
+        // private static final JButton highStyleFontLabel = new JButton("High Priority Text Font");
+
+        addToPanel(appearancePanel, clientFontPanel, "Global Font");
+        addToPanel(appearancePanel, timeStampComponent, null);
+
+        addToPanel(appearancePanel, previewTextScroll, "Font Preview");
+        // addToPanel(appearancePanel, timeStampFontButton);
     }
 
     private void setupInterfacePanel()
@@ -1813,6 +1867,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 SwingUtilities.updateComponentTreeUI(((IRCRoomBase) tab).myMenu);
                 SwingUtilities.updateComponentTreeUI(((IRCRoomBase) tab).getFontPanel());
             }
+
         }
 
         for (int index = 0; index < favouritesList.getModel().getSize(); index++)
@@ -1820,6 +1875,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
             SwingUtilities.updateComponentTreeUI(favouriteItem.myMenu);
         }
+
+        // update the styles in the preview text area
+        previewLineFormatter.updateStyles(previewTextArea.getStyledDocument(), 0);
     }
 
     /*

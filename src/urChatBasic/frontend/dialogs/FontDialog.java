@@ -2,6 +2,7 @@ package urChatBasic.frontend.dialogs;
 
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
 import urChatBasic.base.DialogBase;
@@ -45,5 +46,15 @@ public class FontDialog extends DialogBase
     public void addSaveListener(ActionListener newActionListener)
     {
         fontPanel.getSaveButton().addActionListener(newActionListener);
+    }
+
+    public class ShowFontDialog implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent arg0)
+        {
+            fontPanel.loadFont();
+            FontDialog.this.setVisible(true);
+        }
     }
 }

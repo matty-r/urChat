@@ -28,8 +28,8 @@ public class FontPanel extends JPanel
     private final JCheckBox MAKE_ITALIC = new JCheckBox("ITALIC");
     private final JButton SAVE_BUTTON = new JButton("Save Font");
     // private String fontType = "New Font:";
-    private JLabel fontTypeLabel = new JLabel("New Font:");
-    private final JPanel TITLE_PANEL = new JPanel(new GridLayout(1,1));
+    // private JLabel fontTypeLabel = new JLabel("New Font:");
+    // private final JPanel TITLE_PANEL = new JPanel(new GridLayout(1,1));
     private final JPanel MAIN_PANEL = new JPanel(new GridLayout(2, 3));
     private Font defaultFont;
     // private final JButton CANCEL_BUTTON = new JButton("Cancel");
@@ -39,17 +39,17 @@ public class FontPanel extends JPanel
     public FontPanel(Font defaultFont, Preferences settingsPath, String fontName)
     {
         // setPreferredSize(new Dimension(0, 100));
-        fontTypeLabel = new JLabel(fontName);
+        // fontTypeLabel = new JLabel(fontName);
         setLayout(new GridBagLayout());
 
         GridBagConstraints c = new GridBagConstraints();
-        c.fill = GridBagConstraints.HORIZONTAL;
+        // c.fill = GridBagConstraints.HORIZONTAL;
 
-        c.gridx = 0;
-        c.gridy = 0;
+        // c.gridx = 0;
+        // c.gridy = 0;
 
-        TITLE_PANEL.add(fontTypeLabel);
-        add(TITLE_PANEL, c);
+        // TITLE_PANEL.add(fontTypeLabel);
+        // add(TITLE_PANEL, c);
 
         setSettingsPath(settingsPath);
         setDefaultFont(defaultFont);

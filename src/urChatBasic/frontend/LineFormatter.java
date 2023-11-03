@@ -149,6 +149,11 @@ public class LineFormatter
         return tempStyle;
     }
 
+    public void setNick(String myNick)
+    {
+        this.myNick = myNick;
+    }
+
     public class ClickableText extends AbstractAction
     {
         private String textLink;
@@ -263,14 +268,33 @@ public class LineFormatter
 
         SimpleAttributeSet matchingStyle = getStyle(styleName);
 
+        if(styleName.equalsIgnoreCase("urlStyle"))
+        {
+            System.out.println("sda");
+        }
+
         // Copy the attributes, but only if they aren't already set
         Iterator attributeIterator = textStyle.getAttributeNames().asIterator();
         while(attributeIterator.hasNext())
         {
             String nextAttributeName = attributeIterator.next().toString();
+
+            // get attribute "foreground" isn't working here despite foregrounf having been set
             if(matchingStyle.getAttribute(nextAttributeName) == null)
             {
-                matchingStyle.addAttribute(nextAttributeName, textStyle.getAttribute(nextAttributeName));
+                Iterator matchingIterator = matchingStyle.getAttributeNames().asIterator();
+                boolean needsToBeSet = true;
+
+                while(matchingIterator.hasNext())
+                {
+                    if(matchingIterator.next().toString().equalsIgnoreCase(nextAttributeName))
+                    {
+                        needsToBeSet = false;
+                        break;
+                    }
+                }
+                if(needsToBeSet)
+                    matchingStyle.addAttribute(nextAttributeName, textStyle.getAttribute(nextAttributeName));
             }
         }
 
@@ -367,8 +391,19 @@ public class LineFormatter
                 int styleStart = relativePosition + matcher.start();
                 int styleLength = matcher.end() - matcher.start();
 
-                linkStyle.addAttribute("startStyle", styleStart);
+                linkStyle.addAttribute("styleStart", styleStart);
                 linkStyle.addAttribute("styleLength", styleLength);
+
+                // update the styleLength of the previous style
+                SimpleAttributeSet oldStyle = getStyleAtPosition(doc, styleStart - 1, "");
+                SimpleAttributeSet replaceStyle = getStyle(oldStyle.getAttribute("name").toString());
+                int newStart = Integer.parseInt(oldStyle.getAttribute("styleStart").toString());
+                int newLength = styleStart - Integer.parseInt(oldStyle.getAttribute("styleStart").toString()) + 1;
+                replaceStyle.addAttribute("styleStart", newStart);
+                replaceStyle.addAttribute("styleLength", newLength);
+                replaceStyle.addAttribute("docLength", oldStyle.getAttribute("docLength"));
+
+                doc.setCharacterAttributes(newStart, newLength, replaceStyle, true);
 
                 doc.setCharacterAttributes(styleStart, styleLength, linkStyle, true);
             }
@@ -412,8 +447,10 @@ public class LineFormatter
         {
 
             // doc.insertString(doc.getLength(), timeLine, timeStyle);
-            appendString(doc, timeLine, timeStyle);
-            appendString(doc, " <", lineStyle);
+            if(null != timeLine && !timeLine.isBlank())
+                appendString(doc, timeLine + " ", timeStyle);
+
+            appendString(doc, "<", lineStyle);
 
             if(fromUser != null)
             {
@@ -427,10 +464,10 @@ public class LineFormatter
                 appendString(doc, fromString, nameStyle);
             }
 
-            appendString(doc, "> ", lineStyle);
+            appendString(doc, ">", lineStyle);
 
             // print the remaining text
-            appendString(doc, line, lineStyle);
+            appendString(doc, " "+line, lineStyle);
 
             // parse the outputted line for clickable text
             parseClickableText(doc, fromUser);
