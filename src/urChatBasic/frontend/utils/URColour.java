@@ -4,7 +4,7 @@ import java.awt.Color;
 
 public class URColour {
 
-    private static boolean useDarkColour(Color sourceColour)
+    public static boolean useDarkColour(Color sourceColour)
     {
         // Counting the perceptive luminance - human eye favors green color...
         double luminance = (0.299 * sourceColour.getRed() + 0.587 * sourceColour.getGreen() + 0.114 * sourceColour.getBlue()) / 255;

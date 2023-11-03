@@ -10,7 +10,6 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
-import urChatBasic.frontend.LineFormatter.ClickableText;
 import urChatBasic.frontend.UserGUI;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -253,7 +252,7 @@ public class MessageHandlerTests {
     }
 
     @Test
-    public void emojiMessage()
+    public void _emojiMessage()
     {
         // test display of emojis in text
         String rawMessage = ":sd!~discord@user/sd PRIVMSG #somechannel :02<textwithEMOJI 🇦🇺> this should show a flag";
@@ -265,7 +264,7 @@ public class MessageHandlerTests {
     {
         // test displaying urls
 
-        String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG #somechannel :https://i.imgur.com/somepicture.png";
+        String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG #somechannel :https://google.com";
         // String rawMessage2 = "https://duckduckgo.com/?q=irc+urchat&kp=1&t=h_&ia=web";
 
         Message testMessage = testHandler.new Message(rawMessage);
@@ -294,7 +293,7 @@ public class MessageHandlerTests {
 
         String regexLine = "";
         while (matcher.find()) {
-            regexLine = line.substring(matcher.start(), matcher.end());
+            regexLine = matcher.group(1);
         }
 
         assertTrue(regexLine.equalsIgnoreCase("#urchatclient"));

@@ -121,7 +121,7 @@ public class Constants
     public static final String END_MESSAGE = "\r\n";
     // We 'must' match against http(s) in order to define the correct protocol to be used
     public static final String URL_REGEX = "((http:\\/\\/|https:\\/\\/)(www.)?(([a-zA-Z0-9-]){2,}\\.){1,4}([a-zA-Z]){2,6}(\\/([a-zA-Z-_\\/\\.0-9#:?=&;,]*)?)?)";
-    public static final String CHANNEL_REGEX = "#([^\s,]+)(?!,)";
+    public static final String CHANNEL_REGEX = "(?:^|\s)(#([^\s,]+)(?!,))(?:$|\s)";
     // Used to identify a message to be printed from the Event ticker
     // like a "user joins room" type message
     public static final String EVENT_USER = "****";

@@ -853,16 +853,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         previewTextArea.setCaretPosition(previewTextArea.getDocument().getLength());
 
-        DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
-        Date chatDate = new Date();
-        String timeLine = "[" + chatDateFormat.format(chatDate) + "]";
-
-
+        IRCUser tempUser = new IRCUser(null, "matty_r");
+        IRCUser tempUser2 = new IRCUser(null, "urChatClient");
         previewLineFormatter.setNick("urChatClient");
-        previewLineFormatter.formattedDocument(previewDoc, timeLine, null, "matty_r", "Hello, world!");
-        previewLineFormatter.formattedDocument(previewDoc, timeLine, null, "matty_r", "Hello, urChatClient!");
-        previewLineFormatter.formattedDocument(previewDoc, timeLine, null, "urChatClient", "Go to https://github.com/matty-r/urChat");
-        previewLineFormatter.formattedDocument(previewDoc, timeLine, null, "urChatClient", "Join #urchatclient on irc.libera.chat");
+        previewLineFormatter.formattedDocument(previewDoc, new Date(), null, Constants.EVENT_USER, "urChat has loaded - this is an Event");
+        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "Normal line. Hello, world!");
+        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "This is what it looks like when your nick is mentioned, urChatClient!");
+        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, "urChatClient", "Go to https://github.com/matty-r/urChat");
+        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, "urChatClient", "Join #urchatclient on irc.libera.chat or #anotherroom");
 
         // private static final JLabel timeStampFontLabel = new JLabel("Timestamp Font");
         // private static final JButton otherNickFontLabel = new JButton("Other Nick Font");
@@ -876,6 +874,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         addToPanel(appearancePanel, previewTextScroll, "Font Preview");
         // addToPanel(appearancePanel, timeStampFontButton);
+    }
+
+    public static String getTimeLineString(Date date)
+    {
+        SimpleDateFormat chatDateFormat = new SimpleDateFormat(timeStampComponent.getAsTextField().getText());
+
+        return chatDateFormat.format(date);
     }
 
     private void setupInterfacePanel()

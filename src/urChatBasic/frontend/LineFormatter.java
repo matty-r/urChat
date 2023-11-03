@@ -5,6 +5,8 @@ import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -85,7 +87,14 @@ public class LineFormatter
     {
         SimpleAttributeSet tempStyle = defaultStyle();
         tempStyle.addAttribute("name", "lowStyle");
-        StyleConstants.setForeground(tempStyle, Color.LIGHT_GRAY);
+
+        if(URColour.useDarkColour(UIManager.getColor("Panel.background")))
+        {
+            StyleConstants.setForeground(tempStyle, Color.DARK_GRAY);
+        } else {
+            StyleConstants.setForeground(tempStyle, Color.LIGHT_GRAY);
+        }
+
 
         return tempStyle;
     }
@@ -171,6 +180,12 @@ public class LineFormatter
             }
         }
 
+        @Override
+        public String toString()
+        {
+            return textLink;
+        }
+
         public void execute()
         {
             if (!textLink.isEmpty() && gui.isClickableLinksEnabled() && attributeSet.getAttribute("type").equals("url"))
@@ -231,6 +246,12 @@ public class LineFormatter
     private void appendString(StyledDocument doc, String insertedString, SimpleAttributeSet style) throws BadLocationException
     {
         int position = doc.getLength();
+
+        // remove the existing attributes
+        style.removeAttribute("styleStart");
+        style.removeAttribute("styleLength");
+        style.removeAttribute("docLength");
+
         // add an attribute so we know when the style is expected to start and end.
         style.addAttribute("styleStart", position);
         style.addAttribute("styleLength", insertedString.length());
@@ -267,11 +288,6 @@ public class LineFormatter
         int styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
 
         SimpleAttributeSet matchingStyle = getStyle(styleName);
-
-        if(styleName.equalsIgnoreCase("urlStyle"))
-        {
-            System.out.println("sda");
-        }
 
         // Copy the attributes, but only if they aren't already set
         Iterator attributeIterator = textStyle.getAttributeNames().asIterator();
@@ -367,49 +383,66 @@ public class LineFormatter
         return new SimpleAttributeSet(textStyle);
     }
 
-    private String parseClickableText(StyledDocument doc, IRCUser fromUser) throws BadLocationException
+    private void parseClickableText(StyledDocument doc, IRCUser fromUser, String line, SimpleAttributeSet defaultStyle) throws BadLocationException
     {
         HashMap<String, SimpleAttributeSet> regexStrings = new HashMap<>();
         regexStrings.put(Constants.URL_REGEX, urlStyle());
         regexStrings.put(Constants.CHANNEL_REGEX, channelStyle());
-        final String line = getLatestLine(doc);
+        // final String line = getLatestLine(doc);
         final int relativePosition = getLinePosition(doc, getLatestLine(doc));
+
+        ArrayList<SimpleAttributeSet> clickableLines = new ArrayList<SimpleAttributeSet>();
 
         for (Map.Entry<String, SimpleAttributeSet> entry : regexStrings.entrySet()) {
             String regex = entry.getKey();
-            SimpleAttributeSet linkStyle = entry.getValue();
+
 
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(line);
 
             // do stuff for each match
             while (matcher.find()) {
-
-                String clickableLine = line.substring(matcher.start(), matcher.end());
+                SimpleAttributeSet linkStyle = getStyle(entry.getValue().getAttribute("name").toString());
+                String clickableLine = matcher.group(1);
                 linkStyle.addAttribute("clickableText", new ClickableText(clickableLine, linkStyle, fromUser));
 
-                int styleStart = relativePosition + matcher.start();
-                int styleLength = matcher.end() - matcher.start();
+                int styleStart = relativePosition + matcher.start(1);
+                int styleLength = clickableLine.length();
 
                 linkStyle.addAttribute("styleStart", styleStart);
                 linkStyle.addAttribute("styleLength", styleLength);
 
-                // update the styleLength of the previous style
-                SimpleAttributeSet oldStyle = getStyleAtPosition(doc, styleStart - 1, "");
-                SimpleAttributeSet replaceStyle = getStyle(oldStyle.getAttribute("name").toString());
-                int newStart = Integer.parseInt(oldStyle.getAttribute("styleStart").toString());
-                int newLength = styleStart - Integer.parseInt(oldStyle.getAttribute("styleStart").toString()) + 1;
-                replaceStyle.addAttribute("styleStart", newStart);
-                replaceStyle.addAttribute("styleLength", newLength);
-                replaceStyle.addAttribute("docLength", oldStyle.getAttribute("docLength"));
-
-                doc.setCharacterAttributes(newStart, newLength, replaceStyle, true);
-
-                doc.setCharacterAttributes(styleStart, styleLength, linkStyle, true);
+                clickableLines.add(linkStyle);
             }
         }
 
-        return line;
+        clickableLines.sort((set1, set2) -> {
+            int styleStart1 = (int) set1.getAttribute("styleStart");
+            int styleStart2 = (int) set2.getAttribute("styleStart");
+            return Integer.compare(styleStart1, styleStart2);
+        });
+
+        Iterator<SimpleAttributeSet> linesIterator = clickableLines.iterator();
+        String remainingLine = line;
+        while (linesIterator.hasNext())
+        {
+            SimpleAttributeSet nextLine = linesIterator.next();
+
+            // Offset based on the difference between the original line and the remaining line,
+            // plus the relativePosition within the document.
+            int offset = (line.length() - remainingLine.length()) + relativePosition;
+            int nextLineStart = Integer.parseInt(nextLine.getAttribute("styleStart").toString());
+            int nextLineLength = Integer.parseInt(nextLine.getAttribute("styleLength").toString());
+
+            // Append the string that comes before the next clickable text
+            appendString(doc, remainingLine.substring(0,  nextLineStart- offset), defaultStyle);
+
+            appendString(doc, nextLine.getAttribute("clickableText").toString(), nextLine);
+
+            remainingLine = remainingLine.substring((nextLineStart + nextLineLength) - offset);
+        }
+
+        appendString(doc, remainingLine, defaultStyle);
     }
 
     /**
@@ -420,8 +453,11 @@ public class LineFormatter
      * @param fromUser
      * @param line
      */
-    public void formattedDocument(StyledDocument doc, String timeLine, IRCUser fromUser, String fromString, String line)
+    public void formattedDocument(StyledDocument doc, Date lineDate, IRCUser fromUser, String fromString, String line)
     {
+        // build the timeLine string
+        String timeLine = UserGUI.getTimeLineString(lineDate);
+
         if (fromUser != null && null != myNick && myNick.equals(fromUser.toString()))
         {
             nameStyle = this.myStyle();
@@ -441,13 +477,14 @@ public class LineFormatter
             lineStyle = defaultStyle();
         }
 
-        timeStyle = defaultStyle();
+        timeStyle = lineStyle;
 
         try
         {
 
             // doc.insertString(doc.getLength(), timeLine, timeStyle);
-            if(null != timeLine && !timeLine.isBlank())
+            // if(null != timeLine && !timeLine.isBlank())
+            if(null != lineDate)
                 appendString(doc, timeLine + " ", timeStyle);
 
             appendString(doc, "<", lineStyle);
@@ -467,10 +504,14 @@ public class LineFormatter
             appendString(doc, ">", lineStyle);
 
             // print the remaining text
-            appendString(doc, " "+line, lineStyle);
+            // appendString(doc, " "+line, lineStyle);
 
             // parse the outputted line for clickable text
-            parseClickableText(doc, fromUser);
+            parseClickableText(doc, fromUser, " "+line, lineStyle);
+
+            // add the date to the end of the string to preserve the timestamp of the line
+            // when updating styles
+            lineStyle.addAttribute("date", lineDate);
 
             appendString(doc, System.getProperty("line.separator"), lineStyle);
         } catch (BadLocationException e)
