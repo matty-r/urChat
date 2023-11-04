@@ -487,13 +487,6 @@ public class IRCRoomBase extends JPanel
                             return;
                         }
 
-                        DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
-                        Date chatDate = new Date();
-                        String timeLine = "";
-
-                        if (gui.isTimeStampsEnabled())
-                            timeLine = "[" + chatDateFormat.format(chatDate) + "]";
-
                         if (gui.isChannelHistoryEnabled())
                         {
                             try
@@ -505,7 +498,7 @@ public class IRCRoomBase extends JPanel
                             }
                         }
 
-                        StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
+                        StyledDocument doc = channelTextArea.getStyledDocument();
                         IRCUser fromIRCUser = getCreatedUser(fromUser);
 
                         // If we received a message from a user that isn't in the channel
@@ -526,7 +519,7 @@ public class IRCRoomBase extends JPanel
 
                         if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
                         {
-                            lineFormatter.formattedDocument(doc, new Date(), fromIRCUser, fromUser, line);
+                            lineFormatter.formattedDocument(doc, gui.isTimeStampsEnabled() ? new Date() : null, fromIRCUser, fromUser, line);
 
                             if (lineFormatter.nameStyle.getAttribute("name") == lineFormatter.highStyle()
                                     .getAttribute("name"))

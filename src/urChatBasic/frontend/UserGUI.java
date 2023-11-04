@@ -7,15 +7,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.event.*;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
-import javax.swing.text.StyledEditorKit;
 import urChatBasic.backend.utils.URUncaughtExceptionHandler;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
@@ -75,7 +74,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     // Appearance Panel
     private FontPanel clientFontPanel;
-    private static final JTextField timeStampFormat = new JTextField(Constants.DEFAULT_TIME_STAMP_FORMAT);
+    private static final JTextField timeStampFormat = new JTextField();
     private static final URComponent timeStampComponent = new URComponent("Timestamp Format:", timeStampFormat, Size.MEDIUM);
     private static final JLabel timeStampFontLabel = new JLabel("Timestamp Font");
     private static final JButton otherNickFontLabel = new JButton("Other Nick Font");
@@ -838,30 +837,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         lafOptions.addActionListener(new ChangeLAFListener());
 
         clientFontPanel = new FontPanel(getFont(), getProfilePath(), "Global Font:");
-        clientFontPanel.setPreferredSize(new Dimension(500, 64));
+        clientFontPanel.setPreferredSize(new Dimension(700, 64));
         clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
 
-        // FontDialog timeStampFontDialog = new FontDialog("Timestamp Font:", UserGUI.this.getFont(), getProfilePath());
-        // timeStampFontLabel.setFont
-
-        StyledDocument previewDoc = (StyledDocument) previewTextArea.getDocument();
-
-        previewTextScroll.setPreferredSize(new Dimension(500, 200));
+        previewTextScroll.setPreferredSize(new Dimension(700, 150));
         previewTextArea.setEditable(false);
-        // previewTextArea.setFont(clientFontPanel.getFont());
-        previewLineFormatter = new LineFormatter(clientFontPanel.getFont(), null);
 
-        previewTextArea.setCaretPosition(previewTextArea.getDocument().getLength());
+        // TODO: Add updatePreviewTextArea on keypress in the timeStampFormat
+        // timeStampFormat.addActionListener( );
 
-        IRCUser tempUser = new IRCUser(null, "matty_r");
-        IRCUser tempUser2 = new IRCUser(null, "urChatClient");
-        previewLineFormatter.setNick("urChatClient");
-        previewLineFormatter.formattedDocument(previewDoc, new Date(), null, Constants.EVENT_USER, "urChat has loaded - this is an Event");
-        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "Normal line. Hello, world!");
-        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "This is what it looks like when your nick is mentioned, urChatClient!");
-        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, "urChatClient", "Go to https://github.com/matty-r/urChat");
-        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, "urChatClient", "Join #urchatclient on irc.libera.chat or #anotherroom");
-
+        updatePreviewTextArea();
         // private static final JLabel timeStampFontLabel = new JLabel("Timestamp Font");
         // private static final JButton otherNickFontLabel = new JButton("Other Nick Font");
         // private static final JButton userNickFontLabel = new JButton("My Nick Font");
@@ -874,6 +859,35 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         addToPanel(appearancePanel, previewTextScroll, "Font Preview");
         // addToPanel(appearancePanel, timeStampFontButton);
+    }
+
+    public void updatePreviewTextArea()
+    {
+        StyledDocument previewDoc = previewTextArea.getStyledDocument();
+
+        try
+        {
+            // Clear all text
+            previewDoc.remove(0, previewDoc.getLength());
+        } catch (BadLocationException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        // previewTextArea.setFont(clientFontPanel.getFont());
+        previewLineFormatter = new LineFormatter(clientFontPanel.getFont(), null);
+
+        previewTextArea.setCaretPosition(previewTextArea.getDocument().getLength());
+
+        IRCUser tempUser = new IRCUser(null, "matty_r");
+        IRCUser tempUser2 = new IRCUser(null, System.getProperty("user.name"));
+        previewLineFormatter.setNick(System.getProperty("user.name"));
+        previewLineFormatter.formattedDocument(previewDoc, new Date(), null, Constants.EVENT_USER, "urChat has loaded - this is an Event");
+        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "Normal line. Hello, world!");
+        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "This is what it looks like when your nick is mentioned, "+System.getProperty("user.name")+"!");
+        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, System.getProperty("user.name"), "Go to https://github.com/matty-r/urChat");
+        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, System.getProperty("user.name"), "Join #urchatclient on irc.libera.chat or #anotherroom");
     }
 
     public static String getTimeLineString(Date date)
@@ -1494,6 +1508,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         clientFontPanel.loadFont();
 
+        timeStampFormat.setText(
+            getProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, Constants.DEFAULT_TIME_STAMP_FORMAT)
+        );
+
         eventTickerDelay.setValue(
                 getProfilePath().getInt(Constants.KEY_EVENT_TICKER_DELAY, Constants.DEFAULT_EVENT_TICKER_DELAY));
         autoConnectToFavourites.setSelected(getProfilePath().getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES,
@@ -1743,6 +1761,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 favouriteItem.favFontDialog.getFontPanel().setDefaultFont(clientFontPanel.getFont());
                 favouriteItem.favFontDialog.getFontPanel().loadFont();
             }
+
+            previewLineFormatter.setFont(previewTextArea.getStyledDocument(), clientFontPanel.getFont());
         }
     }
 
@@ -1882,7 +1902,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
 
         // update the styles in the preview text area
-        previewLineFormatter.updateStyles(previewTextArea.getStyledDocument(), 0);
+        // previewLineFormatter.updateStyles(previewTextArea.getStyledDocument(), 0);
+        updatePreviewTextArea();
     }
 
     /*
