@@ -250,12 +250,10 @@ public class LineFormatter
         // remove the existing attributes
         style.removeAttribute("styleStart");
         style.removeAttribute("styleLength");
-        style.removeAttribute("docLength");
 
         // add an attribute so we know when the style is expected to start and end.
         style.addAttribute("styleStart", position);
         style.addAttribute("styleLength", insertedString.length());
-        style.addAttribute("docLength", doc.getLength());
         doc.insertString(position, insertedString, style);
     }
 
@@ -305,21 +303,30 @@ public class LineFormatter
         {
             try
             {
-                String newTimeString = gui.getTimeLineString((Date) textStyle.getAttribute("date"));
+                Date lineDate = (Date) textStyle.getAttribute("date");
+                String newTimeString = gui.getTimeLineString(lineDate);
+                boolean hasTime = false;
+
                 if (textStyle.getAttribute("type").toString().equalsIgnoreCase("time"))
                 {
+                    hasTime = true;
                     doc.remove(styleStart, styleLength);
                 }
 
                 if(gui.isTimeStampsEnabled())
                 {
-                    timeStyle.addAttribute("date", textStyle.getAttribute("date"));
                     textStyle.removeAttribute("date");
-                    doc.setCharacterAttributes(styleStart, styleLength, textStyle, true);
+                    textStyle.removeAttribute("time");
                     SimpleAttributeSet timeStyle = getStyle(styleName);
+                    timeStyle.addAttribute("date", lineDate);
                     timeStyle.addAttribute("type", "time");
-                    insertString(doc, newTimeString, matchingStyle, styleStart);
-                    styleStart += newTimeString.length();
+                    insertString(doc, newTimeString, timeStyle, styleStart);
+                    styleLength = newTimeString.length();
+                    styleStart += styleLength;
+                    if(!hasTime)
+                        doc.setCharacterAttributes(styleStart, styleLength, textStyle, true);
+                    else
+                        textStyle = timeStyle;
                 }
             } catch (BadLocationException $ble)
             {
