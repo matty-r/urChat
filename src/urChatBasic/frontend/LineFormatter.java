@@ -5,6 +5,7 @@ import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -188,7 +189,7 @@ public class LineFormatter
 
         public void execute()
         {
-            if (!textLink.isEmpty() && gui.isClickableLinksEnabled() && attributeSet.getAttribute("type").equals("url"))
+            if (!textLink.isEmpty() && attributeSet.getAttribute("type").equals("url"))
             {
                 try {
                     AtomicBoolean doOpenLink = new AtomicBoolean(false);
@@ -243,10 +244,9 @@ public class LineFormatter
         }
     }
 
-    private void appendString(StyledDocument doc, String insertedString, SimpleAttributeSet style) throws BadLocationException
+    // Inserts the string at the position
+    private void insertString(StyledDocument doc, String insertedString, SimpleAttributeSet style, int position) throws BadLocationException
     {
-        int position = doc.getLength();
-
         // remove the existing attributes
         style.removeAttribute("styleStart");
         style.removeAttribute("styleLength");
@@ -257,6 +257,14 @@ public class LineFormatter
         style.addAttribute("styleLength", insertedString.length());
         style.addAttribute("docLength", doc.getLength());
         doc.insertString(position, insertedString, style);
+    }
+
+    // Adds the string (with all needed attributes) to the end of the document
+    private void appendString(StyledDocument doc, String insertedString, SimpleAttributeSet style) throws BadLocationException
+    {
+        int position = doc.getLength();
+
+        insertString(doc, insertedString, style, position);
     }
 
     private SimpleAttributeSet getStyle(String styleName)
@@ -281,7 +289,7 @@ public class LineFormatter
 
     public void updateStyles(StyledDocument doc, int startPosition)
     {
-        AttributeSet textStyle = doc.getCharacterElement(startPosition).getAttributes();
+        SimpleAttributeSet textStyle = new SimpleAttributeSet(doc.getCharacterElement(startPosition).getAttributes());
 
         String styleName = textStyle.getAttribute("name").toString();
         int styleStart = startPosition;
@@ -289,13 +297,42 @@ public class LineFormatter
 
         SimpleAttributeSet matchingStyle = getStyle(styleName);
 
+        // TODO: Update the time format. Check if there is a timeStyle already, if there is then remove it from the line
+        // and insert the new timeStyle/Format. Otherwise we just need to insert it. The first character/style will have
+        // the 'date' attribute of when the line was added.
+
+        if (null != gui && null != textStyle.getAttribute("date"))
+        {
+            try
+            {
+                String newTimeString = gui.getTimeLineString((Date) textStyle.getAttribute("date"));
+                if (textStyle.getAttribute("type").toString().equalsIgnoreCase("time"))
+                {
+                    doc.remove(styleStart, styleLength);
+                }
+
+                if(gui.isTimeStampsEnabled())
+                {
+                    timeStyle.addAttribute("date", textStyle.getAttribute("date"));
+                    textStyle.removeAttribute("date");
+                    doc.setCharacterAttributes(styleStart, styleLength, textStyle, true);
+                    SimpleAttributeSet timeStyle = getStyle(styleName);
+                    timeStyle.addAttribute("type", "time");
+                    insertString(doc, newTimeString, matchingStyle, styleStart);
+                    styleStart += newTimeString.length();
+                }
+            } catch (BadLocationException $ble)
+            {
+                //
+            }
+        }
+
         // Copy the attributes, but only if they aren't already set
         Iterator attributeIterator = textStyle.getAttributeNames().asIterator();
         while(attributeIterator.hasNext())
         {
             String nextAttributeName = attributeIterator.next().toString();
 
-            // get attribute "foreground" isn't working here despite foregrounf having been set
             if(matchingStyle.getAttribute(nextAttributeName) == null)
             {
                 Iterator matchingIterator = matchingStyle.getAttributeNames().asIterator();
@@ -379,7 +416,6 @@ public class LineFormatter
 
         AttributeSet textStyle = doc.getCharacterElement(position).getAttributes();
 
-        // String styleName = textStyle.getAttribute("name").toString();
         return new SimpleAttributeSet(textStyle);
     }
 
@@ -485,9 +521,20 @@ public class LineFormatter
             // doc.insertString(doc.getLength(), timeLine, timeStyle);
             // if(null != timeLine && !timeLine.isBlank())
             if(null != lineDate)
+            {
+                // add the date to the end of the string to preserve the timestamp of the line
+                // when updating styles
+                timeStyle.addAttribute("date", lineDate);
+                timeStyle.removeAttribute("type");
+                timeStyle.addAttribute("type", "time");
                 appendString(doc, timeLine + " ", timeStyle);
+                timeStyle.removeAttribute("type");
+            } else {
+                lineStyle.addAttribute("date", lineDate);
+            }
 
             appendString(doc, "<", lineStyle);
+            lineStyle.removeAttribute("date");
 
             if(fromUser != null)
             {
@@ -508,10 +555,6 @@ public class LineFormatter
 
             // parse the outputted line for clickable text
             parseClickableText(doc, fromUser, " "+line, lineStyle);
-
-            // add the date to the end of the string to preserve the timestamp of the line
-            // when updating styles
-            lineStyle.addAttribute("date", lineDate);
 
             appendString(doc, System.getProperty("line.separator"), lineStyle);
         } catch (BadLocationException e)

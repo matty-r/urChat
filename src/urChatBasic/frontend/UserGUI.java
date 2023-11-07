@@ -5,6 +5,8 @@ import java.util.logging.Level;
 import java.util.prefs.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
@@ -13,7 +15,9 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.event.*;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import urChatBasic.backend.utils.URUncaughtExceptionHandler;
 import urChatBasic.base.Constants;
@@ -25,6 +29,7 @@ import urChatBasic.base.UserGUIBase;
 import urChatBasic.base.Constants.Size;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.frontend.LineFormatter.ClickableText;
 import urChatBasic.frontend.components.*;
 
 public class UserGUI extends JPanel implements Runnable, UserGUIBase
@@ -843,8 +848,22 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         previewTextScroll.setPreferredSize(new Dimension(700, 150));
         previewTextArea.setEditable(false);
 
-        // TODO: Add updatePreviewTextArea on keypress in the timeStampFormat
-        // timeStampFormat.addActionListener( );
+        timeStampFormat.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                // Not used
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // Not used
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                updatePreviewTextArea();
+            }
+        });
 
         updatePreviewTextArea();
         // private static final JLabel timeStampFontLabel = new JLabel("Timestamp Font");
@@ -865,29 +884,74 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         StyledDocument previewDoc = previewTextArea.getStyledDocument();
 
-        try
-        {
-            // Clear all text
-            previewDoc.remove(0, previewDoc.getLength());
-        } catch (BadLocationException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        // try
+        // {
+        //     // Clear all text
+        //     previewDoc.remove(0, previewDoc.getLength());
+        // } catch (BadLocationException e)
+        // {
+        //     // TODO Auto-generated catch block
+        //     e.printStackTrace();
+        // }
 
         // previewTextArea.setFont(clientFontPanel.getFont());
         previewLineFormatter = new LineFormatter(clientFontPanel.getFont(), null);
 
-        previewTextArea.setCaretPosition(previewTextArea.getDocument().getLength());
+        if(previewDoc.getLength() <= 0)
+        {
+            previewTextArea.setCaretPosition(previewTextArea.getDocument().getLength());
+            previewTextArea.addMouseListener(new ChannelClickListener());
+            previewTextArea.addMouseMotionListener(new ChannelMovementListener());
+            IRCUser tempUser = new IRCUser(null, "matty_r");
+            IRCUser tempUser2 = new IRCUser(null, System.getProperty("user.name"));
+            previewLineFormatter.setNick(System.getProperty("user.name"));
+            previewLineFormatter.formattedDocument(previewDoc, new Date(), null, Constants.EVENT_USER, "urChat has loaded - this is an Event");
+            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "Normal line. Hello, world!");
+            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "This is what it looks like when your nick is mentioned, "+System.getProperty("user.name")+"!");
+            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, System.getProperty("user.name"), "Go to https://github.com/matty-r/urChat");
+            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, System.getProperty("user.name"), "Join #urchatclient on irc.libera.chat or #anotherroom");
+        } else {
+            previewLineFormatter.updateStyles(previewDoc, 0);
+        }
+    }
 
-        IRCUser tempUser = new IRCUser(null, "matty_r");
-        IRCUser tempUser2 = new IRCUser(null, System.getProperty("user.name"));
-        previewLineFormatter.setNick(System.getProperty("user.name"));
-        previewLineFormatter.formattedDocument(previewDoc, new Date(), null, Constants.EVENT_USER, "urChat has loaded - this is an Event");
-        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "Normal line. Hello, world!");
-        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "This is what it looks like when your nick is mentioned, "+System.getProperty("user.name")+"!");
-        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, System.getProperty("user.name"), "Go to https://github.com/matty-r/urChat");
-        previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, System.getProperty("user.name"), "Join #urchatclient on irc.libera.chat or #anotherroom");
+    class ChannelClickListener extends MouseInputAdapter
+    {
+        public void mouseClicked(MouseEvent e)
+        {
+            StyledDocument doc = previewTextArea.getStyledDocument();
+            Element ele = doc.getCharacterElement(previewTextArea.viewToModel2D((e.getPoint())));
+            AttributeSet as = ele.getAttributes();
+            ClickableText isClickableText = (ClickableText) as.getAttribute("clickableText");
+            if (isClickableText != null && isClickableLinksEnabled())
+            {
+                if (SwingUtilities.isRightMouseButton(e) && isClickableText.rightClickMenu() != null)
+                {
+                    isClickableText.rightClickMenu().show(e.getComponent(), e.getX(), e.getY());
+                } else if (SwingUtilities.isLeftMouseButton(e))
+                {
+                    isClickableText.execute();
+                }
+            }
+        }
+    }
+
+    class ChannelMovementListener extends MouseAdapter
+    {
+        public void mouseMoved(MouseEvent e)
+        {
+            StyledDocument doc = previewTextArea.getStyledDocument();
+            Element wordElement = doc.getCharacterElement(previewTextArea.viewToModel2D((e.getPoint())));
+            AttributeSet wordAttributeSet = wordElement.getAttributes();
+            ClickableText isClickableText = (ClickableText) wordAttributeSet.getAttribute("clickableText");
+            if (isClickableText != null && isClickableLinksEnabled())
+            {
+                previewTextArea.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            } else
+            {
+                previewTextArea.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        }
     }
 
     public static String getTimeLineString(Date date)
@@ -1417,6 +1481,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         getProfilePath().put(Constants.KEY_NICK_NAME, userNameTextField.getText());
         getProfilePath().put(Constants.KEY_REAL_NAME, realNameTextField.getText());
         getProfilePath().putBoolean(Constants.KEY_TIME_STAMPS, enableTimeStamps.isSelected());
+        getProfilePath().put(Constants.KEY_TIME_STAMP_FORMAT, timeStampFormat.getText());
         getProfilePath().put(Constants.KEY_LAF_NAME, ((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
         getProfilePath().putBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, showEventTicker.isSelected());
         getProfilePath().putBoolean(Constants.KEY_USERS_LIST_ACTIVE, showUsersList.isSelected());
