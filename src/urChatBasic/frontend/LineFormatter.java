@@ -299,12 +299,14 @@ public class LineFormatter
         // and insert the new timeStyle/Format. Otherwise we just need to insert it. The first character/style will have
         // the 'date' attribute of when the line was added.
 
+        boolean isDateStyle = false;
         if (null != gui && null != textStyle.getAttribute("date"))
         {
+            isDateStyle = true;
             try
             {
                 Date lineDate = (Date) textStyle.getAttribute("date");
-                String newTimeString = gui.getTimeLineString(lineDate);
+                String newTimeString = gui.getTimeLineString(lineDate) + " ";
                 boolean hasTime = false;
 
                 if (textStyle.getAttribute("type").toString().equalsIgnoreCase("time"))
@@ -317,16 +319,15 @@ public class LineFormatter
                 {
                     textStyle.removeAttribute("date");
                     textStyle.removeAttribute("time");
+
+                    if(!hasTime)
+                        doc.setCharacterAttributes(styleStart, styleLength, textStyle, true);
+
                     SimpleAttributeSet timeStyle = getStyle(styleName);
                     timeStyle.addAttribute("date", lineDate);
                     timeStyle.addAttribute("type", "time");
                     insertString(doc, newTimeString, timeStyle, styleStart);
                     styleLength = newTimeString.length();
-                    styleStart += styleLength;
-                    if(!hasTime)
-                        doc.setCharacterAttributes(styleStart, styleLength, textStyle, true);
-                    else
-                        textStyle = timeStyle;
                 }
             } catch (BadLocationException $ble)
             {
@@ -358,7 +359,8 @@ public class LineFormatter
             }
         }
 
-        doc.setCharacterAttributes(styleStart, styleLength, matchingStyle, true);
+        if(!isDateStyle)
+            doc.setCharacterAttributes(styleStart, styleLength, matchingStyle, true);
 
         if((styleStart + styleLength) < doc.getLength())
             updateStyles(doc, (styleStart + styleLength));
@@ -527,7 +529,7 @@ public class LineFormatter
 
             // doc.insertString(doc.getLength(), timeLine, timeStyle);
             // if(null != timeLine && !timeLine.isBlank())
-            if(null != lineDate)
+            if(!timeLine.isBlank())
             {
                 // add the date to the end of the string to preserve the timestamp of the line
                 // when updating styles
