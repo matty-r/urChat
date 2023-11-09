@@ -519,7 +519,7 @@ public class IRCRoomBase extends JPanel
 
                         if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
                         {
-                            lineFormatter.formattedDocument(doc, gui.isTimeStampsEnabled() ? new Date() : null, fromIRCUser, fromUser, line);
+                            lineFormatter.formattedDocument(doc, new Date(), fromIRCUser, fromUser, line);
 
                             if (lineFormatter.nameStyle.getAttribute("name") == lineFormatter.highStyle()
                                     .getAttribute("name"))

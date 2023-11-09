@@ -1577,6 +1577,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             getProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, Constants.DEFAULT_TIME_STAMP_FORMAT)
         );
 
+        updatePreviewTextArea();
+
         eventTickerDelay.setValue(
                 getProfilePath().getInt(Constants.KEY_EVENT_TICKER_DELAY, Constants.DEFAULT_EVENT_TICKER_DELAY));
         autoConnectToFavourites.setSelected(getProfilePath().getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES,

@@ -309,7 +309,7 @@ public class LineFormatter
                 String newTimeString = gui.getTimeLineString(lineDate) + " ";
                 boolean hasTime = false;
 
-                if (textStyle.getAttribute("type").toString().equalsIgnoreCase("time"))
+                if (null != textStyle.getAttribute("type") && textStyle.getAttribute("type").toString().equalsIgnoreCase("time"))
                 {
                     hasTime = true;
                     doc.remove(styleStart, styleLength);
@@ -328,6 +328,20 @@ public class LineFormatter
                     timeStyle.addAttribute("type", "time");
                     insertString(doc, newTimeString, timeStyle, styleStart);
                     styleLength = newTimeString.length();
+                } else {
+                    if(hasTime)
+                    {
+                        textStyle = new SimpleAttributeSet(doc.getCharacterElement(startPosition).getAttributes());
+
+                        styleName = textStyle.getAttribute("name").toString();
+                        styleStart = startPosition;
+                        styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
+
+                        matchingStyle = getStyle(styleName);
+                        matchingStyle.addAttribute("date", lineDate);
+
+                        isDateStyle = false;
+                    }
                 }
             } catch (BadLocationException $ble)
             {
@@ -500,6 +514,10 @@ public class LineFormatter
      */
     public void formattedDocument(StyledDocument doc, Date lineDate, IRCUser fromUser, String fromString, String line)
     {
+
+        if(null == lineDate)
+            System.out.println("test");
+
         // build the timeLine string
         String timeLine = UserGUI.getTimeLineString(lineDate);
 
@@ -529,7 +547,7 @@ public class LineFormatter
 
             // doc.insertString(doc.getLength(), timeLine, timeStyle);
             // if(null != timeLine && !timeLine.isBlank())
-            if(!timeLine.isBlank())
+            if(!timeLine.isBlank() && gui.isTimeStampsEnabled())
             {
                 // add the date to the end of the string to preserve the timestamp of the line
                 // when updating styles
@@ -538,6 +556,7 @@ public class LineFormatter
                 timeStyle.addAttribute("type", "time");
                 appendString(doc, timeLine + " ", timeStyle);
                 timeStyle.removeAttribute("type");
+                lineStyle.removeAttribute("date");
             } else {
                 lineStyle.addAttribute("date", lineDate);
             }
