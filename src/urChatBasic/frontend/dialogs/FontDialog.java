@@ -48,6 +48,11 @@ public class FontDialog extends DialogBase
         fontPanel.getSaveButton().addActionListener(newActionListener);
     }
 
+    public void addResetListener(ActionListener newActionListener)
+    {
+        fontPanel.getResetButton().addActionListener(newActionListener);
+    }
+
     public class ShowFontDialog implements ActionListener
     {
         @Override

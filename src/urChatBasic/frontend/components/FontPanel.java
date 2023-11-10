@@ -26,10 +26,12 @@ public class FontPanel extends JPanel
     private final JComboBox<Integer> SIZES_COMBO_BOX = new JComboBox<>(FONT_SIZES);
     private final JCheckBox MAKE_BOLD = new JCheckBox("BOLD");
     private final JCheckBox MAKE_ITALIC = new JCheckBox("ITALIC");
+    private final JButton RESET_BUTTON = new JButton("Reset Font");
     private final JButton SAVE_BUTTON = new JButton("Save Font");
     // private String fontType = "New Font:";
     // private JLabel fontTypeLabel = new JLabel("New Font:");
     // private final JPanel TITLE_PANEL = new JPanel(new GridLayout(1,1));
+    private final JPanel BUTTON_PANEL = new JPanel(new GridLayout(1, 2));
     private final JPanel MAIN_PANEL = new JPanel(new GridLayout(2, 3));
     private Font defaultFont;
     // private final JButton CANCEL_BUTTON = new JButton("Cancel");
@@ -60,8 +62,14 @@ public class FontPanel extends JPanel
         MAIN_PANEL.add(TEXT_PREVIEW);
         MAIN_PANEL.add(MAKE_BOLD);
         MAIN_PANEL.add(MAKE_ITALIC);
-        MAIN_PANEL.add(SAVE_BUTTON);
 
+        BUTTON_PANEL.add(RESET_BUTTON);
+        BUTTON_PANEL.add(SAVE_BUTTON);
+
+        MAIN_PANEL.add(BUTTON_PANEL);
+
+
+        RESET_BUTTON.addActionListener(new ResetListener());
         SAVE_BUTTON.addActionListener(new SaveListener());
         FONT_COMBO_BOX.addItemListener(new FontSelectionChange());
         SIZES_COMBO_BOX.addItemListener(new FontSelectionChange());
@@ -87,9 +95,26 @@ public class FontPanel extends JPanel
         return SAVE_BUTTON;
     }
 
+    public JButton getResetButton()
+    {
+        return RESET_BUTTON;
+    }
+
     public void setDefaultFont(Font f)
     {
         defaultFont = f;
+        loadFont();
+    }
+
+    // Deletes the saved font, then loads the "default" font.
+    // The default font for a channel is the Global Font, the default font
+    // the UserGUI is Constants.DEFAULT_FONT
+    public void resetFont() {
+        settingsPath.remove(Constants.KEY_FONT_BOLD);
+        settingsPath.remove(Constants.KEY_FONT_ITALIC);
+        settingsPath.remove(Constants.KEY_FONT_SIZE);
+        settingsPath.remove(Constants.KEY_FONT_FAMILY);
+
         loadFont();
     }
 
@@ -197,6 +222,15 @@ public class FontPanel extends JPanel
         public void actionPerformed(ActionEvent e)
         {
             FontPanel.this.setFont(TEXT_PREVIEW.getFont(), true);
+        }
+    }
+
+    class ResetListener implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent e)
+        {
+            FontPanel.this.resetFont();
         }
     }
 

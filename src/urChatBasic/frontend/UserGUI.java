@@ -63,7 +63,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
 
     private static final JComboBox<LookAndFeelInfo> lafOptions = new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
-    private static final URComponent lafOptionsComponent = new URComponent("Theme:", lafOptions, Size.LARGE);
 
     private static final JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
     private static final JCheckBox showUsersList = new JCheckBox("Show Users List");
@@ -79,8 +78,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     // Appearance Panel
     private FontPanel clientFontPanel;
-    private static final JTextField timeStampFormat = new JTextField();
-    private static final URComponent timeStampComponent = new URComponent("Timestamp Format:", timeStampFormat, Size.MEDIUM);
+    private static final JTextField timeStampField = new JTextField();
     private static final JLabel timeStampFontLabel = new JLabel("Timestamp Font");
     private static final JButton otherNickFontLabel = new JButton("Other Nick Font");
     private static final JButton userNickFontLabel = new JButton("My Nick Font");
@@ -534,7 +532,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         setupAppearancePanel();
     }
 
-    private static void addToPanel(JPanel targetPanel, Component newComponent, String label)
+    private static void addToPanel(JPanel targetPanel, Component newComponent, String label, Size targetSize)
     {
 
         int topSpacing = 6;
@@ -544,7 +542,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         if(null != label && !label.isBlank())
         {
-            addToPanel(targetPanel, new JLabel(label + ":"), null);
+            addToPanel(targetPanel, new JLabel(label + ":"), null, targetSize);
             // There is a label, so we want the added component to be aligned with the label
             topSpacing = 0;
         }
@@ -566,6 +564,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             // Set constraints for newComponent
             layout.putConstraint(SpringLayout.NORTH, newComponent, topSpacing, SpringLayout.SOUTH, previousComponent);
             layout.putConstraint(SpringLayout.WEST, newComponent, LEFT_ALIGNED, SpringLayout.WEST, previousComponent);
+
+            if(null != targetSize && newComponent instanceof JTextField)
+                ((JTextField) newComponent).setColumns(12);
         } else {
             // If it's the first component, align it against the targetPanel
             targetPanel.add(newComponent);
@@ -573,6 +574,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             // Set constraints for newComponent when it's the first component
             layout.putConstraint(SpringLayout.NORTH, newComponent, topSpacing * 2, SpringLayout.NORTH, targetPanel);
             layout.putConstraint(SpringLayout.WEST, newComponent, LEFT_SPACING * 2, SpringLayout.WEST, targetPanel);
+
+            if(null != targetSize && newComponent instanceof JTextField)
+                ((JTextField) newComponent).setColumns(12);
         }
     }
 
@@ -828,7 +832,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     private void setupAppearancePanel()
     {
-        addToPanel(appearancePanel, lafOptionsComponent, null);
+        addToPanel(appearancePanel, lafOptions, "Theme", Size.MEDIUM);
 
         // Set a custom renderer to display the look and feel names
         lafOptions.setRenderer(new DefaultListCellRenderer() {
@@ -844,11 +848,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         clientFontPanel = new FontPanel(getFont(), getProfilePath(), "Global Font:");
         clientFontPanel.setPreferredSize(new Dimension(700, 64));
         clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
+        clientFontPanel.getResetButton().addActionListener(new ResetFontListener());
 
         previewTextScroll.setPreferredSize(new Dimension(700, 150));
         previewTextArea.setEditable(false);
 
-        timeStampFormat.addKeyListener(new KeyListener() {
+        timeStampField.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
                 // Not used
@@ -873,10 +878,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // private static final JButton mediumStyleFontLabel = new JButton("Medium Priority Text Font");
         // private static final JButton highStyleFontLabel = new JButton("High Priority Text Font");
 
-        addToPanel(appearancePanel, clientFontPanel, "Global Font");
-        addToPanel(appearancePanel, timeStampComponent, null);
+        addToPanel(appearancePanel, clientFontPanel, "Global Font", null);
+        addToPanel(appearancePanel, timeStampField, "Timestamp Format", Size.MEDIUM);
 
-        addToPanel(appearancePanel, previewTextScroll, "Font Preview");
+        addToPanel(appearancePanel, previewTextScroll, "Font Preview", null);
         // addToPanel(appearancePanel, timeStampFontButton);
     }
 
@@ -956,7 +961,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     public static String getTimeLineString(Date date)
     {
-        SimpleDateFormat chatDateFormat = new SimpleDateFormat(timeStampComponent.getAsTextField().getText());
+        SimpleDateFormat chatDateFormat = new SimpleDateFormat(timeStampField.getText());
 
         return chatDateFormat.format(date);
     }
@@ -1128,7 +1133,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             @Override
             public void actionPerformed(ActionEvent arg0)
             {
-                for (int index = 0; index < tabbedPane.getComponents().length; index++)
+                for (int index = 0; index < tabbedPane.getTabCount(); index++)
                 {
                     Component tab = tabbedPane.getComponentAt(index);
 
@@ -1481,7 +1486,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         getProfilePath().put(Constants.KEY_NICK_NAME, userNameTextField.getText());
         getProfilePath().put(Constants.KEY_REAL_NAME, realNameTextField.getText());
         getProfilePath().putBoolean(Constants.KEY_TIME_STAMPS, enableTimeStamps.isSelected());
-        getProfilePath().put(Constants.KEY_TIME_STAMP_FORMAT, timeStampFormat.getText());
+        getProfilePath().put(Constants.KEY_TIME_STAMP_FORMAT, timeStampField.getText());
         getProfilePath().put(Constants.KEY_LAF_NAME, ((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
         getProfilePath().putBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, showEventTicker.isSelected());
         getProfilePath().putBoolean(Constants.KEY_USERS_LIST_ACTIVE, showUsersList.isSelected());
@@ -1573,7 +1578,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         clientFontPanel.loadFont();
 
-        timeStampFormat.setText(
+        timeStampField.setText(
             getProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, Constants.DEFAULT_TIME_STAMP_FORMAT)
         );
 
@@ -1830,6 +1835,22 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
 
             previewLineFormatter.setFont(previewTextArea.getStyledDocument(), clientFontPanel.getFont());
+        }
+    }
+
+    protected class ResetFontListener implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent arg0)
+        {
+            getProfilePath().put(Constants.KEY_FONT_FAMILY, Constants.DEFAULT_FONT_GENERAL.getFamily());
+            getProfilePath().putBoolean(Constants.KEY_FONT_BOLD, Constants.DEFAULT_FONT_GENERAL.isBold());
+            getProfilePath().putBoolean(Constants.KEY_FONT_ITALIC, Constants.DEFAULT_FONT_GENERAL.isItalic());
+            getProfilePath().putInt(Constants.KEY_FONT_SIZE, Constants.DEFAULT_FONT_GENERAL.getSize());
+
+            clientFontPanel.loadFont();
+
+            clientFontPanel.getSaveButton().doClick();
         }
     }
 
