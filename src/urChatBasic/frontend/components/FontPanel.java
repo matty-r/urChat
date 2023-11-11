@@ -35,6 +35,7 @@ public class FontPanel extends JPanel
     private final JPanel MAIN_PANEL = new JPanel(new GridLayout(2, 3));
     private Font defaultFont;
     // private final JButton CANCEL_BUTTON = new JButton("Cancel");
+    // TODO: Add colour picker for foreground and background
 
     private Preferences settingsPath;
 

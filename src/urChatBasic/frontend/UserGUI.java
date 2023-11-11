@@ -87,6 +87,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JButton highStyleFontLabel = new JButton("High Priority Text Font");
     private static final JTextPane previewTextArea = new JTextPane();
     private static final JScrollPane previewTextScroll = new JScrollPane(previewTextArea);
+    private static final JLabel styleLabel = new JLabel("Mouse over text to view style, right-click to edit.");
     private static LineFormatter previewLineFormatter;
 
 
@@ -882,6 +883,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         addToPanel(appearancePanel, timeStampField, "Timestamp Format", Size.MEDIUM);
 
         addToPanel(appearancePanel, previewTextScroll, "Font Preview", null);
+        addToPanel(appearancePanel, styleLabel, "Preview Style", null);
         // addToPanel(appearancePanel, timeStampFontButton);
     }
 
@@ -928,15 +930,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             Element ele = doc.getCharacterElement(previewTextArea.viewToModel2D((e.getPoint())));
             AttributeSet as = ele.getAttributes();
             ClickableText isClickableText = (ClickableText) as.getAttribute("clickableText");
-            if (isClickableText != null && isClickableLinksEnabled())
+            if (SwingUtilities.isRightMouseButton(e))
             {
-                if (SwingUtilities.isRightMouseButton(e) && isClickableText.rightClickMenu() != null)
-                {
-                    isClickableText.rightClickMenu().show(e.getComponent(), e.getX(), e.getY());
-                } else if (SwingUtilities.isLeftMouseButton(e))
-                {
-                    isClickableText.execute();
-                }
+                String styleName = styleLabel.getText();
+                FontDialog styleFontDialog = new FontDialog(styleName, previewLineFormatter.getStyleAsFont(styleName), getFavouritesPath());
+                styleFontDialog.setVisible(true);
+            } else if (SwingUtilities.isLeftMouseButton(e) && null != isClickableText)
+            {
+                isClickableText.execute();
             }
         }
     }
@@ -949,6 +950,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             Element wordElement = doc.getCharacterElement(previewTextArea.viewToModel2D((e.getPoint())));
             AttributeSet wordAttributeSet = wordElement.getAttributes();
             ClickableText isClickableText = (ClickableText) wordAttributeSet.getAttribute("clickableText");
+
+            if(null != wordAttributeSet.getAttribute("name"))
+                styleLabel.setText(wordAttributeSet.getAttribute("name").toString());
+            else
+                styleLabel.setText("Mouse over text to view style, right-click to edit.");
+
             if (isClickableText != null && isClickableLinksEnabled())
             {
                 previewTextArea.setCursor(new Cursor(Cursor.HAND_CURSOR));

@@ -285,6 +285,23 @@ public class LineFormatter
         }
     }
 
+    public Font getStyleAsFont(String styleName)
+    {
+        SimpleAttributeSet fontStyle = getStyle(styleName);
+
+        int savedFontBoldItalic = 0;
+
+        if (StyleConstants.isBold(fontStyle))
+            savedFontBoldItalic = Font.BOLD;
+        if (StyleConstants.isItalic(fontStyle))
+            savedFontBoldItalic |= Font.ITALIC;
+
+        Font styleFont = new Font(StyleConstants.getFontFamily(fontStyle),
+                savedFontBoldItalic, StyleConstants.getFontSize(fontStyle));
+
+        return styleFont;
+    }
+
     public void updateStyles(StyledDocument doc, int startPosition)
     {
         SimpleAttributeSet textStyle = new SimpleAttributeSet(doc.getCharacterElement(startPosition).getAttributes());
@@ -306,7 +323,7 @@ public class LineFormatter
             try
             {
                 Date lineDate = (Date) textStyle.getAttribute("date");
-                String newTimeString = gui.getTimeLineString(lineDate) + " ";
+                String newTimeString = UserGUI.getTimeLineString(lineDate) + " ";
                 boolean hasTime = false;
 
                 if (null != textStyle.getAttribute("type") && textStyle.getAttribute("type").toString().equalsIgnoreCase("time"))
@@ -350,14 +367,14 @@ public class LineFormatter
         }
 
         // Copy the attributes, but only if they aren't already set
-        Iterator attributeIterator = textStyle.getAttributeNames().asIterator();
+        Iterator<?> attributeIterator = textStyle.getAttributeNames().asIterator();
         while(attributeIterator.hasNext())
         {
             String nextAttributeName = attributeIterator.next().toString();
 
             if(matchingStyle.getAttribute(nextAttributeName) == null)
             {
-                Iterator matchingIterator = matchingStyle.getAttributeNames().asIterator();
+                Iterator<?> matchingIterator = matchingStyle.getAttributeNames().asIterator();
                 boolean needsToBeSet = true;
 
                 while(matchingIterator.hasNext())
@@ -514,10 +531,6 @@ public class LineFormatter
      */
     public void formattedDocument(StyledDocument doc, Date lineDate, IRCUser fromUser, String fromString, String line)
     {
-
-        if(null == lineDate)
-            System.out.println("test");
-
         // build the timeLine string
         String timeLine = UserGUI.getTimeLineString(lineDate);
 
