@@ -5,7 +5,6 @@ import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -13,6 +12,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
@@ -35,15 +35,18 @@ public class LineFormatter
     private String myNick;
     private Font myFont;
     private IRCServerBase myServer;
+    private Preferences formatterPrefs;
     public SimpleAttributeSet defaultStyle;
     public SimpleAttributeSet timeStyle;
     public SimpleAttributeSet nameStyle;
     public SimpleAttributeSet lineStyle;
     protected UserGUI gui = DriverGUI.gui;
 
-    public LineFormatter(Font myFont, final IRCServerBase server)
+    public LineFormatter(Font myFont, final IRCServerBase server, Preferences formatterPrefs)
     {
-        // myNick = server.getNick();
+        // TODO: Need to load attributes from formatterPrefs
+        this.formatterPrefs = formatterPrefs;
+
 
         if(null != server)
         {
@@ -96,6 +99,7 @@ public class LineFormatter
             StyleConstants.setForeground(tempStyle, Color.LIGHT_GRAY);
         }
 
+        StyleConstants.setBold(tempStyle, formatterPrefs.node("lowStyle").getBoolean("font bold", StyleConstants.isBold(tempStyle)));
 
         return tempStyle;
     }

@@ -53,7 +53,7 @@ public class Constants
     public static final String KEY_NICK_NAME = "nick name";
     public static final String KEY_REAL_NAME = "real name";
     public static final String KEY_TIME_STAMPS = "show time stamps";
-    public static final String KEY_TIME_STAMP_FORMAT = "[HHmm]";
+    public static final String KEY_TIME_STAMP_FORMAT = "timestamp format";
     public static final String KEY_LAF_NAME = "laf name";
     public static final String KEY_EVENT_TICKER_ACTIVE = "show event ticker";
     public static final String KEY_USERS_LIST_ACTIVE = "show users list";

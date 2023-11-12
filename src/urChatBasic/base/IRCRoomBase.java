@@ -173,13 +173,13 @@ public class IRCRoomBase extends JPanel
             roomPrefs = gui.getFavouritesPath().node(getServer().getName()).node(roomName);
             fontDialog = new FontDialog(roomName, gui.getFont(), roomPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getFont(), getServer());
+            lineFormatter = new LineFormatter(getFontPanel().getFont(), getServer(), roomPrefs);
         } else
         {
             roomPrefs = gui.getFavouritesPath().node(roomName);
             fontDialog = new FontDialog(roomName, gui.getFont(), roomPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getFont(), null);
+            lineFormatter = new LineFormatter(getFontPanel().getFont(), null, roomPrefs);
         }
 
         setFont(getFontPanel().getFont());
@@ -240,7 +240,7 @@ public class IRCRoomBase extends JPanel
 
     public void resetLineFormatter()
     {
-        lineFormatter = new LineFormatter(getFontPanel().getFont(), getServer());
+        lineFormatter = new LineFormatter(getFontPanel().getFont(), getServer(), roomPrefs);
     }
 
     private void setupMainTextArea()

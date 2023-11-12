@@ -902,13 +902,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // }
 
         // previewTextArea.setFont(clientFontPanel.getFont());
-        previewLineFormatter = new LineFormatter(clientFontPanel.getFont(), null);
+        previewLineFormatter = new LineFormatter(clientFontPanel.getFont(), null, getProfilePath());
 
         if(previewDoc.getLength() <= 0)
         {
             previewTextArea.setCaretPosition(previewTextArea.getDocument().getLength());
-            previewTextArea.addMouseListener(new ChannelClickListener());
-            previewTextArea.addMouseMotionListener(new ChannelMovementListener());
+            previewTextArea.addMouseListener(new PreviewClickListener());
+            previewTextArea.addMouseMotionListener(new PreviewMovementListener());
             IRCUser tempUser = new IRCUser(null, "matty_r");
             IRCUser tempUser2 = new IRCUser(null, System.getProperty("user.name"));
             previewLineFormatter.setNick(System.getProperty("user.name"));
@@ -922,7 +922,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    class ChannelClickListener extends MouseInputAdapter
+    class PreviewClickListener extends MouseInputAdapter
     {
         public void mouseClicked(MouseEvent e)
         {
@@ -933,7 +933,35 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             if (SwingUtilities.isRightMouseButton(e))
             {
                 String styleName = styleLabel.getText();
-                FontDialog styleFontDialog = new FontDialog(styleName, previewLineFormatter.getStyleAsFont(styleName), getFavouritesPath());
+                FontDialog styleFontDialog = new FontDialog(styleName, previewLineFormatter.getStyleAsFont(styleName), getProfilePath().node(styleName));
+
+                styleFontDialog.addSaveListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent arg0) {
+                        // TODO: Need to save attributes and updateStyles after..
+                        // Currently runs the save after updateStyles
+                        previewLineFormatter.updateStyles(doc, 0);
+                    }
+
+                });
+
+                styleFontDialog.addResetListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent arg0) {
+                        try {
+                            getProfilePath().node(styleName).removeNode();
+                        } catch (BackingStoreException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+
+                        previewLineFormatter.updateStyles(doc, 0);
+                    }
+
+                });
+
                 styleFontDialog.setVisible(true);
             } else if (SwingUtilities.isLeftMouseButton(e) && null != isClickableText)
             {
@@ -942,7 +970,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    class ChannelMovementListener extends MouseAdapter
+    class PreviewMovementListener extends MouseAdapter
     {
         public void mouseMoved(MouseEvent e)
         {
@@ -1997,7 +2025,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
 
         // update the styles in the preview text area
-        // previewLineFormatter.updateStyles(previewTextArea.getStyledDocument(), 0);
         updatePreviewTextArea();
     }
 
@@ -2009,7 +2036,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     @Override
     public void run()
     {
-        // Auto-generated method stub
         Thread.currentThread().setContextClassLoader(DriverGUI.contextClassLoader);
         Thread.currentThread().setUncaughtExceptionHandler(new URUncaughtExceptionHandler());
 
