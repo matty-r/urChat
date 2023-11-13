@@ -1,4 +1,4 @@
-package urChatBasic.tests.backend;
+package backend;
 
 import org.junit.Before;
 import org.junit.Test;
