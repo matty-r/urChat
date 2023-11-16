@@ -78,11 +78,15 @@ public class LineFormatter
         defaultStyle.addAttribute("name", "defaultStyle");
         defaultStyle.addAttribute("type", "default");
         // get the contrasting colour of the background colour
-        StyleConstants.setForeground(defaultStyle, URColour.getContrastColour(UIManager.getColor("Panel.background")));
-        StyleConstants.setFontFamily(defaultStyle, myFont.getFamily());
-        StyleConstants.setFontSize(defaultStyle, myFont.getSize());
-        StyleConstants.setBold(defaultStyle, myFont.isBold());
-        StyleConstants.setItalic(defaultStyle, myFont.isItalic());
+        StyleConstants.setForeground(defaultStyle,
+            new Color(formatterPrefs.node("defaultStyle").getInt("font foreground",
+                URColour.getContrastColour(UIManager.getColor("Panel.background")).getRGB()
+        )));
+
+        StyleConstants.setFontFamily(defaultStyle, formatterPrefs.node("defaultStyle").get("font family", myFont.getFamily()));
+        StyleConstants.setFontSize(defaultStyle, formatterPrefs.node("defaultStyle").getInt("font size", myFont.getSize()));
+        StyleConstants.setBold(defaultStyle, formatterPrefs.node("defaultStyle").getBoolean("font bold", myFont.isBold()));
+        StyleConstants.setItalic(defaultStyle, formatterPrefs.node("defaultStyle").getBoolean("font italic", myFont.isItalic()));
 
         return defaultStyle;
     }

@@ -1,5 +1,6 @@
 package urChatBasic.frontend.components;
 
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
@@ -9,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import urChatBasic.base.Constants;
@@ -36,6 +39,8 @@ public class FontPanel extends JPanel
     private Font defaultFont;
     // private final JButton CANCEL_BUTTON = new JButton("Cancel");
     // TODO: Add colour picker for foreground and background
+
+    private List<ActionListener> actionListeners = new ArrayList<>();
 
     private Preferences settingsPath;
 
@@ -71,7 +76,8 @@ public class FontPanel extends JPanel
 
 
         RESET_BUTTON.addActionListener(new ResetListener());
-        SAVE_BUTTON.addActionListener(new SaveListener());
+        // SAVE_BUTTON.addActionListener(new SaveListener());
+        addActionListener(SAVE_BUTTON, new SaveListener());
         FONT_COMBO_BOX.addItemListener(new FontSelectionChange());
         SIZES_COMBO_BOX.addItemListener(new FontSelectionChange());
         MAKE_BOLD.addActionListener(new CheckListener());
@@ -194,6 +200,30 @@ public class FontPanel extends JPanel
             boldItalic,
             Integer.parseInt(SIZES_COMBO_BOX.getSelectedItem().toString())
         ));
+    }
+
+    // Override the addActionListener method to keep track of added listeners
+    public void addActionListener(JButton targetButton, ActionListener listener) {
+        actionListeners.add(listener);
+        targetButton.addActionListener(listener);
+    }
+
+    // Using reflection - we check to see if the class implements the ActionListener interface
+    // private static boolean implementsActionListener(Component component) {
+    //     Class<?>[] interfaces = component.getClass().getInterfaces();
+    //     Class<?> actionListenerClass = ActionListener.class;
+
+    //     for (Class<?> iface : interfaces) {
+    //         if (iface == actionListenerClass) {
+    //             return true;
+    //         }
+    //     }
+    //     return false;
+    // }
+
+    // Method to retrieve all added listeners
+    public List<ActionListener> getActionListeners() {
+        return actionListeners;
     }
 
     class CheckListener implements ActionListener

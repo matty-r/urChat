@@ -939,6 +939,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
                     @Override
                     public void actionPerformed(ActionEvent arg0) {
+
+                        List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();
+
+
                         // TODO: Need to save attributes and updateStyles after..
                         // Currently runs the save after updateStyles
                         previewLineFormatter.updateStyles(doc, 0);
@@ -961,6 +965,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     }
 
                 });
+
 
                 styleFontDialog.setVisible(true);
             } else if (SwingUtilities.isLeftMouseButton(e) && null != isClickableText)
