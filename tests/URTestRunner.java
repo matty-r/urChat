@@ -40,11 +40,12 @@ public class URTestRunner  {
         System.out.println("Total number of tests " + totalRuns);
         System.out.println("Total number of tests failed " + totalFails);
 
-
         for(Failure failure : testFailures)
         {
             System.out.println(failure.getMessage());
-
         }
+
+        // TestRunner doesn't exit when the tests are complete for some reason
+        System.exit(0);
     }
 }

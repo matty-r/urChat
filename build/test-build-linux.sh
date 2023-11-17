@@ -30,24 +30,31 @@ rm -rf "urChatBasic"
 cp -r "$initial_dir/lib" "."
 
 # Compile the Java files for the urTestRunner, using the urChat.jar as a source of the lib files
-find ../tests -name "*.java" -exec javac -cp "urChat.jar" -d . {} +
+find ../tests -name "*.java" -exec javac -cp "urChat.jar:./lib/*" -d . {} +
 
 # Move the main.jar back into the temp dir (we don't want it included in the test runner jar)
 mv "urChat.jar" ../
 
-# Don't need the lib folder included in the jar
-rm -rf "lib"
-
 # Create a manifest file for the test runner
 echo "Main-Class: URTestRunner" > ../testmanifest.txt
-echo "Class-Path: urChat.jar lib/*" >> ../testmanifest.txt
+echo "Class-Path: urChat.jar ./lib/*" >> ../testmanifest.txt
 
 jar -cfm "urTestRunner.jar" ../testmanifest.txt .
 
+mv "lib" ../
 mv "urTestRunner.jar" ../
 
-java -jar "../urTestRunner.jar"
+cd ../
+
+# run with jacoco agent to build coverage.exec
+java -javaagent:lib/jacocoagent.jar=destfile=coverage.exec -cp "urChat.jar:lib/*:urTestRunner.jar" URTestRunner
+
+# build html report pointing to the source .java files
+java -jar lib/jacococli.jar report coverage.exec --classfiles urChat.jar --html coverage --sourcefiles src/
+
+mv "coverage" "$initial_dir"
 
 # Clean up the temporary directory
-cd ..
+cd "$initial_dir"
+
 rm -rf "$temp_dir"
