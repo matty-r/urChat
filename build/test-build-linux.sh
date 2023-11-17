@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Save the current directory to a variable
-current_dir=$(pwd)
+initial_dir=$(pwd)
 
 # Clone the repository into a temporary directory
 temp_dir=$(mktemp -d)
@@ -9,15 +9,12 @@ git clone . "$temp_dir"
 cd "$temp_dir"
 
 # Compile the Java files for the main jar
-find src -name "*.java" -exec javac -cp "lib/*" -d "bin/" {} +
-
-# Copy the images directory
-cp -r "images" "bin/"
-
-# Copy the lib directory
-cp -r "lib" "bin/"
+find src -name "*.java" -exec javac -d "bin" {} +
 
 cd "bin"
+
+# Copy the images directory
+cp -r "$initial_dir/src/images" "."
 
 # Create a manifest file specifying the main class
 echo "Main-Class: urChatBasic.frontend.DriverGUI" > ../manifest.txt
@@ -25,24 +22,31 @@ echo "Main-Class: urChatBasic.frontend.DriverGUI" > ../manifest.txt
 # Create the JAR file with the manifest and compiled class files, includes the lib and images directory in the created JAR file
 jar -cfm "urChat.jar" ../manifest.txt .
 
-# Delete all the files we don't want included in the urTestRunner.jar
+# Delete all the files not needed to compile the test runner
 rm -rf "images"
 rm -rf "urChatBasic"
 
-# Compile the Java files for the urTestRunner, using the urChat.jar as a source of the lib files
-find ../tests -name "*.java" -exec javac -cp "urChat.jar:lib/*" -d . {} +
+# Copy the lib directory
+cp -r "$initial_dir/lib" "."
 
-# Move the main.jar back into the temp dir
+# Compile the Java files for the urTestRunner, using the urChat.jar as a source of the lib files
+find ../tests -name "*.java" -exec javac -cp "urChat.jar" -d . {} +
+
+# Move the main.jar back into the temp dir (we don't want it included in the test runner jar)
 mv "urChat.jar" ../
 
+# Don't need the lib folder included in the jar
 rm -rf "lib"
 
 # Create a manifest file for the test runner
-echo "Main-Class: TestRunner" > ../testmanifest.txt
+echo "Main-Class: URTestRunner" > ../testmanifest.txt
+echo "Class-Path: urChat.jar lib/*" >> ../testmanifest.txt
 
 jar -cfm "urTestRunner.jar" ../testmanifest.txt .
 
 mv "urTestRunner.jar" ../
+
+java -jar "../urTestRunner.jar"
 
 # Clean up the temporary directory
 cd ..
