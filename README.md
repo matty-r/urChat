@@ -15,12 +15,12 @@ Dependencies required only for running the tests:
 
 Create a **lib** directory with the following files (Only required for running the tests):
 
-* ![Junit 4](https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar)
-* ![Hamcrest Core](https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar)
+* [Junit 4](https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar)
+* [Hamcrest Core](https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar)
 
 Extract jacocoagent.jar and jacococli.jar into the **lib** directory
 
-* ![Jacoco](https://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.8.11/jacoco-0.8.11.zip)
+* [Jacoco](https://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.8.11/jacoco-0.8.11.zip)
 
 
 Usage
