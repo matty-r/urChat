@@ -3,38 +3,46 @@
 # Save the current directory to a variable
 current_dir=$(pwd)
 
-# Get the latest Git tag
-latest_tag=$(git describe --tags --abbrev=0)
-
 # Clone the repository into a temporary directory
 temp_dir=$(mktemp -d)
 git clone . "$temp_dir"
 cd "$temp_dir"
 
-# Checkout the latest Git tag in the temporary directory
-git checkout --quiet "$latest_tag"
-
-# Update the UR_VERSION in Constants.java
-sed -i "s/public static String UR_VERSION.*/public static String UR_VERSION = \"rel-$latest_tag\";/" src/urChatBasic/base/Constants.java
-
-# Compile the Java files, excluding specific files or directories
-find src -name "*.java" ! -name "UIManagerDefaults.java"  -exec javac -cp lib/*:. -d bin {} +
-find tests -name "*.java" ! -name "UIManagerDefaults.java" -exec javac -cp lib/*:. -d bin/tests {} +
-
+# Compile the Java files for the main jar
+find src -name "*.java" -exec javac -cp "lib/*" -d "bin/" {} +
 
 # Copy the images directory
-mkdir -p bin/images
-cp -r src/images/* bin/images/
+cp -r "images" "bin/"
 
 # Copy the lib directory
-cp -r "$current_dir/lib" "$temp_dir/"
+cp -r "lib" "bin/"
+
+cd "bin"
 
 # Create a manifest file specifying the main class
-echo "Main-Class: urChatBasic.frontend.DriverGUI" > manifest.txt
+echo "Main-Class: urChatBasic.frontend.DriverGUI" > ../manifest.txt
 
-# Create the JAR file with the manifest and compiled class files
-mkdir -p "$current_dir/release"
-jar -cfm "$current_dir/release/urchattestrunner.jar" manifest.txt -C "$temp_dir/bin" .
+# Create the JAR file with the manifest and compiled class files, includes the lib and images directory in the created JAR file
+jar -cfm "urChat.jar" ../manifest.txt .
+
+# Delete all the files we don't want included in the urTestRunner.jar
+rm -rf "images"
+rm -rf "urChatBasic"
+
+# Compile the Java files for the urTestRunner, using the urChat.jar as a source of the lib files
+find ../tests -name "*.java" -exec javac -cp "urChat.jar:lib/*" -d . {} +
+
+# Move the main.jar back into the temp dir
+mv "urChat.jar" ../
+
+rm -rf "lib"
+
+# Create a manifest file for the test runner
+echo "Main-Class: TestRunner" > ../testmanifest.txt
+
+jar -cfm "urTestRunner.jar" ../testmanifest.txt .
+
+mv "urTestRunner.jar" ../
 
 # Clean up the temporary directory
 cd ..

@@ -25,9 +25,14 @@ public class DriverGUI
     {
 
         Constants.init();
-        URL imgPath = new URL(Constants.RESOURCES_DIR + "urChat Icon.png");
+        try {
+            URL imgPath = new URL(Constants.RESOURCES_DIR + "urChat Icon.png");
 
-        img = new ImageIcon(imgPath);
+            img = new ImageIcon(imgPath);
+        } catch (Exception e)
+        {
+            Constants.LOGGER.log(Level.INFO, "No Icon found.");
+        }
 
         Constants.LOGGER.log(Level.INFO, "Starting up..");
 
