@@ -46,13 +46,15 @@ mv "urTestRunner.jar" ../
 
 cd ../
 
+mkdir -p "report"
+
 # run with jacoco agent to build coverage.exec
 java -javaagent:lib/jacocoagent.jar=destfile=coverage.exec -cp "urChat.jar:lib/*:urTestRunner.jar" URTestRunner
 
 # build html report pointing to the source .java files
-java -jar lib/jacococli.jar report coverage.exec --classfiles urChat.jar --html coverage --sourcefiles src/
+java -jar lib/jacococli.jar report coverage.exec --classfiles urChat.jar --html report --sourcefiles src/
 
-mv "coverage" "$initial_dir"
+mv "report" "$initial_dir"
 
 # Clean up the temporary directory
 cd "$initial_dir"
