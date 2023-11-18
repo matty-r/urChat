@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,6 +26,12 @@ public class URTestRunner  {
         testClasses.add(DialogTests.class);
         testClasses.add(MessageHandlerTests.class);
         testClasses.add(UserGUITests.class);
+
+        // Create the report directory if it doesn't exist
+        File reportDirectory = new File("report");
+        if (!reportDirectory.exists()) {
+            reportDirectory.mkdirs(); // Create directory and any missing parent directories
+        }
 
         // Create a RunListener to output test results as XML
         RunListener listener = new JUnitXmlListener(new FileWriter("report/junit-report.xml"));
