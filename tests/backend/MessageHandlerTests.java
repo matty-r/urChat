@@ -1,7 +1,5 @@
 package backend;
 
-import org.junit.Before;
-import org.junit.Test;
 import urChatBasic.backend.Connection;
 import urChatBasic.backend.MessageHandler;
 import urChatBasic.backend.MessageHandler.Message;
@@ -21,6 +19,8 @@ import java.util.regex.Pattern;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 
 public class MessageHandlerTests {
     MessageHandler testHandler;
@@ -30,7 +30,7 @@ public class MessageHandlerTests {
     IRCUser testUser;
     Connection testConnection;
 
-    @Before
+    @BeforeTest
     public void setUp() throws Exception {
         DriverGUI.createGUI();
         testGUI = DriverGUI.gui;

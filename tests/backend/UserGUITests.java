@@ -1,12 +1,10 @@
 package backend;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 import urChatBasic.base.Constants;
 
 import static org.junit.Assert.*;
@@ -16,7 +14,7 @@ public class UserGUITests {
     Preferences serverTestPreference;
     Preferences roomTestPreference;
 
-    @Before
+    @BeforeTest
     public void setUp() throws Exception {
         baseTestPreference = Constants.BASE_PREFS.parent().node("testing");
         serverTestPreference = baseTestPreference.node("servername");
@@ -39,7 +37,7 @@ public class UserGUITests {
         assertNotEquals(0, roomTestPreference.keys().length + roomTestPreference.childrenNames().length);
     }
 
-    @After
+    @AfterTest
     public void tearDown() throws BackingStoreException {
         baseTestPreference.removeNode();
     }
