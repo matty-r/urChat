@@ -54,7 +54,11 @@ java -javaagent:lib/jacocoagent.jar=destfile=coverage.exec -cp "urChat.jar:lib/*
 # build html report pointing to the source .java files
 java -jar lib/jacococli.jar report coverage.exec --classfiles urChat.jar --html report --sourcefiles src/
 
+# Jacoco Output
 mv "report" "$initial_dir"
+
+# TestNG Output
+mv "test-output" "$initial_dir"
 
 # Clean up the temporary directory
 cd "$initial_dir"

@@ -29,14 +29,12 @@ public class URTestRunner {
         TestListenerAdapter listener = new TestListenerAdapter();
         testNG.addListener(listener);
 
-        try {
-            testNG.run();
-        } catch (Exception e)
-        {
-            System.out.println("test");
-        }
+        testNG.run();
+
         // Get test results
         System.out.println("Total tests run: " + listener.getPassedTests().size());
         System.out.println("Total tests failed: " + listener.getFailedTests().size());
+
+        System.exit(0);
     }
 }
