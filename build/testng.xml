@@ -2,10 +2,11 @@
 <suite name="GUITests">
     <test name="Test #000 - Explictly defined method name">
             <classes>
-                <class name="backend.DialogTests"/>
+                <class name="backend.DialogTests">
                     <methods>
                         <include name="testYesNoDialogWithActionListener"/>
                     </methods>
+                </class>
             </classes>
     </test>
     <test name="Test #001 - Basic group test">

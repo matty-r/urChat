@@ -9,11 +9,11 @@ Contributions
 
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
-Test Dependencies
+Test/Code Coverage Dependencies
 ======
 Dependencies required only for running the tests:
 
-Create a **lib** directory with the following files:
+Create a **lib/test** directory with the following files:
 
 * [Junit 4](https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar)
 * [Hamcrest Core](https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar)
@@ -21,13 +21,22 @@ Create a **lib** directory with the following files:
 * [JCommander](https://repo1.maven.org/maven2/com/beust/jcommander/1.82/jcommander-1.82.jar)
 * [SLF4J](https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar)
 
-Extract jacocoagent.jar and jacococli.jar into the **lib** directory
+Extract jacocoagent.jar and jacococli.jar into the **lib/coverage** directory
 
 * [Jacoco](https://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.8.11/jacoco-0.8.11.zip)
 
 Usage
 ======
 Ensure you've got Java 17 available on your system, download and run the latest JAR release (https://github.com/matty-r/urChat/releases). If you'd like to try out the Theme functionality, create a 'themes' directory next to the urChat.jar and download the FlatLAF.jar release and place within that directory. The theme can be selected under the client options page.
+
+Test Usage
+======
+
+Using the testng.xml - must be in the same directory as urchat.jar
+*	java -cp "urTestRunner.jar" org.testng.TestNG testng.xml
+
+Without testng.xml
+*	java -jar urTestRunner.jar
 
 Screenshots
 ======
