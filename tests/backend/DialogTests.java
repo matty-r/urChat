@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import org.testng.Reporter;
 import org.testng.annotations.Test;
 
 public class DialogTests
@@ -42,7 +43,7 @@ public class DialogTests
         assertTrue("Didn't press the cancel button", passedTest.get());
     }
 
-    @Test
+    @Test(groups = {"Test #001"})
     public void testYesNoDialogWithBoolean()
     {
         AtomicBoolean cancelClicked = new AtomicBoolean(false);
@@ -63,11 +64,16 @@ public class DialogTests
 
         // Assert that the cancel action was executed
         assertTrue("No button wasn't pressed.", cancelClicked.get());
+
+        Reporter.log("Other reporting information for this test");
     }
 
     @Test
     public void testYesNoDialogWithActionListener()
     {
+
+        Reporter.log("Custom reporting log information here, defined in the method");
+
         // effectively final
         AtomicBoolean passedTest = new AtomicBoolean(false);
 

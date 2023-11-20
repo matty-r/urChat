@@ -13,15 +13,17 @@ Test Dependencies
 ======
 Dependencies required only for running the tests:
 
-Create a **lib** directory with the following files (Only required for running the tests):
+Create a **lib** directory with the following files:
 
 * [Junit 4](https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar)
 * [Hamcrest Core](https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar)
+* [TestNG 7.8.0](https://repo1.maven.org/maven2/org/testng/testng/7.8.0/testng-7.8.0.jar)
+* [JCommander](https://repo1.maven.org/maven2/com/beust/jcommander/1.82/jcommander-1.82.jar)
+* [SLF4J](https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar)
 
 Extract jacocoagent.jar and jacococli.jar into the **lib** directory
 
 * [Jacoco](https://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.8.11/jacoco-0.8.11.zip)
-
 
 Usage
 ======
