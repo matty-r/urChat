@@ -49,7 +49,7 @@ cd ../
 mkdir -p "report"
 
 # run with jacoco agent to build coverage.exec
-java -javaagent:lib/jacocoagent.jar=destfile=coverage.exec -cp "urChat.jar:lib/*:urTestRunner.jar" URTestRunner
+java -javaagent:lib/jacocoagent.jar=destfile=coverage.exec -cp "urChat.jar:lib/*:urTestRunner.jar" org.testng.TestNG ./build/testng.xml
 
 # build html report pointing to the source .java files
 java -jar lib/jacococli.jar report coverage.exec --classfiles urChat.jar --html report --sourcefiles src/
