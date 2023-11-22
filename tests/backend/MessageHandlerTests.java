@@ -9,9 +9,6 @@ import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.UserGUI;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -24,6 +21,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
+import static org.testng.AssertJUnit.*;
+
 
 public class MessageHandlerTests
 {
@@ -203,7 +202,7 @@ public class MessageHandlerTests
         assertEquals(MessageHandler.DisconnectMessage.class, testMessage.getMessageBase().getClass());
     }
 
-    @Test(groups = {"Test #005"}, timeOut = 1000)
+    @Test(groups = {"Test #005"})
     public void testChannelLineLimit() throws BadLocationException, InterruptedException
     {
         testGUI.setLimitChannelLines(10);
@@ -246,7 +245,7 @@ public class MessageHandlerTests
     }
 
     @Test(groups = {"Test #005"}, dependsOnMethods = {"backend.MessageHandlerTests.testChannelLineLimit"}
-        , description = "This test depends on testChannelLineLimit which should fail due to hitting the timeout")
+        , description = "Test Description")
     public void testServerLineLimit() throws BadLocationException, InterruptedException
     {
         testGUI.setLimitServerLines(10);

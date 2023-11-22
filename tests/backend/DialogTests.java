@@ -2,12 +2,12 @@ package backend;
 
 import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.frontend.dialogs.YesNoDialog;
-import static org.junit.Assert.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import org.testng.Reporter;
 import org.testng.annotations.Test;
+import static org.testng.AssertJUnit.*;
 
 public class DialogTests
 {

@@ -6,8 +6,8 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import urChatBasic.base.Constants;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotEquals;
+import static org.testng.AssertJUnit.*;
 
 public class UserGUITests {
     Preferences baseTestPreference;
