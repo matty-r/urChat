@@ -12,6 +12,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import urChatBasic.base.Constants;
@@ -118,10 +119,16 @@ public class FontPanel extends JPanel
     // The default font for a channel is the Global Font, the default font
     // the UserGUI is Constants.DEFAULT_FONT
     public void resetFont() {
-        settingsPath.remove(Constants.KEY_FONT_BOLD);
-        settingsPath.remove(Constants.KEY_FONT_ITALIC);
-        settingsPath.remove(Constants.KEY_FONT_SIZE);
-        settingsPath.remove(Constants.KEY_FONT_FAMILY);
+        try
+        {
+            for (String key : settingsPath.keys()) {
+                settingsPath.remove(key);
+            }
+        } catch (BackingStoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         loadFont();
     }

@@ -396,12 +396,6 @@ public class LineFormatter
 
         SimpleAttributeSet matchingStyle = getStyle(styleName);
 
-        // TODO: Update the time format. Check if there is a timeStyle already, if there is then remove it
-        // from the line
-        // and insert the new timeStyle/Format. Otherwise we just need to insert it. The first
-        // character/style will have
-        // the 'date' attribute of when the line was added.
-
         boolean isDateStyle = false;
         if (null != gui && null != textStyle.getAttribute("date"))
         {

@@ -927,7 +927,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             if (SwingUtilities.isRightMouseButton(e) && wordAttributeSet.getAttribute("name") != null)
             {
                 String styleName = styleLabel.getText();
-                FontDialog styleFontDialog = new FontDialog(styleName, previewLineFormatter.getStyleAsFont(styleName), getProfilePath().node(styleName));
+                FontDialog styleFontDialog = new FontDialog(styleName, clientFontPanel.getFont(), getProfilePath().node(styleName));
 
                 styleFontDialog.addSaveListener(new ActionListener() {
 
@@ -944,21 +944,21 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
                 });
 
-                styleFontDialog.addResetListener(new ActionListener() {
+                // styleFontDialog.addResetListener(new ActionListener() {
 
-                    @Override
-                    public void actionPerformed(ActionEvent arg0) {
-                        try {
-                            getProfilePath().node(styleName).removeNode();
-                        } catch (BackingStoreException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
+                //     @Override
+                //     public void actionPerformed(ActionEvent arg0) {
+                //         try {
+                //             getProfilePath().node(styleName).removeNode();
+                //         } catch (BackingStoreException e) {
+                //             // TODO Auto-generated catch block
+                //             e.printStackTrace();
+                //         }
 
-                        previewLineFormatter.updateStyles(doc, 0);
-                    }
+                //         previewLineFormatter.updateStyles(doc, 0);
+                //     }
 
-                });
+                // });
 
 
                 styleFontDialog.setVisible(true);
