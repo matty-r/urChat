@@ -36,10 +36,10 @@ public class LineFormatter
     private Font myFont;
     private IRCServerBase myServer;
     private Preferences formatterPrefs;
-    public SimpleAttributeSet defaultStyle;
     public SimpleAttributeSet timeStyle;
-    public SimpleAttributeSet nameStyle;
     public SimpleAttributeSet lineStyle;
+    public SimpleAttributeSet nickStyle;
+    public SimpleAttributeSet myStyle;
     protected UserGUI gui = DriverGUI.gui;
 
     public LineFormatter(Font myFont, final IRCServerBase server, Preferences formatterPrefs)
@@ -48,107 +48,151 @@ public class LineFormatter
         this.formatterPrefs = formatterPrefs;
 
 
-        if(null != server)
+        if (null != server)
         {
             myNick = server.getNick();
             myServer = server;
-        }
-        else
+        } else
         {
             myNick = null;
         }
 
         this.myFont = myFont;
-        defaultStyle = defaultStyle();
-        timeStyle = defaultStyle();
-        nameStyle = defaultStyle();
-        lineStyle = defaultStyle();
+        timeStyle = defaultStyle(null);
+        lineStyle = defaultStyle(null);
+        nickStyle = nickStyle();
+        myStyle = myStyle();
     }
 
     public void setFont(StyledDocument doc, Font newFont)
     {
         myFont = newFont;
-        if(doc.getLength() > 0)
+        if (doc.getLength() > 0)
             updateStyles(doc, 0);
     }
 
-    public SimpleAttributeSet defaultStyle()
+    public SimpleAttributeSet loadFontStyle(String name, SimpleAttributeSet loadedStyle)
     {
+
+        StyleConstants.setFontFamily(loadedStyle,
+                formatterPrefs.node(name).get("font family", StyleConstants.getFontFamily(loadedStyle).toString()));
+
+        StyleConstants.setFontSize(loadedStyle,
+                formatterPrefs.node(name).getInt("font size", StyleConstants.getFontSize(loadedStyle)));
+
+        StyleConstants.setBold(loadedStyle,
+                formatterPrefs.node(name).getBoolean("font bold", StyleConstants.isBold(loadedStyle)));
+
+        StyleConstants.setItalic(loadedStyle,
+                formatterPrefs.node(name).getBoolean("font italic", StyleConstants.isItalic(loadedStyle)));
+
+        // TODO: Allow for underline and strikethrough
+        // StyleConstants.setUnderline(defaultStyle,
+        //         formatterPrefs.node(name).getBoolean("font underline", StyleConstants.isUnderline(defaults)));
+
+        // StyleConstants.setStrikeThrough(defaultStyle,
+        //         formatterPrefs.node(name).getBoolean("font strikethrough", StyleConstants.isStrikeThrough(defaults)));
+
+        return loadedStyle;
+    }
+
+    public SimpleAttributeSet defaultStyle(String name)
+    {
+        if (name == null)
+            name = "defaultStyle";
+
         SimpleAttributeSet defaultStyle = new SimpleAttributeSet();
-        defaultStyle.addAttribute("name", "defaultStyle");
+        defaultStyle.addAttribute("name", name);
         defaultStyle.addAttribute("type", "default");
         // get the contrasting colour of the background colour
-        StyleConstants.setForeground(defaultStyle,
-            new Color(formatterPrefs.node("defaultStyle").getInt("font foreground",
-                URColour.getContrastColour(UIManager.getColor("Panel.background")).getRGB()
-        )));
+        StyleConstants.setForeground(defaultStyle, new Color(formatterPrefs.node(name).getInt("font foreground",
+                URColour.getContrastColour(UIManager.getColor("Panel.background")).getRGB())));
 
-        StyleConstants.setFontFamily(defaultStyle, formatterPrefs.node("defaultStyle").get("font family", myFont.getFamily()));
-        StyleConstants.setFontSize(defaultStyle, formatterPrefs.node("defaultStyle").getInt("font size", myFont.getSize()));
-        StyleConstants.setBold(defaultStyle, formatterPrefs.node("defaultStyle").getBoolean("font bold", myFont.isBold()));
-        StyleConstants.setItalic(defaultStyle, formatterPrefs.node("defaultStyle").getBoolean("font italic", myFont.isItalic()));
+        StyleConstants.setFontFamily(defaultStyle, myFont.getFamily());
+        StyleConstants.setFontSize(defaultStyle, myFont.getSize());
+        StyleConstants.setBold(defaultStyle, myFont.isBold());
+        StyleConstants.setItalic(defaultStyle, myFont.isItalic());
+
+        defaultStyle = loadFontStyle(name, defaultStyle);
 
         return defaultStyle;
     }
 
     public SimpleAttributeSet lowStyle()
     {
-        SimpleAttributeSet tempStyle = defaultStyle();
-        tempStyle.addAttribute("name", "lowStyle");
+        String name = "lowStyle";
 
-        if(URColour.useDarkColour(UIManager.getColor("Panel.background")))
+        SimpleAttributeSet tempStyle = defaultStyle(name);
+
+        if (URColour.useDarkColour(UIManager.getColor("Panel.background")))
         {
             StyleConstants.setForeground(tempStyle, Color.DARK_GRAY);
-        } else {
+        } else
+        {
             StyleConstants.setForeground(tempStyle, Color.LIGHT_GRAY);
         }
 
-        StyleConstants.setBold(tempStyle, formatterPrefs.node("lowStyle").getBoolean("font bold", StyleConstants.isBold(tempStyle)));
+        tempStyle = loadFontStyle(name, tempStyle);
 
         return tempStyle;
     }
 
     public SimpleAttributeSet mediumStyle()
     {
+        String name = "mediumStyle";
 
-        SimpleAttributeSet tempStyle = defaultStyle();
-        tempStyle.addAttribute("name", "mediumStyle");
-        // StyleConstants.setBackground(tempStyle, Color.YELLOW);
+        SimpleAttributeSet tempStyle = defaultStyle(name);
+
+        tempStyle = loadFontStyle(name, tempStyle);
 
         return tempStyle;
     }
 
     public SimpleAttributeSet highStyle()
     {
-        SimpleAttributeSet tempStyle = defaultStyle();
-        tempStyle.addAttribute("name", "highStyle");
+        String name = "highStyle";
 
-        StyleConstants.setBackground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground")); // TODO: Get highlight colour?
-        StyleConstants.setForeground(tempStyle, URColour.getContrastColour(UIManager.getColor("CheckBoxMenuItem.selectionBackground")));
+        SimpleAttributeSet tempStyle = defaultStyle(name);
+
+        StyleConstants.setBackground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground")); // TODO:
+                                                                                                             // Get
+                                                                                                             // highlight
+                                                                                                             // colour?
+        StyleConstants.setForeground(tempStyle,
+                URColour.getContrastColour(UIManager.getColor("CheckBoxMenuItem.selectionBackground")));
+
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setItalic(tempStyle, true);
+
+        tempStyle = loadFontStyle(name, tempStyle);
 
         return tempStyle;
     }
 
     public SimpleAttributeSet urlStyle()
     {
-        SimpleAttributeSet tempStyle = defaultStyle();
+        String name = "urlStyle";
 
-        tempStyle.addAttribute("name", "urlStyle");
+        SimpleAttributeSet tempStyle = defaultStyle(name);
+
         tempStyle.addAttribute("type", "url");
+
         StyleConstants.setForeground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground"));
 
         StyleConstants.setUnderline(tempStyle, true);
+
+        tempStyle = loadFontStyle(name, tempStyle);
 
         return tempStyle;
     }
 
     public SimpleAttributeSet channelStyle()
     {
+        String name = "channelStyle";
+
         SimpleAttributeSet tempStyle = urlStyle();
 
-        tempStyle.addAttribute("name", "channelStyle");
+        tempStyle.addAttribute("name", name);
         tempStyle.addAttribute("type", "channel");
 
         return tempStyle;
@@ -156,13 +200,33 @@ public class LineFormatter
 
     public SimpleAttributeSet myStyle()
     {
-        SimpleAttributeSet tempStyle = defaultStyle();
-        tempStyle.addAttribute("name", "myStyle");
+        String name = "myStyle";
+
+        SimpleAttributeSet tempStyle = defaultStyle(name);
+        tempStyle.addAttribute("type", "myNick");
+
         // StyleConstants.setForeground(tempStyle, Color.GREEN);
-        StyleConstants.setForeground(tempStyle, URColour.getInvertedColour(UIManager.getColor("CheckBoxMenuItem.selectionBackground")));
+        StyleConstants.setForeground(tempStyle,
+                URColour.getInvertedColour(UIManager.getColor("CheckBoxMenuItem.selectionBackground")));
 
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setUnderline(tempStyle, true);
+
+        tempStyle = loadFontStyle(name, tempStyle);
+
+        return tempStyle;
+    }
+
+    public SimpleAttributeSet nickStyle()
+    {
+        String name = "nickStyle";
+
+        SimpleAttributeSet tempStyle = defaultStyle(name);
+        tempStyle.addAttribute("type", "nick");
+
+        StyleConstants.setUnderline(tempStyle, true);
+
+        tempStyle = loadFontStyle(name, tempStyle);
 
         return tempStyle;
     }
@@ -183,7 +247,7 @@ public class LineFormatter
             this.textLink = textLink;
             this.attributeSet = attributeSet;
 
-            if(fromUser != null)
+            if (fromUser != null)
             {
                 this.fromUser = fromUser;
             }
@@ -199,34 +263,41 @@ public class LineFormatter
         {
             if (!textLink.isEmpty() && attributeSet.getAttribute("type").equals("url"))
             {
-                try {
+                try
+                {
                     AtomicBoolean doOpenLink = new AtomicBoolean(false);
 
-                    YesNoDialog confirmOpenLink = new YesNoDialog("Are you sure you want to open "+textLink+"?", "Open Link",
-                        JOptionPane.QUESTION_MESSAGE, e -> doOpenLink.set(e.getActionCommand().equalsIgnoreCase("Yes")));
+                    YesNoDialog confirmOpenLink = new YesNoDialog("Are you sure you want to open " + textLink + "?",
+                            "Open Link", JOptionPane.QUESTION_MESSAGE,
+                            e -> doOpenLink.set(e.getActionCommand().equalsIgnoreCase("Yes")));
 
                     confirmOpenLink.setVisible(true);
 
-                    if(doOpenLink.get())
+                    if (doOpenLink.get())
                         Desktop.getDesktop().browse(new URL(textLink).toURI());
-                } catch (Exception e) {
+                } catch (Exception e)
+                {
                     e.printStackTrace();
                 }
-            } else if(!textLink.isEmpty() && attributeSet.getAttribute("type").equals("channel"))
+            } else if (!textLink.isEmpty() && attributeSet.getAttribute("type").equals("channel"))
             {
-                try {
+                try
+                {
                     AtomicBoolean doJoinChannel = new AtomicBoolean(false);
 
-                    YesNoDialog confirmOpenLink = new YesNoDialog("Are you sure you want to join channel "+textLink+"?", "Join Channel",
-                        JOptionPane.QUESTION_MESSAGE, e -> doJoinChannel.set(e.getActionCommand().equalsIgnoreCase("Yes")));
+                    YesNoDialog confirmOpenLink =
+                            new YesNoDialog("Are you sure you want to join channel " + textLink + "?", "Join Channel",
+                                    JOptionPane.QUESTION_MESSAGE,
+                                    e -> doJoinChannel.set(e.getActionCommand().equalsIgnoreCase("Yes")));
 
                     confirmOpenLink.setVisible(true);
 
-                    if(doJoinChannel.get())
+                    if (doJoinChannel.get())
                     {
                         myServer.sendClientText("/join " + textLink, "");
                     }
-                } catch (Exception e) {
+                } catch (Exception e)
+                {
                     e.printStackTrace();
                 }
             }
@@ -234,7 +305,7 @@ public class LineFormatter
 
         public JPopupMenu rightClickMenu()
         {
-            if(attributeSet.getAttribute("type").equals("IRCUser"))
+            if (attributeSet.getAttribute("type").equals("IRCUser"))
             {
                 fromUser.createPopUp();
                 return fromUser.myMenu;
@@ -253,7 +324,8 @@ public class LineFormatter
     }
 
     // Inserts the string at the position
-    private void insertString(StyledDocument doc, String insertedString, SimpleAttributeSet style, int position) throws BadLocationException
+    private void insertString(StyledDocument doc, String insertedString, SimpleAttributeSet style, int position)
+            throws BadLocationException
     {
         // remove the existing attributes
         style.removeAttribute("styleStart");
@@ -266,7 +338,8 @@ public class LineFormatter
     }
 
     // Adds the string (with all needed attributes) to the end of the document
-    private void appendString(StyledDocument doc, String insertedString, SimpleAttributeSet style) throws BadLocationException
+    private void appendString(StyledDocument doc, String insertedString, SimpleAttributeSet style)
+            throws BadLocationException
     {
         int position = doc.getLength();
 
@@ -275,11 +348,14 @@ public class LineFormatter
 
     private SimpleAttributeSet getStyle(String styleName)
     {
-        switch (styleName) {
+        switch (styleName)
+        {
             case "mediumStyle":
                 return mediumStyle();
             case "highStyle":
                 return highStyle();
+            case "nickStyle":
+                return nickStyle();
             case "myStyle":
                 return myStyle();
             case "lowStyle":
@@ -289,7 +365,7 @@ public class LineFormatter
             case "channelStyle":
                 return channelStyle();
             default:
-                return defaultStyle();
+                return defaultStyle(null);
         }
     }
 
@@ -304,8 +380,8 @@ public class LineFormatter
         if (StyleConstants.isItalic(fontStyle))
             savedFontBoldItalic |= Font.ITALIC;
 
-        Font styleFont = new Font(StyleConstants.getFontFamily(fontStyle),
-                savedFontBoldItalic, StyleConstants.getFontSize(fontStyle));
+        Font styleFont = new Font(StyleConstants.getFontFamily(fontStyle), savedFontBoldItalic,
+                StyleConstants.getFontSize(fontStyle));
 
         return styleFont;
     }
@@ -320,8 +396,10 @@ public class LineFormatter
 
         SimpleAttributeSet matchingStyle = getStyle(styleName);
 
-        // TODO: Update the time format. Check if there is a timeStyle already, if there is then remove it from the line
-        // and insert the new timeStyle/Format. Otherwise we just need to insert it. The first character/style will have
+        // TODO: Update the time format. Check if there is a timeStyle already, if there is then remove it
+        // from the line
+        // and insert the new timeStyle/Format. Otherwise we just need to insert it. The first
+        // character/style will have
         // the 'date' attribute of when the line was added.
 
         boolean isDateStyle = false;
@@ -334,18 +412,19 @@ public class LineFormatter
                 String newTimeString = UserGUI.getTimeLineString(lineDate) + " ";
                 boolean hasTime = false;
 
-                if (null != textStyle.getAttribute("type") && textStyle.getAttribute("type").toString().equalsIgnoreCase("time"))
+                if (null != textStyle.getAttribute("type")
+                        && textStyle.getAttribute("type").toString().equalsIgnoreCase("time"))
                 {
                     hasTime = true;
                     doc.remove(styleStart, styleLength);
                 }
 
-                if(gui.isTimeStampsEnabled())
+                if (gui.isTimeStampsEnabled())
                 {
                     textStyle.removeAttribute("date");
                     textStyle.removeAttribute("time");
 
-                    if(!hasTime)
+                    if (!hasTime)
                         doc.setCharacterAttributes(styleStart, styleLength, textStyle, true);
 
                     SimpleAttributeSet timeStyle = getStyle(styleName);
@@ -353,8 +432,9 @@ public class LineFormatter
                     timeStyle.addAttribute("type", "time");
                     insertString(doc, newTimeString, timeStyle, styleStart);
                     styleLength = newTimeString.length();
-                } else {
-                    if(hasTime)
+                } else
+                {
+                    if (hasTime)
                     {
                         textStyle = new SimpleAttributeSet(doc.getCharacterElement(startPosition).getAttributes());
 
@@ -376,32 +456,32 @@ public class LineFormatter
 
         // Copy the attributes, but only if they aren't already set
         Iterator<?> attributeIterator = textStyle.getAttributeNames().asIterator();
-        while(attributeIterator.hasNext())
+        while (attributeIterator.hasNext())
         {
             String nextAttributeName = attributeIterator.next().toString();
 
-            if(matchingStyle.getAttribute(nextAttributeName) == null)
+            if (matchingStyle.getAttribute(nextAttributeName) == null)
             {
                 Iterator<?> matchingIterator = matchingStyle.getAttributeNames().asIterator();
                 boolean needsToBeSet = true;
 
-                while(matchingIterator.hasNext())
+                while (matchingIterator.hasNext())
                 {
-                    if(matchingIterator.next().toString().equalsIgnoreCase(nextAttributeName))
+                    if (matchingIterator.next().toString().equalsIgnoreCase(nextAttributeName))
                     {
                         needsToBeSet = false;
                         break;
                     }
                 }
-                if(needsToBeSet)
+                if (needsToBeSet)
                     matchingStyle.addAttribute(nextAttributeName, textStyle.getAttribute(nextAttributeName));
             }
         }
 
-        if(!isDateStyle)
+        if (!isDateStyle)
             doc.setCharacterAttributes(styleStart, styleLength, matchingStyle, true);
 
-        if((styleStart + styleLength) < doc.getLength())
+        if ((styleStart + styleLength) < doc.getLength())
             updateStyles(doc, (styleStart + styleLength));
     }
 
@@ -412,15 +492,15 @@ public class LineFormatter
 
         String finalLine = "";
 
-        while(finalLine.isEmpty())
+        while (finalLine.isEmpty())
         {
 
-            if(lines < 0)
+            if (lines < 0)
                 break;
 
-            Element line = root.getElement( lines-- );
+            Element line = root.getElement(lines--);
 
-            if(null == line)
+            if (null == line)
                 continue;
 
             int start = line.getStartOffset();
@@ -441,14 +521,14 @@ public class LineFormatter
         {
             Element line = root.getElement(i);
 
-            if(null == line)
+            if (null == line)
                 continue;
 
             int start = line.getStartOffset();
             int end = line.getEndOffset();
             String text = doc.getText(start, end - start);
 
-            if(text.trim().equals(targetLine.trim()))
+            if (text.trim().equals(targetLine.trim()))
             {
                 return start;
             }
@@ -457,9 +537,10 @@ public class LineFormatter
         return 0;
     }
 
-    public SimpleAttributeSet getStyleAtPosition(StyledDocument doc, int position, String relativeLine) throws BadLocationException
+    public SimpleAttributeSet getStyleAtPosition(StyledDocument doc, int position, String relativeLine)
+            throws BadLocationException
     {
-        if(!relativeLine.isBlank())
+        if (!relativeLine.isBlank())
             position = position + getLinePosition(doc, relativeLine);
 
         AttributeSet textStyle = doc.getCharacterElement(position).getAttributes();
@@ -467,7 +548,8 @@ public class LineFormatter
         return new SimpleAttributeSet(textStyle);
     }
 
-    private void parseClickableText(StyledDocument doc, IRCUser fromUser, String line, SimpleAttributeSet defaultStyle) throws BadLocationException
+    private void parseClickableText(StyledDocument doc, IRCUser fromUser, String line, SimpleAttributeSet defaultStyle)
+            throws BadLocationException
     {
         HashMap<String, SimpleAttributeSet> regexStrings = new HashMap<>();
         regexStrings.put(Constants.URL_REGEX, urlStyle());
@@ -477,7 +559,8 @@ public class LineFormatter
 
         ArrayList<SimpleAttributeSet> clickableLines = new ArrayList<SimpleAttributeSet>();
 
-        for (Map.Entry<String, SimpleAttributeSet> entry : regexStrings.entrySet()) {
+        for (Map.Entry<String, SimpleAttributeSet> entry : regexStrings.entrySet())
+        {
             String regex = entry.getKey();
 
 
@@ -485,7 +568,8 @@ public class LineFormatter
             Matcher matcher = pattern.matcher(line);
 
             // do stuff for each match
-            while (matcher.find()) {
+            while (matcher.find())
+            {
                 SimpleAttributeSet linkStyle = getStyle(entry.getValue().getAttribute("name").toString());
                 String clickableLine = matcher.group(1);
                 linkStyle.addAttribute("clickableText", new ClickableText(clickableLine, linkStyle, fromUser));
@@ -519,7 +603,7 @@ public class LineFormatter
             int nextLineLength = Integer.parseInt(nextLine.getAttribute("styleLength").toString());
 
             // Append the string that comes before the next clickable text
-            appendString(doc, remainingLine.substring(0,  nextLineStart- offset), defaultStyle);
+            appendString(doc, remainingLine.substring(0, nextLineStart - offset), defaultStyle);
 
             appendString(doc, nextLine.getAttribute("clickableText").toString(), nextLine);
 
@@ -544,21 +628,22 @@ public class LineFormatter
 
         if (fromUser != null && null != myNick && myNick.equals(fromUser.toString()))
         {
-            nameStyle = this.myStyle();
+            nickStyle = myStyle();
         } else
         {
             if (null != myNick && line.indexOf(myNick) > -1)
-                nameStyle = highStyle();
+                nickStyle = highStyle();
             else
-                nameStyle = defaultStyle();
+                nickStyle = nickStyle();
         }
 
         if (fromUser == null && fromString.equals(Constants.EVENT_USER))
         {
-            nameStyle = lowStyle();
+            nickStyle = lowStyle();
             lineStyle = lowStyle();
-        } else {
-            lineStyle = defaultStyle();
+        } else
+        {
+            lineStyle = defaultStyle(null);
         }
 
         timeStyle = lineStyle;
@@ -568,7 +653,7 @@ public class LineFormatter
 
             // doc.insertString(doc.getLength(), timeLine, timeStyle);
             // if(null != timeLine && !timeLine.isBlank())
-            if(!timeLine.isBlank() && gui.isTimeStampsEnabled())
+            if (!timeLine.isBlank() && gui.isTimeStampsEnabled())
             {
                 // add the date to the end of the string to preserve the timestamp of the line
                 // when updating styles
@@ -578,23 +663,26 @@ public class LineFormatter
                 appendString(doc, timeLine + " ", timeStyle);
                 timeStyle.removeAttribute("type");
                 lineStyle.removeAttribute("date");
-            } else {
+            } else
+            {
                 lineStyle.addAttribute("date", lineDate);
             }
 
             appendString(doc, "<", lineStyle);
             lineStyle.removeAttribute("date");
 
-            if(fromUser != null)
+            if (fromUser != null)
             {
-                SimpleAttributeSet clickableNameStyle = nameStyle;
+                SimpleAttributeSet clickableNameStyle = nickStyle;
                 clickableNameStyle.addAttribute("type", "IRCUser");
-                clickableNameStyle.addAttribute("clickableText", new ClickableText(fromUser.toString(), nameStyle, fromUser));
+                clickableNameStyle.addAttribute("clickableText",
+                        new ClickableText(fromUser.toString(), nickStyle, fromUser));
 
                 // doc.insertString(doc.getLength(), fromUser.toString(), clickableNameStyle);
                 appendString(doc, fromUser.toString(), clickableNameStyle);
-            } else {
-                appendString(doc, fromString, nameStyle);
+            } else
+            {
+                appendString(doc, fromString, nickStyle);
             }
 
             appendString(doc, ">", lineStyle);
@@ -603,7 +691,7 @@ public class LineFormatter
             // appendString(doc, " "+line, lineStyle);
 
             // parse the outputted line for clickable text
-            parseClickableText(doc, fromUser, " "+line, lineStyle);
+            parseClickableText(doc, fromUser, " " + line, lineStyle);
 
             appendString(doc, System.getProperty("line.separator"), lineStyle);
         } catch (BadLocationException e)

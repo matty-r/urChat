@@ -63,6 +63,7 @@ public class FontPanel extends JPanel
         setDefaultFont(defaultFont);
         loadFont();
 
+        // TODO: Implement underline and strikethrough, plus colour selection
         MAIN_PANEL.add(FONT_COMBO_BOX);
         MAIN_PANEL.add(SIZES_COMBO_BOX);
         MAIN_PANEL.add(TEXT_PREVIEW);

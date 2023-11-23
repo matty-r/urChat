@@ -16,7 +16,6 @@ import javax.swing.*;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.event.*;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import urChatBasic.backend.utils.URUncaughtExceptionHandler;
@@ -79,12 +78,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // Appearance Panel
     private FontPanel clientFontPanel;
     private static final JTextField timeStampField = new JTextField();
-    private static final JLabel timeStampFontLabel = new JLabel("Timestamp Font");
-    private static final JButton otherNickFontLabel = new JButton("Other Nick Font");
-    private static final JButton userNickFontLabel = new JButton("My Nick Font");
-    private static final JButton lowStyleFontLabel = new JButton("Low Priority Text Font");
-    private static final JButton mediumStyleFontLabel = new JButton("Medium Priority Text Font");
-    private static final JButton highStyleFontLabel = new JButton("High Priority Text Font");
     private static final JTextPane previewTextArea = new JTextPane();
     private static final JScrollPane previewTextScroll = new JScrollPane(previewTextArea);
     private static final JLabel styleLabel = new JLabel("Mouse over text to view style, right-click to edit.");
@@ -927,10 +920,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         public void mouseClicked(MouseEvent e)
         {
             StyledDocument doc = previewTextArea.getStyledDocument();
-            Element ele = doc.getCharacterElement(previewTextArea.viewToModel2D((e.getPoint())));
-            AttributeSet as = ele.getAttributes();
-            ClickableText isClickableText = (ClickableText) as.getAttribute("clickableText");
-            if (SwingUtilities.isRightMouseButton(e))
+            Element wordElement = doc.getCharacterElement(previewTextArea.viewToModel2D((e.getPoint())));
+            AttributeSet wordAttributeSet = wordElement.getAttributes();
+            ClickableText isClickableText = (ClickableText) wordAttributeSet.getAttribute("clickableText");
+
+            if (SwingUtilities.isRightMouseButton(e) && wordAttributeSet.getAttribute("name") != null)
             {
                 String styleName = styleLabel.getText();
                 FontDialog styleFontDialog = new FontDialog(styleName, previewLineFormatter.getStyleAsFont(styleName), getProfilePath().node(styleName));
@@ -984,7 +978,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             AttributeSet wordAttributeSet = wordElement.getAttributes();
             ClickableText isClickableText = (ClickableText) wordAttributeSet.getAttribute("clickableText");
 
-            if(null != wordAttributeSet.getAttribute("name"))
+            if(wordAttributeSet.getAttribute("name") != null)
                 styleLabel.setText(wordAttributeSet.getAttribute("name").toString());
             else
                 styleLabel.setText("Mouse over text to view style, right-click to edit.");
