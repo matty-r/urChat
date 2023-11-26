@@ -1,5 +1,6 @@
 package urChatBasic.frontend.components;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
@@ -29,16 +30,14 @@ public class FontPanel extends JPanel
     private final Integer[] FONT_SIZES = {8, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 40, 60, 72};
     private final JComboBox<Integer> SIZES_COMBO_BOX = new JComboBox<>(FONT_SIZES);
     private final JCheckBox MAKE_BOLD = new JCheckBox("BOLD");
+    private final JCheckBox MAKE_UNDERLINE = new JCheckBox("UNDERLINE");
     private final JCheckBox MAKE_ITALIC = new JCheckBox("ITALIC");
-    private final JButton RESET_BUTTON = new JButton("Reset Font");
-    private final JButton SAVE_BUTTON = new JButton("Save Font");
+    private final JButton RESET_BUTTON = new JButton("Reset");
+    private final JButton SAVE_BUTTON = new JButton("Save");
+    private final JButton COLOUR_BUTTON = new JButton("Colour");
     // private String fontType = "New Font:";
     // private JLabel fontTypeLabel = new JLabel("New Font:");
-    // private final JPanel TITLE_PANEL = new JPanel(new GridLayout(1,1));
-    private final JPanel BUTTON_PANEL = new JPanel(new GridLayout(1, 2));
-    private final JPanel MAIN_PANEL = new JPanel(new GridLayout(2, 3));
     private Font defaultFont;
-    // private final JButton CANCEL_BUTTON = new JButton("Cancel");
     // TODO: Add colour picker for foreground and background
 
     private List<ActionListener> actionListeners = new ArrayList<>();
@@ -47,38 +46,14 @@ public class FontPanel extends JPanel
 
     public FontPanel(Font defaultFont, Preferences settingsPath, String fontName)
     {
-        // setPreferredSize(new Dimension(0, 100));
-        // fontTypeLabel = new JLabel(fontName);
         setLayout(new GridBagLayout());
-
-        GridBagConstraints c = new GridBagConstraints();
-        // c.fill = GridBagConstraints.HORIZONTAL;
-
-        // c.gridx = 0;
-        // c.gridy = 0;
-
-        // TITLE_PANEL.add(fontTypeLabel);
-        // add(TITLE_PANEL, c);
 
         setSettingsPath(settingsPath);
         setDefaultFont(defaultFont);
         loadFont();
 
-        // TODO: Implement underline and strikethrough, plus colour selection
-        MAIN_PANEL.add(FONT_COMBO_BOX);
-        MAIN_PANEL.add(SIZES_COMBO_BOX);
-        MAIN_PANEL.add(TEXT_PREVIEW);
-        MAIN_PANEL.add(MAKE_BOLD);
-        MAIN_PANEL.add(MAKE_ITALIC);
-
-        BUTTON_PANEL.add(RESET_BUTTON);
-        BUTTON_PANEL.add(SAVE_BUTTON);
-
-        MAIN_PANEL.add(BUTTON_PANEL);
-
-
         RESET_BUTTON.addActionListener(new ResetListener());
-        // SAVE_BUTTON.addActionListener(new SaveListener());
+        
         addActionListener(SAVE_BUTTON, new SaveListener());
         FONT_COMBO_BOX.addItemListener(new FontSelectionChange());
         SIZES_COMBO_BOX.addItemListener(new FontSelectionChange());
@@ -86,17 +61,60 @@ public class FontPanel extends JPanel
         MAKE_ITALIC.addActionListener(new CheckListener());
 
         // Reset the GridBagConstraints for MAIN_PANEL
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.anchor = GridBagConstraints.LINE_START; // Align components to the left
+        // Set constraints for MAIN_PANEL
+        // c.gridwidth = 6; // Assuming you want MAIN_PANEL to span three columns
+        // c.weightx = 1.0;
+        // c.weighty = 1.0;
+
+        // First Row
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.weightx = 1.0;
+        add(FONT_COMBO_BOX, c);
+
+        c.gridx = 1;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        add(SIZES_COMBO_BOX, c);
+
+        c.gridx = 2;
+        c.gridy = 0;
+        add(COLOUR_BUTTON, c);
+
+        c.gridx = 3;
+        c.gridy = 0;
+        add(RESET_BUTTON, c);
+
+        c.gridx = 4;
+        c.gridy = 0;
+        add(SAVE_BUTTON, c);
+
+        // Second Row
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.HORIZONTAL;
+        c.anchor = GridBagConstraints.LINE_START; // Align components to the left
         c.gridx = 0;
         c.gridy = 1;
+        c.gridwidth = 3; // Assuming TEXT_PREVIEW spans three columns
+        add(TEXT_PREVIEW, c);
 
-        // Set constraints for MAIN_PANEL
-        c.gridwidth = 1; // Assuming you want MAIN_PANEL to span two columns
-        c.weightx = 1.0;
-        c.weighty = 1.0;
+        c.gridx = 1;
+        c.gridy = 1;
+        c.gridwidth = 1;
+        add(MAKE_BOLD, c);
 
-        add(MAIN_PANEL, c);
+        c.gridx = 2;
+        c.gridy = 1;
+        add(MAKE_ITALIC, c);
+
+        c.gridx = 3;
+        c.gridy = 1;
+        c.gridwidth = 2;
+        add(MAKE_UNDERLINE, c);
     }
 
     public JButton getSaveButton()
