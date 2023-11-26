@@ -17,6 +17,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import urChatBasic.base.Constants;
+import urChatBasic.frontend.dialogs.ColourDialog;
 
 public class FontPanel extends JPanel
 {
@@ -35,6 +36,7 @@ public class FontPanel extends JPanel
     private final JButton RESET_BUTTON = new JButton("Reset");
     private final JButton SAVE_BUTTON = new JButton("Save");
     private final JButton COLOUR_BUTTON = new JButton("Colour");
+    protected ColourDialog colourDialog = null;
     // private String fontType = "New Font:";
     // private JLabel fontTypeLabel = new JLabel("New Font:");
     private Font defaultFont;
@@ -47,13 +49,23 @@ public class FontPanel extends JPanel
     public FontPanel(Font defaultFont, Preferences settingsPath, String fontName)
     {
         setLayout(new GridBagLayout());
-
         setSettingsPath(settingsPath);
         setDefaultFont(defaultFont);
         loadFont();
 
         RESET_BUTTON.addActionListener(new ResetListener());
-        
+        COLOUR_BUTTON.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent arg0)
+            {
+                if(colourDialog == null)
+                    colourDialog = new ColourDialog(fontName, settingsPath);
+
+                colourDialog.setVisible(true);
+            }
+        });
+
         addActionListener(SAVE_BUTTON, new SaveListener());
         FONT_COMBO_BOX.addItemListener(new FontSelectionChange());
         SIZES_COMBO_BOX.addItemListener(new FontSelectionChange());

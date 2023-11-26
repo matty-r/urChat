@@ -20,14 +20,16 @@ public class ColourDialog extends DialogBase
 
     public void initColourDialog(Preferences settingsPath)
     {
-        setSize(600, 600);
-        setResizable(false);
-        setMaximumSize(new Dimension(600, 600));
-        setLocationRelativeTo(super.getParent());
-
         colourPanel = new ColourPanel();
 
         add(colourPanel);
+        setContentPane(colourPanel);
+        pack();
+
+        // setSize(600, 600);
+        setResizable(false);
+        // setMaximumSize(new Dimension(600, 600));
+        setLocationRelativeTo(super.getParent());
     }
 
     // @Override
