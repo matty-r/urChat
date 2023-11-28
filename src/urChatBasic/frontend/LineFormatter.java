@@ -175,10 +175,11 @@ public class LineFormatter
 
         SimpleAttributeSet tempStyle = defaultStyle(name);
 
+        tempStyle.addAttribute("name", name);
         tempStyle.addAttribute("type", "url");
 
         StyleConstants.setForeground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground"));
-
+        StyleConstants.setBold(tempStyle, true);
         StyleConstants.setUnderline(tempStyle, true);
 
         tempStyle = loadFontStyle(name, tempStyle);
@@ -186,14 +187,22 @@ public class LineFormatter
         return tempStyle;
     }
 
+    // TODO: urlStyle and channelStyle don't load the correct styling in the fontPanel
+
     public SimpleAttributeSet channelStyle()
     {
         String name = "channelStyle";
 
-        SimpleAttributeSet tempStyle = urlStyle();
+        SimpleAttributeSet tempStyle = defaultStyle(name);
 
         tempStyle.addAttribute("name", name);
         tempStyle.addAttribute("type", "channel");
+
+        StyleConstants.setForeground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground"));
+        StyleConstants.setBold(tempStyle, true);
+        StyleConstants.setUnderline(tempStyle, true);
+
+        tempStyle = loadFontStyle(name, tempStyle);
 
         return tempStyle;
     }

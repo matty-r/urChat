@@ -38,4 +38,16 @@ public class URColour {
         // Create and return a new Color object
         return new Color(r, g, b);
     }
+
+    public static String hexEncode (Color sourceColor)
+    {
+        String hex = Integer.toHexString(sourceColor.getRGB());
+        return hex = "#" + hex.substring(2, hex.length());
+    }
+
+    public static Color hexDecode (String hexString)
+    {
+        Color colour = Color.decode(hexString);
+        return colour;
+    }
 }

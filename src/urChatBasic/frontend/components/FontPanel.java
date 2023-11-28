@@ -17,7 +17,9 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import urChatBasic.base.Constants;
+import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.dialogs.ColourDialog;
+import urChatBasic.backend.utils.URSettingsLoader;
 
 public class FontPanel extends JPanel
 {
@@ -46,7 +48,7 @@ public class FontPanel extends JPanel
 
     private Preferences settingsPath;
 
-    public FontPanel(Font defaultFont, Preferences settingsPath, String fontName)
+    public FontPanel(Font defaultFont, Preferences settingsPath, String displayName)
     {
         setLayout(new GridBagLayout());
         setSettingsPath(settingsPath);
@@ -60,7 +62,7 @@ public class FontPanel extends JPanel
             public void actionPerformed(ActionEvent arg0)
             {
                 if(colourDialog == null)
-                    colourDialog = new ColourDialog(fontName, settingsPath);
+                    colourDialog = new ColourDialog(displayName, defaultFont, settingsPath);
 
                 colourDialog.setVisible(true);
             }
@@ -165,18 +167,7 @@ public class FontPanel extends JPanel
 
     public void loadFont()
     {
-        Font savedFont = defaultFont;
-        int savedFontBoldItalic = 0;
-
-        if (settingsPath.getBoolean(Constants.KEY_FONT_BOLD, defaultFont.isBold()))
-            savedFontBoldItalic = Font.BOLD;
-        if (settingsPath.getBoolean(Constants.KEY_FONT_ITALIC, defaultFont.isItalic()))
-            savedFontBoldItalic |= Font.ITALIC;
-
-        savedFont = new Font(settingsPath.get(Constants.KEY_FONT_FAMILY, defaultFont.getFamily()),
-                savedFontBoldItalic, settingsPath.getInt(Constants.KEY_FONT_SIZE, defaultFont.getSize()));
-
-        setFont(savedFont, false);
+        setFont(URSettingsLoader.loadFont(defaultFont, settingsPath), false);
     }
 
     @Override

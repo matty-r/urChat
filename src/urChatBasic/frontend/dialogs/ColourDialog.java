@@ -1,6 +1,7 @@
 package urChatBasic.frontend.dialogs;
 
-import java.awt.Dimension;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
@@ -12,15 +13,15 @@ public class ColourDialog extends DialogBase
 {
     private ColourPanel colourPanel;
 
-    public ColourDialog(String title, Preferences settingsPath)
+    public ColourDialog(String title, Font defaultFont, Preferences settingsPath)
     {
         super(DriverGUI.frame, title, true);
-        initColourDialog(settingsPath);
+        initColourDialog(defaultFont, settingsPath);
     }
 
-    public void initColourDialog(Preferences settingsPath)
+    public void initColourDialog(Font defaultFont, Preferences settingsPath)
     {
-        colourPanel = new ColourPanel();
+        colourPanel = new ColourPanel(defaultFont, settingsPath);
 
         add(colourPanel);
         setContentPane(colourPanel);
@@ -32,12 +33,13 @@ public class ColourDialog extends DialogBase
         setLocationRelativeTo(super.getParent());
     }
 
-    // @Override
-    // public void setVisible(boolean b)
-    // {
-    //     fontPanel.loadFont();
-    //     super.setVisible(b);
-    // }
+    @Override
+    public void setVisible(boolean b)
+    {
+        setLocationRelativeTo(super.getParent());
+
+        super.setVisible(b);
+    }
 
     // public void addSaveListener(ActionListener newActionListener)
     // {

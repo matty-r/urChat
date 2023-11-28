@@ -14,6 +14,7 @@ import urChatBasic.backend.Connection;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.components.URVersionLabel;
+import urChatBasic.frontend.utils.URColour;
 
 /**
  * Used to store constants that are the same and do not change often. These are things used commonly
@@ -34,7 +35,8 @@ public class Constants
     private static Handler LOGGER_TO_FILE;
     public static Logger LOGGER = Logger.getLogger("Main");
     public static String LOGFILE_NAME = "Errors.log";
-    private static final Font DEFAULT_FONT = new Font(new JLabel().getFont().getFamily(), 0, new JLabel().getFont().getSize());
+    private static final JLabel DEFAULT_LABEL = new JLabel();
+    private static final Font DEFAULT_FONT = new Font(DEFAULT_LABEL.getFont().getFamily(), 0, DEFAULT_LABEL.getFont().getSize());
 
     // Preferences
     public static final Preferences BASE_PREFS = Preferences.userNodeForPackage(DriverGUI.class).node("profiles");
@@ -73,6 +75,8 @@ public class Constants
     public static final String KEY_FONT_BOLD = "font bold";
     public static final String KEY_FONT_ITALIC = "font italic";
     public static final String KEY_FONT_SIZE = "font size";
+    public static final String KEY_FONT_FOREGROUND = "font foreground";
+    public static final String KEY_FONT_BACKGROUND = "font background";
     public static final String KEY_WINDOW_X = "window position x";
     public static final String KEY_WINDOW_Y = "window position y";
     public static final String KEY_WINDOW_WIDTH = "window position width";
@@ -108,6 +112,8 @@ public class Constants
     public static final String DEFAULT_LIMIT_SERVER_LINES_COUNT = "500";
     public static final Boolean DEFAULT_LOG_CLIENT_TEXT = true;
     public static final Font DEFAULT_FONT_GENERAL = DEFAULT_FONT;
+    public static final String DEFAULT_FONT_FOREGROUND = URColour.hexEncode(DEFAULT_LABEL.getForeground());
+    public static final String DEFAULT_FONT_BACKGROUND = URColour.hexEncode(DEFAULT_LABEL.getBackground());
     public static final int DEFAULT_EVENT_TICKER_DELAY = 10;
     public static final int DEFAULT_WINDOW_X = 0;
     public static final int DEFAULT_WINDOW_Y = 0;
