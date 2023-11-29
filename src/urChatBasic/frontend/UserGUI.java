@@ -917,31 +917,23 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     class PreviewClickListener extends MouseInputAdapter
     {
-        public void mouseClicked(MouseEvent e)
+        public void mouseClicked(MouseEvent mouseEvent)
         {
             StyledDocument doc = previewTextArea.getStyledDocument();
-            Element wordElement = doc.getCharacterElement(previewTextArea.viewToModel2D((e.getPoint())));
+            Element wordElement = doc.getCharacterElement(previewTextArea.viewToModel2D((mouseEvent.getPoint())));
             AttributeSet wordAttributeSet = wordElement.getAttributes();
             ClickableText isClickableText = (ClickableText) wordAttributeSet.getAttribute("clickableText");
 
-            if (SwingUtilities.isRightMouseButton(e) && wordAttributeSet.getAttribute("name") != null)
+            if (SwingUtilities.isRightMouseButton(mouseEvent) && wordAttributeSet.getAttribute("name") != null)
             {
                 String styleName = styleLabel.getText();
                 FontDialog styleFontDialog = new FontDialog(clientFontPanel.getFont(), getProfilePath().node(styleName), styleName);
 
-                styleFontDialog.addSaveListener(new ActionListener() {
-
-                    @Override
-                    public void actionPerformed(ActionEvent arg0) {
-
-                        List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();
-
-
-                        // TODO: Need to save attributes and updateStyles after..
-                        // Currently runs the save after updateStyles
-                        previewLineFormatter.updateStyles(doc, 0);
-                    }
-
+                styleFontDialog.addSaveListener(arg0 -> {
+                    List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();
+                    // TODO: Need to save attributes and updateStyles after..
+                    // Currently runs the save after updateStyles
+                    previewLineFormatter.updateStyles(doc, 0);
                 });
 
                 // styleFontDialog.addResetListener(new ActionListener() {
@@ -962,7 +954,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
 
                 styleFontDialog.setVisible(true);
-            } else if (SwingUtilities.isLeftMouseButton(e) && null != isClickableText)
+            } else if (SwingUtilities.isLeftMouseButton(mouseEvent) && null != isClickableText)
             {
                 isClickableText.execute();
             }

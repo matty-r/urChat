@@ -62,7 +62,13 @@ public class FontPanel extends JPanel
             public void actionPerformed(ActionEvent arg0)
             {
                 if(colourDialog == null)
-                    colourDialog = new ColourDialog(displayName, defaultFont, settingsPath);
+                {
+                    colourDialog = new ColourDialog(displayName, FontPanel.this.getFont(), settingsPath);
+
+                    colourDialog.getColourPanel().addSaveListener(e -> {
+                        System.out.println("Save pressed");
+                    });
+                }
 
                 colourDialog.setVisible(true);
             }

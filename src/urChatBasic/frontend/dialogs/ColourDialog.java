@@ -1,6 +1,5 @@
 package urChatBasic.frontend.dialogs;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,6 +30,16 @@ public class ColourDialog extends DialogBase
         setResizable(false);
         // setMaximumSize(new Dimension(600, 600));
         setLocationRelativeTo(super.getParent());
+
+        colourPanel.addSaveListener(e -> {
+            ColourDialog.this.setVisible(false);
+            System.out.println("Set visible false");
+        });
+    }
+
+    public ColourPanel getColourPanel()
+    {
+        return colourPanel;
     }
 
     @Override

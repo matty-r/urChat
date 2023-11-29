@@ -26,14 +26,14 @@ public class URSettingsLoader {
         return savedFont;
     }
 
-    public static Map<String, Color> loadFontColours(Color foreground, Color background, Preferences settingsPath)
+    public static Map<String, Color> loadFontColours(Color defaultForeground, Color defaultBackground, Preferences settingsPath)
     {
         Map<String, Color> colourMap = new HashMap<String, Color>();
-        colourMap.put(Constants.KEY_FONT_FOREGROUND, foreground);
-        colourMap.put(Constants.KEY_FONT_BACKGROUND, background);
+        colourMap.put(Constants.KEY_FONT_FOREGROUND, defaultForeground);
+        colourMap.put(Constants.KEY_FONT_BACKGROUND, defaultBackground);
 
-        String loadedForeground = settingsPath.get(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(foreground));
-        String loadedBackground = settingsPath.get(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(background));
+        String loadedForeground = settingsPath.get(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(defaultForeground));
+        String loadedBackground = settingsPath.get(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(defaultBackground));
 
         colourMap.replace(Constants.KEY_FONT_FOREGROUND, URColour.hexDecode(loadedForeground));
         colourMap.replace(Constants.KEY_FONT_BACKGROUND, URColour.hexDecode(loadedBackground));
