@@ -19,7 +19,7 @@ import javax.swing.*;
 import urChatBasic.base.Constants;
 import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.dialogs.ColourDialog;
-import urChatBasic.backend.utils.URSettingsLoader;
+import urChatBasic.backend.utils.URPreferencesUtil;
 
 public class FontPanel extends JPanel
 {
@@ -173,7 +173,7 @@ public class FontPanel extends JPanel
 
     public void loadFont()
     {
-        setFont(URSettingsLoader.loadFont(defaultFont, settingsPath), false);
+        setFont(URPreferencesUtil.loadFont(defaultFont, settingsPath), false);
     }
 
     @Override

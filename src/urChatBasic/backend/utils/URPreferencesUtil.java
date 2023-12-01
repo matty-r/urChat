@@ -8,7 +8,7 @@ import java.util.prefs.Preferences;
 import urChatBasic.base.Constants;
 import urChatBasic.frontend.utils.URColour;
 
-public class URSettingsLoader {
+public class URPreferencesUtil {
 
     public static Font loadFont(Font defaultFont, Preferences settingsPath)
     {
@@ -39,5 +39,11 @@ public class URSettingsLoader {
         colourMap.replace(Constants.KEY_FONT_BACKGROUND, URColour.hexDecode(loadedBackground));
 
         return colourMap;
+    }
+
+    public static void saveFontColours(Color newForeground, Color newBackground, Preferences settingsPath)
+    {
+        settingsPath.put(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(newForeground));
+        settingsPath.put(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(newBackground));
     }
 }

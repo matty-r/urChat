@@ -25,6 +25,7 @@ import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
+import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.YesNoDialog;
@@ -34,15 +35,16 @@ public class LineFormatter
 {
     private String myNick;
     private Font myFont;
+    private Color myForeground;
+    private Color myBackground;
     private IRCServerBase myServer;
     private Preferences formatterPrefs;
     public SimpleAttributeSet timeStyle;
     public SimpleAttributeSet lineStyle;
     public SimpleAttributeSet nickStyle;
     public SimpleAttributeSet myStyle;
-    protected UserGUI gui = DriverGUI.gui;
 
-    public LineFormatter(Font myFont, final IRCServerBase server, Preferences formatterPrefs)
+    public LineFormatter(Font myFont, Map<String, Color> defaultColours, final IRCServerBase server, Preferences formatterPrefs)
     {
         // TODO: Need to load attributes from formatterPrefs
         this.formatterPrefs = formatterPrefs;
@@ -58,6 +60,11 @@ public class LineFormatter
         }
 
         this.myFont = myFont;
+        // TODO: should we be using something like UIManager
+        // UIManager.getFont for the default fonts isntead?
+        myForeground = UIManager.getColor("Label.foreground");
+        myBackground = UIManager.getColor("Label.background");
+
         timeStyle = defaultStyle(null);
         lineStyle = defaultStyle(null);
         nickStyle = nickStyle();
@@ -73,18 +80,24 @@ public class LineFormatter
 
     public SimpleAttributeSet loadFontStyle(String name, SimpleAttributeSet loadedStyle)
     {
+        Font loadedFont = URPreferencesUtil.loadFont(myFont, formatterPrefs.node(name));
+        Map<String, Color> loadedColours = URPreferencesUtil.loadFontColours(myForeground, myBackground, formatterPrefs.node(name));
 
         StyleConstants.setFontFamily(loadedStyle,
-                formatterPrefs.node(name).get("font family", StyleConstants.getFontFamily(loadedStyle).toString()));
+                loadedFont.getFamily());
 
         StyleConstants.setFontSize(loadedStyle,
-                formatterPrefs.node(name).getInt("font size", StyleConstants.getFontSize(loadedStyle)));
+                loadedFont.getSize());
 
         StyleConstants.setBold(loadedStyle,
-                formatterPrefs.node(name).getBoolean("font bold", StyleConstants.isBold(loadedStyle)));
+                loadedFont.isBold());
 
         StyleConstants.setItalic(loadedStyle,
-                formatterPrefs.node(name).getBoolean("font italic", StyleConstants.isItalic(loadedStyle)));
+                loadedFont.isItalic());
+
+        StyleConstants.setForeground(loadedStyle, loadedColours.get(Constants.KEY_FONT_FOREGROUND));
+
+        StyleConstants.setBackground(loadedStyle, loadedColours.get(Constants.KEY_FONT_BACKGROUND));
 
         // TODO: Allow for underline and strikethrough
         // StyleConstants.setUnderline(defaultStyle,
@@ -105,13 +118,16 @@ public class LineFormatter
         defaultStyle.addAttribute("name", name);
         defaultStyle.addAttribute("type", "default");
         // get the contrasting colour of the background colour
-        StyleConstants.setForeground(defaultStyle, new Color(formatterPrefs.node(name).getInt("font foreground",
-                URColour.getContrastColour(UIManager.getColor("Panel.background")).getRGB())));
+        // StyleConstants.setForeground(defaultStyle, new Color(formatterPrefs.node(name).getInt("font foreground",
+        //         URColour.getContrastColour(UIManager.getColor("Panel.background")).getRGB())));
 
         StyleConstants.setFontFamily(defaultStyle, myFont.getFamily());
         StyleConstants.setFontSize(defaultStyle, myFont.getSize());
         StyleConstants.setBold(defaultStyle, myFont.isBold());
         StyleConstants.setItalic(defaultStyle, myFont.isItalic());
+
+        StyleConstants.setForeground(defaultStyle, myForeground);
+        StyleConstants.setBackground(defaultStyle, myBackground);
 
         defaultStyle = loadFontStyle(name, defaultStyle);
 
@@ -124,15 +140,19 @@ public class LineFormatter
 
         SimpleAttributeSet tempStyle = defaultStyle(name);
 
-        if (URColour.useDarkColour(UIManager.getColor("Panel.background")))
-        {
-            StyleConstants.setForeground(tempStyle, Color.DARK_GRAY);
-        } else
-        {
-            StyleConstants.setForeground(tempStyle, Color.LIGHT_GRAY);
-        }
+
+        StyleConstants.setForeground(tempStyle, UIManager.getColor("Panel.background").darker());
 
         tempStyle = loadFontStyle(name, tempStyle);
+
+        if(StyleConstants.getForeground(tempStyle).getRGB() == myForeground.getRGB())
+            if (URColour.useDarkColour(UIManager.getColor("Panel.background")))
+            {
+                StyleConstants.setForeground(tempStyle, UIManager.getColor("Panel.background").darker());
+            } else
+            {
+                StyleConstants.setForeground(tempStyle, UIManager.getColor("Panel.background").brighter());
+            }
 
         return tempStyle;
     }
@@ -406,7 +426,7 @@ public class LineFormatter
         SimpleAttributeSet matchingStyle = getStyle(styleName);
 
         boolean isDateStyle = false;
-        if (null != gui && null != textStyle.getAttribute("date"))
+        if (null != DriverGUI.gui && null != textStyle.getAttribute("date"))
         {
             isDateStyle = true;
             try
@@ -422,7 +442,7 @@ public class LineFormatter
                     doc.remove(styleStart, styleLength);
                 }
 
-                if (gui.isTimeStampsEnabled())
+                if (DriverGUI.gui.isTimeStampsEnabled())
                 {
                     textStyle.removeAttribute("date");
                     textStyle.removeAttribute("time");
@@ -656,7 +676,7 @@ public class LineFormatter
 
             // doc.insertString(doc.getLength(), timeLine, timeStyle);
             // if(null != timeLine && !timeLine.isBlank())
-            if (!timeLine.isBlank() && gui.isTimeStampsEnabled())
+            if (!timeLine.isBlank() && DriverGUI.gui.isTimeStampsEnabled())
             {
                 // add the date to the end of the string to preserve the timestamp of the line
                 // when updating styles

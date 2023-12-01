@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.event.*;
-import urChatBasic.backend.utils.URSettingsLoader;
+import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.frontend.utils.URColour;
 
@@ -34,9 +34,13 @@ public class ColourPanel extends JPanel implements ChangeListener
         super(new BorderLayout());
         this.settingsPath = settingsPath;
         this.displayFont = displayFont;
-        Map<String,Color> loadedColours = URSettingsLoader.loadFontColours(getForeground(), getBackground(), settingsPath);
-        defaultForeground = loadedColours.get(Constants.KEY_FONT_FOREGROUND);
-        defaultBackground = loadedColours.get(Constants.KEY_FONT_BACKGROUND);
+        saveButton = new JButton("Apply & Save");
+        previewLabel = new JLabel("Preview Text");
+        previewLabel.setFont(this.displayFont);
+
+        defaultForeground = previewLabel.getForeground();
+        defaultBackground = previewLabel.getBackground();
+        loadColours();
 
         bottomPanel = createBottomPanel();
         // Set up color chooser for setting text color
@@ -53,9 +57,7 @@ public class ColourPanel extends JPanel implements ChangeListener
         JButton foregroundButton = new JButton("Toggle Background");
         JButton autoColour = new JButton("Suggest colour");
         JButton resetButton = new JButton("Reset colour");
-        saveButton = new JButton("Apply & Save");
-        previewLabel = new JLabel("Preview Text");
-        previewLabel.setFont(displayFont);
+
 
         bottomPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -91,13 +93,9 @@ public class ColourPanel extends JPanel implements ChangeListener
 
         resetButton.addActionListener(e -> {
             if (isForeground)
-            {
-                previewLabel.setForeground(defaultForeground);
-            } else
-            {
-                previewLabel.setOpaque(true);
-                previewLabel.setBackground(defaultBackground);
-            }
+                setPreviewColour(defaultForeground);
+            else
+                setPreviewColour(defaultBackground);
         });
 
         autoColour.addActionListener(e -> {
@@ -114,7 +112,27 @@ public class ColourPanel extends JPanel implements ChangeListener
             fireSaveListeners();
         });
 
+        addSaveListener(e -> {
+            URPreferencesUtil.saveFontColours(previewLabel.getForeground(), previewLabel.getBackground(), settingsPath);
+        });
+
         return bottomPanel;
+    }
+
+    private void setPreviewColour (Color newColour)
+    {
+        if(isForeground)
+        {
+            previewLabel.setForeground(newColour);
+        } else
+        {
+            if(newColour != defaultBackground)
+                previewLabel.setOpaque(true);
+            else
+                previewLabel.setOpaque(false);
+
+            previewLabel.setBackground(newColour);
+        }
     }
 
     public void addSaveListener (ActionListener actionListener)
@@ -141,34 +159,20 @@ public class ColourPanel extends JPanel implements ChangeListener
     public void loadColours()
     {
         Map<String, Color> colourMap =
-                URSettingsLoader.loadFontColours(defaultForeground, defaultBackground, settingsPath);
+                URPreferencesUtil.loadFontColours(defaultForeground, defaultBackground, settingsPath);
 
-        defaultBackground = colourMap.get(Constants.KEY_FONT_BACKGROUND);
-        defaultForeground = colourMap.get(Constants.KEY_FONT_FOREGROUND);
-        // int savedFontBoldItalic = 0;
+        // defaultBackground = colourMap.get(Constants.KEY_FONT_BACKGROUND);
+        // defaultForeground = colourMap.get(Constants.KEY_FONT_FOREGROUND);
+        previewLabel.setForeground(colourMap.get(Constants.KEY_FONT_FOREGROUND));
 
-        // if (settingsPath.getBoolean(Constants.KEY_FONT_BOLD, defaultFont.isBold()))
-        // savedFontBoldItalic = Font.BOLD;
-        // if (settingsPath.getBoolean(Constants.KEY_FONT_ITALIC, defaultFont.isItalic()))
-        // savedFontBoldItalic |= Font.ITALIC;
-
-        // savedFont = new Font(settingsPath.get(Constants.KEY_FONT_FAMILY, defaultFont.getFamily()),
-        // savedFontBoldItalic, settingsPath.getInt(Constants.KEY_FONT_SIZE, defaultFont.getSize()));
-
-        // setFont(savedFont, false);
+        previewLabel.setOpaque(true);
+        previewLabel.setBackground(colourMap.get(Constants.KEY_FONT_BACKGROUND));
     }
 
     public void stateChanged(ChangeEvent e)
     {
         selectedColor = tcc.getColor();
 
-        if (isForeground)
-        {
-            previewLabel.setForeground(selectedColor);
-        } else
-        {
-            previewLabel.setOpaque(true);
-            previewLabel.setBackground(selectedColor);
-        }
+        setPreviewColour(selectedColor);
     }
 }

@@ -513,6 +513,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         optionsLeftPanel.add(extrasPanel, BorderLayout.SOUTH);
     }
 
+    public Map<String, Color> getDefaultColours()
+    {
+        return urVersionLabel.getColours();
+    }
+
     private void setupRightOptionsPanel()
     {
         ListSelectionModel listSelectionModel = optionsList.getSelectionModel();
@@ -895,7 +900,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // }
 
         // previewTextArea.setFont(clientFontPanel.getFont());
-        previewLineFormatter = new LineFormatter(clientFontPanel.getFont(), null, getProfilePath());
+        previewLineFormatter = new LineFormatter(clientFontPanel.getFont(), urVersionLabel.getColours() ,null, getProfilePath());
 
         if(previewDoc.getLength() <= 0)
         {

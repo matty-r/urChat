@@ -4,16 +4,22 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import urChatBasic.base.Constants;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 public class URVersionLabel extends JPanel
 {
+    // We are using this label as the default foreground and background colours!
+
     private JLabel versionLabel = new JLabel(Constants.UR_VERSION);
 
     public URVersionLabel(JPanel parentPanel)
@@ -39,6 +45,16 @@ public class URVersionLabel extends JPanel
                 Constants.LOGGER.log(Level.INFO, "Unable to determine .git folder. Not setting version string.", $ex);
             }
         }
+    }
+
+    public Map<String, Color> getColours()
+    {
+        Map<String, Color> colours = new HashMap<>();
+
+        colours.put(Constants.KEY_FONT_FOREGROUND, getForeground());
+        colours.put(Constants.KEY_FONT_BACKGROUND, getBackground());
+
+        return colours;
     }
 
     private static String findGitFolder() {
