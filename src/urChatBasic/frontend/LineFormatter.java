@@ -26,6 +26,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import urChatBasic.backend.utils.URPreferencesUtil;
+import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.YesNoDialog;
@@ -34,15 +35,15 @@ import urChatBasic.frontend.utils.URColour;
 public class LineFormatter
 {
     private String myNick;
-    private Font myFont;
+    private URStyle targetStyle;
     private Color myForeground;
     private Color myBackground;
     private IRCServerBase myServer;
     private Preferences formatterPrefs;
-    public SimpleAttributeSet timeStyle;
-    public SimpleAttributeSet lineStyle;
-    public SimpleAttributeSet nickStyle;
-    public SimpleAttributeSet myStyle;
+    public URStyle timeStyle;
+    public URStyle lineStyle;
+    public URStyle nickStyle;
+    public URStyle myStyle;
 
     public LineFormatter(Font myFont, Map<String, Color> defaultColours, final IRCServerBase server, Preferences formatterPrefs)
     {
@@ -59,11 +60,14 @@ public class LineFormatter
             myNick = null;
         }
 
-        this.myFont = myFont;
+        targetStyle = new URStyle(myNick, myFont);
+        targetStyle.setBackground(defaultColours.get(Constants.KEY_FONT_FOREGROUND));
+        targetStyle.setBackground(defaultColours.get(Constants.KEY_FONT_BACKGROUND));
+
         // TODO: should we be using something like UIManager
         // UIManager.getFont for the default fonts isntead?
-        myForeground = UIManager.getColor("Label.foreground");
-        myBackground = UIManager.getColor("Label.background");
+        myForeground = targetStyle.getForeground();
+        myBackground = targetStyle.getBackground();
 
         timeStyle = defaultStyle(null);
         lineStyle = defaultStyle(null);
@@ -73,77 +77,48 @@ public class LineFormatter
 
     public void setFont(StyledDocument doc, Font newFont)
     {
-        myFont = newFont;
+        targetStyle.setFont(newFont);
         if (doc.getLength() > 0)
             updateStyles(doc, 0);
     }
 
-    public SimpleAttributeSet loadFontStyle(String name, SimpleAttributeSet loadedStyle)
-    {
-        Font loadedFont = URPreferencesUtil.loadFont(myFont, formatterPrefs.node(name));
-        Map<String, Color> loadedColours = URPreferencesUtil.loadFontColours(myForeground, myBackground, formatterPrefs.node(name));
-
-        StyleConstants.setFontFamily(loadedStyle,
-                loadedFont.getFamily());
-
-        StyleConstants.setFontSize(loadedStyle,
-                loadedFont.getSize());
-
-        StyleConstants.setBold(loadedStyle,
-                loadedFont.isBold());
-
-        StyleConstants.setItalic(loadedStyle,
-                loadedFont.isItalic());
-
-        StyleConstants.setForeground(loadedStyle, loadedColours.get(Constants.KEY_FONT_FOREGROUND));
-
-        StyleConstants.setBackground(loadedStyle, loadedColours.get(Constants.KEY_FONT_BACKGROUND));
-
-        // TODO: Allow for underline and strikethrough
-        // StyleConstants.setUnderline(defaultStyle,
-        //         formatterPrefs.node(name).getBoolean("font underline", StyleConstants.isUnderline(defaults)));
-
-        // StyleConstants.setStrikeThrough(defaultStyle,
-        //         formatterPrefs.node(name).getBoolean("font strikethrough", StyleConstants.isStrikeThrough(defaults)));
-
-        return loadedStyle;
-    }
-
-    public SimpleAttributeSet defaultStyle(String name)
+    public URStyle defaultStyle(String name)
     {
         if (name == null)
             name = "defaultStyle";
 
-        SimpleAttributeSet defaultStyle = new SimpleAttributeSet();
-        defaultStyle.addAttribute("name", name);
+
+
+        URStyle defaultStyle = new URStyle(name, targetStyle.getFont());
         defaultStyle.addAttribute("type", "default");
         // get the contrasting colour of the background colour
         // StyleConstants.setForeground(defaultStyle, new Color(formatterPrefs.node(name).getInt("font foreground",
         //         URColour.getContrastColour(UIManager.getColor("Panel.background")).getRGB())));
 
-        StyleConstants.setFontFamily(defaultStyle, myFont.getFamily());
-        StyleConstants.setFontSize(defaultStyle, myFont.getSize());
-        StyleConstants.setBold(defaultStyle, myFont.isBold());
-        StyleConstants.setItalic(defaultStyle, myFont.isItalic());
+        StyleConstants.setFontFamily(defaultStyle, targetStyle.getFont().getFamily());
+        StyleConstants.setFontSize(defaultStyle, targetStyle.getFont().getSize());
+        StyleConstants.setBold(defaultStyle, targetStyle.getFont().isBold());
+        StyleConstants.setItalic(defaultStyle, targetStyle.getFont().isItalic());
 
         StyleConstants.setForeground(defaultStyle, myForeground);
         StyleConstants.setBackground(defaultStyle, myBackground);
 
-        defaultStyle = loadFontStyle(name, defaultStyle);
+        // defaultStyle = loadFontStyle(name, defaultStyle);
+        defaultStyle = URPreferencesUtil.loadStyle(defaultStyle, formatterPrefs);
 
         return defaultStyle;
     }
 
-    public SimpleAttributeSet lowStyle()
+    public URStyle lowStyle()
     {
         String name = "lowStyle";
 
-        SimpleAttributeSet tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name);
 
 
         StyleConstants.setForeground(tempStyle, UIManager.getColor("Panel.background").darker());
 
-        tempStyle = loadFontStyle(name, tempStyle);
+        tempStyle = URPreferencesUtil.loadStyle(tempStyle, formatterPrefs);
 
         if(StyleConstants.getForeground(tempStyle).getRGB() == myForeground.getRGB())
             if (URColour.useDarkColour(UIManager.getColor("Panel.background")))
@@ -157,43 +132,40 @@ public class LineFormatter
         return tempStyle;
     }
 
-    public SimpleAttributeSet mediumStyle()
+    public URStyle mediumStyle()
     {
         String name = "mediumStyle";
 
-        SimpleAttributeSet tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name);
 
-        tempStyle = loadFontStyle(name, tempStyle);
+        tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
 
-    public SimpleAttributeSet highStyle()
+    public URStyle highStyle()
     {
         String name = "highStyle";
 
-        SimpleAttributeSet tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name);
 
-        StyleConstants.setBackground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground")); // TODO:
-                                                                                                             // Get
-                                                                                                             // highlight
-                                                                                                             // colour?
+        StyleConstants.setBackground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground"));
         StyleConstants.setForeground(tempStyle,
                 URColour.getContrastColour(UIManager.getColor("CheckBoxMenuItem.selectionBackground")));
 
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setItalic(tempStyle, true);
 
-        tempStyle = loadFontStyle(name, tempStyle);
+        tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
 
-    public SimpleAttributeSet urlStyle()
+    public URStyle urlStyle()
     {
         String name = "urlStyle";
 
-        SimpleAttributeSet tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name);
 
         tempStyle.addAttribute("name", name);
         tempStyle.addAttribute("type", "url");
@@ -202,18 +174,18 @@ public class LineFormatter
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setUnderline(tempStyle, true);
 
-        tempStyle = loadFontStyle(name, tempStyle);
+        tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
 
     // TODO: urlStyle and channelStyle don't load the correct styling in the fontPanel
 
-    public SimpleAttributeSet channelStyle()
+    public URStyle channelStyle()
     {
         String name = "channelStyle";
 
-        SimpleAttributeSet tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name);
 
         tempStyle.addAttribute("name", name);
         tempStyle.addAttribute("type", "channel");
@@ -222,16 +194,16 @@ public class LineFormatter
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setUnderline(tempStyle, true);
 
-        tempStyle = loadFontStyle(name, tempStyle);
+        tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
 
-    public SimpleAttributeSet myStyle()
+    public URStyle myStyle()
     {
         String name = "myStyle";
 
-        SimpleAttributeSet tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name);
         tempStyle.addAttribute("type", "myNick");
 
         // StyleConstants.setForeground(tempStyle, Color.GREEN);
@@ -241,21 +213,21 @@ public class LineFormatter
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setUnderline(tempStyle, true);
 
-        tempStyle = loadFontStyle(name, tempStyle);
+        tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
 
-    public SimpleAttributeSet nickStyle()
+    public URStyle nickStyle()
     {
         String name = "nickStyle";
 
-        SimpleAttributeSet tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name);
         tempStyle.addAttribute("type", "nick");
 
         StyleConstants.setUnderline(tempStyle, true);
 
-        tempStyle = loadFontStyle(name, tempStyle);
+        tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
@@ -268,10 +240,10 @@ public class LineFormatter
     public class ClickableText extends AbstractAction
     {
         private String textLink;
-        private SimpleAttributeSet attributeSet;
+        private URStyle attributeSet;
         private IRCUser fromUser;
 
-        ClickableText(String textLink, SimpleAttributeSet attributeSet, IRCUser fromUser)
+        ClickableText(String textLink, URStyle attributeSet, IRCUser fromUser)
         {
             this.textLink = textLink;
             this.attributeSet = attributeSet;
@@ -375,7 +347,7 @@ public class LineFormatter
         insertString(doc, insertedString, style, position);
     }
 
-    private SimpleAttributeSet getStyle(String styleName)
+    private URStyle getStyle(String styleName)
     {
         switch (styleName)
         {
@@ -571,18 +543,18 @@ public class LineFormatter
         return new SimpleAttributeSet(textStyle);
     }
 
-    private void parseClickableText(StyledDocument doc, IRCUser fromUser, String line, SimpleAttributeSet defaultStyle)
+    private void parseClickableText(StyledDocument doc, IRCUser fromUser, String line, URStyle defaultStyle)
             throws BadLocationException
     {
-        HashMap<String, SimpleAttributeSet> regexStrings = new HashMap<>();
+        HashMap<String, URStyle> regexStrings = new HashMap<>();
         regexStrings.put(Constants.URL_REGEX, urlStyle());
         regexStrings.put(Constants.CHANNEL_REGEX, channelStyle());
         // final String line = getLatestLine(doc);
         final int relativePosition = getLinePosition(doc, getLatestLine(doc));
 
-        ArrayList<SimpleAttributeSet> clickableLines = new ArrayList<SimpleAttributeSet>();
+        ArrayList<URStyle> clickableLines = new ArrayList<URStyle>();
 
-        for (Map.Entry<String, SimpleAttributeSet> entry : regexStrings.entrySet())
+        for (Map.Entry<String, URStyle> entry : regexStrings.entrySet())
         {
             String regex = entry.getKey();
 
@@ -593,7 +565,7 @@ public class LineFormatter
             // do stuff for each match
             while (matcher.find())
             {
-                SimpleAttributeSet linkStyle = getStyle(entry.getValue().getAttribute("name").toString());
+                URStyle linkStyle = getStyle(entry.getValue().getAttribute("name").toString());
                 String clickableLine = matcher.group(1);
                 linkStyle.addAttribute("clickableText", new ClickableText(clickableLine, linkStyle, fromUser));
 
@@ -613,11 +585,11 @@ public class LineFormatter
             return Integer.compare(styleStart1, styleStart2);
         });
 
-        Iterator<SimpleAttributeSet> linesIterator = clickableLines.iterator();
+        Iterator<URStyle> linesIterator = clickableLines.iterator();
         String remainingLine = line;
         while (linesIterator.hasNext())
         {
-            SimpleAttributeSet nextLine = linesIterator.next();
+            URStyle nextLine = linesIterator.next();
 
             // Offset based on the difference between the original line and the remaining line,
             // plus the relativePosition within the document.
@@ -696,7 +668,7 @@ public class LineFormatter
 
             if (fromUser != null)
             {
-                SimpleAttributeSet clickableNameStyle = nickStyle;
+                URStyle clickableNameStyle = nickStyle;
                 clickableNameStyle.addAttribute("type", "IRCUser");
                 clickableNameStyle.addAttribute("clickableText",
                         new ClickableText(fromUser.toString(), nickStyle, fromUser));

@@ -9,6 +9,7 @@ import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.event.*;
 import urChatBasic.backend.utils.URPreferencesUtil;
+import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.Constants;
 import urChatBasic.frontend.utils.URColour;
 
@@ -20,31 +21,24 @@ public class ColourPanel extends JPanel implements ChangeListener
 
     protected JColorChooser tcc;
     public Color selectedColor;
-    private Color defaultForeground;
-    private Color defaultBackground;
-    private Font displayFont;
+    private URStyle targetStyle;
     private Preferences settingsPath;
     private JPanel bottomPanel;
     private boolean isForeground = true;
     JButton saveButton;
     JLabel previewLabel;
 
-    public ColourPanel(Font displayFont, Preferences settingsPath)
+    public ColourPanel(URStyle targetStyle, Preferences settingsPath)
     {
         super(new BorderLayout());
         this.settingsPath = settingsPath;
-        this.displayFont = displayFont;
         saveButton = new JButton("Apply & Save");
         previewLabel = new JLabel("Preview Text");
-        previewLabel.setFont(this.displayFont);
-
-        defaultForeground = previewLabel.getForeground();
-        defaultBackground = previewLabel.getBackground();
-        loadColours();
+        previewLabel.setFont(targetStyle.getFont());
 
         bottomPanel = createBottomPanel();
         // Set up color chooser for setting text color
-        tcc = new JColorChooser(defaultForeground);
+        tcc = new JColorChooser(targetStyle.getForeground());
         tcc.setPreviewPanel(bottomPanel);
         tcc.getSelectionModel().addChangeListener(this);
         // bottomPanel.setPreferredSize(new Dimension(tcc.getPreferredSize().width, 56));
@@ -93,9 +87,9 @@ public class ColourPanel extends JPanel implements ChangeListener
 
         resetButton.addActionListener(e -> {
             if (isForeground)
-                setPreviewColour(defaultForeground);
+                setPreviewColour(targetStyle.getForeground(), isForeground);
             else
-                setPreviewColour(defaultBackground);
+                setPreviewColour(targetStyle.getBackground(), isForeground);
         });
 
         autoColour.addActionListener(e -> {
@@ -113,20 +107,20 @@ public class ColourPanel extends JPanel implements ChangeListener
         });
 
         addSaveListener(e -> {
-            URPreferencesUtil.saveFontColours(previewLabel.getForeground(), previewLabel.getBackground(), settingsPath);
+            URPreferencesUtil.saveStyleColours(previewLabel.getForeground(), previewLabel.getBackground(), settingsPath);
         });
 
         return bottomPanel;
     }
 
-    private void setPreviewColour (Color newColour)
+    private void setPreviewColour (Color newColour, boolean setForeground)
     {
-        if(isForeground)
+        if(setForeground)
         {
             previewLabel.setForeground(newColour);
         } else
         {
-            if(newColour != defaultBackground)
+            if(newColour != targetStyle.getBackground())
                 previewLabel.setOpaque(true);
             else
                 previewLabel.setOpaque(false);
@@ -158,21 +152,19 @@ public class ColourPanel extends JPanel implements ChangeListener
 
     public void loadColours()
     {
-        Map<String, Color> colourMap =
-                URPreferencesUtil.loadFontColours(defaultForeground, defaultBackground, settingsPath);
+        targetStyle = URPreferencesUtil.loadStyle(targetStyle, settingsPath);
 
         // defaultBackground = colourMap.get(Constants.KEY_FONT_BACKGROUND);
         // defaultForeground = colourMap.get(Constants.KEY_FONT_FOREGROUND);
-        previewLabel.setForeground(colourMap.get(Constants.KEY_FONT_FOREGROUND));
 
-        previewLabel.setOpaque(true);
-        previewLabel.setBackground(colourMap.get(Constants.KEY_FONT_BACKGROUND));
+        setPreviewColour(targetStyle.getForeground(), true);
+        setPreviewColour(targetStyle.getBackground(), false);
     }
 
     public void stateChanged(ChangeEvent e)
     {
         selectedColor = tcc.getColor();
 
-        setPreviewColour(selectedColor);
+        setPreviewColour(selectedColor, isForeground);
     }
 }

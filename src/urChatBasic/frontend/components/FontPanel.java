@@ -1,12 +1,9 @@
 package urChatBasic.frontend.components;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -16,10 +13,9 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.*;
-import urChatBasic.base.Constants;
-import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.dialogs.ColourDialog;
 import urChatBasic.backend.utils.URPreferencesUtil;
+import urChatBasic.backend.utils.URStyle;
 
 public class FontPanel extends JPanel
 {
@@ -42,6 +38,7 @@ public class FontPanel extends JPanel
     // private String fontType = "New Font:";
     // private JLabel fontTypeLabel = new JLabel("New Font:");
     private Font defaultFont;
+    private URStyle targetStyle;
     // TODO: Add colour picker for foreground and background
 
     private List<ActionListener> actionListeners = new ArrayList<>();
@@ -52,8 +49,10 @@ public class FontPanel extends JPanel
     {
         setLayout(new GridBagLayout());
         setSettingsPath(settingsPath);
+        targetStyle = new URStyle(displayName, defaultFont);
         setDefaultFont(defaultFont);
         loadFont();
+
 
         RESET_BUTTON.addActionListener(new ResetListener());
         COLOUR_BUTTON.addActionListener(new ActionListener() {
@@ -63,7 +62,7 @@ public class FontPanel extends JPanel
             {
                 if(colourDialog == null)
                 {
-                    colourDialog = new ColourDialog(displayName, FontPanel.this.getFont(), settingsPath);
+                    colourDialog = new ColourDialog(targetStyle, settingsPath);
 
                     colourDialog.getColourPanel().addSaveListener(e -> {
                         System.out.println("Save pressed");
@@ -173,7 +172,8 @@ public class FontPanel extends JPanel
 
     public void loadFont()
     {
-        setFont(URPreferencesUtil.loadFont(defaultFont, settingsPath), false);
+        // setFont(URPreferencesUtil.loadStyleFont(defaultFont, settingsPath), false);
+        setFont(URPreferencesUtil.loadStyle(targetStyle, settingsPath).getFont(), false);
     }
 
     @Override
@@ -190,29 +190,13 @@ public class FontPanel extends JPanel
         if (getFont() != newFont || saveToSettings)
         {
             MAKE_BOLD.setSelected(newFont.isBold());
-            if (saveToSettings)
-            {
-                settingsPath.putBoolean(Constants.KEY_FONT_BOLD, newFont.isBold());
-            }
-
             MAKE_ITALIC.setSelected(newFont.isItalic());
-            if (saveToSettings)
-            {
-                settingsPath.putBoolean(Constants.KEY_FONT_ITALIC, newFont.isItalic());
-            }
-
             FONT_COMBO_BOX.setSelectedItem(newFont.getFamily());
-
-            if (saveToSettings)
-            {
-                settingsPath.put(Constants.KEY_FONT_FAMILY, newFont.getFamily());
-            }
-
             SIZES_COMBO_BOX.setSelectedItem(newFont.getSize());
-            if (saveToSettings)
-            {
-                settingsPath.putInt(Constants.KEY_FONT_SIZE, newFont.getSize());
-            }
+
+            targetStyle.setFont(newFont);
+            if(saveToSettings)
+                targetStyle.save(settingsPath);
 
             revalidate();
             repaint();

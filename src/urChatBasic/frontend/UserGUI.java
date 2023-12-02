@@ -844,7 +844,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         lafOptions.addActionListener(new ChangeLAFListener());
 
-        clientFontPanel = new FontPanel(getFont(), getProfilePath(), "Global Font");
+        clientFontPanel = new FontPanel(getFont(), getProfilePath(), "");
         clientFontPanel.setPreferredSize(new Dimension(700, 64));
         clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
         clientFontPanel.getResetButton().addActionListener(new ResetFontListener());
@@ -932,7 +932,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             if (SwingUtilities.isRightMouseButton(mouseEvent) && wordAttributeSet.getAttribute("name") != null)
             {
                 String styleName = styleLabel.getText();
-                FontDialog styleFontDialog = new FontDialog(clientFontPanel.getFont(), getProfilePath().node(styleName), styleName);
+                FontDialog styleFontDialog = new FontDialog(previewLineFormatter.getStyleAsFont(styleName), getProfilePath(), styleName);
 
                 styleFontDialog.addSaveListener(arg0 -> {
                     List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();

@@ -2,6 +2,7 @@ package urChatBasic.backend.utils;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -28,6 +29,11 @@ public class URStyle extends SimpleAttributeSet {
         setFont(defaultFont);
         setForeground(UIManager.getColor("Label.foreground"));
         setBackground(UIManager.getColor("Label.background"));
+    }
+
+    public String getName()
+    {
+        return getAttribute("name").toString();
     }
 
     public Font getFont()
@@ -71,5 +77,18 @@ public class URStyle extends SimpleAttributeSet {
     public void setBackground(Color newColour)
     {
         StyleConstants.setBackground(this, newColour);
+    }
+
+    public void load(Preferences prefPath)
+    {
+        URStyle loadedStyle = URPreferencesUtil.loadStyle(this, prefPath);
+        setFont(loadedStyle.getFont());
+        setForeground(loadedStyle.getForeground());
+        setBackground(loadedStyle.getBackground());
+    }
+
+    public void save(Preferences prefPath)
+    {
+        URPreferencesUtil.saveStyle(this, prefPath);
     }
 }
