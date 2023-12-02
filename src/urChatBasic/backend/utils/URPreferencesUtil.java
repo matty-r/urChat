@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.text.StyleConstants;
 import urChatBasic.base.Constants;
 import urChatBasic.frontend.utils.URColour;
 
@@ -39,6 +40,34 @@ public class URPreferencesUtil {
         colourMap.replace(Constants.KEY_FONT_BACKGROUND, URColour.hexDecode(loadedBackground));
 
         return colourMap;
+    }
+
+    public static URStyle loadStyle(URStyle defaultStyle, Preferences settingsPath)
+    {
+        Preferences stylePrefPath = settingsPath.node(defaultStyle.getAttribute("name").toString());
+
+        Font loadedFont = loadFont(defaultStyle.getFont(), stylePrefPath);
+        // LineFormatter.getStyleAsFont(defaultStyle);
+        Map<String, Color> loadedColours = loadFontColours(defaultStyle.getForeground(), defaultStyle.getBackground(), stylePrefPath);
+        // LineFormatter.getStyleColours(defaultStyle);
+
+        StyleConstants.setFontFamily(defaultStyle,
+                loadedFont.getFamily());
+
+        StyleConstants.setFontSize(defaultStyle,
+                loadedFont.getSize());
+
+        StyleConstants.setBold(defaultStyle,
+                loadedFont.isBold());
+
+        StyleConstants.setItalic(defaultStyle,
+                loadedFont.isItalic());
+
+        StyleConstants.setForeground(defaultStyle, loadedColours.get(Constants.KEY_FONT_FOREGROUND));
+
+        StyleConstants.setBackground(defaultStyle, loadedColours.get(Constants.KEY_FONT_BACKGROUND));
+
+        return defaultStyle;
     }
 
     public static void saveFontColours(Color newForeground, Color newBackground, Preferences settingsPath)
