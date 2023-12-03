@@ -37,7 +37,7 @@ public class FontPanel extends JPanel
     protected ColourDialog colourDialog = null;
     // private String fontType = "New Font:";
     // private JLabel fontTypeLabel = new JLabel("New Font:");
-    private Font defaultFont;
+    private URStyle defaultStyle;
     private URStyle targetStyle;
     // TODO: Add colour picker for foreground and background
 
@@ -45,13 +45,13 @@ public class FontPanel extends JPanel
 
     private Preferences settingsPath;
 
-    public FontPanel(Font defaultFont, Preferences settingsPath, String displayName)
+    public FontPanel(URStyle defaultStyle, Preferences settingsPath, String displayName)
     {
         setLayout(new GridBagLayout());
         setSettingsPath(settingsPath);
-        targetStyle = new URStyle(displayName, defaultFont);
-        setDefaultFont(defaultFont);
-        loadFont();
+        targetStyle = new URStyle(displayName, defaultStyle.getFont());
+        this.defaultStyle = defaultStyle;
+        setDefaultFont(defaultStyle.getFont());
 
 
         RESET_BUTTON.addActionListener(new ResetListener());
@@ -148,8 +148,14 @@ public class FontPanel extends JPanel
 
     public void setDefaultFont(Font f)
     {
-        defaultFont = f;
-        loadFont();
+        // defaultFont = f;
+        defaultStyle.setFont(f);
+        loadStyle();
+    }
+
+    public URStyle getStyle()
+    {
+        return targetStyle;
     }
 
     // Deletes the saved font, then loads the "default" font.
@@ -158,7 +164,7 @@ public class FontPanel extends JPanel
     public void resetFont() {
         try
         {
-            for (String key : settingsPath.keys()) {
+            for (String key : settingsPath.node(targetStyle.getName()).keys()) {
                 settingsPath.remove(key);
             }
         } catch (BackingStoreException e)
@@ -167,13 +173,14 @@ public class FontPanel extends JPanel
             e.printStackTrace();
         }
 
-        loadFont();
+        loadStyle();
     }
 
-    public void loadFont()
+    public void loadStyle()
     {
         // setFont(URPreferencesUtil.loadStyleFont(defaultFont, settingsPath), false);
-        setFont(URPreferencesUtil.loadStyle(targetStyle, settingsPath).getFont(), false);
+        setStyle(URPreferencesUtil.loadStyle(targetStyle, settingsPath));
+        // setFont(URPreferencesUtil.loadStyle(targetStyle, settingsPath).getFont(), false);
     }
 
     @Override
@@ -183,6 +190,13 @@ public class FontPanel extends JPanel
 
         if (TEXT_PREVIEW != null)
             TEXT_PREVIEW.setFont(f);
+    }
+
+    public void setStyle(URStyle newStyle)
+    {
+        targetStyle = newStyle;
+
+        setFont(targetStyle.getFont());
     }
 
     public void setFont(Font newFont, Boolean saveToSettings)

@@ -67,7 +67,8 @@ public class URPreferencesUtil {
 
         StyleConstants.setBackground(defaultStyle, loadedColours.get(Constants.KEY_FONT_BACKGROUND));
 
-        System.out.println("Loaded: "+defaultStyle.getAttribute("name") + ". Colours - fg: "+URColour.hexEncode(defaultStyle.getForeground()) + " bg: " + URColour.hexEncode(defaultStyle.getBackground()));
+        System.out.println("Loaded: "+defaultStyle.getAttribute("name") + ". Font: "+loadedFont.getFamily() +
+            " Colours - fg: "+URColour.hexEncode(defaultStyle.getForeground()) + " bg: " + URColour.hexEncode(defaultStyle.getBackground()));
 
         return defaultStyle;
     }

@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
+import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.DialogBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.components.FontPanel;
@@ -14,21 +15,21 @@ public class FontDialog extends DialogBase
     private String title = "Default Font";
     private FontPanel fontPanel;
 
-    public FontDialog(Font defaultFont, Preferences settingsPath, String title)
+    public FontDialog(URStyle defaultStyle, Preferences settingsPath, String title)
     {
         super(DriverGUI.frame, title, true);
         this.title = title;
-        initFontDialog(defaultFont, settingsPath);
+        initFontDialog(defaultStyle, settingsPath);
     }
 
-    public void initFontDialog(Font defaultFont, Preferences settingsPath)
+    public void initFontDialog(URStyle defaultStyle, Preferences settingsPath)
     {
         setSize(600, 100);
         setResizable(false);
         setMaximumSize(new Dimension(600, 100));
         setLocationRelativeTo(super.getParent());
 
-        fontPanel = new FontPanel(defaultFont, settingsPath, title);
+        fontPanel = new FontPanel(defaultStyle, settingsPath, title);
 
         add(fontPanel);
     }
@@ -42,7 +43,7 @@ public class FontDialog extends DialogBase
     public void setVisible(boolean b)
     {
         setLocationRelativeTo(super.getParent());
-        fontPanel.loadFont();
+        fontPanel.loadStyle();
         super.setVisible(b);
     }
 
@@ -62,7 +63,7 @@ public class FontDialog extends DialogBase
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            fontPanel.loadFont();
+            fontPanel.loadStyle();
             FontDialog.this.setVisible(true);
         }
     }

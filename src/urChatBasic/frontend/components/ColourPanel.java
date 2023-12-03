@@ -107,7 +107,9 @@ public class ColourPanel extends JPanel implements ChangeListener
         });
 
         addSaveListener(e -> {
-            URPreferencesUtil.saveStyleColours(previewLabel.getForeground(), previewLabel.getBackground(), settingsPath);
+            // TODO: Don't save colours unless it's not the default?
+            // URPreferencesUtil.saveStyleColours(previewLabel.getForeground(), previewLabel.getBackground(), settingsPath);
+            URPreferencesUtil.saveStyle(targetStyle, settingsPath);
         });
 
         return bottomPanel;

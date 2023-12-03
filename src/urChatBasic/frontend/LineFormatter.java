@@ -45,7 +45,7 @@ public class LineFormatter
     public URStyle nickStyle;
     public URStyle myStyle;
 
-    public LineFormatter(Font myFont, Map<String, Color> defaultColours, final IRCServerBase server, Preferences formatterPrefs)
+    public LineFormatter(URStyle baseStyle, final IRCServerBase server, Preferences formatterPrefs)
     {
         // TODO: Need to load attributes from formatterPrefs
         this.formatterPrefs = formatterPrefs;
@@ -60,9 +60,9 @@ public class LineFormatter
             myNick = null;
         }
 
-        targetStyle = new URStyle(myNick, myFont);
-        targetStyle.setBackground(defaultColours.get(Constants.KEY_FONT_FOREGROUND));
-        targetStyle.setBackground(defaultColours.get(Constants.KEY_FONT_BACKGROUND));
+        targetStyle = new URStyle(myNick, baseStyle.getFont());
+        targetStyle.setForeground(baseStyle.getForeground());
+        targetStyle.setBackground(baseStyle.getBackground());
 
         // TODO: should we be using something like UIManager
         // UIManager.getFont for the default fonts isntead?
@@ -347,7 +347,7 @@ public class LineFormatter
         insertString(doc, insertedString, style, position);
     }
 
-    private URStyle getStyle(String styleName)
+    public URStyle getStyle(String styleName)
     {
         switch (styleName)
         {

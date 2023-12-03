@@ -28,7 +28,7 @@ public class URStyle extends SimpleAttributeSet {
         this.addAttribute("name", name);
         setFont(defaultFont);
         setForeground(UIManager.getColor("Label.foreground"));
-        setBackground(UIManager.getColor("Label.background"));
+        setBackground(UIManager.getColor("Panel.background"));
     }
 
     public String getName()
