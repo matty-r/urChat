@@ -28,10 +28,11 @@ public class ColourPanel extends JPanel implements ChangeListener
     JButton saveButton;
     JLabel previewLabel;
 
-    public ColourPanel(URStyle targetStyle, Preferences settingsPath)
+    public ColourPanel(URStyle defaultStyle, Preferences settingsPath)
     {
         super(new BorderLayout());
         this.settingsPath = settingsPath;
+        targetStyle = defaultStyle;
         saveButton = new JButton("Apply & Save");
         previewLabel = new JLabel("Preview Text");
         previewLabel.setFont(targetStyle.getFont());
@@ -120,6 +121,7 @@ public class ColourPanel extends JPanel implements ChangeListener
         if(setForeground)
         {
             previewLabel.setForeground(newColour);
+            targetStyle.setForeground(newColour);
         } else
         {
             if(newColour != targetStyle.getBackground())
@@ -128,6 +130,7 @@ public class ColourPanel extends JPanel implements ChangeListener
                 previewLabel.setOpaque(false);
 
             previewLabel.setBackground(newColour);
+            targetStyle.setBackground(newColour);
         }
     }
 

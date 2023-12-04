@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
 import urChatBasic.base.Constants;
 import urChatBasic.frontend.utils.URColour;
@@ -27,14 +28,14 @@ public class URPreferencesUtil {
         return savedFont;
     }
 
-    public static Map<String, Color> loadStyleColours(URStyle defaultStyle, Preferences settingsPath)
+    public static Map<String, Color> loadStyleColours(URStyle targetStyle, Preferences settingsPath)
     {
         Map<String, Color> colourMap = new HashMap<String, Color>();
-        colourMap.put(Constants.KEY_FONT_FOREGROUND, defaultStyle.getForeground());
-        colourMap.put(Constants.KEY_FONT_BACKGROUND, defaultStyle.getBackground());
+        colourMap.put(Constants.KEY_FONT_FOREGROUND, targetStyle.getForeground());
+        colourMap.put(Constants.KEY_FONT_BACKGROUND, targetStyle.getBackground());
 
-        String loadedForeground = settingsPath.get(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(defaultStyle.getForeground()));
-        String loadedBackground = settingsPath.get(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(defaultStyle.getBackground()));
+        String loadedForeground = settingsPath.get(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(targetStyle.getForeground()));
+        String loadedBackground = settingsPath.get(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(targetStyle.getBackground()));
 
         colourMap.replace(Constants.KEY_FONT_FOREGROUND, URColour.hexDecode(loadedForeground));
         colourMap.replace(Constants.KEY_FONT_BACKGROUND, URColour.hexDecode(loadedBackground));
@@ -42,35 +43,52 @@ public class URPreferencesUtil {
         return colourMap;
     }
 
-    public static URStyle loadStyle(URStyle defaultStyle, Preferences baseSettingsPath)
+    public static URStyle loadStyle(URStyle targetStyle, Preferences baseSettingsPath)
     {
-        Preferences stylePrefPath = baseSettingsPath.node(defaultStyle.getAttribute("name").toString());
+        Preferences stylePrefPath = baseSettingsPath.node(targetStyle.getAttribute("name").toString());
         System.out.println("Load Style Path: " + stylePrefPath.toString());
-        Font loadedFont = loadStyleFont(defaultStyle.getFont(), stylePrefPath);
+        Font loadedFont = loadStyleFont(targetStyle.getFont(), stylePrefPath);
         // LineFormatter.getStyleAsFont(defaultStyle);
-        Map<String, Color> loadedColours = loadStyleColours(defaultStyle, stylePrefPath);
+        Map<String, Color> loadedColours = loadStyleColours(targetStyle, stylePrefPath);
         // LineFormatter.getStyleColours(defaultStyle);
 
-        StyleConstants.setFontFamily(defaultStyle,
+        StyleConstants.setFontFamily(targetStyle,
                 loadedFont.getFamily());
 
-        StyleConstants.setFontSize(defaultStyle,
+        StyleConstants.setFontSize(targetStyle,
                 loadedFont.getSize());
 
-        StyleConstants.setBold(defaultStyle,
+        StyleConstants.setBold(targetStyle,
                 loadedFont.isBold());
 
-        StyleConstants.setItalic(defaultStyle,
+        StyleConstants.setItalic(targetStyle,
                 loadedFont.isItalic());
 
-        StyleConstants.setForeground(defaultStyle, loadedColours.get(Constants.KEY_FONT_FOREGROUND));
+        StyleConstants.setForeground(targetStyle, loadedColours.get(Constants.KEY_FONT_FOREGROUND));
 
-        StyleConstants.setBackground(defaultStyle, loadedColours.get(Constants.KEY_FONT_BACKGROUND));
+        StyleConstants.setBackground(targetStyle, loadedColours.get(Constants.KEY_FONT_BACKGROUND));
 
-        System.out.println("Loaded: "+defaultStyle.getAttribute("name") + ". Font: "+loadedFont.getFamily() +
-            " Colours - fg: "+URColour.hexEncode(defaultStyle.getForeground()) + " bg: " + URColour.hexEncode(defaultStyle.getBackground()));
+        // System.out.println("Loaded: "+targetStyle.getAttribute("name") + ". Font: "+loadedFont.getFamily() +
+        //     " Colours - fg: "+URColour.hexEncode(targetStyle.getForeground()) + " bg: " + URColour.hexEncode(targetStyle.getBackground()));
 
-        return defaultStyle;
+        return targetStyle;
+    }
+
+    public static void deleteStyleFont(URStyle targetStyle, Preferences baseSettingsPath)
+    {
+        Preferences settingsPath =  baseSettingsPath.node(targetStyle.getName());
+        try
+        {
+            System.out.println("Removing font keys: " + settingsPath.absolutePath());
+            settingsPath.remove(Constants.KEY_FONT_BOLD);
+            settingsPath.remove(Constants.KEY_FONT_ITALIC);
+            settingsPath.remove(Constants.KEY_FONT_FAMILY);
+            settingsPath.remove(Constants.KEY_FONT_SIZE);
+        } catch (Exception e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public static void saveStyle(URStyle targetStyle, Preferences baseSettingsPath)
@@ -88,15 +106,29 @@ public class URPreferencesUtil {
      */
     private static void saveStyleFont(Font newFont, Preferences settingsPath)
     {
+        // TODO: Don't safe if it's the default font
         settingsPath.putBoolean(Constants.KEY_FONT_BOLD, newFont.isBold());
         settingsPath.putBoolean(Constants.KEY_FONT_ITALIC, newFont.isItalic());
         settingsPath.put(Constants.KEY_FONT_FAMILY, newFont.getFamily());
         settingsPath.putInt(Constants.KEY_FONT_SIZE, newFont.getSize());
     }
 
-    private static void saveStyleColours(Color newForeground, Color newBackground, Preferences settingsPath)
+    private static void saveStyleColours(Color foreground, Color background, Preferences settingsPath)
     {
-        settingsPath.put(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(newForeground));
-        settingsPath.put(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(newBackground));
+        // Don't save if it's the default colours
+        Color defaultForeground = UIManager.getColor("Label.foreground");
+        Color defaultBackground = UIManager.getColor("Panel.background");
+
+        if(URColour.hexEncode(defaultForeground).equals(URColour.hexEncode(foreground)))
+        {
+            settingsPath.put(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(foreground));
+            System.out.println("Didn't save. It's already default colours.");
+        }
+
+        if(URColour.hexEncode(defaultBackground).equals(URColour.hexEncode(background)))
+        {
+            settingsPath.put(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(background));
+            System.out.println("Didn't save. It's already default colours.");
+        }
     }
 }

@@ -874,7 +874,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // private static final JButton mediumStyleFontLabel = new JButton("Medium Priority Text Font");
         // private static final JButton highStyleFontLabel = new JButton("High Priority Text Font");
 
-        addToPanel(appearancePanel, clientFontPanel, "Global Font", null);
+        addToPanel(appearancePanel, clientFontPanel, "Profile Font", null);
         addToPanel(appearancePanel, timeStampField, "Timestamp Format", Size.MEDIUM);
 
         addToPanel(appearancePanel, previewTextScroll, "Font Preview", null);
@@ -1663,6 +1663,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     @Override
     public void cleanUpSettings()
     {
+        // TODO: Clean up all nodes if they have empty keys
         Constants.LOGGER.log(Level.INFO, "Cleaning up settings");
         try
         {
@@ -1675,6 +1676,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                         getFavouritesPath().node(serverNode).node(channelNode).removeNode();
                     }
                 }
+            }
+
+            for (String profileNode : getProfilePath().childrenNames())
+            {
+                    if (getProfilePath().node(profileNode).keys().length == 0)
+                    {
+                        getProfilePath().node(profileNode).removeNode();
+                    }
             }
         } catch (BackingStoreException e)
         {
@@ -1934,7 +1943,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
 
         // Create the default style
-        URStyle newStyle = new URStyle(profileName, getFont());
+        URStyle newStyle = new URStyle("", getFont());
         guiStyle = newStyle;
         return guiStyle;
     }

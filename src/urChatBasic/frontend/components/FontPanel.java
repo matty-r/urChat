@@ -65,6 +65,7 @@ public class FontPanel extends JPanel
                     colourDialog = new ColourDialog(targetStyle, settingsPath);
 
                     colourDialog.getColourPanel().addSaveListener(e -> {
+                        URPreferencesUtil.saveStyle(targetStyle, settingsPath);
                         System.out.println("Save pressed");
                     });
                 }
@@ -159,19 +160,10 @@ public class FontPanel extends JPanel
     }
 
     // Deletes the saved font, then loads the "default" font.
-    // The default font for a channel is the Global Font, the default font
+    // The default font for a channel is the Profile Font, the default font
     // the UserGUI is Constants.DEFAULT_FONT
     public void resetFont() {
-        try
-        {
-            for (String key : settingsPath.node(targetStyle.getName()).keys()) {
-                settingsPath.remove(key);
-            }
-        } catch (BackingStoreException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        URPreferencesUtil.deleteStyleFont(targetStyle, settingsPath);
 
         loadStyle();
     }
@@ -196,7 +188,7 @@ public class FontPanel extends JPanel
     {
         targetStyle = newStyle;
 
-        setFont(targetStyle.getFont());
+        setFont(targetStyle.getFont(), false);
     }
 
     public void setFont(Font newFont, Boolean saveToSettings)

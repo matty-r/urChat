@@ -19,9 +19,7 @@ import urChatBasic.frontend.utils.URColour;
 /**
  * Used to store constants that are the same and do not change often. These are things used commonly
  * across the [front,back]end
- *
- * @author goofybud16
- *
+ * 
  */
 public class Constants
 {
