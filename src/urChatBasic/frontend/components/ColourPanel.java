@@ -159,6 +159,7 @@ public class ColourPanel extends JPanel implements ChangeListener
 
         // defaultBackground = colourMap.get(Constants.KEY_FONT_BACKGROUND);
         // defaultForeground = colourMap.get(Constants.KEY_FONT_FOREGROUND);
+        // TODO: Should also be underlined etc..
         previewLabel.setFont(targetStyle.getFont());
         setPreviewColour(targetStyle.getForeground(), true);
         setPreviewColour(targetStyle.getBackground(), false);

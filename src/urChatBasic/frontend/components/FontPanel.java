@@ -64,7 +64,7 @@ public class FontPanel extends JPanel
                     colourDialog = new ColourDialog(styleName, defaultStyle, settingsPath);
 
                     colourDialog.getColourPanel().addSaveListener(e -> {
-                        URPreferencesUtil.saveStyle(targetStyle, settingsPath);
+                        // URPreferencesUtil.saveStyle(targetStyle, settingsPath);
                         System.out.println("Save pressed");
                     });
                 }

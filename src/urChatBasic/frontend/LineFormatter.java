@@ -194,7 +194,8 @@ public class LineFormatter
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setUnderline(tempStyle, true);
 
-        tempStyle.load(formatterPrefs);
+        // tempStyle.load(formatterPrefs);
+        tempStyle = URPreferencesUtil.loadStyle(tempStyle, formatterPrefs);
 
         return tempStyle;
     }
