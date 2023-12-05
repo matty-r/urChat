@@ -841,7 +841,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         lafOptions.addActionListener(new ChangeLAFListener());
 
-        clientFontPanel = new FontPanel(getStyle(), getProfilePath(), "");
+        clientFontPanel = new FontPanel("", getStyle(), getProfilePath());
         clientFontPanel.setPreferredSize(new Dimension(700, 64));
         clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
         clientFontPanel.getResetButton().addActionListener(new ResetFontListener());
@@ -929,7 +929,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             if (SwingUtilities.isRightMouseButton(mouseEvent) && wordAttributeSet.getAttribute("name") != null)
             {
                 String styleName = styleLabel.getText();
-                FontDialog styleFontDialog = new FontDialog(previewLineFormatter.getStyle(styleName), getProfilePath(), styleName);
+                FontDialog styleFontDialog = new FontDialog(styleName, previewLineFormatter.getStyle(styleName), getProfilePath());
 
                 styleFontDialog.addSaveListener(arg0 -> {
                     List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();
@@ -1140,7 +1140,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             this.favChannel = favChannel;
             settingsPath = getFavouritesPath().node(favServer).node(favChannel);
 
-            favFontDialog = new FontDialog(UserGUI.this.getStyle(), settingsPath, "Font: " + favChannel);
+            favFontDialog = new FontDialog("Font: " + favChannel, UserGUI.this.getStyle(), settingsPath);
             favFontDialog.addSaveListener(new SaveChannelFontListener());
             createPopUp();
         }

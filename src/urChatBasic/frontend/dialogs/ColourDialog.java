@@ -10,17 +10,19 @@ import urChatBasic.frontend.components.ColourPanel;
 
 public class ColourDialog extends DialogBase
 {
+    private String styleName = "Default Font";
     private ColourPanel colourPanel;
 
-    public ColourDialog(URStyle targetStyle, Preferences settingsPath)
+    public ColourDialog(String styleName, URStyle defaultStyle, Preferences settingsPath)
     {
-        super(DriverGUI.frame, targetStyle.getName(), true);
-        initColourDialog(targetStyle, settingsPath);
+        super(DriverGUI.frame, defaultStyle.getName(), true);
+        this.styleName = styleName;
+        initColourDialog(defaultStyle, settingsPath);
     }
 
-    public void initColourDialog(URStyle targetStyle, Preferences settingsPath)
+    public void initColourDialog(URStyle defaultStyle, Preferences settingsPath)
     {
-        colourPanel = new ColourPanel(targetStyle, settingsPath);
+        colourPanel = new ColourPanel(styleName, defaultStyle, settingsPath);
 
         add(colourPanel);
         setContentPane(colourPanel);

@@ -12,6 +12,12 @@ import urChatBasic.frontend.utils.URColour;
 
 public class URPreferencesUtil {
 
+    /**
+     * Uses the defaultFont for the returned font if there is no font saved.
+     * @param defaultFont
+     * @param settingsPath
+     * @return
+     */
     public static Font loadStyleFont(Font defaultFont, Preferences settingsPath)
     {
         Font savedFont = defaultFont;
@@ -28,14 +34,20 @@ public class URPreferencesUtil {
         return savedFont;
     }
 
-    public static Map<String, Color> loadStyleColours(URStyle targetStyle, Preferences settingsPath)
+    /**
+     * Uses the defaultStyle for the returned colours if there aren't any colours saved.
+     * @param defaultStyle
+     * @param settingsPath
+     * @return
+     */
+    public static Map<String, Color> loadStyleColours(URStyle defaultStyle, Preferences settingsPath)
     {
         Map<String, Color> colourMap = new HashMap<String, Color>();
-        colourMap.put(Constants.KEY_FONT_FOREGROUND, targetStyle.getForeground());
-        colourMap.put(Constants.KEY_FONT_BACKGROUND, targetStyle.getBackground());
+        colourMap.put(Constants.KEY_FONT_FOREGROUND, defaultStyle.getForeground());
+        colourMap.put(Constants.KEY_FONT_BACKGROUND, defaultStyle.getBackground());
 
-        String loadedForeground = settingsPath.get(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(targetStyle.getForeground()));
-        String loadedBackground = settingsPath.get(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(targetStyle.getBackground()));
+        String loadedForeground = settingsPath.get(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(defaultStyle.getForeground()));
+        String loadedBackground = settingsPath.get(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(defaultStyle.getBackground()));
 
         colourMap.replace(Constants.KEY_FONT_FOREGROUND, URColour.hexDecode(loadedForeground));
         colourMap.replace(Constants.KEY_FONT_BACKGROUND, URColour.hexDecode(loadedBackground));
@@ -113,6 +125,13 @@ public class URPreferencesUtil {
         settingsPath.putInt(Constants.KEY_FONT_SIZE, newFont.getSize());
     }
 
+    /**
+     * Removes the saved colours if they've been set to the default, this ensures we're not accidentally
+     * overriding the default theme colours when the theme is changed.
+     * @param foreground
+     * @param background
+     * @param settingsPath
+     */
     private static void saveStyleColours(Color foreground, Color background, Preferences settingsPath)
     {
         // Don't save if it's the default colours
@@ -121,14 +140,16 @@ public class URPreferencesUtil {
 
         if(URColour.hexEncode(defaultForeground).equals(URColour.hexEncode(foreground)))
         {
+            settingsPath.remove(Constants.KEY_FONT_FOREGROUND);
+        } else {
             settingsPath.put(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(foreground));
-            System.out.println("Didn't save. It's already default colours.");
         }
 
         if(URColour.hexEncode(defaultBackground).equals(URColour.hexEncode(background)))
         {
+            settingsPath.remove(Constants.KEY_FONT_BACKGROUND);
+        } else {
             settingsPath.put(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(background));
-            System.out.println("Didn't save. It's already default colours.");
         }
     }
 }

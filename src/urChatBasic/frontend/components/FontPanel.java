@@ -10,7 +10,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import urChatBasic.frontend.dialogs.ColourDialog;
@@ -45,11 +44,11 @@ public class FontPanel extends JPanel
 
     private Preferences settingsPath;
 
-    public FontPanel(URStyle defaultStyle, Preferences settingsPath, String displayName)
+    public FontPanel(String styleName, URStyle defaultStyle, Preferences settingsPath)
     {
         setLayout(new GridBagLayout());
         setSettingsPath(settingsPath);
-        targetStyle = new URStyle(displayName, defaultStyle.getFont());
+        targetStyle = new URStyle(styleName, defaultStyle.getFont());
         this.defaultStyle = defaultStyle;
         setDefaultFont(defaultStyle.getFont());
 
@@ -62,7 +61,7 @@ public class FontPanel extends JPanel
             {
                 if(colourDialog == null)
                 {
-                    colourDialog = new ColourDialog(targetStyle, settingsPath);
+                    colourDialog = new ColourDialog(styleName, defaultStyle, settingsPath);
 
                     colourDialog.getColourPanel().addSaveListener(e -> {
                         URPreferencesUtil.saveStyle(targetStyle, settingsPath);

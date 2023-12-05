@@ -3,14 +3,11 @@ package urChatBasic.frontend.components;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.event.*;
 import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.backend.utils.URStyle;
-import urChatBasic.base.Constants;
 import urChatBasic.frontend.utils.URColour;
 
 /* ColorChooserDemo.java requires no other files. */
@@ -22,20 +19,22 @@ public class ColourPanel extends JPanel implements ChangeListener
     protected JColorChooser tcc;
     public Color selectedColor;
     private URStyle targetStyle;
+    private URStyle defaultStyle;
     private Preferences settingsPath;
     private JPanel bottomPanel;
     private boolean isForeground = true;
     JButton saveButton;
     JLabel previewLabel;
 
-    public ColourPanel(URStyle defaultStyle, Preferences settingsPath)
+    public ColourPanel(String styleName, URStyle defaultStyle, Preferences settingsPath)
     {
         super(new BorderLayout());
-        this.settingsPath = settingsPath;
-        targetStyle = defaultStyle;
         saveButton = new JButton("Apply & Save");
         previewLabel = new JLabel("Preview Text");
-        previewLabel.setFont(targetStyle.getFont());
+        this.settingsPath = settingsPath;
+        this.defaultStyle = defaultStyle;
+        targetStyle = (URStyle) defaultStyle.clone();
+        loadStyle();
 
         bottomPanel = createBottomPanel();
         // Set up color chooser for setting text color
@@ -87,10 +86,9 @@ public class ColourPanel extends JPanel implements ChangeListener
         });
 
         resetButton.addActionListener(e -> {
-            if (isForeground)
-                setPreviewColour(targetStyle.getForeground(), isForeground);
-            else
-                setPreviewColour(targetStyle.getBackground(), isForeground);
+            previewLabel.setFont(defaultStyle.getFont());
+            setPreviewColour(defaultStyle.getForeground(), true);
+            setPreviewColour(defaultStyle.getBackground(), false);
         });
 
         autoColour.addActionListener(e -> {
@@ -155,13 +153,13 @@ public class ColourPanel extends JPanel implements ChangeListener
         }
     }
 
-    public void loadColours()
+    public void loadStyle()
     {
         targetStyle = URPreferencesUtil.loadStyle(targetStyle, settingsPath);
 
         // defaultBackground = colourMap.get(Constants.KEY_FONT_BACKGROUND);
         // defaultForeground = colourMap.get(Constants.KEY_FONT_FOREGROUND);
-
+        previewLabel.setFont(targetStyle.getFont());
         setPreviewColour(targetStyle.getForeground(), true);
         setPreviewColour(targetStyle.getBackground(), false);
     }

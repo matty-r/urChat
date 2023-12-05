@@ -1,7 +1,6 @@
 package urChatBasic.frontend.dialogs;
 
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.prefs.Preferences;
@@ -12,13 +11,13 @@ import urChatBasic.frontend.components.FontPanel;
 
 public class FontDialog extends DialogBase
 {
-    private String title = "Default Font";
+    private String styleName = "Default Font";
     private FontPanel fontPanel;
 
-    public FontDialog(URStyle defaultStyle, Preferences settingsPath, String title)
+    public FontDialog(String styleName, URStyle defaultStyle, Preferences settingsPath)
     {
-        super(DriverGUI.frame, title, true);
-        this.title = title;
+        super(DriverGUI.frame, styleName, true);
+        this.styleName = styleName;
         initFontDialog(defaultStyle, settingsPath);
     }
 
@@ -29,7 +28,7 @@ public class FontDialog extends DialogBase
         setMaximumSize(new Dimension(600, 100));
         setLocationRelativeTo(super.getParent());
 
-        fontPanel = new FontPanel(defaultStyle, settingsPath, title);
+        fontPanel = new FontPanel(styleName, defaultStyle, settingsPath);
 
         add(fontPanel);
     }
