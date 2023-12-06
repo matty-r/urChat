@@ -40,6 +40,10 @@ public class FontPanel extends JPanel
     private URStyle targetStyle;
     // TODO: Add colour picker for foreground and background
 
+    /**
+     * TODO: This will be used instead for creating the action listeners: private Map<JButton, EventListenerList> actionList = new HashMap<>();
+     * @see ColourPanel.fireSaveListeners()
+     */
     private List<ActionListener> actionListeners = new ArrayList<>();
 
     private Preferences settingsPath;
@@ -50,7 +54,7 @@ public class FontPanel extends JPanel
         setSettingsPath(settingsPath);
         targetStyle = new URStyle(styleName, defaultStyle.getFont());
         this.defaultStyle = defaultStyle;
-        setDefaultFont(defaultStyle.getFont());
+        setDefaultFont(targetStyle.getFont());
 
 
         RESET_BUTTON.addActionListener(new ResetListener());
@@ -65,7 +69,7 @@ public class FontPanel extends JPanel
 
                     colourDialog.getColourPanel().addSaveListener(e -> {
                         // URPreferencesUtil.saveStyle(targetStyle, settingsPath);
-                        System.out.println("Save pressed");
+                        System.out.println("Font Panel says: Save Colour pressed");
                     });
                 }
 
@@ -232,18 +236,6 @@ public class FontPanel extends JPanel
         targetButton.addActionListener(listener);
     }
 
-    // Using reflection - we check to see if the class implements the ActionListener interface
-    // private static boolean implementsActionListener(Component component) {
-    //     Class<?>[] interfaces = component.getClass().getInterfaces();
-    //     Class<?> actionListenerClass = ActionListener.class;
-
-    //     for (Class<?> iface : interfaces) {
-    //         if (iface == actionListenerClass) {
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
 
     // Method to retrieve all added listeners
     public List<ActionListener> getActionListeners() {

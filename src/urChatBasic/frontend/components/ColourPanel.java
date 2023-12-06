@@ -33,7 +33,7 @@ public class ColourPanel extends JPanel implements ChangeListener
         previewLabel = new JLabel("Preview Text");
         this.settingsPath = settingsPath;
         this.defaultStyle = defaultStyle;
-        targetStyle = (URStyle) defaultStyle.clone();
+        targetStyle = new URStyle(styleName, defaultStyle.getFont());
         loadStyle();
 
         bottomPanel = createBottomPanel();
@@ -102,13 +102,11 @@ public class ColourPanel extends JPanel implements ChangeListener
         });
 
         saveButton.addActionListener(e -> {
-            fireSaveListeners();
-        });
-
-        addSaveListener(e -> {
-            // TODO: Don't save colours unless it's not the default?
-            // URPreferencesUtil.saveStyleColours(previewLabel.getForeground(), previewLabel.getBackground(), settingsPath);
+            // Save the style first
             URPreferencesUtil.saveStyle(targetStyle, settingsPath);
+
+            // now fire the rest of the save listeners
+            fireSaveListeners();
         });
 
         return bottomPanel;
@@ -134,7 +132,6 @@ public class ColourPanel extends JPanel implements ChangeListener
 
     public void addSaveListener (ActionListener actionListener)
     {
-        // saveButton.addActionListener(actionListener);
         listenerList.add(ActionListener.class, actionListener);
     }
 
@@ -142,6 +139,7 @@ public class ColourPanel extends JPanel implements ChangeListener
     {
         Object[] listeners = this.listenerList.getListenerList();
 
+        // Reverse order
         for(int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == ActionListener.class) {
                 if (this.actionEvent == null) {

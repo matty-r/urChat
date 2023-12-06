@@ -897,7 +897,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // }
 
         // previewTextArea.setFont(clientFontPanel.getFont());
-        previewLineFormatter = new LineFormatter(clientFontPanel.getStyle() ,null, getProfilePath());
+        previewLineFormatter = new LineFormatter(clientFontPanel.getStyle() ,null, getProfilePath(), null);
 
         if(previewDoc.getLength() <= 0)
         {
@@ -929,7 +929,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             if (SwingUtilities.isRightMouseButton(mouseEvent) && wordAttributeSet.getAttribute("name") != null)
             {
                 String styleName = styleLabel.getText();
-                FontDialog styleFontDialog = new FontDialog(styleName, previewLineFormatter.getStyle(styleName), getProfilePath());
+                FontDialog styleFontDialog = new FontDialog(styleName, guiStyle, getProfilePath());
 
                 styleFontDialog.addSaveListener(arg0 -> {
                     List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();

@@ -40,16 +40,21 @@ public class LineFormatter
     private Color myBackground;
     private IRCServerBase myServer;
     private Preferences formatterPrefs;
+    /**
+     * Used to load the style from, if it doesn't exist in the current formatterPrefs
+     */
+    private Preferences fallbackPreferences;
     public URStyle timeStyle;
     public URStyle lineStyle;
     public URStyle nickStyle;
     public URStyle myStyle;
 
-    public LineFormatter(URStyle baseStyle, final IRCServerBase server, Preferences formatterPrefs)
+    public LineFormatter(URStyle baseStyle, final IRCServerBase server, Preferences formatterPrefs, Preferences fallbackPreferences)
     {
         // TODO: Need to load attributes from formatterPrefs
         this.formatterPrefs = formatterPrefs;
 
+        this.fallbackPreferences = fallbackPreferences;
 
         if (null != server)
         {

@@ -35,7 +35,6 @@ public class ColourDialog extends DialogBase
 
         colourPanel.addSaveListener(e -> {
             ColourDialog.this.setVisible(false);
-            System.out.println("Set visible false");
         });
     }
 
@@ -45,31 +44,24 @@ public class ColourDialog extends DialogBase
     }
 
     @Override
-    public void setVisible(boolean b)
+    public void setVisible(boolean shown)
     {
-        setLocationRelativeTo(super.getParent());
+        System.out.println("Colour Dialog visible = " + shown);
+        if (!shown)
+            colourPanel.loadStyle();
+        else
+            setLocationRelativeTo(super.getParent());
 
-        super.setVisible(b);
+        super.setVisible(shown);
     }
 
-    // public void addSaveListener(ActionListener newActionListener)
-    // {
-    //     // fontPanel.getSaveButton().addActionListener(newActionListener);
-    //     fontPanel.addActionListener(fontPanel.getSaveButton(), newActionListener);
-    // }
-
-    // public void addResetListener(ActionListener newActionListener)
-    // {
-    //     fontPanel.getResetButton().addActionListener(newActionListener);
-    // }
-
-    public class ShowColourDialog implements ActionListener
+    public class HideColourDialog implements ActionListener
     {
-        @Override
+         @Override
         public void actionPerformed(ActionEvent arg0)
         {
             // fontPanel.loadFont();
-            ColourDialog.this.setVisible(true);
+            colourPanel.loadStyle();
         }
     }
 }

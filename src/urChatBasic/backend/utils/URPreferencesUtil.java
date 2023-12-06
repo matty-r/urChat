@@ -55,6 +55,12 @@ public class URPreferencesUtil {
         return colourMap;
     }
 
+    /**
+     * TODO: Add a fallbackSettingsPath in order to have somewhere else to load the targetStyle from if the baseSettingsPath doesn't exist.
+     * @param targetStyle
+     * @param baseSettingsPath
+     * @return
+     */
     public static URStyle loadStyle(URStyle targetStyle, Preferences baseSettingsPath)
     {
         Preferences stylePrefPath = baseSettingsPath.node(targetStyle.getAttribute("name").toString());
