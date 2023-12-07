@@ -62,7 +62,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JPanel interfacePanel = new JPanel();
     private static final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
 
-    private static final JComboBox<LookAndFeelInfo> lafOptions = new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
+    private static final JComboBox<LookAndFeelInfo> lafOptions =
+            new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
 
     private static final JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
     private static final JCheckBox showUsersList = new JCheckBox("Show Users List");
@@ -281,7 +282,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public void setProfileName(String newProfileName)
     {
         // save the current profile settings, if it exists
-        if(profilePicker.profileExists(profileName))
+        if (profilePicker.profileExists(profileName))
         {
             setClientSettings();
         }
@@ -536,14 +537,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         final int LEFT_ALIGNED = 0;
         final int LEFT_SPACING = 6;
 
-        if(null != label && !label.isBlank())
+        if (null != label && !label.isBlank())
         {
             addToPanel(targetPanel, new JLabel(label + ":"), null, targetSize);
             // There is a label, so we want the added component to be aligned with the label
             topSpacing = 0;
         }
 
-        if(targetPanel.getLayout().getClass() != SpringLayout.class)
+        if (targetPanel.getLayout().getClass() != SpringLayout.class)
         {
             targetPanel.setLayout(new SpringLayout());
         }
@@ -551,7 +552,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         SpringLayout layout = (SpringLayout) targetPanel.getLayout();
         Component[] components = targetPanel.getComponents();
 
-        if (components.length > 0) {
+        if (components.length > 0)
+        {
             Component previousComponent = components[components.length - 1];
 
             // Add newComponent to the targetPanel
@@ -561,9 +563,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             layout.putConstraint(SpringLayout.NORTH, newComponent, topSpacing, SpringLayout.SOUTH, previousComponent);
             layout.putConstraint(SpringLayout.WEST, newComponent, LEFT_ALIGNED, SpringLayout.WEST, previousComponent);
 
-            if(null != targetSize && newComponent instanceof JTextField)
+            if (null != targetSize && newComponent instanceof JTextField)
                 ((JTextField) newComponent).setColumns(12);
-        } else {
+        } else
+        {
             // If it's the first component, align it against the targetPanel
             targetPanel.add(newComponent);
 
@@ -571,7 +574,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             layout.putConstraint(SpringLayout.NORTH, newComponent, topSpacing * 2, SpringLayout.NORTH, targetPanel);
             layout.putConstraint(SpringLayout.WEST, newComponent, LEFT_SPACING * 2, SpringLayout.WEST, targetPanel);
 
-            if(null != targetSize && newComponent instanceof JTextField)
+            if (null != targetSize && newComponent instanceof JTextField)
                 ((JTextField) newComponent).setColumns(12);
         }
     }
@@ -772,7 +775,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         connectionLayout.putConstraint(SpringLayout.EAST, proxyHostNameTextField, RIGHT_ALIGNED, SpringLayout.EAST,
                 servernameTextField);
 
-        connectionLayout.putConstraint(SpringLayout.NORTH, proxyPortLabel, TOP_ALIGNED, SpringLayout.NORTH, proxyHostLabel);
+        connectionLayout.putConstraint(SpringLayout.NORTH, proxyPortLabel, TOP_ALIGNED, SpringLayout.NORTH,
+                proxyHostLabel);
         connectionLayout.putConstraint(SpringLayout.WEST, proxyPortLabel, LEFT_ALIGNED, SpringLayout.EAST,
                 proxyHostNameTextField);
 
@@ -831,9 +835,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         addToPanel(appearancePanel, lafOptions, "Theme", Size.MEDIUM);
 
         // Set a custom renderer to display the look and feel names
-        lafOptions.setRenderer(new DefaultListCellRenderer() {
+        lafOptions.setRenderer(new DefaultListCellRenderer()
+        {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                    boolean cellHasFocus)
+            {
                 LookAndFeelInfo info = (LookAndFeelInfo) value;
                 return super.getListCellRendererComponent(list, info.getName(), index, isSelected, cellHasFocus);
             }
@@ -849,19 +856,23 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         previewTextScroll.setPreferredSize(new Dimension(700, 150));
         previewTextArea.setEditable(false);
 
-        timeStampField.addKeyListener(new KeyListener() {
+        timeStampField.addKeyListener(new KeyListener()
+        {
             @Override
-            public void keyTyped(KeyEvent e) {
+            public void keyTyped(KeyEvent e)
+            {
                 // Not used
             }
 
             @Override
-            public void keyPressed(KeyEvent e) {
+            public void keyPressed(KeyEvent e)
+            {
                 // Not used
             }
 
             @Override
-            public void keyReleased(KeyEvent e) {
+            public void keyReleased(KeyEvent e)
+            {
                 updatePreviewTextArea();
             }
         });
@@ -888,18 +899,18 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         // try
         // {
-        //     // Clear all text
-        //     previewDoc.remove(0, previewDoc.getLength());
+        // // Clear all text
+        // previewDoc.remove(0, previewDoc.getLength());
         // } catch (BadLocationException e)
         // {
-        //     // TODO Auto-generated catch block
-        //     e.printStackTrace();
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
         // }
 
         // previewTextArea.setFont(clientFontPanel.getFont());
-        previewLineFormatter = new LineFormatter(clientFontPanel.getStyle() ,null, getProfilePath(), null);
+        previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), null, getProfilePath());
 
-        if(previewDoc.getLength() <= 0)
+        if (previewDoc.getLength() <= 0)
         {
             previewTextArea.setCaretPosition(previewTextArea.getDocument().getLength());
             previewTextArea.addMouseListener(new PreviewClickListener());
@@ -907,12 +918,18 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             IRCUser tempUser = new IRCUser(null, "matty_r");
             IRCUser tempUser2 = new IRCUser(null, System.getProperty("user.name"));
             previewLineFormatter.setNick(System.getProperty("user.name"));
-            previewLineFormatter.formattedDocument(previewDoc, new Date(), null, Constants.EVENT_USER, "urChat has loaded - this is an Event");
-            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "Normal line. Hello, world!");
-            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r", "This is what it looks like when your nick is mentioned, "+System.getProperty("user.name")+"!");
-            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, System.getProperty("user.name"), "Go to https://github.com/matty-r/urChat");
-            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, System.getProperty("user.name"), "Join #urchatclient on irc.libera.chat or #anotherroom");
-        } else {
+            previewLineFormatter.formattedDocument(previewDoc, new Date(), null, Constants.EVENT_USER,
+                    "urChat has loaded - this is an Event");
+            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r",
+                    "Normal line. Hello, world!");
+            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser, "matty_r",
+                    "This is what it looks like when your nick is mentioned, " + System.getProperty("user.name") + "!");
+            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, System.getProperty("user.name"),
+                    "Go to https://github.com/matty-r/urChat");
+            previewLineFormatter.formattedDocument(previewDoc, new Date(), tempUser2, System.getProperty("user.name"),
+                    "Join #urchatclient on irc.libera.chat or #anotherroom");
+        } else
+        {
             previewLineFormatter.updateStyles(previewDoc, 0);
         }
     }
@@ -929,10 +946,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             if (SwingUtilities.isRightMouseButton(mouseEvent) && wordAttributeSet.getAttribute("name") != null)
             {
                 String styleName = styleLabel.getText();
-                FontDialog styleFontDialog = new FontDialog(styleName, guiStyle, getProfilePath());
+                FontDialog styleFontDialog = new FontDialog(styleName,
+                        previewLineFormatter.getStyleBase(styleName, false), getProfilePath());
 
                 styleFontDialog.addSaveListener(arg0 -> {
-                    List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();
+                    // List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();
                     // TODO: Need to save attributes and updateStyles after..
                     // Currently runs the save after updateStyles
                     previewLineFormatter.updateStyles(doc, 0);
@@ -940,17 +958,17 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
                 // styleFontDialog.addResetListener(new ActionListener() {
 
-                //     @Override
-                //     public void actionPerformed(ActionEvent arg0) {
-                //         try {
-                //             getProfilePath().node(styleName).removeNode();
-                //         } catch (BackingStoreException e) {
-                //             // TODO Auto-generated catch block
-                //             e.printStackTrace();
-                //         }
+                // @Override
+                // public void actionPerformed(ActionEvent arg0) {
+                // try {
+                // getProfilePath().node(styleName).removeNode();
+                // } catch (BackingStoreException e) {
+                // // TODO Auto-generated catch block
+                // e.printStackTrace();
+                // }
 
-                //         previewLineFormatter.updateStyles(doc, 0);
-                //     }
+                // previewLineFormatter.updateStyles(doc, 0);
+                // }
 
                 // });
 
@@ -972,7 +990,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             AttributeSet wordAttributeSet = wordElement.getAttributes();
             ClickableText isClickableText = (ClickableText) wordAttributeSet.getAttribute("clickableText");
 
-            if(wordAttributeSet.getAttribute("name") != null)
+            if (wordAttributeSet.getAttribute("name") != null)
                 styleLabel.setText(wordAttributeSet.getAttribute("name").toString());
             else
                 styleLabel.setText("Mouse over text to view style, right-click to edit.");
@@ -1045,11 +1063,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         // Components are aligned off the top label
 
-        interfaceLayout.putConstraint(SpringLayout.WEST, showEventTicker,  LEFT_SPACING * 2, SpringLayout.WEST, interfacePanel);
-        interfaceLayout.putConstraint(SpringLayout.NORTH, showEventTicker, TOP_SPACING * 2, SpringLayout.NORTH, interfacePanel);
+        interfaceLayout.putConstraint(SpringLayout.WEST, showEventTicker, LEFT_SPACING * 2, SpringLayout.WEST,
+                interfacePanel);
+        interfaceLayout.putConstraint(SpringLayout.NORTH, showEventTicker, TOP_SPACING * 2, SpringLayout.NORTH,
+                interfacePanel);
 
-        interfaceLayout.putConstraint(SpringLayout.NORTH, showUsersList, TOP_SPACING, SpringLayout.SOUTH, showEventTicker);
-        interfaceLayout.putConstraint(SpringLayout.WEST, showUsersList, LEFT_ALIGNED, SpringLayout.WEST, showEventTicker);
+        interfaceLayout.putConstraint(SpringLayout.NORTH, showUsersList, TOP_SPACING, SpringLayout.SOUTH,
+                showEventTicker);
+        interfaceLayout.putConstraint(SpringLayout.WEST, showUsersList, LEFT_ALIGNED, SpringLayout.WEST,
+                showEventTicker);
 
         interfaceLayout.putConstraint(SpringLayout.NORTH, enableClickableLinks, TOP_SPACING, SpringLayout.SOUTH,
                 showUsersList);
@@ -1084,7 +1106,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         interfaceLayout.putConstraint(SpringLayout.NORTH, limitServerLines, TOP_SPACING, SpringLayout.SOUTH,
                 logClientText);
-        interfaceLayout.putConstraint(SpringLayout.WEST, limitServerLines, LEFT_ALIGNED, SpringLayout.WEST, logClientText);
+        interfaceLayout.putConstraint(SpringLayout.WEST, limitServerLines, LEFT_ALIGNED, SpringLayout.WEST,
+                logClientText);
 
         interfaceLayout.putConstraint(SpringLayout.NORTH, limitServerLinesCount, TOP_ALIGNED, SpringLayout.NORTH,
                 limitServerLines);
@@ -1606,9 +1629,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         clientFontPanel.loadStyle();
 
-        timeStampField.setText(
-            getProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, Constants.DEFAULT_TIME_STAMP_FORMAT)
-        );
+        timeStampField
+                .setText(getProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, Constants.DEFAULT_TIME_STAMP_FORMAT));
 
         updatePreviewTextArea();
 
@@ -1680,10 +1702,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
             for (String profileNode : getProfilePath().childrenNames())
             {
-                    if (getProfilePath().node(profileNode).keys().length == 0)
-                    {
-                        getProfilePath().node(profileNode).removeNode();
-                    }
+                if (getProfilePath().node(profileNode).keys().length == 0)
+                {
+                    getProfilePath().node(profileNode).removeNode();
+                }
             }
         } catch (BackingStoreException e)
         {
@@ -1950,8 +1972,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     private LookAndFeelInfo getLAF(String lafClassName)
     {
-        for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-            if (lafClassName.equals(info.getClassName())) {
+        for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels())
+        {
+            if (lafClassName.equals(info.getClassName()))
+            {
                 return info;
             }
         }
@@ -1973,22 +1997,27 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         try
         {
 
-            try{
-                for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+            try
+            {
+                for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels())
+                {
                     // System.out.println(info.getName());
-                    if (newLAFname.equals(info.getClassName())) {
+                    if (newLAFname.equals(info.getClassName()))
+                    {
                         UIManager.setLookAndFeel(info.getClassName());
                         flatLafAvailable = true;
                     }
                 }
-            } catch(Exception  e) {
+            } catch (Exception e)
+            {
                 throw e;
             }
         } catch (Exception e)
         {
             Constants.LOGGER.log(Level.WARNING, "Failed to set Pluggable LAF! " + e.getLocalizedMessage());
-        } finally {
-            if(!flatLafAvailable)
+        } finally
+        {
+            if (!flatLafAvailable)
             {
                 try
                 {
@@ -2006,10 +2035,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         guiStyle.setFont(clientFontPanel.getFont());
 
         // reset the defaults on the guiStyle if they were already at the default
-        if(previousDefaultForeground == guiStyle.getForeground())
+        if (previousDefaultForeground == guiStyle.getForeground())
             guiStyle.setForeground(UIManager.getColor("Label.foreground"));
 
-        if(previousDefaultBackground == guiStyle.getBackground())
+        if (previousDefaultBackground == guiStyle.getBackground())
             guiStyle.setBackground(UIManager.getColor("Panel.background"));
 
         SwingUtilities.updateComponentTreeUI(DriverGUI.frame);

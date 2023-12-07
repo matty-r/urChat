@@ -173,13 +173,13 @@ public class IRCRoomBase extends JPanel
             roomPrefs = gui.getFavouritesPath().node(getServer().getName()).node(roomName);
             fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getStyle() , getServer(), roomPrefs, gui.getProfilePath());
+            lineFormatter = new LineFormatter(getFontPanel().getStyle() , getServer(), roomPrefs);
         } else
         {
             roomPrefs = gui.getFavouritesPath().node(roomName);
             fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getStyle() , null, roomPrefs, gui.getProfilePath());
+            lineFormatter = new LineFormatter(getFontPanel().getStyle() , null, roomPrefs);
         }
 
         setFont(getFontPanel().getFont());
@@ -240,7 +240,7 @@ public class IRCRoomBase extends JPanel
 
     public void resetLineFormatter()
     {
-        lineFormatter = new LineFormatter(getFontPanel().getStyle() , getServer(), roomPrefs, gui.getProfilePath());
+        lineFormatter = new LineFormatter(getFontPanel().getStyle() , getServer(), roomPrefs);
     }
 
     private void setupMainTextArea()
@@ -521,7 +521,7 @@ public class IRCRoomBase extends JPanel
                         {
                             lineFormatter.formattedDocument(doc, new Date(), fromIRCUser, fromUser, line);
 
-                            if (lineFormatter.myStyle.getAttribute("name") == lineFormatter.highStyle()
+                            if (lineFormatter.myStyle.getAttribute("name") == lineFormatter.highStyle(true)
                                     .getAttribute("name"))
                             {
                                 callForAttention();

@@ -6,17 +6,16 @@ import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import urChatBasic.base.Constants;
 
 public class URStyle extends SimpleAttributeSet {
 
-    /**
-     * Create a URStyle with defaults
-     */
-    public URStyle (String name)
-    {
-        this(name, Constants.DEFAULT_FONT_GENERAL);
-    }
+    // /**
+    //  * Create a URStyle with defaults
+    //  */
+    // public URStyle (String name)
+    // {
+    //     this(name, Constants.DEFAULT_FONT_GENERAL);
+    // }
 
     /**
      * Create a URStyle based on defaultFont
@@ -29,6 +28,19 @@ public class URStyle extends SimpleAttributeSet {
         setFont(defaultFont);
         setForeground(UIManager.getColor("Label.foreground"));
         setBackground(UIManager.getColor("Panel.background"));
+    }
+
+    /**
+     * Create a URStyle based on defaultFont
+     * @param defaultFont
+     */
+    public URStyle (String name, Font defaultFont, Color defaultForeground, Color defaultBackground)
+    {
+        super();
+        this.addAttribute("name", name);
+        setFont(defaultFont);
+        setForeground(defaultForeground);
+        setBackground(defaultBackground);
     }
 
     public String getName()
@@ -90,5 +102,16 @@ public class URStyle extends SimpleAttributeSet {
     public void save(Preferences prefPath)
     {
         URPreferencesUtil.saveStyle(this, prefPath);
+    }
+
+    public boolean equals (URStyle otherStyle)
+    {
+        return getFont().equals(otherStyle.getFont()) && getForeground().equals(otherStyle.getForeground()) && getBackground().equals(otherStyle.getBackground());
+    }
+
+    @Override
+    public URStyle clone ()
+    {
+        return new URStyle(getName(), getFont(), getForeground(), getBackground());
     }
 }

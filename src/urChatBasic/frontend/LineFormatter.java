@@ -25,7 +25,6 @@ import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
@@ -40,21 +39,15 @@ public class LineFormatter
     private Color myBackground;
     private IRCServerBase myServer;
     private Preferences formatterPrefs;
-    /**
-     * Used to load the style from, if it doesn't exist in the current formatterPrefs
-     */
-    private Preferences fallbackPreferences;
     public URStyle timeStyle;
     public URStyle lineStyle;
     public URStyle nickStyle;
     public URStyle myStyle;
 
-    public LineFormatter(URStyle baseStyle, final IRCServerBase server, Preferences formatterPrefs, Preferences fallbackPreferences)
+    public LineFormatter(URStyle baseStyle, final IRCServerBase server, Preferences formatterPrefs)
     {
         // TODO: Need to load attributes from formatterPrefs
         this.formatterPrefs = formatterPrefs;
-
-        this.fallbackPreferences = fallbackPreferences;
 
         if (null != server)
         {
@@ -74,10 +67,10 @@ public class LineFormatter
         myForeground = targetStyle.getForeground();
         myBackground = targetStyle.getBackground();
 
-        timeStyle = defaultStyle(null);
-        lineStyle = defaultStyle(null);
-        nickStyle = nickStyle();
-        myStyle = myStyle();
+        timeStyle = defaultStyle(null, true);
+        lineStyle = defaultStyle(null, true);
+        nickStyle = nickStyle(false);
+        myStyle = myStyle(false);
     }
 
     public void setFont(StyledDocument doc, Font newFont)
@@ -87,45 +80,42 @@ public class LineFormatter
             updateStyles(doc, 0);
     }
 
-    public URStyle defaultStyle(String name)
+    public URStyle defaultStyle(String name, boolean load)
     {
         if (name == null)
             name = "defaultStyle";
 
-
-
-        URStyle defaultStyle = new URStyle(name, targetStyle.getFont());
-        defaultStyle.addAttribute("type", "default");
+        URStyle tempStyle = new URStyle(name, targetStyle.getFont());
+        tempStyle.addAttribute("type", "default");
         // get the contrasting colour of the background colour
-        // StyleConstants.setForeground(defaultStyle, new Color(formatterPrefs.node(name).getInt("font foreground",
-        //         URColour.getContrastColour(UIManager.getColor("Panel.background")).getRGB())));
+        // StyleConstants.setForeground(defaultStyle, new Color(formatterPrefs.node(name).getInt("font
+        // foreground",
+        // URColour.getContrastColour(UIManager.getColor("Panel.background")).getRGB())));
 
-        StyleConstants.setFontFamily(defaultStyle, targetStyle.getFont().getFamily());
-        StyleConstants.setFontSize(defaultStyle, targetStyle.getFont().getSize());
-        StyleConstants.setBold(defaultStyle, targetStyle.getFont().isBold());
-        StyleConstants.setItalic(defaultStyle, targetStyle.getFont().isItalic());
+        StyleConstants.setFontFamily(tempStyle, targetStyle.getFont().getFamily());
+        StyleConstants.setFontSize(tempStyle, targetStyle.getFont().getSize());
+        StyleConstants.setBold(tempStyle, targetStyle.getFont().isBold());
+        StyleConstants.setItalic(tempStyle, targetStyle.getFont().isItalic());
 
-        StyleConstants.setForeground(defaultStyle, myForeground);
-        StyleConstants.setBackground(defaultStyle, myBackground);
+        StyleConstants.setForeground(tempStyle, myForeground);
+        StyleConstants.setBackground(tempStyle, myBackground);
 
-        // defaultStyle = loadFontStyle(name, defaultStyle);
-        defaultStyle = URPreferencesUtil.loadStyle(defaultStyle, formatterPrefs);
+        if (load)
+            tempStyle.load(formatterPrefs);
 
-        return defaultStyle;
+        return tempStyle;
     }
 
-    public URStyle lowStyle()
+    public URStyle lowStyle(boolean load)
     {
         String name = "lowStyle";
 
-        URStyle tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name, load);
 
 
         StyleConstants.setForeground(tempStyle, UIManager.getColor("Panel.background").darker());
 
-        tempStyle = URPreferencesUtil.loadStyle(tempStyle, formatterPrefs);
-
-        if(StyleConstants.getForeground(tempStyle).getRGB() == myForeground.getRGB())
+        if (StyleConstants.getForeground(tempStyle).getRGB() == myForeground.getRGB())
             if (URColour.useDarkColour(UIManager.getColor("Panel.background")))
             {
                 StyleConstants.setForeground(tempStyle, UIManager.getColor("Panel.background").darker());
@@ -134,25 +124,30 @@ public class LineFormatter
                 StyleConstants.setForeground(tempStyle, UIManager.getColor("Panel.background").brighter());
             }
 
+        if (load)
+            tempStyle.load(formatterPrefs);
+
+
         return tempStyle;
     }
 
-    public URStyle mediumStyle()
+    public URStyle mediumStyle(boolean load)
     {
         String name = "mediumStyle";
 
-        URStyle tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name, load);
 
-        tempStyle.load(formatterPrefs);
+        if (load)
+            tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
 
-    public URStyle highStyle()
+    public URStyle highStyle(boolean load)
     {
         String name = "highStyle";
 
-        URStyle tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name, load);
 
         StyleConstants.setBackground(tempStyle, UIManager.getColor("CheckBoxMenuItem.selectionBackground"));
         StyleConstants.setForeground(tempStyle,
@@ -161,16 +156,17 @@ public class LineFormatter
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setItalic(tempStyle, true);
 
-        tempStyle.load(formatterPrefs);
+        if (load)
+            tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
 
-    public URStyle urlStyle()
+    public URStyle urlStyle(boolean load)
     {
         String name = "urlStyle";
 
-        URStyle tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name, load);
 
         tempStyle.addAttribute("name", name);
         tempStyle.addAttribute("type", "url");
@@ -179,18 +175,19 @@ public class LineFormatter
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setUnderline(tempStyle, true);
 
-        tempStyle.load(formatterPrefs);
+        if (load)
+            tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
 
     // TODO: urlStyle and channelStyle don't load the correct styling in the fontPanel
 
-    public URStyle channelStyle()
+    public URStyle channelStyle(boolean load)
     {
         String name = "channelStyle";
 
-        URStyle tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name, load);
 
         tempStyle.addAttribute("name", name);
         tempStyle.addAttribute("type", "channel");
@@ -199,17 +196,17 @@ public class LineFormatter
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setUnderline(tempStyle, true);
 
-        // tempStyle.load(formatterPrefs);
-        tempStyle = URPreferencesUtil.loadStyle(tempStyle, formatterPrefs);
+        if (load)
+            tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
 
-    public URStyle myStyle()
+    public URStyle myStyle(boolean load)
     {
         String name = "myStyle";
 
-        URStyle tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name, load);
         tempStyle.addAttribute("type", "myNick");
 
         // StyleConstants.setForeground(tempStyle, Color.GREEN);
@@ -219,21 +216,23 @@ public class LineFormatter
         StyleConstants.setBold(tempStyle, true);
         StyleConstants.setUnderline(tempStyle, true);
 
-        tempStyle.load(formatterPrefs);
+        if (load)
+            tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
 
-    public URStyle nickStyle()
+    public URStyle nickStyle(boolean load)
     {
         String name = "nickStyle";
 
-        URStyle tempStyle = defaultStyle(name);
+        URStyle tempStyle = defaultStyle(name, load);
         tempStyle.addAttribute("type", "nick");
 
         StyleConstants.setUnderline(tempStyle, true);
 
-        tempStyle.load(formatterPrefs);
+        if (load)
+            tempStyle.load(formatterPrefs);
 
         return tempStyle;
     }
@@ -353,45 +352,45 @@ public class LineFormatter
         insertString(doc, insertedString, style, position);
     }
 
-    public URStyle getStyle(String styleName)
+    public URStyle getStyleBase(String styleName, boolean load)
     {
         switch (styleName)
         {
             case "mediumStyle":
-                return mediumStyle();
+                return mediumStyle(load);
             case "highStyle":
-                return highStyle();
+                return highStyle(load);
             case "nickStyle":
-                return nickStyle();
+                return nickStyle(load);
             case "myStyle":
-                return myStyle();
+                return myStyle(load);
             case "lowStyle":
-                return lowStyle();
+                return lowStyle(load);
             case "urlStyle":
-                return urlStyle();
+                return urlStyle(load);
             case "channelStyle":
-                return channelStyle();
+                return channelStyle(load);
             default:
-                return defaultStyle(null);
+                return defaultStyle(null, true);
         }
     }
 
-    public Font getStyleAsFont(String styleName)
-    {
-        SimpleAttributeSet fontStyle = getStyle(styleName);
+    // public Font getStyleAsFont(String styleName)
+    // {
+    // SimpleAttributeSet fontStyle = getStyleBase(styleName);
 
-        int savedFontBoldItalic = 0;
+    // int savedFontBoldItalic = 0;
 
-        if (StyleConstants.isBold(fontStyle))
-            savedFontBoldItalic = Font.BOLD;
-        if (StyleConstants.isItalic(fontStyle))
-            savedFontBoldItalic |= Font.ITALIC;
+    // if (StyleConstants.isBold(fontStyle))
+    // savedFontBoldItalic = Font.BOLD;
+    // if (StyleConstants.isItalic(fontStyle))
+    // savedFontBoldItalic |= Font.ITALIC;
 
-        Font styleFont = new Font(StyleConstants.getFontFamily(fontStyle), savedFontBoldItalic,
-                StyleConstants.getFontSize(fontStyle));
+    // Font styleFont = new Font(StyleConstants.getFontFamily(fontStyle), savedFontBoldItalic,
+    // StyleConstants.getFontSize(fontStyle));
 
-        return styleFont;
-    }
+    // return styleFont;
+    // }
 
     public void updateStyles(StyledDocument doc, int startPosition)
     {
@@ -401,7 +400,7 @@ public class LineFormatter
         int styleStart = startPosition;
         int styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
 
-        SimpleAttributeSet matchingStyle = getStyle(styleName);
+        SimpleAttributeSet matchingStyle = getStyleBase(styleName, true);
 
         boolean isDateStyle = false;
         if (null != DriverGUI.gui && null != textStyle.getAttribute("date"))
@@ -428,7 +427,7 @@ public class LineFormatter
                     if (!hasTime)
                         doc.setCharacterAttributes(styleStart, styleLength, textStyle, true);
 
-                    SimpleAttributeSet timeStyle = getStyle(styleName);
+                    SimpleAttributeSet timeStyle = getStyleBase(styleName, true);
                     timeStyle.addAttribute("date", lineDate);
                     timeStyle.addAttribute("type", "time");
                     insertString(doc, newTimeString, timeStyle, styleStart);
@@ -443,7 +442,7 @@ public class LineFormatter
                         styleStart = startPosition;
                         styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
 
-                        matchingStyle = getStyle(styleName);
+                        matchingStyle = getStyleBase(styleName, true);
                         matchingStyle.addAttribute("date", lineDate);
 
                         isDateStyle = false;
@@ -553,8 +552,8 @@ public class LineFormatter
             throws BadLocationException
     {
         HashMap<String, URStyle> regexStrings = new HashMap<>();
-        regexStrings.put(Constants.URL_REGEX, urlStyle());
-        regexStrings.put(Constants.CHANNEL_REGEX, channelStyle());
+        regexStrings.put(Constants.URL_REGEX, urlStyle(true));
+        regexStrings.put(Constants.CHANNEL_REGEX, channelStyle(true));
         // final String line = getLatestLine(doc);
         final int relativePosition = getLinePosition(doc, getLatestLine(doc));
 
@@ -571,7 +570,7 @@ public class LineFormatter
             // do stuff for each match
             while (matcher.find())
             {
-                URStyle linkStyle = getStyle(entry.getValue().getAttribute("name").toString());
+                URStyle linkStyle = getStyleBase(entry.getValue().getAttribute("name").toString(), true);
                 String clickableLine = matcher.group(1);
                 linkStyle.addAttribute("clickableText", new ClickableText(clickableLine, linkStyle, fromUser));
 
@@ -629,22 +628,22 @@ public class LineFormatter
 
         if (fromUser != null && null != myNick && myNick.equals(fromUser.toString()))
         {
-            nickStyle = myStyle();
+            nickStyle = myStyle(true);
         } else
         {
             if (null != myNick && line.indexOf(myNick) > -1)
-                nickStyle = highStyle();
+                nickStyle = highStyle(true);
             else
-                nickStyle = nickStyle();
+                nickStyle = nickStyle(true);
         }
 
         if (fromUser == null && fromString.equals(Constants.EVENT_USER))
         {
-            nickStyle = lowStyle();
-            lineStyle = lowStyle();
+            nickStyle = lowStyle(true);
+            lineStyle = lowStyle(true);
         } else
         {
-            lineStyle = defaultStyle(null);
+            lineStyle = defaultStyle(null, true);
         }
 
         timeStyle = lineStyle;

@@ -4,10 +4,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
 import urChatBasic.base.Constants;
+import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.utils.URColour;
 
 public class URPreferencesUtil {
@@ -61,9 +63,26 @@ public class URPreferencesUtil {
      * @param baseSettingsPath
      * @return
      */
-    public static URStyle loadStyle(URStyle targetStyle, Preferences baseSettingsPath)
+    public static URStyle loadStyle(final URStyle targetStyle, Preferences baseSettingsPath)
     {
-        Preferences stylePrefPath = baseSettingsPath.node(targetStyle.getAttribute("name").toString());
+        // targetStyle = targetStyle.clone();
+        // Default to the profile path node
+        Preferences stylePrefPath = baseSettingsPath;
+        try
+        {
+            if(baseSettingsPath.nodeExists(targetStyle.getAttribute("name").toString()))
+                stylePrefPath = baseSettingsPath.node(targetStyle.getAttribute("name").toString());
+            else if (DriverGUI.gui != null)
+                stylePrefPath = DriverGUI.gui.getProfilePath().node(targetStyle.getAttribute("name").toString());
+            else
+                stylePrefPath = baseSettingsPath.node(targetStyle.getAttribute("name").toString());
+        } catch (BackingStoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+
         System.out.println("Load Style Path: " + stylePrefPath.toString());
         Font loadedFont = loadStyleFont(targetStyle.getFont(), stylePrefPath);
         // LineFormatter.getStyleAsFont(defaultStyle);
@@ -89,7 +108,7 @@ public class URPreferencesUtil {
         // System.out.println("Loaded: "+targetStyle.getAttribute("name") + ". Font: "+loadedFont.getFamily() +
         //     " Colours - fg: "+URColour.hexEncode(targetStyle.getForeground()) + " bg: " + URColour.hexEncode(targetStyle.getBackground()));
 
-        return targetStyle;
+        return targetStyle.clone();
     }
 
     public static void deleteStyleFont(URStyle targetStyle, Preferences baseSettingsPath)
@@ -102,6 +121,21 @@ public class URPreferencesUtil {
             settingsPath.remove(Constants.KEY_FONT_ITALIC);
             settingsPath.remove(Constants.KEY_FONT_FAMILY);
             settingsPath.remove(Constants.KEY_FONT_SIZE);
+        } catch (Exception e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public static void deleteStyleColours(URStyle targetStyle, Preferences baseSettingsPath)
+    {
+        Preferences settingsPath =  baseSettingsPath.node(targetStyle.getName());
+        try
+        {
+            System.out.println("Removing font colours: " + settingsPath.absolutePath());
+            settingsPath.remove(Constants.KEY_FONT_FOREGROUND);
+            settingsPath.remove(Constants.KEY_FONT_BACKGROUND);
         } catch (Exception e)
         {
             // TODO Auto-generated catch block
