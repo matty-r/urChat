@@ -1704,7 +1704,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
             for (String profileNode : getProfilePath().childrenNames())
             {
-                if (getProfilePath().node(profileNode).keys().length == 0)
+                if (getProfilePath().node(profileNode) != getFavouritesPath() && getProfilePath().node(profileNode).keys().length == 0)
                 {
                     getProfilePath().node(profileNode).removeNode();
                 }
