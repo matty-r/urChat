@@ -949,7 +949,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             {
                 String styleName = styleLabel.getText();
                 FontDialog styleFontDialog = new FontDialog(styleName,
-                        previewLineFormatter.getStyleBase(styleName, false), getProfilePath());
+                        previewLineFormatter.getStyleDefault(styleName), getProfilePath());
 
                 styleFontDialog.addSaveListener(arg0 -> {
                     // List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();

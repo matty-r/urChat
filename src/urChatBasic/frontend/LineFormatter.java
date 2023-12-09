@@ -375,7 +375,30 @@ public class LineFormatter
         insertString(doc, insertedString, style, position);
     }
 
-    public URStyle getStyleBase(String styleName, boolean load)
+    public URStyle getStyleDefault(String styleName)
+    {
+       switch (styleName)
+        {
+            case "mediumStyle":
+                return mediumStyle(false);
+            case "highStyle":
+                return highStyle(false);
+            case "nickStyle":
+                return nickStyle(false);
+            case "myStyle":
+                return myStyle(false);
+            case "lowStyle":
+                return lowStyle(false);
+            case "urlStyle":
+                return urlStyle(false);
+            case "channelStyle":
+                return channelStyle(false);
+            default:
+                return defaultStyle(null, true);
+        }
+    }
+
+    public URStyle getStyle(String styleName, boolean load)
     {
         // TODO: Might need to readjust this again?
         URStyle currentStyle = formatterStyles.get(styleName).clone();
@@ -385,25 +408,7 @@ public class LineFormatter
         }
 
         return currentStyle;
-        // switch (styleName)
-        // {
-        //     case "mediumStyle":
-        //         return mediumStyle(load);
-        //     case "highStyle":
-        //         return highStyle(load);
-        //     case "nickStyle":
-        //         return nickStyle(load);
-        //     case "myStyle":
-        //         return myStyle(load);
-        //     case "lowStyle":
-        //         return lowStyle(load);
-        //     case "urlStyle":
-        //         return urlStyle(load);
-        //     case "channelStyle":
-        //         return channelStyle(load);
-        //     default:
-        //         return defaultStyle(null, true);
-        // }
+
     }
 
     /**
@@ -416,7 +421,7 @@ public class LineFormatter
         targetStyle.load(formatterPrefs);
 
         for (URStyle formatterStyle : formatterStyles.values()) {
-            formatterStyle = getStyleBase(formatterStyle.getName(), true);
+            formatterStyle = getStyle(formatterStyle.getName(), true);
         }
 
         System.out.println("Updating styles.");
@@ -431,7 +436,7 @@ public class LineFormatter
         int styleStart = startPosition;
         int styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
 
-        SimpleAttributeSet matchingStyle = getStyleBase(styleName, false);
+        SimpleAttributeSet matchingStyle = getStyle(styleName, false);
 
         boolean isDateStyle = false;
         if (null != DriverGUI.gui && null != textStyle.getAttribute("date"))
@@ -458,7 +463,7 @@ public class LineFormatter
                     if (!hasTime)
                         doc.setCharacterAttributes(styleStart, styleLength, textStyle, true);
 
-                    SimpleAttributeSet timeStyle = getStyleBase(styleName, true);
+                    SimpleAttributeSet timeStyle = getStyle(styleName, false);
                     timeStyle.addAttribute("date", lineDate);
                     timeStyle.addAttribute("type", "time");
                     insertString(doc, newTimeString, timeStyle, styleStart);
@@ -473,7 +478,7 @@ public class LineFormatter
                         styleStart = startPosition;
                         styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
 
-                        matchingStyle = getStyleBase(styleName, true);
+                        matchingStyle = getStyle(styleName, false);
                         matchingStyle.addAttribute("date", lineDate);
 
                         isDateStyle = false;

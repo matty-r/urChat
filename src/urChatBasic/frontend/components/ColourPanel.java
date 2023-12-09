@@ -88,6 +88,7 @@ public class ColourPanel extends JPanel implements ChangeListener
         resetButton.addActionListener(e -> {
             // URPreferencesUtil.deleteStyleColours(targetStyle, settingsPath);
             // defaultStyle.load(settingsPath);
+            URPreferencesUtil.deleteStyleColours(targetStyle, settingsPath);
             previewLabel.setFont(defaultStyle.getFont());
             setPreviewColour(defaultStyle.getForeground(), true);
             setPreviewColour(defaultStyle.getBackground(), false);
@@ -125,10 +126,7 @@ public class ColourPanel extends JPanel implements ChangeListener
             targetStyle.setForeground(newColour);
         } else
         {
-            if(newColour != targetStyle.getBackground())
-                previewLabel.setOpaque(true);
-            else
-                previewLabel.setOpaque(false);
+            previewLabel.setOpaque(true);
 
             previewLabel.setBackground(newColour);
             targetStyle.setBackground(newColour);
