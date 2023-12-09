@@ -8,8 +8,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.font.TextAttribute;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import urChatBasic.frontend.dialogs.ColourDialog;
@@ -55,7 +58,7 @@ public class FontPanel extends JPanel
         targetStyle = new URStyle(styleName, defaultStyle.getFont());
         this.defaultStyle = defaultStyle;
         setDefaultFont(targetStyle.getFont());
-
+        colourDialog = new ColourDialog(styleName, defaultStyle, settingsPath);
 
         RESET_BUTTON.addActionListener(new ResetListener());
         COLOUR_BUTTON.addActionListener(new ActionListener() {
@@ -65,7 +68,7 @@ public class FontPanel extends JPanel
             {
                 if(colourDialog == null)
                 {
-                    colourDialog = new ColourDialog(styleName, defaultStyle, settingsPath);
+                    ;
 
                     colourDialog.getColourPanel().addSaveListener(e -> {
                         // URPreferencesUtil.saveStyle(targetStyle, settingsPath);
@@ -86,6 +89,7 @@ public class FontPanel extends JPanel
         SIZES_COMBO_BOX.addItemListener(new FontSelectionChange());
         MAKE_BOLD.addActionListener(new CheckListener());
         MAKE_ITALIC.addActionListener(new CheckListener());
+        MAKE_UNDERLINE.addActionListener(new CheckListener());
 
         // Reset the GridBagConstraints for MAIN_PANEL
         GridBagConstraints c = new GridBagConstraints();
@@ -171,7 +175,7 @@ public class FontPanel extends JPanel
     // the UserGUI is Constants.DEFAULT_FONT
     public void resetFont() {
         URPreferencesUtil.deleteStyleFont(targetStyle, settingsPath);
-
+        setStyle(defaultStyle);
         loadStyle();
     }
 
@@ -193,17 +197,20 @@ public class FontPanel extends JPanel
 
     public void setStyle(URStyle newStyle)
     {
-        targetStyle = newStyle;
+        targetStyle = newStyle.clone();
 
-        setFont(targetStyle.getFont(), false);
+        setFont(targetStyle, false);
     }
 
-    public void setFont(Font newFont, Boolean saveToSettings)
+    public void setFont(URStyle newStyle, Boolean saveToSettings)
     {
+        Font newFont = newStyle.getFont();
+
         if (getFont() != newFont || saveToSettings)
         {
             MAKE_BOLD.setSelected(newFont.isBold());
             MAKE_ITALIC.setSelected(newFont.isItalic());
+            MAKE_UNDERLINE.setSelected(newStyle.isUnderline());
             FONT_COMBO_BOX.setSelectedItem(newFont.getFamily());
             SIZES_COMBO_BOX.setSelectedItem(newFont.getSize());
 
@@ -222,21 +229,27 @@ public class FontPanel extends JPanel
         }
     }
 
+    //https://docs.oracle.com/javase/6/docs/api/java/awt/font/TextAttribute.html
     private void previewFont()
     {
 
-        int boldItalic = 0;
+        Map<TextAttribute, Object> fontMap = new Hashtable<TextAttribute, Object>();
 
         if (MAKE_BOLD.isSelected())
-            boldItalic = Font.BOLD;
+            fontMap.put(TextAttribute.WEIGHT,  TextAttribute.WEIGHT_BOLD);
         if (MAKE_ITALIC.isSelected())
-            boldItalic |= Font.ITALIC;
+            fontMap.put(TextAttribute.POSTURE,  TextAttribute.POSTURE_OBLIQUE);
+        if (MAKE_UNDERLINE.isSelected())
+            fontMap.put(TextAttribute.UNDERLINE,  TextAttribute.UNDERLINE_ON);
 
         setFont(
             new Font(FONT_COMBO_BOX.getSelectedItem().toString(),
-            boldItalic,
+            Font.PLAIN,
             Integer.parseInt(SIZES_COMBO_BOX.getSelectedItem().toString())
-        ));
+        ).deriveFont(fontMap)
+        );
+
+        targetStyle.setFont(getFont());
     }
 
     // Override the addActionListener method to keep track of added listeners
@@ -277,7 +290,8 @@ public class FontPanel extends JPanel
         @Override
         public void actionPerformed(ActionEvent e)
         {
-            FontPanel.this.setFont(TEXT_PREVIEW.getFont(), true);
+            // FontPanel.this.setFont(TEXT_PREVIEW.getFont(), true);
+            setFont(targetStyle, true);
         }
     }
 

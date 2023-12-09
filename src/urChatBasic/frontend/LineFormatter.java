@@ -377,25 +377,33 @@ public class LineFormatter
 
     public URStyle getStyleBase(String styleName, boolean load)
     {
-        switch (styleName)
+        // TODO: Might need to readjust this again?
+        URStyle currentStyle = formatterStyles.get(styleName).clone();
+        if(load)
         {
-            case "mediumStyle":
-                return mediumStyle(load);
-            case "highStyle":
-                return highStyle(load);
-            case "nickStyle":
-                return nickStyle(load);
-            case "myStyle":
-                return myStyle(load);
-            case "lowStyle":
-                return lowStyle(load);
-            case "urlStyle":
-                return urlStyle(load);
-            case "channelStyle":
-                return channelStyle(load);
-            default:
-                return defaultStyle(null, true);
+            currentStyle.load(formatterPrefs);
         }
+
+        return currentStyle;
+        // switch (styleName)
+        // {
+        //     case "mediumStyle":
+        //         return mediumStyle(load);
+        //     case "highStyle":
+        //         return highStyle(load);
+        //     case "nickStyle":
+        //         return nickStyle(load);
+        //     case "myStyle":
+        //         return myStyle(load);
+        //     case "lowStyle":
+        //         return lowStyle(load);
+        //     case "urlStyle":
+        //         return urlStyle(load);
+        //     case "channelStyle":
+        //         return channelStyle(load);
+        //     default:
+        //         return defaultStyle(null, true);
+        // }
     }
 
     /**
@@ -423,7 +431,7 @@ public class LineFormatter
         int styleStart = startPosition;
         int styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
 
-        SimpleAttributeSet matchingStyle = getStyleBase(styleName, true);
+        SimpleAttributeSet matchingStyle = getStyleBase(styleName, false);
 
         boolean isDateStyle = false;
         if (null != DriverGUI.gui && null != textStyle.getAttribute("date"))
@@ -505,7 +513,7 @@ public class LineFormatter
             doc.setCharacterAttributes(styleStart, styleLength, matchingStyle, true);
 
         if ((styleStart + styleLength) < doc.getLength())
-            updateStyles(doc, (styleStart + styleLength));
+            updateDocStyles(doc, (styleStart + styleLength));
     }
 
     public String getLatestLine(StyledDocument doc) throws BadLocationException

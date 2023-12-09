@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
+import javax.swing.text.StyleConstants;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.DriverGUI;
@@ -19,7 +20,7 @@ import urChatBasic.frontend.utils.URColour;
 /**
  * Used to store constants that are the same and do not change often. These are things used commonly
  * across the [front,back]end
- * 
+ *
  */
 public class Constants
 {
@@ -72,6 +73,7 @@ public class Constants
     public static final String KEY_FONT_FAMILY = "font family";
     public static final String KEY_FONT_BOLD = "font bold";
     public static final String KEY_FONT_ITALIC = "font italic";
+    public static final String KEY_FONT_UNDERLINE = "font underline";
     public static final String KEY_FONT_SIZE = "font size";
     public static final String KEY_FONT_FOREGROUND = "font foreground";
     public static final String KEY_FONT_BACKGROUND = "font background";
@@ -140,6 +142,20 @@ public class Constants
         MEDIUM,
         SMALL,
         NONE
+    }
+
+    // TODO: put all the font prefs in an enum?
+    public enum FONT_PREFS {
+        KEY_FONT_FAMILY(StyleConstants.FontFamily.toString(), DEFAULT_FONT.getFamily());
+
+        String keyStr = "";
+        String defaultStr = "";
+
+        FONT_PREFS (String keyStr, String defaultStr)
+        {
+            this.keyStr = keyStr;
+            this.defaultStr = defaultStr;
+        }
     }
 
     /**

@@ -953,6 +953,7 @@ public class IRCRoomBase extends JPanel
                     fontDialog.getFontPanel().setDefaultFont(f);
                     lineFormatter.setFont((StyledDocument) channelTextArea.getDocument(),
                             fontDialog.getFontPanel().getFont());
+                    lineFormatter.updateStyles((StyledDocument) channelTextArea.getDocument(), 0);
                 }
             });
         } else
@@ -967,7 +968,7 @@ public class IRCRoomBase extends JPanel
         public void actionPerformed(ActionEvent arg0)
         {
             // fontDialog.saveFont(fontDialog.getFont());
-            fontDialog.getFontPanel().setFont(fontDialog.getFontPanel().getFont(), true);
+            fontDialog.getFontPanel().setFont(fontDialog.getFontPanel().getStyle(), true);
             setFont(fontDialog.getFontPanel().getFont());
         }
     }

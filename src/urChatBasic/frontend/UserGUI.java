@@ -1195,7 +1195,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                         IRCRoomBase tabRoom = (IRCRoomBase) tab;
                         if (tabRoom.getServer().getName().equals(favServer) && tabRoom.getName().equals(favChannel))
                         {
-                            tabRoom.getFontPanel().setFont(favFontDialog.getFontPanel().getFont(), true);
+                            tabRoom.getFontPanel().setFont(favFontDialog.getFontPanel().getStyle(), true);
                             tabRoom.setFont(favFontDialog.getFontPanel().getFont());
                         }
                     }
