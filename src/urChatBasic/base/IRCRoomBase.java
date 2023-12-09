@@ -521,8 +521,7 @@ public class IRCRoomBase extends JPanel
                         {
                             lineFormatter.formattedDocument(doc, new Date(), fromIRCUser, fromUser, line);
 
-                            if (lineFormatter.myStyle.getAttribute("name") == lineFormatter.highStyle(true)
-                                    .getAttribute("name"))
+                            if (server.getNick() != null && line.indexOf(server.getNick()) > -1)
                             {
                                 callForAttention();
                             }

@@ -39,10 +39,17 @@ public class LineFormatter
     private Color myBackground;
     private IRCServerBase myServer;
     private Preferences formatterPrefs;
-    public URStyle timeStyle;
-    public URStyle lineStyle;
-    public URStyle nickStyle;
+    private URStyle urlStyle;
+    private URStyle channelStyle;
+    private URStyle timeStyle;
+    private URStyle lineStyle;
+    private URStyle nickStyle;
+    private URStyle highStyle;
+    private URStyle mediumStyle;
+    private URStyle lowStyle;
     public URStyle myStyle;
+    private Map<String, URStyle> formatterStyles = new HashMap<>();
+
 
     public LineFormatter(URStyle baseStyle, final IRCServerBase server, Preferences formatterPrefs)
     {
@@ -67,10 +74,26 @@ public class LineFormatter
         myForeground = targetStyle.getForeground();
         myBackground = targetStyle.getBackground();
 
+        // TODO: split this mess out to a method
         timeStyle = defaultStyle(null, true);
         lineStyle = defaultStyle(null, true);
-        nickStyle = nickStyle(false);
-        myStyle = myStyle(false);
+        nickStyle = nickStyle(true);
+        myStyle = myStyle(true);
+        channelStyle = channelStyle(true);
+        urlStyle = urlStyle(true);
+        highStyle = highStyle(true);
+        mediumStyle = mediumStyle(true);
+        lowStyle = lowStyle(true);
+
+        formatterStyles.put(timeStyle.getName(), timeStyle);
+        formatterStyles.put(lineStyle.getName(), lineStyle);
+        formatterStyles.put(nickStyle.getName(), nickStyle);
+        formatterStyles.put(myStyle.getName(), myStyle);
+        formatterStyles.put(channelStyle.getName(), channelStyle);
+        formatterStyles.put(urlStyle.getName(), urlStyle);
+        formatterStyles.put(highStyle.getName(), highStyle);
+        formatterStyles.put(mediumStyle.getName(), mediumStyle);
+        formatterStyles.put(lowStyle.getName(), lowStyle);
     }
 
     public void setFont(StyledDocument doc, Font newFont)
@@ -375,24 +398,24 @@ public class LineFormatter
         }
     }
 
-    // public Font getStyleAsFont(String styleName)
-    // {
-    // SimpleAttributeSet fontStyle = getStyleBase(styleName);
-
-    // int savedFontBoldItalic = 0;
-
-    // if (StyleConstants.isBold(fontStyle))
-    // savedFontBoldItalic = Font.BOLD;
-    // if (StyleConstants.isItalic(fontStyle))
-    // savedFontBoldItalic |= Font.ITALIC;
-
-    // Font styleFont = new Font(StyleConstants.getFontFamily(fontStyle), savedFontBoldItalic,
-    // StyleConstants.getFontSize(fontStyle));
-
-    // return styleFont;
-    // }
-
+    /**
+     * Reloads all the styles, then updates the doc
+     * @param doc
+     * @param startPosition
+     */
     public void updateStyles(StyledDocument doc, int startPosition)
+    {
+        targetStyle.load(formatterPrefs);
+
+        for (URStyle formatterStyle : formatterStyles.values()) {
+            formatterStyle = getStyleBase(formatterStyle.getName(), true);
+        }
+
+        System.out.println("Updating styles.");
+        updateDocStyles(doc, startPosition);
+    }
+
+    private void updateDocStyles(StyledDocument doc, int startPosition)
     {
         SimpleAttributeSet textStyle = new SimpleAttributeSet(doc.getCharacterElement(startPosition).getAttributes());
 
@@ -552,8 +575,8 @@ public class LineFormatter
             throws BadLocationException
     {
         HashMap<String, URStyle> regexStrings = new HashMap<>();
-        regexStrings.put(Constants.URL_REGEX, urlStyle(true));
-        regexStrings.put(Constants.CHANNEL_REGEX, channelStyle(true));
+        regexStrings.put(Constants.URL_REGEX, urlStyle);
+        regexStrings.put(Constants.CHANNEL_REGEX, channelStyle);
         // final String line = getLatestLine(doc);
         final int relativePosition = getLinePosition(doc, getLatestLine(doc));
 
@@ -570,7 +593,7 @@ public class LineFormatter
             // do stuff for each match
             while (matcher.find())
             {
-                URStyle linkStyle = getStyleBase(entry.getValue().getAttribute("name").toString(), true);
+                URStyle linkStyle = entry.getValue().clone();
                 String clickableLine = matcher.group(1);
                 linkStyle.addAttribute("clickableText", new ClickableText(clickableLine, linkStyle, fromUser));
 
@@ -625,28 +648,30 @@ public class LineFormatter
     {
         // build the timeLine string
         String timeLine = UserGUI.getTimeLineString(lineDate);
+        final URStyle nickPositionStyle;
+        final URStyle linePositionStyle;
 
         if (fromUser != null && null != myNick && myNick.equals(fromUser.toString()))
         {
-            nickStyle = myStyle(true);
+            // This message is from me
+            nickPositionStyle = myStyle;
+            linePositionStyle = lineStyle;
+        } else if (fromUser == null && fromString.equals(Constants.EVENT_USER))
+        {
+            // This is an event message
+            nickPositionStyle = lowStyle;
+            linePositionStyle = lowStyle;
         } else
         {
-            if (null != myNick && line.indexOf(myNick) > -1)
-                nickStyle = highStyle(true);
+            // This message is from someone else
+            // Does this message have my nick in it?
+            if (myNick != null && line.indexOf(myNick) > -1)
+                nickPositionStyle = highStyle;
             else
-                nickStyle = nickStyle(true);
-        }
+                nickPositionStyle = nickStyle;
 
-        if (fromUser == null && fromString.equals(Constants.EVENT_USER))
-        {
-            nickStyle = lowStyle(true);
-            lineStyle = lowStyle(true);
-        } else
-        {
-            lineStyle = defaultStyle(null, true);
+            linePositionStyle = lineStyle;
         }
-
-        timeStyle = lineStyle;
 
         try
         {
@@ -662,38 +687,38 @@ public class LineFormatter
                 timeStyle.addAttribute("type", "time");
                 appendString(doc, timeLine + " ", timeStyle);
                 timeStyle.removeAttribute("type");
-                lineStyle.removeAttribute("date");
+                linePositionStyle.removeAttribute("date");
             } else
             {
-                lineStyle.addAttribute("date", lineDate);
+                linePositionStyle.addAttribute("date", lineDate);
             }
 
-            appendString(doc, "<", lineStyle);
-            lineStyle.removeAttribute("date");
+            appendString(doc, "<", linePositionStyle);
+            linePositionStyle.removeAttribute("date");
 
             if (fromUser != null)
             {
-                URStyle clickableNameStyle = nickStyle;
+                URStyle clickableNameStyle = nickPositionStyle;
                 clickableNameStyle.addAttribute("type", "IRCUser");
                 clickableNameStyle.addAttribute("clickableText",
-                        new ClickableText(fromUser.toString(), nickStyle, fromUser));
+                        new ClickableText(fromUser.toString(), nickPositionStyle, fromUser));
 
                 // doc.insertString(doc.getLength(), fromUser.toString(), clickableNameStyle);
                 appendString(doc, fromUser.toString(), clickableNameStyle);
             } else
             {
-                appendString(doc, fromString, nickStyle);
+                appendString(doc, fromString, nickPositionStyle);
             }
 
-            appendString(doc, ">", lineStyle);
+            appendString(doc, ">", linePositionStyle);
 
             // print the remaining text
             // appendString(doc, " "+line, lineStyle);
 
             // parse the outputted line for clickable text
-            parseClickableText(doc, fromUser, " " + line, lineStyle);
+            parseClickableText(doc, fromUser, " " + line, linePositionStyle);
 
-            appendString(doc, System.getProperty("line.separator"), lineStyle);
+            appendString(doc, System.getProperty("line.separator"), linePositionStyle);
         } catch (BadLocationException e)
         {
             Constants.LOGGER.log(Level.SEVERE, e.getLocalizedMessage());

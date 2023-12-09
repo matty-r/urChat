@@ -71,6 +71,10 @@ public class FontPanel extends JPanel
                         // URPreferencesUtil.saveStyle(targetStyle, settingsPath);
                         System.out.println("Font Panel says: Save Colour pressed");
                     });
+
+                    for (ActionListener actionListener : actionListeners) {
+                        colourDialog.getColourPanel().addSaveListener(actionListener);
+                    }
                 }
 
                 colourDialog.setVisible(true);
@@ -205,7 +209,12 @@ public class FontPanel extends JPanel
 
             targetStyle.setFont(newFont);
             if(saveToSettings)
+            {
+                URStyle colourPanelStyle = colourDialog.getColourPanel().getStyle();
+                targetStyle.setForeground(colourPanelStyle.getForeground());
+                targetStyle.setBackground(colourPanelStyle.getBackground());
                 targetStyle.save(settingsPath);
+            }
 
             revalidate();
             repaint();

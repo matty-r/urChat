@@ -168,6 +168,11 @@ public class ColourPanel extends JPanel implements ChangeListener
         setPreviewColour(targetStyle.getBackground(), false);
     }
 
+    public URStyle getStyle()
+    {
+        return targetStyle;
+    }
+
     public void stateChanged(ChangeEvent e)
     {
         selectedColor = tcc.getColor();

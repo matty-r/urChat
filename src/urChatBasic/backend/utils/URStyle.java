@@ -112,6 +112,6 @@ public class URStyle extends SimpleAttributeSet {
     @Override
     public URStyle clone ()
     {
-        return new URStyle(getName(), getFont(), getForeground(), getBackground());
+        return (URStyle) super.clone();
     }
 }

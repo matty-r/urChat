@@ -68,6 +68,9 @@ public class URPreferencesUtil {
         // targetStyle = targetStyle.clone();
         // Default to the profile path node
         Preferences stylePrefPath = baseSettingsPath;
+        if(targetStyle.getAttribute("name") == null)
+            targetStyle.addAttribute("name", "");
+
         try
         {
             if(baseSettingsPath.nodeExists(targetStyle.getAttribute("name").toString()))

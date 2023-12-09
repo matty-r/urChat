@@ -850,7 +850,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         clientFontPanel = new FontPanel("", getStyle(), getProfilePath());
         clientFontPanel.setPreferredSize(new Dimension(700, 64));
-        clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
+        clientFontPanel.addActionListener(clientFontPanel.getSaveButton(), new SaveFontListener());
+
+        // clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
         clientFontPanel.getResetButton().addActionListener(new ResetFontListener());
 
         previewTextScroll.setPreferredSize(new Dimension(700, 150));
@@ -1893,7 +1895,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 favouriteItem.favFontDialog.getFontPanel().loadStyle();
             }
 
-            previewLineFormatter.setFont(previewTextArea.getStyledDocument(), clientFontPanel.getFont());
+            // previewLineFormatter.setFont(previewTextArea.getStyledDocument(), clientFontPanel.getFont());
+            previewLineFormatter.updateStyles(previewTextArea.getStyledDocument(), 0);
         }
     }
 
