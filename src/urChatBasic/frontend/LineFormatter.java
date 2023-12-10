@@ -424,7 +424,7 @@ public class LineFormatter
             formatterStyle = getStyle(formatterStyle.getName(), true);
         }
 
-        System.out.println("Updating styles.");
+        Constants.LOGGER.log(Level.INFO, "Updating styles.");
         updateDocStyles(doc, startPosition);
     }
 

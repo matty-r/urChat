@@ -280,7 +280,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         {
             if (IRCServer.this.isConnected())
             {
-                System.out.println("send quit message");
+                Constants.LOGGER.log(Level.INFO, "send quit message");
                 // Send the /quit message, which disconnects and remove the gui elements
                 sendClientText("/quit Goodbye cruel world", getName());
             } else

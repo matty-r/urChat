@@ -6,6 +6,7 @@ import java.awt.font.TextAttribute;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.UIManager;
@@ -99,11 +100,9 @@ public class URPreferencesUtil {
             e.printStackTrace();
         }
 
-        System.out.println("Load Style Path: " + stylePrefPath.toString());
+        Constants.LOGGER.log(Level.INFO, "Load Style Path: " + stylePrefPath.toString());
         Font loadedFont = loadStyleFont(targetStyle.getFont(), stylePrefPath);
-        // LineFormatter.getStyleAsFont(defaultStyle);
         Map<String, Color> loadedColours = loadStyleColours(targetStyle, stylePrefPath);
-        // LineFormatter.getStyleColours(defaultStyle);
 
         targetStyle.setFont(loadedFont);
         targetStyle.setForeground(loadedColours.get(Constants.KEY_FONT_FOREGROUND));
@@ -117,7 +116,7 @@ public class URPreferencesUtil {
         Preferences settingsPath =  baseSettingsPath.node(targetStyle.getName());
         try
         {
-            System.out.println("Removing font keys: " + settingsPath.absolutePath());
+            Constants.LOGGER.log(Level.INFO, "Removing font keys: " + settingsPath.absolutePath());
             settingsPath.remove(Constants.KEY_FONT_BOLD);
             settingsPath.remove(Constants.KEY_FONT_ITALIC);
             settingsPath.remove(Constants.KEY_FONT_FAMILY);
@@ -135,7 +134,7 @@ public class URPreferencesUtil {
         Preferences settingsPath =  baseSettingsPath.node(targetStyle.getName());
         try
         {
-            System.out.println("Removing font colours: " + settingsPath.absolutePath());
+            Constants.LOGGER.log(Level.INFO, "Removing font colours: " + settingsPath.absolutePath());
             settingsPath.remove(Constants.KEY_FONT_FOREGROUND);
             settingsPath.remove(Constants.KEY_FONT_BACKGROUND);
         } catch (Exception e)
@@ -148,7 +147,7 @@ public class URPreferencesUtil {
     public static void saveStyle(URStyle targetStyle, Preferences baseSettingsPath)
     {
         Preferences stylePrefPath = baseSettingsPath.node(targetStyle.getAttribute("name").toString());
-        System.out.println("Save Style Path: " + stylePrefPath.toString());
+        Constants.LOGGER.log(Level.INFO, "Save Style Path: " + stylePrefPath.toString());
         saveStyleFont(targetStyle.getFont(), stylePrefPath);
         saveStyleColours(targetStyle.getForeground(), targetStyle.getBackground(), stylePrefPath);
     }

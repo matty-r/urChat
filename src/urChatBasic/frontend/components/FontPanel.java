@@ -13,11 +13,13 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import urChatBasic.frontend.dialogs.ColourDialog;
 import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.backend.utils.URStyle;
+import urChatBasic.base.Constants;
 
 public class FontPanel extends JPanel
 {
@@ -72,7 +74,7 @@ public class FontPanel extends JPanel
 
                     colourDialog.getColourPanel().addSaveListener(e -> {
                         // URPreferencesUtil.saveStyle(targetStyle, settingsPath);
-                        System.out.println("Font Panel says: Save Colour pressed");
+                        Constants.LOGGER.log(Level.INFO, "Font Panel says: Save Colour pressed");
                     });
 
                     for (ActionListener actionListener : actionListeners) {

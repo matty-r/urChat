@@ -71,12 +71,12 @@ public class LookAndFeelLoader {
                                 try {
                                     UIManager.installLookAndFeel(classShortName, className);
                                 } catch (Exception installEx) {
-                                    System.out.println(installEx.getMessage());
+                                    Constants.LOGGER.log(Level.WARNING, installEx.getMessage());
                                 }
                             }
                         }
                     } catch (NoClassDefFoundError | Exception classEx) {
-                        System.out.println(classEx.getMessage());
+                        Constants.LOGGER.log(Level.WARNING, classEx.getMessage());
                     }
                 }
             }

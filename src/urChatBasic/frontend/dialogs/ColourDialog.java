@@ -46,7 +46,6 @@ public class ColourDialog extends DialogBase
     @Override
     public void setVisible(boolean shown)
     {
-        System.out.println("Colour Dialog visible = " + shown);
         if (!shown)
             colourPanel.loadStyle();
         else
