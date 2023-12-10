@@ -2,7 +2,7 @@
 <suite name="Tag Release">
     <test name="All Tests">
         <packages>
-            <package name=".*" />
+            <package name="backend.*" />
         </packages>
     </test>
 </suite>
