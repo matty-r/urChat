@@ -663,27 +663,31 @@ public class LineFormatter
         String timeLine = UserGUI.getTimeLineString(lineDate);
         final URStyle nickPositionStyle;
         final URStyle linePositionStyle;
+        final URStyle timePositionStyle;
 
         if (fromUser != null && null != myNick && myNick.equals(fromUser.toString()))
         {
             // This message is from me
-            nickPositionStyle = myStyle;
-            linePositionStyle = lineStyle;
+            nickPositionStyle = myStyle.clone();
+            linePositionStyle = lineStyle.clone();
+            timePositionStyle = timeStyle.clone();
         } else if (fromUser == null && fromString.equals(Constants.EVENT_USER))
         {
             // This is an event message
-            nickPositionStyle = lowStyle;
-            linePositionStyle = lowStyle;
+            nickPositionStyle = lowStyle.clone();
+            linePositionStyle = lowStyle.clone();
+            timePositionStyle = lowStyle.clone();
         } else
         {
             // This message is from someone else
             // Does this message have my nick in it?
             if (myNick != null && line.indexOf(myNick) > -1)
-                nickPositionStyle = highStyle;
+                nickPositionStyle = highStyle.clone();
             else
-                nickPositionStyle = nickStyle;
+                nickPositionStyle = nickStyle.clone();
 
-            linePositionStyle = lineStyle;
+            linePositionStyle = lineStyle.clone();
+            timePositionStyle = timeStyle.clone();
         }
 
         try
@@ -695,11 +699,11 @@ public class LineFormatter
             {
                 // add the date to the end of the string to preserve the timestamp of the line
                 // when updating styles
-                timeStyle.addAttribute("date", lineDate);
-                timeStyle.removeAttribute("type");
-                timeStyle.addAttribute("type", "time");
-                appendString(doc, timeLine + " ", timeStyle);
-                timeStyle.removeAttribute("type");
+                timePositionStyle.addAttribute("date", lineDate);
+                timePositionStyle.removeAttribute("type");
+                timePositionStyle.addAttribute("type", "time");
+                appendString(doc, timeLine + " ", timePositionStyle);
+                timePositionStyle.removeAttribute("type");
                 linePositionStyle.removeAttribute("date");
             } else
             {
