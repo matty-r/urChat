@@ -240,8 +240,8 @@ public class MessageHandlerTests
 
         assertTrue(
                 "First line should be line # 10 but it was "
-                        + testChannel.getChannelTextPane().getText().split("\n")[0],
-                testChannel.getChannelTextPane().getText().split("\n")[0].endsWith("line # 10"));
+                        + testChannel.getChannelTextPane().getText().split(System.lineSeparator())[0],
+                testChannel.getChannelTextPane().getText().split(System.lineSeparator())[0].trim().endsWith("line # 10"));
         assertSame("Channel line count should equal the line limit", channelLinesLimit, channelLinesCount - 1);
     }
 
@@ -275,8 +275,8 @@ public class MessageHandlerTests
         assertTrue("Last line should line # 19 but it was" + testLine, testLine.endsWith("line # 19"));
 
         assertTrue(
-                "First line should be line # 10 but it was " + testServer.getChannelTextPane().getText().split("\n")[0],
-                testServer.getChannelTextPane().getText().split("\n")[0].endsWith("line # 10"));
+                "First line should be line # 10 but it was " + testServer.getChannelTextPane().getText().split(System.lineSeparator())[0],
+                testServer.getChannelTextPane().getText().split(System.lineSeparator())[0].trim().endsWith("line # 10"));
         assertSame("Channel line count should equal the line limit", serverLinesLimit, serverLinesCount - 1);
     }
 
