@@ -38,6 +38,7 @@ public class MessageHandlerTests
     {
         DriverGUI.createGUI();
         testGUI = DriverGUI.gui;
+        UserGUI.setTimeLineString("[HHmm]");
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy",
                 "1234", true);
         testUser = new IRCUser(testServer, "testUser");
@@ -92,7 +93,7 @@ public class MessageHandlerTests
 
 
     @Test(groups = {"Test #003"}, timeOut = 5000)
-    public void nickIsDefaultStyleTest() throws BadLocationException, InterruptedException
+    public void nickIsNickStyleTest() throws BadLocationException, InterruptedException
     {
         String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG #somechannel :Welcome to somechannel!";
         Message testMessage = testHandler.new Message(rawMessage);
@@ -105,12 +106,12 @@ public class MessageHandlerTests
             TimeUnit.SECONDS.sleep(1);
         }
 
-        // Should be defaultStyle because the user didn't mention testUser and is just a normal message
-        assertEquals("defaultStyle",
+        // Should be nickStyle because the user didn't mention testUser and is just a normal message
+        assertEquals("nickStyle",
                 testChannel.getLineFormatter().getStyleAtPosition(testDoc, 11, testLine).getAttribute("name"));
     }
 
-    @Test(groups = {"Test #003"}, dependsOnMethods = {"backend.MessageHandlerTests.nickIsDefaultStyleTest"})
+    @Test(groups = {"Test #003"}, dependsOnMethods = {"backend.MessageHandlerTests.nickIsNickStyleTest"})
     public void sendActionMessageChannel()
     {
         String rawMessage = "/me claps hands";

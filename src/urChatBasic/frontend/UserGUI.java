@@ -1014,6 +1014,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return chatDateFormat.format(date);
     }
 
+    public static void setTimeLineString(String newFormat)
+    {
+        timeStampField.setText(newFormat);
+    }
+
     private void setupInterfacePanel()
     {
         interfacePanel.add(showEventTicker);
