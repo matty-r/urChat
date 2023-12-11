@@ -10,21 +10,21 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
+import javax.swing.text.StyleConstants;
 import urChatBasic.backend.Connection;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.components.URVersionLabel;
+import urChatBasic.frontend.utils.URColour;
 
 /**
  * Used to store constants that are the same and do not change often. These are things used commonly
  * across the [front,back]end
  *
- * @author goofybud16
- *
  */
 public class Constants
 {
-    public static String UR_VERSION = "v0.3.0";
+    public static String UR_VERSION = "v0.4.0";
     public static String URL_SEPARATOR = "/";
     public static final URL RESOURCES_DIR = DriverGUI.class.getResource(URL_SEPARATOR + "images" + URL_SEPARATOR);
     public static final String THEMES_DIR = "themes" + URL_SEPARATOR;
@@ -34,7 +34,10 @@ public class Constants
     private static Handler LOGGER_TO_FILE;
     public static Logger LOGGER = Logger.getLogger("Main");
     public static String LOGFILE_NAME = "Errors.log";
-    private static final Font DEFAULT_FONT = new Font(new JLabel().getFont().getFamily(), 0, new JLabel().getFont().getSize());
+    private static final JLabel DEFAULT_LABEL = new JLabel();
+    private static final Font DEFAULT_FONT = new Font(DEFAULT_LABEL.getFont().getFamily(), 0, DEFAULT_LABEL.getFont().getSize());
+    public static final String DEFAULT_FOREGROUND_STRING = "TextArea.foreground";
+    public static final String DEFAULT_BACKGROUND_STRING = "TextArea.background";
 
     // Preferences
     public static final Preferences BASE_PREFS = Preferences.userNodeForPackage(DriverGUI.class).node("profiles");
@@ -53,6 +56,7 @@ public class Constants
     public static final String KEY_NICK_NAME = "nick name";
     public static final String KEY_REAL_NAME = "real name";
     public static final String KEY_TIME_STAMPS = "show time stamps";
+    public static final String KEY_TIME_STAMP_FORMAT = "timestamp format";
     public static final String KEY_LAF_NAME = "laf name";
     public static final String KEY_EVENT_TICKER_ACTIVE = "show event ticker";
     public static final String KEY_USERS_LIST_ACTIVE = "show users list";
@@ -71,7 +75,10 @@ public class Constants
     public static final String KEY_FONT_FAMILY = "font family";
     public static final String KEY_FONT_BOLD = "font bold";
     public static final String KEY_FONT_ITALIC = "font italic";
+    public static final String KEY_FONT_UNDERLINE = "font underline";
     public static final String KEY_FONT_SIZE = "font size";
+    public static final String KEY_FONT_FOREGROUND = "font foreground";
+    public static final String KEY_FONT_BACKGROUND = "font background";
     public static final String KEY_WINDOW_X = "window position x";
     public static final String KEY_WINDOW_Y = "window position y";
     public static final String KEY_WINDOW_WIDTH = "window position width";
@@ -91,6 +98,7 @@ public class Constants
     public static final String DEFAULT_NICK_NAME = "urChatClient";
     public static final String DEFAULT_REAL_NAME = "urChatClient";
     public static final Boolean DEFAULT_TIME_STAMPS = true;
+    public static final String DEFAULT_TIME_STAMP_FORMAT = "[HHmm]";
     public static final String DEFAULT_LAF_NAME = UIManager.getSystemLookAndFeelClassName();
     public static final Boolean DEFAULT_EVENT_TICKER_ACTIVE = true;
     public static final Boolean DEFAULT_CLICKABLE_LINKS_ENABLED = true;
@@ -106,6 +114,8 @@ public class Constants
     public static final String DEFAULT_LIMIT_SERVER_LINES_COUNT = "500";
     public static final Boolean DEFAULT_LOG_CLIENT_TEXT = true;
     public static final Font DEFAULT_FONT_GENERAL = DEFAULT_FONT;
+    public static final String DEFAULT_FONT_FOREGROUND = URColour.hexEncode(DEFAULT_LABEL.getForeground());
+    public static final String DEFAULT_FONT_BACKGROUND = URColour.hexEncode(DEFAULT_LABEL.getBackground());
     public static final int DEFAULT_EVENT_TICKER_DELAY = 10;
     public static final int DEFAULT_WINDOW_X = 0;
     public static final int DEFAULT_WINDOW_Y = 0;
@@ -120,7 +130,7 @@ public class Constants
     public static final String END_MESSAGE = "\r\n";
     // We 'must' match against http(s) in order to define the correct protocol to be used
     public static final String URL_REGEX = "((http:\\/\\/|https:\\/\\/)(www.)?(([a-zA-Z0-9-]){2,}\\.){1,4}([a-zA-Z]){2,6}(\\/([a-zA-Z-_\\/\\.0-9#:?=&;,]*)?)?)";
-
+    public static final String CHANNEL_REGEX = "(?:^|\s)(#([^\s,]+)(?!,))(?:$|\s)";
     // Used to identify a message to be printed from the Event ticker
     // like a "user joins room" type message
     public static final String EVENT_USER = "****";
@@ -129,10 +139,29 @@ public class Constants
     public static final int MAIN_WIDTH = 500;
     public static final int MAIN_HEIGHT = 400;
 
+    public enum Size {
+        LARGE,
+        MEDIUM,
+        SMALL,
+        NONE
+    }
+
+    // TODO: put all the font prefs in an enum?
+    public enum FONT_PREFS {
+        KEY_FONT_FAMILY(StyleConstants.FontFamily.toString(), DEFAULT_FONT.getFamily());
+
+        String keyStr = "";
+        String defaultStr = "";
+
+        FONT_PREFS (String keyStr, String defaultStr)
+        {
+            this.keyStr = keyStr;
+            this.defaultStr = defaultStr;
+        }
+    }
+
     /**
      * Used to initialize some values that may throw exceptions.
-     *
-     * @author goofybud16
      */
     public static void init()
     {

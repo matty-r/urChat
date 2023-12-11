@@ -45,11 +45,18 @@ public class ProfilePicker extends JPanel
                 String selectedString = profileComboBox.getSelectedItem().toString();
                 if (DriverGUI.gui.getProfileName() != selectedString && !selectedString.isBlank())
                 {
+                    //TODO Show dialog to either rename the existing profile, or create a new profile
+                    String currentProfile = DriverGUI.gui.getProfileName();
+
                     DriverGUI.gui.setProfileName(selectedString);
 
                     if (!profileExists(selectedString))
                     {
+                        // If create new profile selected
                         profileComboBox.addItem(selectedString);
+
+                        // If rename existing profile selected...
+                        // TODO
                     }
                 } else if (selectedString.isBlank())
                 {

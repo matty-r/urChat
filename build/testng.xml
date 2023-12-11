@@ -1,0 +1,81 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="GUITests">
+    <test name="Test #000 - Explictly defined method name">
+            <classes>
+                <class name="backend.DialogTests">
+                    <methods>
+                        <include name="testYesNoDialogWithActionListener"/>
+                    </methods>
+                </class>
+            </classes>
+    </test>
+    <test name="Test #001 - Basic group test">
+        <groups>
+            <run>
+                <include name="Test #001"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="backend.MessageHandlerTests"/>
+            <class name="backend.DialogTests"/>
+        </classes>
+    </test>
+    <test name="Test #002 - Parameter Test">
+        <parameter name="channelName" value="testingNameAsParameter"/>
+
+        <groups>
+            <run>
+                <include name="Test #002"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="backend.MessageHandlerTests"/>
+        </classes>
+    </test>
+    <test name="Test #003 - Dependancy tests">
+        <groups>
+            <run>
+                <include name="Test #003"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="backend.MessageHandlerTests"/>
+        </classes>
+    </test>
+    <test name="Test #004 - Test method included due to dependancy">
+        <groups>
+            <run>
+                <include name="Test #004"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="backend.MessageHandlerTests"/>
+        </classes>
+    </test>
+    <test name="Test #005 - Failed Timeout test">
+        <groups>
+            <run>
+                <include name="Test #005"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="backend.MessageHandlerTests"/>
+        </classes>
+    </test>
+    <test name="Test #006 - Exclude groups">
+        <groups>
+            <run>
+                <exclude name="Test #001"/>
+                <exclude name="Test #002"/>
+                <exclude name="Test #003"/>
+                <exclude name="Test #004"/>
+                <exclude name="Test #005"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="backend.MessageHandlerTests"/>
+            <class name="backend.DialogTests"/>
+            <class name="backend.UserGUITests"/>
+        </classes>
+    </test>
+</suite>

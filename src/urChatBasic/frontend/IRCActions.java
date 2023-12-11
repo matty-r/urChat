@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JPanel;
 import javax.swing.Timer;
 import urChatBasic.base.IRCActionsBase;
 import urChatBasic.base.IRCRoomBase;

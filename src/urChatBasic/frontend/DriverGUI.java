@@ -11,6 +11,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import urChatBasic.backend.LookAndFeelLoader;
+import urChatBasic.backend.utils.URUncaughtExceptionHandler;
 import urChatBasic.base.Constants;
 
 public class DriverGUI
@@ -24,21 +25,26 @@ public class DriverGUI
     {
 
         Constants.init();
-        URL imgPath = new URL(Constants.RESOURCES_DIR + "urChat Icon.png");
+        try {
+            URL imgPath = new URL(Constants.RESOURCES_DIR + "urChat Icon.png");
 
-        img = new ImageIcon(imgPath);
+            img = new ImageIcon(imgPath);
+        } catch (Exception e)
+        {
+            Constants.LOGGER.log(Level.INFO, "No Icon found.");
+        }
 
         Constants.LOGGER.log(Level.INFO, "Starting up..");
 
         LookAndFeelLoader lafLoader = new LookAndFeelLoader(Thread.currentThread().getContextClassLoader());
         contextClassLoader = lafLoader.cl;
         Thread.currentThread().setContextClassLoader(contextClassLoader);
+        Thread.currentThread().setUncaughtExceptionHandler(new URUncaughtExceptionHandler());
 
         createGUI();
 
         startGUI();
     }
-
 
     final public static String getMemoryReport()
     {

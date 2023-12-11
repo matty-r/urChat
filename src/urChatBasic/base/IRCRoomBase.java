@@ -4,6 +4,7 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCActions;
 import urChatBasic.frontend.IRCPrivate;
+import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.LineFormatter.ClickableText;
@@ -18,6 +19,9 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.*;
@@ -80,16 +84,19 @@ public class IRCRoomBase extends JPanel
     private String lastUserToComplete = null;
     private List<String> autoCompleteNames = new ArrayList<String>();
 
-    // Room Text Area
+    // Text Area
     private JTextPane channelTextArea = new JTextPane();
     private JScrollPane channelScroll = new JScrollPane(channelTextArea);
+    private BlockingQueue<MessagePair> messageQueue = new ArrayBlockingQueue<>(20);
+    public boolean messageQueueInProgress = false;
     private LineFormatter lineFormatter;
 
 
     // Users list area
-    // TODO: Users should be created per Server, and instead have a property to hold what channels they're in
-    private List<IRCUser> usersArray = new ArrayList<IRCUser>();
-    private UsersListModel usersListModel = new UsersListModel(usersArray);
+    // TODO: Users should be created per Server, and instead have a property to hold what channels
+    // they're in
+    private ConcurrentHashMap<String, IRCUser> usersMap = new ConcurrentHashMap<>();
+    private UsersListModel usersListModel = new UsersListModel();
     @SuppressWarnings("unchecked")
     private JList<IRCUser> usersList = new JList<IRCUser>(usersListModel);
     private JScrollPane userScroller = new JScrollPane(usersList);
@@ -161,17 +168,18 @@ public class IRCRoomBase extends JPanel
 
     private void initRoom()
     {
-        if(null != getServer())
+        if (null != getServer())
         {
             roomPrefs = gui.getFavouritesPath().node(getServer().getName()).node(roomName);
-            fontDialog = new FontDialog(roomName, gui.getFont(), roomPrefs);
+            fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getFont(), getServer().getNick());
-        } else {
+            lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , getServer(), roomPrefs);
+        } else
+        {
             roomPrefs = gui.getFavouritesPath().node(roomName);
-            fontDialog = new FontDialog(roomName, gui.getFont(), roomPrefs);
+            fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getFont(), null);
+            lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, null, roomPrefs);
         }
 
         setFont(getFontPanel().getFont());
@@ -206,13 +214,13 @@ public class IRCRoomBase extends JPanel
         setupUsersList();
         // mainPanel.add(userScroller, BorderLayout.LINE_END);
 
-        //Create a split pane with the two scroll panes in it.
-        mainResizer = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                        channelScroll, userScroller);
+        // Create a split pane with the two scroll panes in it.
+        mainResizer = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, channelScroll, userScroller);
         mainResizer.setOneTouchExpandable(true);
 
         // This should be set to where the minimum size of the userScroller would end up
-        mainResizer.setDividerLocation(gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
+        mainResizer.setDividerLocation(
+                gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
 
         // Left most panel (channelScroll pane), gets the extra space when resizing the window
         mainResizer.setResizeWeight(1);
@@ -230,16 +238,26 @@ public class IRCRoomBase extends JPanel
         return fontDialog.getFontPanel();
     }
 
+    public void resetLineFormatter()
+    {
+        lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, getServer(), roomPrefs);
+    }
+
     private void setupMainTextArea()
     {
-        channelScroll.setPreferredSize(new Dimension(Constants.MAIN_WIDTH - usersListWidth, Constants.MAIN_HEIGHT - BOTTOM_HEIGHT));
+        channelScroll.setPreferredSize(
+                new Dimension(Constants.MAIN_WIDTH - usersListWidth, Constants.MAIN_HEIGHT - BOTTOM_HEIGHT));
         channelScroll.setLocation(0, 0);
         channelScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         channelTextArea.addMouseListener(new ChannelClickListener());
         channelTextArea.addMouseMotionListener(new ChannelMovementListener());
+        // channelTextArea.getDocument().addDocumentListener(new LimitLinesDocumentListener(gui.getLimitChannelLinesCount()));
+        // channelTextArea.getDocument().addDocumentListener(new LineLimitListener());
         channelTextArea.setEditable(false);
         channelTextArea.setFont(getFontPanel().getFont());
         channelTextArea.setEditorKit(new StyledEditorKit());
+        // This is needed because the channelTextArea isn't the same after it was initialized.
+        resetLineFormatter();
     }
 
     private void setupUsersList()
@@ -305,7 +323,7 @@ public class IRCRoomBase extends JPanel
             Element ele = doc.getCharacterElement(channelTextArea.viewToModel2D((e.getPoint())));
             AttributeSet as = ele.getAttributes();
             ClickableText isClickableText = (ClickableText) as.getAttribute("clickableText");
-            if(isClickableText != null)
+            if (isClickableText != null)
             {
                 if (SwingUtilities.isRightMouseButton(e) && isClickableText.rightClickMenu() != null)
                 {
@@ -320,7 +338,8 @@ public class IRCRoomBase extends JPanel
 
     class ChannelMovementListener extends MouseAdapter
     {
-        public void mouseMoved(MouseEvent e) {
+        public void mouseMoved(MouseEvent e)
+        {
             StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
             Element wordElement = doc.getCharacterElement(channelTextArea.viewToModel2D((e.getPoint())));
             AttributeSet wordAttributeSet = wordElement.getAttributes();
@@ -328,7 +347,8 @@ public class IRCRoomBase extends JPanel
             if (isClickableText != null && gui.isClickableLinksEnabled())
             {
                 channelTextArea.setCursor(new Cursor(Cursor.HAND_CURSOR));
-            } else {
+            } else
+            {
                 channelTextArea.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
         }
@@ -336,6 +356,9 @@ public class IRCRoomBase extends JPanel
 
     public void createEvent(String eventText)
     {
+        if (gui.isJoinsQuitsMainEnabled())
+            printText(eventText, Constants.EVENT_USER);
+
         eventTickerTimer.setDelay(gui.getEventTickerDelay());
         if (gui.isJoinsQuitsTickerEnabled())
         {
@@ -372,9 +395,6 @@ public class IRCRoomBase extends JPanel
             if (!(eventTickerTimer.isRunning()))
                 eventTickerTimer.start();
         }
-
-        if (gui.isJoinsQuitsMainEnabled())
-            printText(eventText, Constants.EVENT_USER);
     }
 
     public void callForAttention()
@@ -382,68 +402,153 @@ public class IRCRoomBase extends JPanel
         myActions.callForAttention();
     }
 
+    class MessagePair {
+        private String line;
+        private String fromUser;
+
+        public MessagePair(String line, String fromUser) {
+            this.line = line;
+            this.fromUser = fromUser;
+        }
+
+        public String getLine() {
+            return line;
+        }
+
+        public String getUser() {
+            return fromUser;
+        }
+    }
+
     // TODO: Change this to accept IRCUser instead
-    public void printText(String line, String fromUser)
+    public void printText(String line, String fromUser) {
+        try {
+            messageQueue.put(new MessagePair(line, fromUser));
+
+            if(!messageQueueInProgress)
+                handleMessageQueue();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean messageQueueWorking()
     {
-        if(null == channelTextArea)
+        return (!messageQueue.isEmpty() || messageQueueInProgress);
+    }
+
+    public void handleMessageQueue()
+    {
+        SwingUtilities.invokeLater(new Runnable()
         {
-            System.out.println("Cant print, shutting down");
-            return;
-        }
-
-        DateFormat chatDateFormat = new SimpleDateFormat("HHmm");
-        Date chatDate = new Date();
-        String timeLine = "";
-
-        if (gui.isTimeStampsEnabled())
-            timeLine = "[" + chatDateFormat.format(chatDate) + "]";
-
-        if (gui.isChannelHistoryEnabled())
-        {
-            try
+            public void run()
             {
-                writeHistoryFile(line);
-            } catch (IOException e)
-            {
-                Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+                while (!messageQueue.isEmpty())
+                {
+                    try
+                    {
+                        messageQueueInProgress = true;
+                        MessagePair messagePair = messageQueue.take();
+
+                        if(null == messagePair)
+                        {
+                            messageQueueInProgress = false;
+                            continue;
+                        }
+
+                        String line = messagePair.getLine();
+                        String fromUser = messagePair.getUser();
+
+                        Document document = lineFormatter.getDocument();
+                        Element root = lineFormatter.getDocument().getDefaultRootElement();
+
+                        int lineLimit = gui.getLimitChannelLinesCount();
+
+                        if(IRCRoomBase.this instanceof IRCServer)
+                            lineLimit = gui.getLimitServerLinesCount();
+
+                        if(null != messagePair && root.getElementCount() > lineLimit)
+                        {
+                            Element firstLine = root.getElement(0);
+                            int endIndex = firstLine.getEndOffset();
+
+                            try
+                            {
+                                document.remove(0, endIndex);
+                            }
+                            catch(BadLocationException ble)
+                            {
+                                Constants.LOGGER.log(Level.WARNING, ble.getLocalizedMessage());
+                            }
+                        }
+
+                        if (null == channelTextArea)
+                        {
+                            Constants.LOGGER.log(Level.WARNING, "ChannelTextArea hasn't initialized or has disappeared.. not printing text.");
+                            return;
+                        }
+
+                        if (gui.isChannelHistoryEnabled())
+                        {
+                            try
+                            {
+                                writeHistoryFile(line);
+                            } catch (IOException e)
+                            {
+                                Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+                            }
+                        }
+
+                        StyledDocument doc = channelTextArea.getStyledDocument();
+                        IRCUser fromIRCUser = getCreatedUser(fromUser);
+
+                        // If we received a message from a user that isn't in the channel
+                        // then add them to the users list.
+                        // But don't add them if it's from the Event Ticker
+                        if (fromIRCUser == null)
+                        {
+                            if (!fromUser.equals(Constants.EVENT_USER))
+                            {
+                                // TODO: Re-add later?
+                                // addToUsersList(getName(), fromUser);
+                                // fromIRCUser = getCreatedUsers(fromUser);
+                                // Constants.LOGGER.log(Level.WARNING, "Message from a user that isn't in the user list!");
+                                fromIRCUser = new IRCUser(server, fromUser);
+                            }
+                        }
+
+
+                        if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
+                        {
+                            lineFormatter.formattedDocument(new Date(), fromIRCUser, fromUser, line);
+
+                            if (server.getNick() != null && line.indexOf(server.getNick()) > -1)
+                            {
+                                callForAttention();
+                            }
+
+                            // Always alert on IRCPrivate messages
+                            if (IRCRoomBase.this instanceof IRCPrivate)
+                            {
+                                callForAttention();
+                            }
+
+                            // TODO: Scrolls to the bottom of the channelTextArea on message received, this should be
+                            // disabled
+                            // when the user has scrolled up
+                            channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
+                            messageQueueInProgress = false;
+                        }
+                    } catch (InterruptedException e)
+                    {
+                        Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+                    }
+                }
             }
-        }
-
-        StyledDocument doc = (StyledDocument) channelTextArea.getDocument();
-        IRCUser fromIRCUser = getCreatedUsers(fromUser);
-
-        // If we received a message from a user that isn't in the channel
-        // then add them to the users list.
-        // But don't add them if it's from the Event Ticker
-        if (fromIRCUser == null)
-        {
-            if (!fromUser.equals(Constants.EVENT_USER))
-            {
-                addToUsersList(getName(), fromUser);
-                fromIRCUser = getCreatedUsers(fromUser);
-            }
-        }
+        });
 
 
-        if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
-        {
-            lineFormatter.formattedDocument(doc, timeLine, fromIRCUser, fromUser, line);
-
-            if (lineFormatter.nameStyle.getAttribute("name") == lineFormatter.highStyle().getAttribute("name"))
-            {
-                callForAttention();
-            }
-
-            // Always alert on IRCPrivate messages
-            if(this instanceof IRCPrivate)
-            {
-                callForAttention();
-            }
-
-            // TODO: Scrolls to the bottom of the channelTextArea on message received, this should be disabled
-            // when the user has scrolled up
-            channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
-        }
     }
 
     /**
@@ -457,8 +562,9 @@ public class IRCRoomBase extends JPanel
         if (usersListShown == showIt || usersListShown == null)
         {
             // userScroller.setVisible(showIt);
-            if(showIt)
-                mainResizer.setDividerLocation(gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
+            if (showIt)
+                mainResizer.setDividerLocation(
+                        gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()));
             else
                 mainResizer.setDividerLocation(gui.getWidth());
         }
@@ -488,30 +594,8 @@ public class IRCRoomBase extends JPanel
      * @param roomName
      * @return IRCChannel
      */
-    public IRCUser getCreatedUsers(String userName)
-    {
-        for (IRCUser tempUser : usersArray)
-        {
-            if (tempUser.getName().equalsIgnoreCase(userName))
-                return tempUser;
-        } ;
-
-        return null;
-    }
-
-    public void doLimitLines()
-    {
-        if (gui.isLimitedChannelActivity())
-        {
-            String[] tempText = channelTextArea.getText().split("\n");
-            int linesCount = tempText.length;
-
-            if (linesCount >= gui.getLimitChannelLinesCount())
-            {
-                String newText = channelTextArea.getText().replace(tempText[0] + "\n", "");
-                channelTextArea.setText(newText);
-            }
-        }
+    public IRCUser getCreatedUser(String userName) {
+        return usersMap.get(userName.toLowerCase());
     }
 
     public void disableFocus()
@@ -525,44 +609,34 @@ public class IRCRoomBase extends JPanel
     }
 
     // Adds users to the list in the users array[]
-    public void addToUsersList(final String channel, final String[] users)
-    {
-        // Removed as Runnable(), not sure it was necessary
-        // TODO: maybe readd Runnable
-        if (users.length >= 0 && null != getServer())
-        {
-            for (int x = 0; x < users.length; x++)
-            {
-                String tempUserName = users[x];
-                if (users[x].startsWith(":"))
-                    tempUserName = tempUserName.substring(1);
+    public void addToUsersList(final String[] users) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // Removed as Runnable(), not sure it was necessary
+                // TODO: maybe readd Runnable
+                if (users.length >= 0 && null != getServer()) {
+                    for (int x = 0; x < users.length; x++) {
+                        String tempUserName = users[x];
+                        if (users[x].startsWith(":"))
+                            tempUserName = tempUserName.substring(1);
 
-                IRCUser newUser = getServer().getIRCUser(tempUserName);
+                        IRCUser newUser = getServer().getIRCUser(tempUserName);
 
-                if (!usersArray.contains(newUser))
-                    usersArray.add(newUser);
+                        if (null != newUser) {
+                            usersMap.put(newUser.getName().toLowerCase(), newUser);
+                            usersListModel.addUser(newUser);
+                        }
+                    }
+                }
+                usersListModel.sort();
             }
-        }
-        usersListModel.sort();
+        });
     }
 
     // Adds a single user, good for when a user joins the channel
-    public void addToUsersList(final String channel, final String user)
+    public void addToUsersList(final String user)
     {
-        // Removed as Runnable(), not sure it was necessary
-        String thisUser = user;
-        if (user.startsWith(":"))
-            thisUser = user.substring(1);
-
-        IRCUser newUser = getServer().getIRCUser(thisUser);
-
-        if (!usersArray.contains(newUser))
-        {
-            usersArray.add(newUser);
-            usersList.setSelectedIndex(0);
-            createEvent("++ " + thisUser + " has entered " + channel);
-            usersListModel.sort();
-        }
+        addToUsersList(new String[]{user});
     }
 
     public String getChannelTopic(String roomName)
@@ -587,27 +661,17 @@ public class IRCRoomBase extends JPanel
                     thisUser = user.substring(1);
 
 
-                int index = 0;
-                while(index < usersArray.size())
-                {
-                    if (usersArray.get(index).getName().matches(thisUser))
-                    {
-                        usersArray.remove(index);
-                        createEvent("-- " + thisUser + " has quit " + channel);
-                    } else {
-                        index++;
-                    }
-                }
-
+                usersMap.remove(thisUser.toLowerCase());
+                usersListModel.removeUser(thisUser);
                 usersListModel.sort();
             }
         });
     }
 
     /** Clear the users list */
-    public void clearUsersList(String channel)
+    public void clearUsersList()
     {
-        usersArray.clear();
+        usersMap.clear();
     }
 
 
@@ -626,7 +690,7 @@ public class IRCRoomBase extends JPanel
     {
         if (gui.saveChannelHistory())
         {
-            if(historyFileName == null || historyFileName.isEmpty())
+            if (historyFileName == null || historyFileName.isEmpty())
             {
                 historyFileName = historyDateFormat.format(todayDate) + " " + getName() + ".log";
             }
@@ -646,7 +710,7 @@ public class IRCRoomBase extends JPanel
         {
             public void run()
             {
-                IRCUser tempUser = getCreatedUsers(oldUserName);
+                IRCUser tempUser = getCreatedUser(oldUserName);
                 if (tempUser != null)
                 {
                     createEvent("!! " + oldUserName + " changed name to " + newUserName);
@@ -677,7 +741,8 @@ public class IRCRoomBase extends JPanel
         {
             String kind = elem.getName();
 
-            return switch (kind) {
+            return switch (kind)
+            {
                 case AbstractDocument.ContentElementName -> new WrapLabelView(elem);
                 case AbstractDocument.ParagraphElementName -> new ParagraphView(elem);
                 case AbstractDocument.SectionElementName -> new BoxView(elem, View.Y_AXIS);
@@ -697,7 +762,8 @@ public class IRCRoomBase extends JPanel
 
         public float getMinimumSpan(int axis)
         {
-            return switch (axis) {
+            return switch (axis)
+            {
                 case View.X_AXIS -> 0;
                 case View.Y_AXIS -> super.getMinimumSpan(axis);
                 default -> throw new IllegalArgumentException("Invalid axis: " + axis);
@@ -767,7 +833,7 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            if(null != getServer())
+            if (null != getServer())
             {
                 if (!gui.isFavourite(IRCRoomBase.this))
                 {
@@ -785,7 +851,7 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            if(null != getServer())
+            if (null != getServer())
             {
                 getServer().sendClientText("/part i'm outta here", getName());
             }
@@ -820,10 +886,12 @@ public class IRCRoomBase extends JPanel
         public void actionPerformed(ActionEvent arg0)
         {
 
-            if(mainResizer.getDividerLocation() <= gui.getWidth() - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()) )
+            if (mainResizer.getDividerLocation() <= gui.getWidth()
+                    - (userScroller.getPreferredSize().width + mainResizer.getDividerSize()))
             {
                 usersListShown = false;
-            } else {
+            } else
+            {
                 usersListShown = true;
             }
             toggleUsersList(usersListShown);
@@ -845,13 +913,13 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-                if (!getUserTextBox().getText().trim().isEmpty())
-                {
-                    sendClientText(clientTextBox.getText(), getName());
-                    if (gui.isClientHistoryEnabled())
-                        userHistory.add(clientTextBox.getText());
-                }
-                clientTextBox.setText("");
+            if (!getUserTextBox().getText().trim().isEmpty())
+            {
+                sendClientText(clientTextBox.getText(), getName());
+                if (gui.isClientHistoryEnabled())
+                    userHistory.add(clientTextBox.getText());
+            }
+            clientTextBox.setText("");
         }
     }
 
@@ -885,7 +953,9 @@ public class IRCRoomBase extends JPanel
                 {
 
                     fontDialog.getFontPanel().setDefaultFont(f);
-                    lineFormatter.setFont((StyledDocument) channelTextArea.getDocument(),fontDialog.getFontPanel().getFont());
+                    lineFormatter.setFont(fontDialog.getFontPanel().getFont());
+                    // TODO: Should this updateStyles if the font is changed?
+                    // lineFormatter.updateStyles((StyledDocument) channelTextArea.getDocument(), 0);
                 }
             });
         } else
@@ -900,12 +970,12 @@ public class IRCRoomBase extends JPanel
         public void actionPerformed(ActionEvent arg0)
         {
             // fontDialog.saveFont(fontDialog.getFont());
-            fontDialog.getFontPanel().setFont(fontDialog.getFontPanel().getFont(), true);
+            fontDialog.getFontPanel().setFont(fontDialog.getFontPanel().getStyle(), true);
             setFont(fontDialog.getFontPanel().getFont());
         }
     }
 
-    public void quitRoom ()
+    public void quitRoom()
     {
         eventTickerTimer.stop();
         tickerPanel.setVisible(false);
@@ -915,7 +985,7 @@ public class IRCRoomBase extends JPanel
         repaint();
     }
 
-    public boolean userIsTyping ()
+    public boolean userIsTyping()
     {
         return !clientTextBox.getText().isEmpty();
     }
@@ -963,9 +1033,8 @@ public class IRCRoomBase extends JPanel
                 }
 
                 // If usersArray and clientText isn't empty.
-                if (usersArray.size() > 0 && clientTextBox.getText().length() > 0)
-                {
-                    usersArray.stream()
+                if (!usersMap.isEmpty() && clientTextBox.getText().length() > 0) {
+                    usersMap.values().stream()
                             .filter(user -> user.getName().toLowerCase().replace("@", "")
                                     .startsWith(startingCharacters.toLowerCase()))
                             .forEach(user -> autoCompleteNames.add(user.getName()));
@@ -1017,9 +1086,12 @@ public class IRCRoomBase extends JPanel
             } else
             {
                 int nextTextInt = 0;
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_UP -> {
-                        if (!userHistory.isEmpty()) {
+                switch (e.getKeyCode())
+                {
+                    case KeyEvent.VK_UP ->
+                    {
+                        if (!userHistory.isEmpty())
+                        {
                             nextTextInt = userHistory.indexOf(clientTextBox.getText()) - 1;
                             if (nextTextInt < 0)
                                 nextTextInt = userHistory.size() - 1;
@@ -1027,8 +1099,10 @@ public class IRCRoomBase extends JPanel
                             clientTextBox.setText(userHistory.get(nextTextInt));
                         }
                     }
-                    case KeyEvent.VK_DOWN -> {
-                        if (!userHistory.isEmpty()) {
+                    case KeyEvent.VK_DOWN ->
+                    {
+                        if (!userHistory.isEmpty())
+                        {
                             nextTextInt = userHistory.indexOf(clientTextBox.getText()) + 1;
                             if (nextTextInt > userHistory.size() - 1)
                                 nextTextInt = 0;
@@ -1037,7 +1111,8 @@ public class IRCRoomBase extends JPanel
                         }
                     }
                     case KeyEvent.VK_ESCAPE -> clientTextBox.setText("");
-                    default -> {
+                    default ->
+                    {
                         if (lastUserToComplete != null)
                             lastUserToComplete = null;
                         if (startingCharacters != null)
@@ -1068,10 +1143,12 @@ public class IRCRoomBase extends JPanel
                     if (IRCRoomBase.this.tickerPanel.isVisible())
                     {
                         Iterator<JLabel> labelIterator = eventLabels.iterator();
-                        while (labelIterator.hasNext()) {
+                        while (labelIterator.hasNext())
+                        {
                             JLabel tempLabel = labelIterator.next();
                             tempLabel.setLocation(tempLabel.getX() - EVENT_VELOCITY, 0);
-                            if (tempLabel.getX() + tempLabel.getWidth() < 0) {
+                            if (tempLabel.getX() + tempLabel.getWidth() < 0)
+                            {
                                 labelIterator.remove(); // Safely remove the element
                                 tickerPanel.remove(tempLabel);
                             }
@@ -1080,7 +1157,7 @@ public class IRCRoomBase extends JPanel
                         if (eventLabels.isEmpty())
                             eventTickerTimer.stop();
 
-                        if(DriverGUI.frame.isFocused())
+                        if (DriverGUI.frame.isFocused())
                         {
                             tickerPanel.revalidate();
                             tickerPanel.repaint();
@@ -1089,7 +1166,8 @@ public class IRCRoomBase extends JPanel
                     {
                         eventTickerTimer.stop();
 
-                        for (JLabel tempLabel : eventLabels) {
+                        for (JLabel tempLabel : eventLabels)
+                        {
                             tickerPanel.remove(tempLabel);
                         }
 
@@ -1123,7 +1201,8 @@ public class IRCRoomBase extends JPanel
     {
         public void mouseClicked(MouseEvent e)
         {
-            if (SwingUtilities.isRightMouseButton(e)){
+            if (SwingUtilities.isRightMouseButton(e))
+            {
                 final int index = usersList.locationToIndex(e.getPoint());
                 if (index > -1)
                 {

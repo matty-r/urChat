@@ -161,4 +161,6 @@ public interface IRCServerBase
      * @param newUser
      */
     public abstract void renameUser (String oldUserName, String newUserName);
+
+    public void callForAttention();
 }

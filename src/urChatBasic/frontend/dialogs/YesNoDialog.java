@@ -2,6 +2,7 @@ package urChatBasic.frontend.dialogs;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.util.function.Consumer;
 import javax.swing.JButton;
@@ -11,26 +12,14 @@ import javax.swing.SwingConstants;
 import urChatBasic.base.DialogBase;
 import urChatBasic.frontend.DriverGUI;
 
-public class MessageDialog extends DialogBase {
+public class YesNoDialog extends DialogBase {
     private JLabel messageLabel;
-    private JButton closeButton;
+    private JButton yesButton;
+    private JButton noButton;
 
-    public MessageDialog (String message, String title, int messageType)
+    public YesNoDialog (String message, String title, int messageType, Consumer<ActionEvent> returnFunction)
     {
         super(DriverGUI.frame, title, true);
-        setupDialog(message, title, messageType);
-        setActionListener(closeButton, null);
-    }
-
-    public MessageDialog (String message, String title, int messageType, Consumer<ActionEvent> actionFunction)
-    {
-        super(DriverGUI.frame, title, true);
-        setupDialog(message, title, messageType);
-        setActionListener(closeButton, actionFunction);
-    }
-
-    public void setupDialog(String message, String title, int messageType)
-    {
         setSize(300, 150);
         setResizable(false);
         setMaximumSize(new Dimension(300, 150));
@@ -42,27 +31,45 @@ public class MessageDialog extends DialogBase {
         messageLabel.setHorizontalAlignment(SwingConstants.LEFT);
         messageLabel.setVerticalAlignment(SwingConstants.TOP); // Top alignment for wrapping text
 
-        closeButton = new JButton("Close");
+
+        yesButton = new JButton("Yes");
+        noButton = new JButton("No");
+
+        yesButton.addActionListener(e -> {
+            if (returnFunction != null) {
+                returnFunction.accept(e);
+            }
+            dispose();
+        });
+
+        noButton.addActionListener(e -> {
+            if (returnFunction != null) {
+                returnFunction.accept(e);
+            }
+            dispose();
+        });
 
         dialogPanel = new JPanel(new BorderLayout());
         dialogPanel.add(messageLabel, BorderLayout.CENTER);
-        dialogPanel.add(closeButton, BorderLayout.SOUTH);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
+        buttonPanel.add(noButton);
+        buttonPanel.add(yesButton);
+
+        dialogPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+
 
         add(dialogPanel);
     }
 
-    private void setActionListener(JButton targetButton, Consumer<ActionEvent> actionFunction )
+    public JButton getNoButton()
     {
-        targetButton.addActionListener(e -> {
-            if (actionFunction != null) {
-                actionFunction.accept(e);
-            }
-            dispose();
-        });
+        return noButton;
     }
 
-    public JButton getCloseButton()
+    public JButton getYesButton()
     {
-        return closeButton;
+        return yesButton;
     }
 }

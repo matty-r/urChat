@@ -14,7 +14,7 @@ import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import urChatBasic.base.Constants;
 
-public class LookAndFeelLoader<C extends LookAndFeel> {
+public class LookAndFeelLoader {
     public URLClassLoader cl;
 
     public LookAndFeelLoader(ClassLoader parentLoader) throws IOException {
@@ -71,12 +71,12 @@ public class LookAndFeelLoader<C extends LookAndFeel> {
                                 try {
                                     UIManager.installLookAndFeel(classShortName, className);
                                 } catch (Exception installEx) {
-                                    System.out.println(installEx.getMessage());
+                                    Constants.LOGGER.log(Level.WARNING, installEx.getMessage());
                                 }
                             }
                         }
                     } catch (NoClassDefFoundError | Exception classEx) {
-                        System.out.println(classEx.getMessage());
+                        Constants.LOGGER.log(Level.WARNING, classEx.getMessage());
                     }
                 }
             }

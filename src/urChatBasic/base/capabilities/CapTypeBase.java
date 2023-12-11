@@ -1,7 +1,5 @@
 package urChatBasic.base.capabilities;
 
-import java.util.ArrayList;
-
 public interface CapTypeBase {
     enum Category {
         AUTHENTICATION

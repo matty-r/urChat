@@ -15,7 +15,6 @@ import java.util.Base64;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.stream.IntStream;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -61,6 +60,8 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             String proxyPort, Boolean useSOCKS)
     {
         super(serverName);
+        setServer(this);
+        resetLineFormatter();
 
         myMenu = new ServerPopUp();
         hideUsersList();
@@ -279,7 +280,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         {
             if (IRCServer.this.isConnected())
             {
-                System.out.println("send quit message");
+                Constants.LOGGER.log(Level.INFO, "send quit message");
                 // Send the /quit message, which disconnects and remove the gui elements
                 sendClientText("/quit Goodbye cruel world", getName());
             } else
@@ -372,8 +373,8 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     public IRCUser getIRCUser(String userName)
     {
         for (IRCRoomBase tempChannel : createdRooms)
-            if (tempChannel.getCreatedUsers(userName) != null)
-                return tempChannel.getCreatedUsers(userName);
+            if (tempChannel.getCreatedUser(userName) != null)
+                return tempChannel.getCreatedUser(userName);
         return new IRCUser(this, userName);
     }
 
@@ -448,7 +449,6 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
                 return tempChannel;
         return null;
     }
-
 
     /*
      * (non-Javadoc)
@@ -591,7 +591,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         {
             IRCChannel tempChannel = getCreatedChannel(channelName);
             if (tempChannel != null)
-                tempChannel.addToUsersList(tempChannel.getName(), users);
+                tempChannel.addToUsersList(users);
         }
     }
 
@@ -604,13 +604,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     @Override
     public void addToUsersList(final String channelName, final String user)
     {
-        String thisUser = user;
-        if (user.startsWith(":"))
-            thisUser = user.substring(1);
-
-        IRCChannel tempChannel = getCreatedChannel(channelName);
-        if (tempChannel != null)
-            tempChannel.addToUsersList(tempChannel.getName(), thisUser);
+        addToUsersList(channelName, new String[]{user});
     }
 
 

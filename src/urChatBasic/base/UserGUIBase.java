@@ -1,6 +1,5 @@
 package urChatBasic.base;
 
-import java.awt.Graphics;
 import java.util.prefs.Preferences;
 import urChatBasic.base.capabilities.CapTypeBase;
 

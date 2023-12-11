@@ -84,10 +84,10 @@ Logs/*
 .vscode/*
 out/*
 lib/*
-themes/*
-src/urChatBasic/backend/JoinClassLoader.java
-src/urChatBasic/frontend/utils/UIManagerDefaults.java
+themes
 release
+test-output
+report
 
 # not tested
 build/tag-build-win.ps1

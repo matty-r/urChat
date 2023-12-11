@@ -180,17 +180,17 @@ public class Connection implements ConnectionBase
                 outText = "PRIVMSG " + tempTextArray[1] + " :"
                         + clientText.replace("/msg " + tempTextArray[1] + " ", "") + "\r\n";
 
-                // if (clientText.toLowerCase().startsWith("/msg nickserv identify"))
-                // {
-                //     clientText = "*** HIDDEN NICKSERV IDENTIFY ***";
-                // }
 
-                // server.printPrivateText(tempTextArray[1], clientText.replace("/msg " + tempTextArray[1] + " ", ""),getServer().getNick());
 
                 String msgPrefix = ":"+ getServer().getNick()+"!~"+ getServer().getNick()+"@urchatclient";
-                clientMessage = messageHandler.new Message(msgPrefix + " " +outText);
 
-                gui.setCurrentTab(tempTextArray[1]);
+                if(!tempTextArray[1].equalsIgnoreCase(getServer().getNick()))
+                {
+                    clientMessage = messageHandler.new Message(msgPrefix + " " +outText);
+                }
+
+                // TODO: Set current tab to this new priv tab
+                // gui.setCurrentTab(tempTextArray[1]);
             } else if (clientText.toLowerCase().startsWith("/whois"))
             {
                 outText = "WHOIS " + tempTextArray[1] + "\r\n";
