@@ -910,7 +910,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // }
 
         // previewTextArea.setFont(clientFontPanel.getFont());
-        previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), null, getProfilePath());
+        previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea , null, getProfilePath());
 
         if (previewDoc.getLength() <= 0)
         {
@@ -1996,8 +1996,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     private void setNewLAF(String newLAFname)
     {
-        Color previousDefaultForeground = UIManager.getColor("Label.foreground");
-        Color previousDefaultBackground = UIManager.getColor("Panel.background");
+        Color previousDefaultForeground = UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING);
+        Color previousDefaultBackground = UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING);
         Font previousDefaultFont = getFont();
 
         // System.out.println("Setting to "+newLAFname);
@@ -2044,10 +2044,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         // reset the defaults on the guiStyle if they were already at the default
         if (previousDefaultForeground == guiStyle.getForeground())
-            guiStyle.setForeground(UIManager.getColor("Label.foreground"));
+            guiStyle.setForeground(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
 
         if (previousDefaultBackground == guiStyle.getBackground())
-            guiStyle.setBackground(UIManager.getColor("Panel.background"));
+            guiStyle.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
 
         SwingUtilities.updateComponentTreeUI(DriverGUI.frame);
         updateExtras();

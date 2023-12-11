@@ -9,6 +9,7 @@ import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import urChatBasic.base.Constants;
 
 public class URStyle extends SimpleAttributeSet
 {
@@ -31,8 +32,8 @@ public class URStyle extends SimpleAttributeSet
         super();
         this.addAttribute("name", name);
         setFont(defaultFont);
-        setForeground(UIManager.getColor("Label.foreground"));
-        setBackground(UIManager.getColor("Panel.background"));
+        setForeground(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
+        setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
     }
 
     /**

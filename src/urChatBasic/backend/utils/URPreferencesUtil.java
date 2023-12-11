@@ -177,8 +177,8 @@ public class URPreferencesUtil {
     private static void saveStyleColours(Color foreground, Color background, Preferences settingsPath)
     {
         // Don't save if it's the default colours
-        Color defaultForeground = UIManager.getColor("Label.foreground");
-        Color defaultBackground = UIManager.getColor("Panel.background");
+        Color defaultForeground = UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING);
+        Color defaultBackground = UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING);
 
         if(URColour.hexEncode(defaultForeground).equals(URColour.hexEncode(foreground)))
         {

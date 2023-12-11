@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JTextPane;
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -47,14 +48,20 @@ public class LineFormatter
     private URStyle highStyle;
     private URStyle mediumStyle;
     private URStyle lowStyle;
+    private JTextPane docOwner;
     public URStyle myStyle;
     private Map<String, URStyle> formatterStyles = new HashMap<>();
 
 
-    public LineFormatter(URStyle baseStyle, final IRCServerBase server, Preferences formatterPrefs)
+    public LineFormatter(URStyle baseStyle, JTextPane docOwner ,final IRCServerBase server, Preferences formatterPrefs)
     {
         // TODO: Need to load attributes from formatterPrefs
         this.formatterPrefs = formatterPrefs;
+
+        this.docOwner = docOwner;
+
+        // The JTextPane is technically 'disabled', so we need to change the colour to be the enabled colour.
+        this.docOwner.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
 
         if (null != server)
         {
@@ -113,7 +120,7 @@ public class LineFormatter
         // get the contrasting colour of the background colour
         // StyleConstants.setForeground(defaultStyle, new Color(formatterPrefs.node(name).getInt("font
         // foreground",
-        // URColour.getContrastColour(UIManager.getColor("Panel.background")).getRGB())));
+        // URColour.getContrastColour(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)).getRGB())));
 
         StyleConstants.setFontFamily(tempStyle, targetStyle.getFont().getFamily());
         StyleConstants.setFontSize(tempStyle, targetStyle.getFont().getSize());
@@ -121,7 +128,6 @@ public class LineFormatter
         StyleConstants.setItalic(tempStyle, targetStyle.getFont().isItalic());
 
         StyleConstants.setForeground(tempStyle, myForeground);
-        StyleConstants.setBackground(tempStyle, myBackground);
 
         if (load)
             tempStyle.load(formatterPrefs);
@@ -136,15 +142,15 @@ public class LineFormatter
         URStyle tempStyle = defaultStyle(name, load);
 
 
-        StyleConstants.setForeground(tempStyle, UIManager.getColor("Panel.background").darker());
+        StyleConstants.setForeground(tempStyle, UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING).darker());
 
         if (StyleConstants.getForeground(tempStyle).getRGB() == myForeground.getRGB())
-            if (URColour.useDarkColour(UIManager.getColor("Panel.background")))
+            if (URColour.useDarkColour(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)))
             {
-                StyleConstants.setForeground(tempStyle, UIManager.getColor("Panel.background").darker());
+                StyleConstants.setForeground(tempStyle, UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING).darker());
             } else
             {
-                StyleConstants.setForeground(tempStyle, UIManager.getColor("Panel.background").brighter());
+                StyleConstants.setForeground(tempStyle, UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING).brighter());
             }
 
         if (load)

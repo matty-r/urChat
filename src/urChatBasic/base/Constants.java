@@ -36,6 +36,8 @@ public class Constants
     public static String LOGFILE_NAME = "Errors.log";
     private static final JLabel DEFAULT_LABEL = new JLabel();
     private static final Font DEFAULT_FONT = new Font(DEFAULT_LABEL.getFont().getFamily(), 0, DEFAULT_LABEL.getFont().getSize());
+    public static final String DEFAULT_FOREGROUND_STRING = "TextArea.foreground";
+    public static final String DEFAULT_BACKGROUND_STRING = "TextArea.background";
 
     // Preferences
     public static final Preferences BASE_PREFS = Preferences.userNodeForPackage(DriverGUI.class).node("profiles");
