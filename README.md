@@ -5,7 +5,7 @@ urChat is a Java based IRC Client designed around simplicity and minimal resourc
 
 Contributions
 ======
-**Currently targeting ![Milestone v0.4.0](https://github.com/matty-r/urChat/milestone/3)**
+**Currently targeting ![Milestone v0.5.0](https://github.com/matty-r/urChat/milestone/4)**
 
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
@@ -42,6 +42,15 @@ Screenshots
 ======
 
 ![image](https://github.com/matty-r/urChat/assets/9965448/49bed442-8472-4f8a-a5c8-422ce5f8ca0d)
+
+### Update - v0.4.0 (12 DEC 23)
+* Added custom styling support for the different styles used in messages
+* Added custom Timestamp format
+* UI Improvements
+* New appearance tab, and formatting preview area
+* Clickable channel names in messages (Can be styled separately from URLs)
+* Various bug fixes
+* Performance improvements, particularly around the styling of messages
 
 ### Update - v0.3.0 (22 SEP 23)
 * Bug fixes and performance improvements
