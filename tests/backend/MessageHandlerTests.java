@@ -54,8 +54,7 @@ public class MessageHandlerTests
         String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG testUser :hello testUser!";
         Message testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
-        StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
-        String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "[0629] <someuser> hello testUser!"
+        String testLine = testChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser> hello testUser!"
 
         while (testChannel.messageQueueWorking())
         {
@@ -64,7 +63,7 @@ public class MessageHandlerTests
 
         // Should be highStyle because someuser mentioned my nick, testUser
         assertEquals("highStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(testDoc, 11, testLine).getAttribute("name"));
+                testChannel.getLineFormatter().getStyleAtPosition(11, testLine).getAttribute("name"));
     }
 
     @Test(groups = {"Test #001"})
@@ -99,7 +98,7 @@ public class MessageHandlerTests
         Message testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
         StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
-        String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "[0629] <someuser> hello world!"
+        String testLine = testChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser> hello world!"
 
         while (testChannel.messageQueueWorking())
         {
@@ -108,7 +107,7 @@ public class MessageHandlerTests
 
         // Should be nickStyle because the user didn't mention testUser and is just a normal message
         assertEquals("nickStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(testDoc, 11, testLine).getAttribute("name"));
+                testChannel.getLineFormatter().getStyleAtPosition(11, testLine).getAttribute("name"));
     }
 
     @Test(groups = {"Test #003"}, dependsOnMethods = {"backend.MessageHandlerTests.nickIsNickStyleTest"})
@@ -231,17 +230,19 @@ public class MessageHandlerTests
         // int serverLinesCount =
         // testServer.getChannelTextPane().getStyledDocument().getDefaultRootElement().getElementCount();
         int channelLinesCount =
-                testChannel.getChannelTextPane().getStyledDocument().getDefaultRootElement().getElementCount();
+                testChannel.getLineFormatter().getDocument().getDefaultRootElement().getElementCount();
 
-        StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
-        String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "<testUser> line # 509"
 
-        assertTrue("Last line should line # 19 but it was" + testLine, testLine.endsWith("line # 19"));
+
+        String firstLine = testChannel.getLineFormatter().getFirstLine();
+        String lastLine = testChannel.getLineFormatter().getLatestLine(); // "<testUser> line # 509"
+
+        assertTrue("Last line should line # 19 but it was" + lastLine, lastLine.endsWith("line # 19"));
 
         assertTrue(
                 "First line should be line # 10 but it was "
-                        + testChannel.getChannelTextPane().getText().split(System.lineSeparator())[0],
-                testChannel.getChannelTextPane().getText().split(System.lineSeparator())[0].trim().endsWith("line # 10"));
+                        + firstLine,
+                firstLine.endsWith("line # 10"));
         assertSame("Channel line count should equal the line limit", channelLinesLimit, channelLinesCount - 1);
     }
 
@@ -269,8 +270,7 @@ public class MessageHandlerTests
         int serverLinesCount =
                 testServer.getChannelTextPane().getStyledDocument().getDefaultRootElement().getElementCount();
 
-        StyledDocument testDoc = testServer.getChannelTextPane().getStyledDocument();
-        String testLine = testServer.getLineFormatter().getLatestLine(testDoc); // "<testUser> line # 19"
+        String testLine = testServer.getLineFormatter().getLatestLine(); // "<testUser> line # 19"
 
         assertTrue("Last line should line # 19 but it was" + testLine, testLine.endsWith("line # 19"));
 
@@ -306,11 +306,11 @@ public class MessageHandlerTests
             TimeUnit.SECONDS.sleep(1);
         }
 
-        String testLine = testChannel.getLineFormatter().getLatestLine(testDoc); // "[0629] <someuser>
+        String testLine = testChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser>
                                                                                  // https://google.com"
         // Should be urlStyle, i.e a clickable link
         assertEquals("urlStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(testDoc, 19, testLine).getAttribute("name"));
+                testChannel.getLineFormatter().getStyleAtPosition(19, testLine).getAttribute("name"));
     }
 
     @Test
@@ -354,13 +354,13 @@ public class MessageHandlerTests
             TimeUnit.SECONDS.sleep(1);
         }
 
-        String testLine = testChannel.getLineFormatter().getLatestLine(testDoc);
+        String testLine = testChannel.getLineFormatter().getLatestLine();
         // Should be channel, i.e clickable name which allows you to join the channel
         assertEquals("channelStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(testDoc, 33, testLine).getAttribute("name"));
+                testChannel.getLineFormatter().getStyleAtPosition(33, testLine).getAttribute("name"));
         assertEquals("urlStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(testDoc, 58, testLine).getAttribute("name"));
+                testChannel.getLineFormatter().getStyleAtPosition(58, testLine).getAttribute("name"));
         assertEquals("channelStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(testDoc, 110, testLine).getAttribute("name"));
+                testChannel.getLineFormatter().getStyleAtPosition(110, testLine).getAttribute("name"));
     }
 }

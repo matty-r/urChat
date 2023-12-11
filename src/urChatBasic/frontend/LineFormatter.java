@@ -49,6 +49,7 @@ public class LineFormatter
     private URStyle mediumStyle;
     private URStyle lowStyle;
     private JTextPane docOwner;
+    private StyledDocument doc;
     public URStyle myStyle;
     private Map<String, URStyle> formatterStyles = new HashMap<>();
 
@@ -62,6 +63,7 @@ public class LineFormatter
 
         // The JTextPane is technically 'disabled', so we need to change the colour to be the enabled colour.
         this.docOwner.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
+        doc = this.docOwner.getStyledDocument();
 
         if (null != server)
         {
@@ -103,11 +105,11 @@ public class LineFormatter
         formatterStyles.put(lowStyle.getName(), lowStyle);
     }
 
-    public void setFont(StyledDocument doc, Font newFont)
+    public void setFont(Font newFont)
     {
         targetStyle.setFont(newFont);
         if (doc.getLength() > 0)
-            updateStyles(doc, 0);
+            updateStyles(0);
     }
 
     public URStyle defaultStyle(String name, boolean load)
@@ -359,7 +361,7 @@ public class LineFormatter
     }
 
     // Inserts the string at the position
-    private void insertString(StyledDocument doc, String insertedString, SimpleAttributeSet style, int position)
+    private void insertString(String insertedString, SimpleAttributeSet style, int position)
             throws BadLocationException
     {
         // remove the existing attributes
@@ -373,12 +375,12 @@ public class LineFormatter
     }
 
     // Adds the string (with all needed attributes) to the end of the document
-    private void appendString(StyledDocument doc, String insertedString, SimpleAttributeSet style)
+    private void appendString(String insertedString, SimpleAttributeSet style)
             throws BadLocationException
     {
         int position = doc.getLength();
 
-        insertString(doc, insertedString, style, position);
+        insertString(insertedString, style, position);
     }
 
     public URStyle getStyleDefault(String styleName)
@@ -419,10 +421,9 @@ public class LineFormatter
 
     /**
      * Reloads all the styles, then updates the doc
-     * @param doc
      * @param startPosition
      */
-    public void updateStyles(StyledDocument doc, int startPosition)
+    public void updateStyles(int startPosition)
     {
         targetStyle.load(formatterPrefs);
 
@@ -431,10 +432,10 @@ public class LineFormatter
         }
 
         Constants.LOGGER.log(Level.INFO, "Updating styles.");
-        updateDocStyles(doc, startPosition);
+        updateDocStyles(startPosition);
     }
 
-    private void updateDocStyles(StyledDocument doc, int startPosition)
+    private void updateDocStyles(int startPosition)
     {
         SimpleAttributeSet textStyle = new SimpleAttributeSet(doc.getCharacterElement(startPosition).getAttributes());
 
@@ -472,7 +473,7 @@ public class LineFormatter
                     SimpleAttributeSet timeStyle = getStyle(styleName, false);
                     timeStyle.addAttribute("date", lineDate);
                     timeStyle.addAttribute("type", "time");
-                    insertString(doc, newTimeString, timeStyle, styleStart);
+                    insertString(newTimeString, timeStyle, styleStart);
                     styleLength = newTimeString.length();
                 } else
                 {
@@ -524,10 +525,37 @@ public class LineFormatter
             doc.setCharacterAttributes(styleStart, styleLength, matchingStyle, true);
 
         if ((styleStart + styleLength) < doc.getLength())
-            updateDocStyles(doc, (styleStart + styleLength));
+            updateDocStyles((styleStart + styleLength));
     }
 
-    public String getLatestLine(StyledDocument doc) throws BadLocationException
+    public String getFirstLine() throws BadLocationException
+    {
+        Element root = doc.getDefaultRootElement();
+        int linePos = 0;
+
+        String finalLine = "";
+
+        while (finalLine.isEmpty())
+        {
+
+            if (linePos < 0)
+                break;
+
+            Element line = root.getElement(linePos++);
+
+            if (null == line)
+                continue;
+
+            int start = line.getStartOffset();
+            int end = line.getEndOffset();
+            String text = doc.getText(start, end - start);
+            finalLine = text.trim();
+        }
+
+        return finalLine;
+    }
+
+    public String getLatestLine() throws BadLocationException
     {
         Element root = doc.getDefaultRootElement();
         int lines = root.getElementCount();
@@ -554,7 +582,7 @@ public class LineFormatter
         return finalLine;
     }
 
-    private int getLinePosition(StyledDocument doc, String targetLine) throws BadLocationException
+    private int getLinePosition(String targetLine) throws BadLocationException
     {
         Element root = doc.getDefaultRootElement();
         int lines = root.getElementCount();
@@ -579,25 +607,25 @@ public class LineFormatter
         return 0;
     }
 
-    public SimpleAttributeSet getStyleAtPosition(StyledDocument doc, int position, String relativeLine)
+    public SimpleAttributeSet getStyleAtPosition(int position, String relativeLine)
             throws BadLocationException
     {
         if (!relativeLine.isBlank())
-            position = position + getLinePosition(doc, relativeLine);
+            position = position + getLinePosition(relativeLine);
 
         AttributeSet textStyle = doc.getCharacterElement(position).getAttributes();
 
         return new SimpleAttributeSet(textStyle);
     }
 
-    private void parseClickableText(StyledDocument doc, IRCUser fromUser, String line, URStyle defaultStyle)
+    private void parseClickableText(IRCUser fromUser, String line, URStyle defaultStyle)
             throws BadLocationException
     {
         HashMap<String, URStyle> regexStrings = new HashMap<>();
         regexStrings.put(Constants.URL_REGEX, urlStyle);
         regexStrings.put(Constants.CHANNEL_REGEX, channelStyle);
         // final String line = getLatestLine(doc);
-        final int relativePosition = getLinePosition(doc, getLatestLine(doc));
+        final int relativePosition = getLinePosition(getLatestLine());
 
         ArrayList<URStyle> clickableLines = new ArrayList<URStyle>();
 
@@ -645,25 +673,23 @@ public class LineFormatter
             int nextLineLength = Integer.parseInt(nextLine.getAttribute("styleLength").toString());
 
             // Append the string that comes before the next clickable text
-            appendString(doc, remainingLine.substring(0, nextLineStart - offset), defaultStyle);
+            appendString(remainingLine.substring(0, nextLineStart - offset), defaultStyle);
 
-            appendString(doc, nextLine.getAttribute("clickableText").toString(), nextLine);
+            appendString(nextLine.getAttribute("clickableText").toString(), nextLine);
 
             remainingLine = remainingLine.substring((nextLineStart + nextLineLength) - offset);
         }
 
-        appendString(doc, remainingLine, defaultStyle);
+        appendString(remainingLine, defaultStyle);
     }
 
     /**
      * Inserts a string onto the end of the doc.
-     *
-     * @param doc
-     * @param timeLine
      * @param fromUser
      * @param line
+     * @param timeLine
      */
-    public void formattedDocument(StyledDocument doc, Date lineDate, IRCUser fromUser, String fromString, String line)
+    public void formattedDocument(Date lineDate, IRCUser fromUser, String fromString, String line)
     {
         // build the timeLine string
         String timeLine = UserGUI.getTimeLineString(lineDate);
@@ -708,7 +734,7 @@ public class LineFormatter
                 timePositionStyle.addAttribute("date", lineDate);
                 timePositionStyle.removeAttribute("type");
                 timePositionStyle.addAttribute("type", "time");
-                appendString(doc, timeLine + " ", timePositionStyle);
+                appendString(timeLine + " ", timePositionStyle);
                 timePositionStyle.removeAttribute("type");
                 linePositionStyle.removeAttribute("date");
             } else
@@ -716,7 +742,7 @@ public class LineFormatter
                 linePositionStyle.addAttribute("date", lineDate);
             }
 
-            appendString(doc, "<", linePositionStyle);
+            appendString("<", linePositionStyle);
             linePositionStyle.removeAttribute("date");
 
             if (fromUser != null)
@@ -727,25 +753,30 @@ public class LineFormatter
                         new ClickableText(fromUser.toString(), nickPositionStyle, fromUser));
 
                 // doc.insertString(doc.getLength(), fromUser.toString(), clickableNameStyle);
-                appendString(doc, fromUser.toString(), clickableNameStyle);
+                appendString(fromUser.toString(), clickableNameStyle);
             } else
             {
-                appendString(doc, fromString, nickPositionStyle);
+                appendString(fromString, nickPositionStyle);
             }
 
-            appendString(doc, ">", linePositionStyle);
+            appendString(">", linePositionStyle);
 
             // print the remaining text
             // appendString(doc, " "+line, lineStyle);
 
             // parse the outputted line for clickable text
-            parseClickableText(doc, fromUser, " " + line, linePositionStyle);
+            parseClickableText(fromUser, " " + line, linePositionStyle);
 
-            appendString(doc, System.getProperty("line.separator"), linePositionStyle);
+            appendString(System.getProperty("line.separator"), linePositionStyle);
         } catch (BadLocationException e)
         {
             Constants.LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
         }
+    }
+
+    public StyledDocument getDocument()
+    {
+        return doc;
     }
 
 }

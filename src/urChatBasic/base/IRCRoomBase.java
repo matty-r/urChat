@@ -256,6 +256,8 @@ public class IRCRoomBase extends JPanel
         channelTextArea.setEditable(false);
         channelTextArea.setFont(getFontPanel().getFont());
         channelTextArea.setEditorKit(new StyledEditorKit());
+        // This is needed because the channelTextArea isn't the same after it was initialized.
+        resetLineFormatter();
     }
 
     private void setupUsersList()
@@ -458,8 +460,8 @@ public class IRCRoomBase extends JPanel
                         String line = messagePair.getLine();
                         String fromUser = messagePair.getUser();
 
-                        Document document = channelTextArea.getDocument();
-                        Element root = document.getDefaultRootElement();
+                        Document document = lineFormatter.getDocument();
+                        Element root = lineFormatter.getDocument().getDefaultRootElement();
 
                         int lineLimit = gui.getLimitChannelLinesCount();
 
@@ -519,7 +521,7 @@ public class IRCRoomBase extends JPanel
 
                         if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
                         {
-                            lineFormatter.formattedDocument(doc, new Date(), fromIRCUser, fromUser, line);
+                            lineFormatter.formattedDocument(new Date(), fromIRCUser, fromUser, line);
 
                             if (server.getNick() != null && line.indexOf(server.getNick()) > -1)
                             {
@@ -951,8 +953,7 @@ public class IRCRoomBase extends JPanel
                 {
 
                     fontDialog.getFontPanel().setDefaultFont(f);
-                    lineFormatter.setFont((StyledDocument) channelTextArea.getDocument(),
-                            fontDialog.getFontPanel().getFont());
+                    lineFormatter.setFont(fontDialog.getFontPanel().getFont());
                     // TODO: Should this updateStyles if the font is changed?
                     // lineFormatter.updateStyles((StyledDocument) channelTextArea.getDocument(), 0);
                 }
