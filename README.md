@@ -41,7 +41,8 @@ Without testng.xml
 Screenshots
 ======
 
-![image](https://github.com/matty-r/urChat/assets/9965448/49bed442-8472-4f8a-a5c8-422ce5f8ca0d)
+![image](https://github.com/matty-r/urChat/assets/9965448/581ea2c9-280a-45c1-b254-d146465f0d21)
+
 
 ### Update - v0.4.0 (12 DEC 23)
 * Added custom styling support for the different styles used in messages
