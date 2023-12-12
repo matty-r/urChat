@@ -20,6 +20,11 @@ Tested with FlatLaf + IntelliJ Themes, download the below jar files and place th
 * [Flatlaf 3.2.5](https://search.maven.org/artifact/com.formdev/flatlaf/3.2.5/jar?eh=)
 * [Flatlaf IntelliJ themes](https://search.maven.org/artifact/com.formdev/flatlaf-intellij-themes/3.2.5/jar?eh=)
 
+Screenshots
+======
+
+![image](https://github.com/matty-r/urChat/assets/9965448/581ea2c9-280a-45c1-b254-d146465f0d21)
+
 Test/Code Coverage Dependencies
 ======
 Dependencies required only for running the tests:
@@ -44,12 +49,6 @@ Using the testng.xml - must be in the same directory as urchat.jar
 
 Without testng.xml
 *	java -jar urTestRunner.jar
-
-Screenshots
-======
-
-![image](https://github.com/matty-r/urChat/assets/9965448/581ea2c9-280a-45c1-b254-d146465f0d21)
-
 
 ### Update - v0.4.0 (12 DEC 23)
 * Added custom styling support for the different styles used in messages
