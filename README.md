@@ -9,6 +9,17 @@ Contributions
 
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
+Usage
+======
+Ensure you've got Java 17 available on your system, download and run the latest JAR release (https://github.com/matty-r/urChat/releases). If you'd like to try out the Theme functionality, create a 'themes' directory next to the urChat.jar and download the FlatLAF.jar release and place within that directory. The theme can be selected under the client options page.
+
+Themes
+======
+Tested with FlatLaf + IntelliJ Themes, download the below jar files and place them in a themes directory alongside the urchat.jar.
+
+* [Flatlaf 3.2.5](https://search.maven.org/artifact/com.formdev/flatlaf/3.2.5/jar?eh=)
+* [Flatlaf IntelliJ themes](https://search.maven.org/artifact/com.formdev/flatlaf-intellij-themes/3.2.5/jar?eh=)
+
 Test/Code Coverage Dependencies
 ======
 Dependencies required only for running the tests:
@@ -24,10 +35,6 @@ Create a **lib/test** directory with the following files:
 Extract jacocoagent.jar and jacococli.jar into the **lib/coverage** directory
 
 * [Jacoco](https://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.8.11/jacoco-0.8.11.zip)
-
-Usage
-======
-Ensure you've got Java 17 available on your system, download and run the latest JAR release (https://github.com/matty-r/urChat/releases). If you'd like to try out the Theme functionality, create a 'themes' directory next to the urChat.jar and download the FlatLAF.jar release and place within that directory. The theme can be selected under the client options page.
 
 Test Usage
 ======
