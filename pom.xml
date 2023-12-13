@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.mattyr</groupId>
+  <artifactId>urchat</artifactId>
+  <version>0.4.0</version>
+
+  <name>urchat</name>
+  <!-- FIXME change it to the project's website -->
+  <url>https://github.com/matty-r/urChat</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.release>17</maven.compiler.release>
+  </properties>
+
+  <licenses>
+    <license>
+      <name>Apache-2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>7.8.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jacoco</groupId>
+      <artifactId>jacoco-maven-plugin</artifactId>
+      <version>0.8.11</version>
+      <type>maven-plugin</type>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>src/</sourceDirectory>
+    <outputDirectory>bin/</outputDirectory>
+    <resources>
+      <resource>
+        <directory>
+          src/images
+        </directory>
+        <targetPath>images/</targetPath>
+      </resource>
+    </resources>
+    <testSourceDirectory>tests/</testSourceDirectory>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.11.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.11</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.0.0-M9</version>
+          <configuration>
+            <classpathDependencyExcludes>
+              <!-- Exclude all transitive dependencies -->
+              <classpathDependencyExclude>com.urchatbasic:urchat</classpathDependencyExclude>
+            </classpathDependencyExcludes>
+            <additionalClasspathElements>
+              <!-- Define the directory containing your external JARs -->
+              <additionalClasspathElement>lib/test</additionalClasspathElement>
+            </additionalClasspathElements>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>
