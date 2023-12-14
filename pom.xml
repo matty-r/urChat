@@ -63,6 +63,10 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.11.0</version>
         </plugin>
+	<plugin>
+	  <artifactId>maven-jar-plugin</artifactId>
+	  <version>3.3.0</version>
+	</plugin>
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
@@ -86,6 +90,18 @@
       </plugins>
     </pluginManagement>
     <plugins>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>urChatBasic.frontend.DriverGUI</mainClass>
+              <classpathPrefix>lib/</classpathPrefix>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
 	<artifactId>jacoco-maven-plugin</artifactId>
