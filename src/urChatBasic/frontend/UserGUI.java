@@ -82,10 +82,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private FontPanel clientFontPanel;
     private static URStyle guiStyle;
     private static final JTextField timeStampField = new JTextField();
-    private static final JTextPane previewTextArea = new JTextPane();
+    public static final JTextPane previewTextArea = new JTextPane();
     private static final JScrollPane previewTextScroll = new JScrollPane(previewTextArea);
     private static final JLabel styleLabel = new JLabel("Mouse over text to view style, right-click to edit.");
-    private static LineFormatter previewLineFormatter;
+    public static LineFormatter previewLineFormatter;
 
 
     private static final JTextField limitServerLinesCount = new JTextField();
@@ -291,6 +291,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // change the profile name
         profileName = newProfileName;
         clientFontPanel.setSettingsPath(getProfilePath());
+        previewLineFormatter.setSettingsPath(getProfilePath());
         // now load the new profile settings
         getClientSettings(false);
     }
@@ -911,7 +912,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // }
 
         // previewTextArea.setFont(clientFontPanel.getFont());
-        previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea , null, getProfilePath());
+        if(previewLineFormatter == null)
+            previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea , null, getProfilePath());
 
         if (previewDoc.getLength() <= 0)
         {
@@ -928,22 +930,23 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             previewLineFormatter.formattedDocument(new Date(), tempUser2, System.getProperty("user.name"), "Join #urchatclient on irc.libera.chat or #anotherroom");
         } else
         {
-            previewLineFormatter.updateStyles(0);
+            // if(previewLineFormatter.doc != previewTextArea.getStyledDocument())
+            //     System.out.println("test");
+            previewLineFormatter.updateStyles(clientFontPanel.getStyle());
 
+            // for (int index = 0; index < tabbedPane.getTabCount(); index++)
+            // {
+            //     Component tab = tabbedPane.getComponentAt(index);
 
-            for (int index = 0; index < tabbedPane.getTabCount(); index++)
-            {
-                Component tab = tabbedPane.getComponentAt(index);
+            //     if (tab instanceof IRCRoomBase)
+            //     {
+            //         tab.setFont(clientFontPanel.getFont());
+            //         IRCRoomBase roomTab = IRCRoomBase.class.cast(tab);
+            //         System.out.println("Updating font on tab " + tab.getName());
+            //         roomTab.getLineFormatter().updateStyles(0);
+            //     }
 
-                if (tab instanceof IRCRoomBase)
-                {
-                    tab.setFont(clientFontPanel.getFont());
-                    IRCRoomBase roomTab = IRCRoomBase.class.cast(tab);
-                    System.out.println("Updating font on tab " + tab.getName());
-                    roomTab.getLineFormatter().updateStyles(0);
-                }
-
-            }
+            // }
         }
     }
 
@@ -966,7 +969,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     // List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();
                     // TODO: Need to save attributes and updateStyles after..
                     // Currently runs the save after updateStyles
-                    previewLineFormatter.updateStyles(0);
+                    previewLineFormatter.updateStyles(clientFontPanel.getStyle());
                 });
 
                 // styleFontDialog.addResetListener(new ActionListener() {
@@ -1915,7 +1918,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
             // previewLineFormatter.setFont(previewTextArea.getStyledDocument(), clientFontPanel.getFont());
             guiStyle = clientFontPanel.getStyle();
-            previewLineFormatter.updateStyles(0);
+            previewLineFormatter.updateStyles(clientFontPanel.getStyle());
         }
     }
 
@@ -2086,9 +2089,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
             if (tab instanceof IRCRoomBase)
             {
-                tab.setFont(clientFontPanel.getFont());
+                // tab.setFont(clientFontPanel.getFont());
                 IRCRoomBase roomTab = IRCRoomBase.class.cast(tab);
-                roomTab.getFontPanel().setDefaultFont(clientFontPanel.getFont());
+                // roomTab.getFontPanel().setDefaultFont(clientFontPanel.getFont());
+                roomTab.getFontPanel().setStyle(guiStyle);
+                // roomTab.resetLineFormatter();
+                roomTab.getLineFormatter().updateStyles(guiStyle);
                 SwingUtilities.updateComponentTreeUI(roomTab.myMenu);
                 SwingUtilities.updateComponentTreeUI(roomTab.getFontPanel());
             }

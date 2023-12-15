@@ -112,6 +112,11 @@ public class IRCRoomBase extends JPanel
 
     public IRCServerBase getServer()
     {
+        if(this instanceof IRCServer)
+        {
+            return (IRCServerBase) this;
+        }
+
         return this.server;
     }
 
@@ -168,9 +173,17 @@ public class IRCRoomBase extends JPanel
 
     private void initRoom()
     {
-        if (null != getServer())
+        channelTextArea.setEditable(false);
+
+        if (getServer() != null)
         {
-            roomPrefs = gui.getFavouritesPath().node(getServer().getName()).node(roomName);
+            String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
+
+            if(nodeName.equals(roomName))
+                roomPrefs = gui.getFavouritesPath().node(nodeName);
+            else
+                roomPrefs = gui.getFavouritesPath().node(nodeName).node(roomName);
+
             fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , getServer(), roomPrefs);
@@ -187,8 +200,8 @@ public class IRCRoomBase extends JPanel
         // Create the initial size of the panel
         // Set size of the overall panel
         setPreferredSize(new Dimension(Constants.MAIN_WIDTH, Constants.MAIN_HEIGHT));
-        setBackground(Color.gray);
         setupMainPanel();
+
         setName(roomName);
         this.setLayout(new BorderLayout());
         this.add(mainPanel, BorderLayout.CENTER);
@@ -238,10 +251,10 @@ public class IRCRoomBase extends JPanel
         return fontDialog.getFontPanel();
     }
 
-    public void resetLineFormatter()
-    {
-        lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, getServer(), roomPrefs);
-    }
+    // public void resetLineFormatter()
+    // {
+    //     lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, getServer(), roomPrefs);
+    // }
 
     private void setupMainTextArea()
     {
@@ -253,11 +266,12 @@ public class IRCRoomBase extends JPanel
         channelTextArea.addMouseMotionListener(new ChannelMovementListener());
         // channelTextArea.getDocument().addDocumentListener(new LimitLinesDocumentListener(gui.getLimitChannelLinesCount()));
         // channelTextArea.getDocument().addDocumentListener(new LineLimitListener());
-        channelTextArea.setEditable(false);
-        channelTextArea.setFont(getFontPanel().getFont());
-        channelTextArea.setEditorKit(new StyledEditorKit());
+        // channelTextArea.setEditable(false);
+        // channelTextArea.setFont(getFontPanel().getFont());
+        // channelTextArea.setEditorKit(new StyledEditorKit());
         // This is needed because the channelTextArea isn't the same after it was initialized.
-        resetLineFormatter();
+
+        // resetLineFormatter();
     }
 
     private void setupUsersList()
@@ -500,7 +514,7 @@ public class IRCRoomBase extends JPanel
                             }
                         }
 
-                        StyledDocument doc = channelTextArea.getStyledDocument();
+                        // StyledDocument doc = channelTextArea.getStyledDocument();
                         IRCUser fromIRCUser = getCreatedUser(fromUser);
 
                         // If we received a message from a user that isn't in the channel

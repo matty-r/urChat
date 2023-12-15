@@ -49,7 +49,7 @@ public class LineFormatter
     private URStyle mediumStyle;
     private URStyle lowStyle;
     private JTextPane docOwner;
-    private StyledDocument doc;
+    public StyledDocument doc;
     public URStyle myStyle;
     private Map<String, URStyle> formatterStyles = new HashMap<>();
 
@@ -61,8 +61,7 @@ public class LineFormatter
 
         this.docOwner = docOwner;
 
-        // The JTextPane is technically 'disabled', so we need to change the colour to be the enabled colour.
-        this.docOwner.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
+        // this.docOwner.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
         doc = this.docOwner.getStyledDocument();
 
         if (null != server)
@@ -73,6 +72,21 @@ public class LineFormatter
         {
             myNick = null;
         }
+
+        initStyles(baseStyle);
+    }
+
+    public void setFont(Font newFont)
+    {
+        targetStyle.setFont(newFont);
+        if (doc.getLength() > 0)
+            updateStyles(targetStyle);
+    }
+
+    public void initStyles (URStyle baseStyle)
+    {
+        // The JTextPane is technically 'disabled', so we need to change the colour to be the default enabled colour.
+        docOwner.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
 
         targetStyle = new URStyle(myNick, baseStyle.getFont());
         targetStyle.setForeground(baseStyle.getForeground());
@@ -103,13 +117,6 @@ public class LineFormatter
         formatterStyles.put(highStyle.getName(), highStyle);
         formatterStyles.put(mediumStyle.getName(), mediumStyle);
         formatterStyles.put(lowStyle.getName(), lowStyle);
-    }
-
-    public void setFont(Font newFont)
-    {
-        targetStyle.setFont(newFont);
-        if (doc.getLength() > 0)
-            updateStyles(0);
     }
 
     public URStyle defaultStyle(String name, boolean load)
@@ -421,18 +428,15 @@ public class LineFormatter
 
     /**
      * Reloads all the styles, then updates the doc
-     * @param startPosition
+     * @param newBaseStyle
      */
-    public void updateStyles(int startPosition)
+    public void updateStyles(URStyle newBaseStyle)
     {
-        targetStyle.load(formatterPrefs);
-
-        for (URStyle formatterStyle : formatterStyles.values()) {
-            formatterStyle = getStyle(formatterStyle.getName(), true);
-        }
+        initStyles(newBaseStyle);
 
         Constants.LOGGER.log(Level.FINE, "Updating styles.");
-        updateDocStyles(startPosition);
+        updateDocStyles(0);
+
     }
 
     private void updateDocStyles(int startPosition)
@@ -491,9 +495,9 @@ public class LineFormatter
                         isDateStyle = false;
                     }
                 }
-            } catch (BadLocationException $ble)
+            } catch (BadLocationException ble)
             {
-                //
+                Constants.LOGGER.log(Level.WARNING, ble.getLocalizedMessage());
             }
         }
 
@@ -777,6 +781,11 @@ public class LineFormatter
     public StyledDocument getDocument()
     {
         return doc;
+    }
+
+    public void setSettingsPath(Preferences profilePath)
+    {
+        formatterPrefs = profilePath;
     }
 
 }

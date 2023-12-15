@@ -39,11 +39,8 @@ public class FontPanel extends JPanel
     private final JButton SAVE_BUTTON = new JButton("Save");
     private final JButton COLOUR_BUTTON = new JButton("Colour");
     protected ColourDialog colourDialog = null;
-    // private String fontType = "New Font:";
-    // private JLabel fontTypeLabel = new JLabel("New Font:");
     private URStyle defaultStyle;
     private URStyle targetStyle;
-    // TODO: Add colour picker for foreground and background
 
     /**
      * TODO: This will be used instead for creating the action listeners: private Map<JButton, EventListenerList> actionList = new HashMap<>();

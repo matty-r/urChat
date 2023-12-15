@@ -1,9 +1,11 @@
 package frontend;
 
 import static org.testng.AssertJUnit.*;
+import java.awt.Color;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.UIManager;
+import javax.swing.text.StyleConstants;
 import org.testng.Reporter;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -53,5 +55,43 @@ public class LAFTests
         URStyle newStyle = testGUI.getStyle();
 
         assertEquals("New Style should have the background colour of "+Constants.DEFAULT_BACKGROUND_STRING, URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)), URColour.hexEncode(newStyle.getBackground()));
+    }
+
+    @Test(description = "Changing LAF, updates the colours in the preview text area.")
+    public void changingLAFUpdatesPreviewStyle() throws Exception
+    {
+        // Get current LAF name
+        String currentLAF = UIManager.getLookAndFeel().getClass().getName();
+
+        if(!currentLAF.equals("com.sun.java.swing.plaf.motif.MotifLookAndFeel"))
+            testGUI.setNewLAF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+
+        // URStyle newStyle = testGUI.getStyle();
+
+        Color newBackgroundColor = (Color) UserGUI.previewLineFormatter.getStyleAtPosition(0, "urChat has loaded - this is an Event").getAttribute(StyleConstants.Background);
+        Color lineFormatterBackground = UserGUI.previewTextArea.getBackground();
+
+        assertEquals("previewTextArea background colour should be the default", URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)), URColour.hexEncode(lineFormatterBackground));
+        assertEquals("Line should have the background colour of "+Constants.DEFAULT_BACKGROUND_STRING, URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)), URColour.hexEncode(newBackgroundColor));
+    }
+
+    @Test(description = "Changing LAF and saving, correctly loads the new style")
+    // TODO
+    public void saveAndLoadLAFStyle() throws Exception
+    {
+    //     // Get current LAF name
+    //     String currentLAF = UIManager.getLookAndFeel().getClass().getName();
+
+    //     if(!currentLAF.equals("com.sun.java.swing.plaf.motif.MotifLookAndFeel"))
+    //         testGUI.setNewLAF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+
+    //     // URStyle newStyle = testGUI.getStyle();
+
+    //     Color newBackgroundColor = (Color) UserGUI.previewLineFormatter.getStyleAtPosition(0, "urChat has loaded - this is an Event").getAttribute(StyleConstants.Background);
+    //     Color lineFormatterBackground = UserGUI.previewTextArea.getBackground();
+
+    //     assertEquals("previewTextArea background colour should be the default", URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)), URColour.hexEncode(lineFormatterBackground));
+    //     assertEquals("Line should have the background colour of "+Constants.DEFAULT_BACKGROUND_STRING, URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)), URColour.hexEncode(newBackgroundColor));
+    //
     }
 }

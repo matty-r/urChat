@@ -61,7 +61,6 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     {
         super(serverName);
         setServer(this);
-        resetLineFormatter();
 
         myMenu = new ServerPopUp();
         hideUsersList();
