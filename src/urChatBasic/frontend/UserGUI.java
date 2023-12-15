@@ -25,6 +25,7 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.dialogs.MessageDialog;
+import urChatBasic.frontend.utils.URColour;
 import urChatBasic.base.UserGUIBase;
 import urChatBasic.base.Constants.Size;
 import urChatBasic.base.capabilities.CapTypeBase;
@@ -928,6 +929,21 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         } else
         {
             previewLineFormatter.updateStyles(0);
+
+
+            for (int index = 0; index < tabbedPane.getTabCount(); index++)
+            {
+                Component tab = tabbedPane.getComponentAt(index);
+
+                if (tab instanceof IRCRoomBase)
+                {
+                    tab.setFont(clientFontPanel.getFont());
+                    IRCRoomBase roomTab = IRCRoomBase.class.cast(tab);
+                    System.out.println("Updating font on tab " + tab.getName());
+                    roomTab.getLineFormatter().updateStyles(0);
+                }
+
+            }
         }
     }
 
@@ -1165,7 +1181,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             this.favChannel = favChannel;
             settingsPath = getFavouritesPath().node(favServer).node(favChannel);
 
-            favFontDialog = new FontDialog("Font: " + favChannel, UserGUI.this.getStyle(), settingsPath);
+            favFontDialog = new FontDialog(favChannel, UserGUI.this.getStyle(), settingsPath);
             favFontDialog.addSaveListener(new SaveChannelFontListener());
             createPopUp();
         }
@@ -1610,6 +1626,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         lafOptions.setSelectedItem(getLAF(getProfilePath().get(Constants.KEY_LAF_NAME, Constants.DEFAULT_LAF_NAME)));
 
+        setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
+
         showJoinsQuitsEventTicker.setSelected(getProfilePath().getBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS,
                 Constants.DEFAULT_EVENT_TICKER_JOINS_QUITS));
         showJoinsQuitsMainWindow.setSelected(getProfilePath().getBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS,
@@ -1896,6 +1914,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
 
             // previewLineFormatter.setFont(previewTextArea.getStyledDocument(), clientFontPanel.getFont());
+            guiStyle = clientFontPanel.getStyle();
             previewLineFormatter.updateStyles(0);
         }
     }
@@ -1960,11 +1979,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         });
     }
 
+    /**
+     * Returns the clientFontPanel style, otherwise creates the new default style.
+     * @return
+     */
     public URStyle getStyle()
     {
         if (clientFontPanel != null)
         {
-            return clientFontPanel.getStyle();
+            guiStyle = clientFontPanel.getStyle();
+            return guiStyle;
         }
 
         // Create the default style
@@ -1989,13 +2013,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return getLAF(UIManager.getSystemLookAndFeelClassName());
     }
 
-    private void setNewLAF(String newLAFname)
+    public void setNewLAF(String newLAFname)
     {
-        Color previousDefaultForeground = UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING);
-        Color previousDefaultBackground = UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING);
+        String previousDefaultForeground = URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
+        String previousDefaultBackground = URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
         Font previousDefaultFont = getFont();
 
-        // System.out.println("Setting to "+newLAFname);
+        Constants.LOGGER.log(Level.INFO, "Setting to LookAndFeel to "+newLAFname);
         boolean flatLafAvailable = false;
         try
         {
@@ -2009,6 +2033,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     {
                         UIManager.setLookAndFeel(info.getClassName());
                         flatLafAvailable = true;
+                        break;
                     }
                 }
             } catch (Exception e)
@@ -2038,10 +2063,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         guiStyle.setFont(clientFontPanel.getFont());
 
         // reset the defaults on the guiStyle if they were already at the default
-        if (previousDefaultForeground == guiStyle.getForeground())
+        if (previousDefaultForeground.equals(URColour.hexEncode(guiStyle.getForeground())))
             guiStyle.setForeground(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
 
-        if (previousDefaultBackground == guiStyle.getBackground())
+        if (previousDefaultBackground.equals(URColour.hexEncode(guiStyle.getBackground())))
             guiStyle.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
 
         SwingUtilities.updateComponentTreeUI(DriverGUI.frame);
@@ -2062,12 +2087,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             if (tab instanceof IRCRoomBase)
             {
                 tab.setFont(clientFontPanel.getFont());
-                ((IRCRoomBase) tab).getFontPanel().setDefaultFont(clientFontPanel.getFont());
-                SwingUtilities.updateComponentTreeUI(((IRCRoomBase) tab).myMenu);
-                SwingUtilities.updateComponentTreeUI(((IRCRoomBase) tab).getFontPanel());
-                // TODO: Update styles                ((IRCRoomBase) tab).getChannelTextPane()
+                IRCRoomBase roomTab = IRCRoomBase.class.cast(tab);
+                roomTab.getFontPanel().setDefaultFont(clientFontPanel.getFont());
+                SwingUtilities.updateComponentTreeUI(roomTab.myMenu);
+                SwingUtilities.updateComponentTreeUI(roomTab.getFontPanel());
             }
-
         }
 
         for (int index = 0; index < favouritesList.getModel().getSize(); index++)

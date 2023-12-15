@@ -25,7 +25,8 @@ public class DriverGUI
     {
 
         Constants.init();
-        try {
+        try
+        {
             URL imgPath = new URL(Constants.RESOURCES_DIR + "urChat Icon.png");
 
             img = new ImageIcon(imgPath);
@@ -36,14 +37,19 @@ public class DriverGUI
 
         Constants.LOGGER.log(Level.INFO, "Starting up..");
 
-        LookAndFeelLoader lafLoader = new LookAndFeelLoader(Thread.currentThread().getContextClassLoader());
-        contextClassLoader = lafLoader.cl;
-        Thread.currentThread().setContextClassLoader(contextClassLoader);
-        Thread.currentThread().setUncaughtExceptionHandler(new URUncaughtExceptionHandler());
+        initLAFLoader();
 
         createGUI();
 
         startGUI();
+    }
+
+    public static void initLAFLoader() throws IOException
+    {
+        LookAndFeelLoader lafLoader = new LookAndFeelLoader(Thread.currentThread().getContextClassLoader());
+        contextClassLoader = lafLoader.cl;
+        Thread.currentThread().setContextClassLoader(contextClassLoader);
+        Thread.currentThread().setUncaughtExceptionHandler(new URUncaughtExceptionHandler());
     }
 
     final public static String getMemoryReport()

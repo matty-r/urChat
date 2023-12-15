@@ -1,7 +1,7 @@
 import org.testng.TestNG;
-import backend.DialogTests;
 import backend.MessageHandlerTests;
-import backend.UserGUITests;
+import frontend.DialogTests;
+import frontend.UserGUITests;
 import java.util.ArrayList;
 import java.util.List;
 import org.testng.TestListenerAdapter;

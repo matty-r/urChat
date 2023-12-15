@@ -431,7 +431,7 @@ public class LineFormatter
             formatterStyle = getStyle(formatterStyle.getName(), true);
         }
 
-        Constants.LOGGER.log(Level.INFO, "Updating styles.");
+        Constants.LOGGER.log(Level.FINE, "Updating styles.");
         updateDocStyles(startPosition);
     }
 

@@ -1,4 +1,4 @@
-package backend;
+package frontend;
 
 import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.frontend.dialogs.YesNoDialog;

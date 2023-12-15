@@ -14,6 +14,12 @@ public class FontDialog extends DialogBase
     private String styleName = "Default Font";
     private FontPanel fontPanel;
 
+    /**
+     * styleName will also be used for the preferences name.
+     * @param styleName
+     * @param defaultStyle
+     * @param settingsPath
+     */
     public FontDialog(String styleName, URStyle defaultStyle, Preferences settingsPath)
     {
         super(DriverGUI.frame, styleName, true);

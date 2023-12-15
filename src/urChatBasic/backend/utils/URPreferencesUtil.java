@@ -100,7 +100,7 @@ public class URPreferencesUtil {
             e.printStackTrace();
         }
 
-        Constants.LOGGER.log(Level.INFO, "Load Style Path: " + stylePrefPath.toString());
+        Constants.LOGGER.log(Level.FINE, "Load Style Path: " + stylePrefPath.toString());
         Font loadedFont = loadStyleFont(targetStyle.getFont(), stylePrefPath);
         Map<String, Color> loadedColours = loadStyleColours(targetStyle, stylePrefPath);
 
@@ -116,7 +116,7 @@ public class URPreferencesUtil {
         Preferences settingsPath =  baseSettingsPath.node(targetStyle.getName());
         try
         {
-            Constants.LOGGER.log(Level.INFO, "Removing font keys: " + settingsPath.absolutePath());
+            Constants.LOGGER.log(Level.FINE, "Removing font keys: " + settingsPath.absolutePath());
             settingsPath.remove(Constants.KEY_FONT_BOLD);
             settingsPath.remove(Constants.KEY_FONT_ITALIC);
             settingsPath.remove(Constants.KEY_FONT_FAMILY);

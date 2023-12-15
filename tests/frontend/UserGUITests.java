@@ -1,4 +1,4 @@
-package backend;
+package frontend;
 
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
