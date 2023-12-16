@@ -26,7 +26,7 @@ public class ColourPanel extends JPanel implements ChangeListener
     JButton saveButton;
     JLabel previewLabel;
 
-    public ColourPanel(String styleName, URStyle defaultStyle, Preferences settingsPath)
+    public ColourPanel (String styleName, URStyle defaultStyle, Preferences settingsPath)
     {
         super(new BorderLayout());
         saveButton = new JButton("Apply & Save");
@@ -45,7 +45,7 @@ public class ColourPanel extends JPanel implements ChangeListener
         add(tcc, BorderLayout.PAGE_END);
     }
 
-    public JPanel createBottomPanel()
+    public JPanel createBottomPanel ()
     {
         JPanel bottomPanel = new JPanel();
         JButton foregroundButton = new JButton("Toggle Background");
@@ -106,7 +106,7 @@ public class ColourPanel extends JPanel implements ChangeListener
 
         saveButton.addActionListener(e -> {
             // Save the style first
-            if(targetStyle.equals(defaultStyle))
+            if (targetStyle.equals(defaultStyle))
                 URPreferencesUtil.deleteStyleColours(targetStyle, settingsPath);
             else
                 URPreferencesUtil.saveStyle(targetStyle, settingsPath);
@@ -120,7 +120,7 @@ public class ColourPanel extends JPanel implements ChangeListener
 
     private void setPreviewColour (Color newColour, boolean setForeground)
     {
-        if(setForeground)
+        if (setForeground)
         {
             previewLabel.setForeground(newColour);
             targetStyle.setForeground(newColour);
@@ -138,23 +138,26 @@ public class ColourPanel extends JPanel implements ChangeListener
         listenerList.add(ActionListener.class, actionListener);
     }
 
-    protected void fireSaveListeners()
+    protected void fireSaveListeners ()
     {
         Object[] listeners = this.listenerList.getListenerList();
 
         // Reverse order
-        for(int i = listeners.length - 2; i >= 0; i -= 2) {
-            if (listeners[i] == ActionListener.class) {
-                if (this.actionEvent == null) {
+        for (int i = listeners.length - 2; i >= 0; i -= 2)
+        {
+            if (listeners[i] == ActionListener.class)
+            {
+                if (this.actionEvent == null)
+                {
                     this.actionEvent = new ActionEvent(saveButton, i, TOOL_TIP_TEXT_KEY);
                 }
 
-                ((ActionListener)listeners[i + 1]).actionPerformed(this.actionEvent);
+                ((ActionListener) listeners[i + 1]).actionPerformed(this.actionEvent);
             }
         }
     }
 
-    public void loadStyle()
+    public void loadStyle ()
     {
         targetStyle = URPreferencesUtil.loadStyle(targetStyle, settingsPath);
 
@@ -166,12 +169,12 @@ public class ColourPanel extends JPanel implements ChangeListener
         setPreviewColour(targetStyle.getBackground(), false);
     }
 
-    public URStyle getStyle()
+    public URStyle getStyle ()
     {
         return targetStyle;
     }
 
-    public void stateChanged(ChangeEvent e)
+    public void stateChanged (ChangeEvent e)
     {
         selectedColor = tcc.getColor();
 

@@ -156,7 +156,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#getLimitServerLinesCount()
      */
     @Override
-    public int getLimitServerLinesCount()
+    public int getLimitServerLinesCount ()
     {
         try
         {
@@ -168,12 +168,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    public void setLimitChannelLines(int limit)
+    public void setLimitChannelLines (int limit)
     {
         limitChannelLinesCount.setText(Integer.toString(limit));
     }
 
-    public void setLimitServerLines(int limit)
+    public void setLimitServerLines (int limit)
     {
         limitServerLinesCount.setText(Integer.toString(limit));
     }
@@ -184,7 +184,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#getLimitChannelLinesCount()
      */
     @Override
-    public int getLimitChannelLinesCount()
+    public int getLimitChannelLinesCount ()
     {
         try
         {
@@ -202,7 +202,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#setCurrentTab(int)
      */
     @Override
-    public void setCurrentTab(int indexNum)
+    public void setCurrentTab (int indexNum)
     {
         tabbedPane.setSelectedIndex(indexNum);
     }
@@ -213,7 +213,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#setCurrentTab(java.lang.String)
      */
     @Override
-    public void setCurrentTab(String tabName)
+    public void setCurrentTab (String tabName)
     {
         for (int x = 0; x < tabbedPane.getTabCount(); x++)
             if (tabbedPane.getTitleAt(x).toLowerCase().equals(tabName.toLowerCase()))
@@ -226,7 +226,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#getTabIndex(java.lang.String)
      */
     @Override
-    public int getTabIndex(String tabName)
+    public int getTabIndex (String tabName)
     {
         int currentTabCount = tabbedPane.getTabCount();
 
@@ -244,7 +244,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#saveChannelHistory()
      */
     @Override
-    public Boolean saveChannelHistory()
+    public Boolean saveChannelHistory ()
     {
         return logChannelText.isSelected();
     }
@@ -255,7 +255,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#saveServerHistory()
      */
     @Override
-    public Boolean saveServerHistory()
+    public Boolean saveServerHistory ()
     {
         return logServerActivity.isSelected();
     }
@@ -266,7 +266,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#getCreatedServer(java.lang.String)
      */
     @Override
-    public IRCServerBase getCreatedServer(String serverName)
+    public IRCServerBase getCreatedServer (String serverName)
     {
         // for(int x = 0; x < createdChannels.size(); x++)
         for (IRCServerBase createdServer : createdServers)
@@ -280,7 +280,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     }
 
     @Override
-    public void setProfileName(String newProfileName)
+    public void setProfileName (String newProfileName)
     {
         // save the current profile settings, if it exists
         if (profilePicker.profileExists(profileName))
@@ -296,7 +296,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         getClientSettings(false);
     }
 
-    public void deleteProfile()
+    public void deleteProfile ()
     {
         try
         {
@@ -310,17 +310,17 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     }
 
     @Override
-    public String getProfileName()
+    public String getProfileName ()
     {
         return profileName;
     }
 
-    public Preferences getProfilePath()
+    public Preferences getProfilePath ()
     {
         return Constants.BASE_PREFS.node(profileName);
     }
 
-    public Preferences getFavouritesPath()
+    public Preferences getFavouritesPath ()
     {
         return getProfilePath().node("favourites");
     }
@@ -331,7 +331,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#addToCreatedServers(java.lang.String)
      */
     @Override
-    public void addToCreatedServers(String serverName)
+    public void addToCreatedServers (String serverName)
     {
         if (getCreatedServer(serverName) == null)
         {
@@ -348,7 +348,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isCreatedServersEmpty()
      */
     @Override
-    public Boolean isCreatedServersEmpty()
+    public Boolean isCreatedServersEmpty ()
     {
         return createdServers.isEmpty();
     }
@@ -360,7 +360,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isShowingEventTicker()
      */
     @Override
-    public Boolean isShowingEventTicker()
+    public Boolean isShowingEventTicker ()
     {
         return showEventTicker.isSelected();
     }
@@ -371,13 +371,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isShowingUsersList()
      */
     @Override
-    public Boolean isShowingUsersList()
+    public Boolean isShowingUsersList ()
     {
         return showUsersList.isSelected();
     }
 
     @Override
-    public Boolean isClickableLinksEnabled()
+    public Boolean isClickableLinksEnabled ()
     {
         return enableClickableLinks.isSelected();
     }
@@ -388,7 +388,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isJoinsQuitsTickerEnabled()
      */
     @Override
-    public Boolean isJoinsQuitsTickerEnabled()
+    public Boolean isJoinsQuitsTickerEnabled ()
     {
         return showJoinsQuitsEventTicker.isSelected();
     }
@@ -399,12 +399,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isJoinsQuitsMainEnabled()
      */
     @Override
-    public Boolean isJoinsQuitsMainEnabled()
+    public Boolean isJoinsQuitsMainEnabled ()
     {
         return showJoinsQuitsMainWindow.isSelected();
     }
 
-    public void setJoinsQuitsMain(boolean enable)
+    public void setJoinsQuitsMain (boolean enable)
     {
         showJoinsQuitsMainWindow.setSelected(enable);
     }
@@ -415,7 +415,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isChannelHistoryEnabled()
      */
     @Override
-    public Boolean isChannelHistoryEnabled()
+    public Boolean isChannelHistoryEnabled ()
     {
         return logChannelText.isSelected();
     }
@@ -426,7 +426,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isLimitedServerActivity()
      */
     @Override
-    public Boolean isLimitedServerActivity()
+    public Boolean isLimitedServerActivity ()
     {
         return limitServerLines.isSelected();
     }
@@ -437,7 +437,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isLimitedChannelActivity()
      */
     @Override
-    public Boolean isLimitedChannelActivity()
+    public Boolean isLimitedChannelActivity ()
     {
         return limitChannelLines.isSelected();
     }
@@ -448,13 +448,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isTimeStampsEnabled()
      */
     @Override
-    public Boolean isTimeStampsEnabled()
+    public Boolean isTimeStampsEnabled ()
     {
         return enableTimeStamps.isSelected();
     }
 
     @Override
-    public CapTypeBase authenticationType()
+    public CapTypeBase authenticationType ()
     {
         return (CapTypeBase) authenticationTypeChoice.getSelectedItem();
     }
@@ -465,7 +465,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isClientHistoryEnabled()
      */
     @Override
-    public Boolean isClientHistoryEnabled()
+    public Boolean isClientHistoryEnabled ()
     {
         return logClientText.isSelected();
 
@@ -475,7 +475,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * public Boolean isLinksClickable(){ return enableClickableLinks.isSelected(); }
      */
 
-    private void setupOptionsPanel()
+    private void setupOptionsPanel ()
     {
         optionsMainPanel.setLayout(new BorderLayout());
 
@@ -498,7 +498,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     /**
      * Houses the options list
      */
-    private void setupLeftOptionsPanel()
+    private void setupLeftOptionsPanel ()
     {
         optionsLeftPanel.setBackground(optionsList.getBackground());
         optionsLeftPanel.setPreferredSize(new Dimension(100, 0));
@@ -518,7 +518,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         optionsLeftPanel.add(extrasPanel, BorderLayout.SOUTH);
     }
 
-    private void setupRightOptionsPanel()
+    private void setupRightOptionsPanel ()
     {
         ListSelectionModel listSelectionModel = optionsList.getSelectionModel();
         listSelectionModel.addListSelectionListener(new OptionsListSelectionHandler());
@@ -531,7 +531,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         setupAppearancePanel();
     }
 
-    private static void addToPanel(JPanel targetPanel, Component newComponent, String label, Size targetSize)
+    private static void addToPanel (JPanel targetPanel, Component newComponent, String label, Size targetSize)
     {
 
         int topSpacing = 6;
@@ -585,7 +585,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     /**
      * Add the components to the Server Options Panel.
      */
-    private void setupConnectionPanel()
+    private void setupConnectionPanel ()
     {
         // connectionPanel.setLayout(new BoxLayout(connectionPanel, BoxLayout.PAGE_AXIS));
         setupConnectionLayout();
@@ -656,7 +656,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     /**
      * Aligns components on the Server Options Panel
      */
-    private void setupConnectionLayout()
+    private void setupConnectionLayout ()
     {
         SpringLayout connectionLayout = new SpringLayout();
         connectionPanel.setLayout(connectionLayout);
@@ -832,7 +832,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 connectButton);
     }
 
-    private void setupAppearancePanel()
+    private void setupAppearancePanel ()
     {
         addToPanel(appearancePanel, lafOptions, "Theme", Size.MEDIUM);
 
@@ -840,7 +840,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         lafOptions.setRenderer(new DefaultListCellRenderer()
         {
             @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+            public Component getListCellRendererComponent (JList<?> list, Object value, int index, boolean isSelected,
                     boolean cellHasFocus)
             {
                 LookAndFeelInfo info = (LookAndFeelInfo) value;
@@ -863,19 +863,19 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         timeStampField.addKeyListener(new KeyListener()
         {
             @Override
-            public void keyTyped(KeyEvent e)
+            public void keyTyped (KeyEvent e)
             {
                 // Not used
             }
 
             @Override
-            public void keyPressed(KeyEvent e)
+            public void keyPressed (KeyEvent e)
             {
                 // Not used
             }
 
             @Override
-            public void keyReleased(KeyEvent e)
+            public void keyReleased (KeyEvent e)
             {
                 updatePreviewTextArea();
             }
@@ -897,7 +897,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // addToPanel(appearancePanel, timeStampFontButton);
     }
 
-    public void updatePreviewTextArea()
+    public void updatePreviewTextArea ()
     {
         StyledDocument previewDoc = previewTextArea.getStyledDocument();
 
@@ -912,8 +912,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // }
 
         // previewTextArea.setFont(clientFontPanel.getFont());
-        if(previewLineFormatter == null)
-            previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea , null, getProfilePath());
+        if (previewLineFormatter == null)
+            previewLineFormatter =
+                    new LineFormatter(clientFontPanel.getStyle(), previewTextArea, null, getProfilePath());
 
         if (previewDoc.getLength() <= 0)
         {
@@ -923,36 +924,24 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             IRCUser tempUser = new IRCUser(null, "matty_r");
             IRCUser tempUser2 = new IRCUser(null, System.getProperty("user.name"));
             previewLineFormatter.setNick(System.getProperty("user.name"));
-            previewLineFormatter.formattedDocument(new Date(), null, Constants.EVENT_USER, "urChat has loaded - this is an Event");
+            previewLineFormatter.formattedDocument(new Date(), null, Constants.EVENT_USER,
+                    "urChat has loaded - this is an Event");
             previewLineFormatter.formattedDocument(new Date(), tempUser, "matty_r", "Normal line. Hello, world!");
-            previewLineFormatter.formattedDocument(new Date(), tempUser, "matty_r", "This is what it looks like when your nick is mentioned, " + System.getProperty("user.name") + "!");
-            previewLineFormatter.formattedDocument(new Date(), tempUser2, System.getProperty("user.name"), "Go to https://github.com/matty-r/urChat");
-            previewLineFormatter.formattedDocument(new Date(), tempUser2, System.getProperty("user.name"), "Join #urchatclient on irc.libera.chat or #anotherroom");
+            previewLineFormatter.formattedDocument(new Date(), tempUser, "matty_r",
+                    "This is what it looks like when your nick is mentioned, " + System.getProperty("user.name") + "!");
+            previewLineFormatter.formattedDocument(new Date(), tempUser2, System.getProperty("user.name"),
+                    "Go to https://github.com/matty-r/urChat");
+            previewLineFormatter.formattedDocument(new Date(), tempUser2, System.getProperty("user.name"),
+                    "Join #urchatclient on irc.libera.chat or #anotherroom");
         } else
         {
-            // if(previewLineFormatter.doc != previewTextArea.getStyledDocument())
-            //     System.out.println("test");
             previewLineFormatter.updateStyles(clientFontPanel.getStyle());
-
-            // for (int index = 0; index < tabbedPane.getTabCount(); index++)
-            // {
-            //     Component tab = tabbedPane.getComponentAt(index);
-
-            //     if (tab instanceof IRCRoomBase)
-            //     {
-            //         tab.setFont(clientFontPanel.getFont());
-            //         IRCRoomBase roomTab = IRCRoomBase.class.cast(tab);
-            //         System.out.println("Updating font on tab " + tab.getName());
-            //         roomTab.getLineFormatter().updateStyles(0);
-            //     }
-
-            // }
         }
     }
 
     class PreviewClickListener extends MouseInputAdapter
     {
-        public void mouseClicked(MouseEvent mouseEvent)
+        public void mouseClicked (MouseEvent mouseEvent)
         {
             StyledDocument doc = previewTextArea.getStyledDocument();
             Element wordElement = doc.getCharacterElement(previewTextArea.viewToModel2D((mouseEvent.getPoint())));
@@ -962,8 +951,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             if (SwingUtilities.isRightMouseButton(mouseEvent) && wordAttributeSet.getAttribute("name") != null)
             {
                 String styleName = styleLabel.getText();
-                FontDialog styleFontDialog = new FontDialog(styleName,
-                        previewLineFormatter.getStyleDefault(styleName), getProfilePath());
+                FontDialog styleFontDialog =
+                        new FontDialog(styleName, previewLineFormatter.getStyleDefault(styleName), getProfilePath());
 
                 styleFontDialog.addSaveListener(arg0 -> {
                     // List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();
@@ -999,7 +988,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     class PreviewMovementListener extends MouseAdapter
     {
-        public void mouseMoved(MouseEvent e)
+        public void mouseMoved (MouseEvent e)
         {
             StyledDocument doc = previewTextArea.getStyledDocument();
             Element wordElement = doc.getCharacterElement(previewTextArea.viewToModel2D((e.getPoint())));
@@ -1021,19 +1010,19 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    public static String getTimeLineString(Date date)
+    public static String getTimeLineString (Date date)
     {
         SimpleDateFormat chatDateFormat = new SimpleDateFormat(timeStampField.getText());
 
         return chatDateFormat.format(date);
     }
 
-    public static void setTimeLineString(String newFormat)
+    public static void setTimeLineString (String newFormat)
     {
         timeStampField.setText(newFormat);
     }
 
-    private void setupInterfacePanel()
+    private void setupInterfacePanel ()
     {
         interfacePanel.add(showEventTicker);
         interfacePanel.add(showUsersList);
@@ -1068,7 +1057,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     /**
      * Aligns components on the Client Options Panel
      */
-    private void setupInterfaceLayout()
+    private void setupInterfaceLayout ()
     {
         SpringLayout interfaceLayout = new SpringLayout();
         interfacePanel.setLayout(interfaceLayout);
@@ -1178,7 +1167,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         FavouritesPopUp myMenu;
         FontDialog favFontDialog;
 
-        public FavouritesItem(String favServer, String favChannel)
+        public FavouritesItem (String favServer, String favChannel)
         {
             this.favServer = favServer;
             this.favChannel = favChannel;
@@ -1190,12 +1179,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
 
         @Override
-        public String toString()
+        public String toString ()
         {
             return favServer + ":" + favChannel;
         }
 
-        public void createPopUp()
+        public void createPopUp ()
         {
             myMenu = new FavouritesPopUp();
         }
@@ -1203,7 +1192,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         protected class SaveChannelFontListener implements ActionListener
         {
             @Override
-            public void actionPerformed(ActionEvent arg0)
+            public void actionPerformed (ActionEvent arg0)
             {
                 for (int index = 0; index < tabbedPane.getTabCount(); index++)
                 {
@@ -1232,7 +1221,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             JMenuItem removeItem;
             JMenuItem fontItem;
 
-            public FavouritesPopUp()
+            public FavouritesPopUp ()
             {
                 nameItem = new JMenuItem(FavouritesItem.this.toString());
                 add(nameItem);
@@ -1252,7 +1241,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         private class ShowFontDialog implements ActionListener
         {
             @Override
-            public void actionPerformed(ActionEvent arg0)
+            public void actionPerformed (ActionEvent arg0)
             {
                 if (favouritesList.getSelectedIndex() > -1)
                 {
@@ -1266,7 +1255,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         private class RemoveFavourite implements ActionListener
         {
             @Override
-            public void actionPerformed(ActionEvent arg0)
+            public void actionPerformed (ActionEvent arg0)
             {
                 if (favouritesList.getSelectedIndex() > -1)
                 {
@@ -1301,7 +1290,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#addFavourite(java.lang.String, java.lang.String)
      */
     @Override
-    public void addFavourite(String favServer, String favChannel)
+    public void addFavourite (String favServer, String favChannel)
     {
         favouritesListModel.addElement(new FavouritesItem(favServer, favChannel));
 
@@ -1315,7 +1304,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#isFavourite(urChatBasic.frontend.IRCChannel)
      */
     @Override
-    public Boolean isFavourite(IRCRoomBase channel)
+    public Boolean isFavourite (IRCRoomBase channel)
     {
         FavouritesItem castItem;
 
@@ -1337,7 +1326,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#removeFavourite(java.lang.String, java.lang.String)
      */
     @Override
-    public void removeFavourite(String favServer, String favChannel)
+    public void removeFavourite (String favServer, String favChannel)
     {
         FavouritesItem castItem;
 
@@ -1355,7 +1344,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     class FavouritesPopClickListener extends MouseAdapter
     {
-        public void mousePressed(MouseEvent e)
+        public void mousePressed (MouseEvent e)
         {
             if (e.isPopupTrigger())
             {
@@ -1368,7 +1357,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
         }
 
-        public void mouseReleased(MouseEvent e)
+        public void mouseReleased (MouseEvent e)
         {
             if (e.isPopupTrigger())
             {
@@ -1381,7 +1370,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
         }
 
-        private void doPop(MouseEvent e)
+        private void doPop (MouseEvent e)
         {
             favouritesList.getSelectedValue().myMenu.show(e.getComponent(), e.getX(), e.getY());
         }
@@ -1395,7 +1384,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private class ConnectPressed implements ActionListener
     {
         @Override
-        public void actionPerformed(ActionEvent arg0)
+        public void actionPerformed (ActionEvent arg0)
         {
             if (passwordTextField.getPassword().length > 0
                     || authenticationType().equals(CapabilityTypes.NONE.getType()))
@@ -1433,7 +1422,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      *
      * @see urChatBasic.frontend.UserGUIBase#setupServerTab(urChatBasic.base.IRCServerBase)
      */
-    public void setupServerTab(IRCServerBase server)
+    public void setupServerTab (IRCServerBase server)
     {
         if (server instanceof IRCServer)
         {
@@ -1449,7 +1438,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#sendGlobalMessage(java.lang.String, java.lang.String)
      */
     @Override
-    public void sendGlobalMessage(String message, String sender)
+    public void sendGlobalMessage (String message, String sender)
     {
         for (IRCServerBase tempServer : createdServers)
             tempServer.sendClientText(message, sender);
@@ -1461,7 +1450,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#connectFavourites(urChatBasic.base.IRCServerBase)
      */
     @Override
-    public void connectFavourites(IRCServerBase server)
+    public void connectFavourites (IRCServerBase server)
     {
         if (servernameTextField.getText().trim().equals(server.getName()))
             server.sendClientText("/join " + firstChannelTextField.getText().trim(),
@@ -1486,7 +1475,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#shutdownAll()
      */
     @Override
-    public void shutdownAll()
+    public void shutdownAll ()
     {
         if (!isCreatedServersEmpty())
         {
@@ -1501,7 +1490,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#quitServers()
      */
     @Override
-    public void quitServers()
+    public void quitServers ()
     {
         Iterator<IRCServerBase> serverIterator = createdServers.iterator();
         while (serverIterator.hasNext())
@@ -1524,7 +1513,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#quitServer(urChatBasic.base.IRCServerBase)
      */
     @Override
-    public void quitServer(IRCServerBase server)
+    public void quitServer (IRCServerBase server)
     {
         server.disconnect();
         tabbedPane.remove((IRCServer) server);
@@ -1534,7 +1523,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     /**
      * Saves the settings into the registry/Settings API
      */
-    public void setClientSettings()
+    public void setClientSettings ()
     {
         getProfilePath().put(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText());
         getProfilePath().put(Constants.KEY_FIRST_SERVER, servernameTextField.getText());
@@ -1588,7 +1577,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     /**
      * Loads the settings from the registry/Settings API
      */
-    public void getClientSettings(boolean loadWindowSettings)
+    public void getClientSettings (boolean loadWindowSettings)
     {
         firstChannelTextField
                 .setText(getProfilePath().get(Constants.KEY_FIRST_CHANNEL, Constants.DEFAULT_FIRST_CHANNEL));
@@ -1700,13 +1689,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#removeClientSetting(java.lang.String, java.lang.String)
      */
     @Override
-    public void removeClientSetting(String node, String key)
+    public void removeClientSetting (String node, String key)
     {
         getProfilePath().node(node).remove(key);
     }
 
     @Override
-    public void cleanUpSettings()
+    public void cleanUpSettings ()
     {
         // TODO: Clean up all nodes if they have empty keys
         Constants.LOGGER.log(Level.INFO, "Cleaning up settings");
@@ -1725,7 +1714,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
             for (String profileNode : getProfilePath().childrenNames())
             {
-                if (getProfilePath().node(profileNode) != getFavouritesPath() && getProfilePath().node(profileNode).keys().length == 0)
+                if (getProfilePath().node(profileNode) != getFavouritesPath()
+                        && getProfilePath().node(profileNode).keys().length == 0)
                 {
                     getProfilePath().node(profileNode).removeNode();
                 }
@@ -1742,7 +1732,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#getEventTickerDelay()
      */
     @Override
-    public int getEventTickerDelay()
+    public int getEventTickerDelay ()
     {
         return eventTickerDelay.getValue();
     }
@@ -1750,7 +1740,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     class UCAuthTypeComboBoxChangeHandler implements ActionListener
     {
         @Override
-        public void actionPerformed(ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
             authenticationTypeChoice.runChangeListener();
 
@@ -1774,7 +1764,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     class ChangeLAFListener implements ActionListener
     {
         @Override
-        public void actionPerformed(ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
             setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
         }
@@ -1788,7 +1778,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     class OptionsListSelectionHandler implements ListSelectionListener
     {
-        public void valueChanged(ListSelectionEvent e)
+        public void valueChanged (ListSelectionEvent e)
         {
             ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
@@ -1809,7 +1799,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    private void setupTabbedPane()
+    private void setupTabbedPane ()
     {
         tabbedPane.addChangeListener(new MainTabbedPanel_changeAdapter(this));
         tabbedPane.addMouseListener(new TabbedMouseListener());
@@ -1827,7 +1817,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     private class TabbedMouseListener extends MouseInputAdapter
     {
-        public void mouseClicked(MouseEvent e)
+        public void mouseClicked (MouseEvent e)
         {
             final int index = tabbedPane.getUI().tabForCoordinate(tabbedPane, e.getX(), e.getY());
             if (index > -1)
@@ -1855,7 +1845,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      *
      * @param e
      */
-    private void TabbedPanel_stateChanged(ChangeEvent e)
+    private void TabbedPanel_stateChanged (ChangeEvent e)
     {
         int index = tabbedPane.getSelectedIndex();
         if (index > -1)
@@ -1881,12 +1871,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         UserGUI adaptee;
 
-        MainTabbedPanel_changeAdapter(UserGUI adaptee)
+        MainTabbedPanel_changeAdapter (UserGUI adaptee)
         {
             this.adaptee = adaptee;
         }
 
-        public void stateChanged(ChangeEvent e)
+        public void stateChanged (ChangeEvent e)
         {
             previousSelectedTab = currentSelectedTab;
             adaptee.TabbedPanel_stateChanged(e);
@@ -1896,7 +1886,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     protected class SaveFontListener implements ActionListener
     {
         @Override
-        public void actionPerformed(ActionEvent arg0)
+        public void actionPerformed (ActionEvent arg0)
         {
             for (int index = 0; index < tabbedPane.getTabCount(); index++)
             {
@@ -1925,7 +1915,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     protected class ResetFontListener implements ActionListener
     {
         @Override
-        public void actionPerformed(ActionEvent arg0)
+        public void actionPerformed (ActionEvent arg0)
         {
             getProfilePath().put(Constants.KEY_FONT_FAMILY, Constants.DEFAULT_FONT_GENERAL.getFamily());
             getProfilePath().putBoolean(Constants.KEY_FONT_BOLD, Constants.DEFAULT_FONT_GENERAL.isBold());
@@ -1939,7 +1929,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     }
 
 
-    public UserGUI()
+    public UserGUI ()
     {
         // this.creationTime = (new Date()).toString();
 
@@ -1953,11 +1943,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     }
 
     // Disables focus in the text pane
-    public void lostFocus()
+    public void lostFocus ()
     {
         SwingUtilities.invokeLater(new Runnable()
         {
-            public void run()
+            public void run ()
             {
                 int index = tabbedPane.getSelectedIndex();
                 Component selectedComponent = tabbedPane.getComponentAt(index);
@@ -1971,11 +1961,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     }
 
     // Sets focus to the clientTextBox, then reenables focus in the text pane
-    public void regainedFocus()
+    public void regainedFocus ()
     {
         SwingUtilities.invokeLater(new Runnable()
         {
-            public void run()
+            public void run ()
             {
                 TabbedPanel_stateChanged(null);
             }
@@ -1984,9 +1974,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     /**
      * Returns the clientFontPanel style, otherwise creates the new default style.
+     *
      * @return
      */
-    public URStyle getStyle()
+    public URStyle getStyle ()
     {
         if (clientFontPanel != null)
         {
@@ -2000,7 +1991,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return guiStyle;
     }
 
-    private LookAndFeelInfo getLAF(String lafClassName)
+    private LookAndFeelInfo getLAF (String lafClassName)
     {
         for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels())
         {
@@ -2016,13 +2007,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return getLAF(UIManager.getSystemLookAndFeelClassName());
     }
 
-    public void setNewLAF(String newLAFname)
+    public void setNewLAF (String newLAFname)
     {
         String previousDefaultForeground = URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
         String previousDefaultBackground = URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
         Font previousDefaultFont = getFont();
 
-        Constants.LOGGER.log(Level.INFO, "Setting to LookAndFeel to "+newLAFname);
+        Constants.LOGGER.log(Level.INFO, "Setting to LookAndFeel to " + newLAFname);
         boolean flatLafAvailable = false;
         try
         {
@@ -2079,7 +2070,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     }
 
     // Update the fonts and popup menus - these aren't under the component tree
-    private void updateExtras()
+    private void updateExtras ()
     {
         clientFontPanel.setStyle(guiStyle);
 
@@ -2116,7 +2107,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      * @see urChatBasic.frontend.UserGUIBase#run()
      */
     @Override
-    public void run()
+    public void run ()
     {
         Thread.currentThread().setContextClassLoader(DriverGUI.contextClassLoader);
         Thread.currentThread().setUncaughtExceptionHandler(new URUncaughtExceptionHandler());

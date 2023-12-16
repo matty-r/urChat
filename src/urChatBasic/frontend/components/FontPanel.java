@@ -43,14 +43,16 @@ public class FontPanel extends JPanel
     private URStyle targetStyle;
 
     /**
-     * TODO: This will be used instead for creating the action listeners: private Map<JButton, EventListenerList> actionList = new HashMap<>();
+     * TODO: This will be used instead for creating the action listeners: private Map<JButton,
+     * EventListenerList> actionList = new HashMap<>();
+     *
      * @see ColourPanel.fireSaveListeners()
      */
     private List<ActionListener> actionListeners = new ArrayList<>();
 
     private Preferences settingsPath;
 
-    public FontPanel(String styleName, URStyle defaultStyle, Preferences settingsPath)
+    public FontPanel (String styleName, URStyle defaultStyle, Preferences settingsPath)
     {
         setLayout(new GridBagLayout());
         setSettingsPath(settingsPath);
@@ -60,12 +62,13 @@ public class FontPanel extends JPanel
         colourDialog = new ColourDialog(styleName, defaultStyle, settingsPath);
 
         RESET_BUTTON.addActionListener(new ResetListener());
-        COLOUR_BUTTON.addActionListener(new ActionListener() {
+        COLOUR_BUTTON.addActionListener(new ActionListener()
+        {
 
             @Override
-            public void actionPerformed(ActionEvent arg0)
+            public void actionPerformed (ActionEvent arg0)
             {
-                if(colourDialog == null)
+                if (colourDialog == null)
                 {
                     ;
 
@@ -74,7 +77,8 @@ public class FontPanel extends JPanel
                         Constants.LOGGER.log(Level.INFO, "Font Panel says: Save Colour pressed");
                     });
 
-                    for (ActionListener actionListener : actionListeners) {
+                    for (ActionListener actionListener : actionListeners)
+                    {
                         colourDialog.getColourPanel().addSaveListener(actionListener);
                     }
                 }
@@ -147,24 +151,24 @@ public class FontPanel extends JPanel
         add(MAKE_UNDERLINE, c);
     }
 
-    public JButton getSaveButton()
+    public JButton getSaveButton ()
     {
         return SAVE_BUTTON;
     }
 
-    public JButton getResetButton()
+    public JButton getResetButton ()
     {
         return RESET_BUTTON;
     }
 
-    public void setDefaultFont(Font f)
+    public void setDefaultFont (Font f)
     {
         // defaultFont = f;
         defaultStyle.setFont(f);
         loadStyle();
     }
 
-    public URStyle getStyle()
+    public URStyle getStyle ()
     {
         return targetStyle;
     }
@@ -172,13 +176,14 @@ public class FontPanel extends JPanel
     // Deletes the saved font, then loads the "default" font.
     // The default font for a channel is the Profile Font, the default font
     // the UserGUI is Constants.DEFAULT_FONT
-    public void resetFont() {
+    public void resetFont ()
+    {
         URPreferencesUtil.deleteStyleFont(targetStyle, settingsPath);
         setStyle(defaultStyle);
         loadStyle();
     }
 
-    public void loadStyle()
+    public void loadStyle ()
     {
         // setFont(URPreferencesUtil.loadStyleFont(defaultFont, settingsPath), false);
         setStyle(URPreferencesUtil.loadStyle(targetStyle, settingsPath));
@@ -186,7 +191,7 @@ public class FontPanel extends JPanel
     }
 
     @Override
-    public void setFont(Font f)
+    public void setFont (Font f)
     {
         super.setFont(f);
 
@@ -194,14 +199,14 @@ public class FontPanel extends JPanel
             TEXT_PREVIEW.setFont(f);
     }
 
-    public void setStyle(URStyle newStyle)
+    public void setStyle (URStyle newStyle)
     {
         targetStyle = newStyle.clone();
 
         setFont(targetStyle, false);
     }
 
-    public void setFont(URStyle newStyle, Boolean saveToSettings)
+    public void setFont (URStyle newStyle, Boolean saveToSettings)
     {
         Font newFont = newStyle.getFont();
 
@@ -214,7 +219,7 @@ public class FontPanel extends JPanel
             SIZES_COMBO_BOX.setSelectedItem(newFont.getSize());
 
             targetStyle.setFont(newFont);
-            if(saveToSettings)
+            if (saveToSettings)
             {
                 URStyle colourPanelStyle = colourDialog.getColourPanel().getStyle();
                 targetStyle.setForeground(colourPanelStyle.getForeground());
@@ -228,38 +233,36 @@ public class FontPanel extends JPanel
         }
     }
 
-    //https://docs.oracle.com/javase/6/docs/api/java/awt/font/TextAttribute.html
-    private void previewFont()
+    // https://docs.oracle.com/javase/6/docs/api/java/awt/font/TextAttribute.html
+    private void previewFont ()
     {
 
         Map<TextAttribute, Object> fontMap = new Hashtable<TextAttribute, Object>();
 
         if (MAKE_BOLD.isSelected())
-            fontMap.put(TextAttribute.WEIGHT,  TextAttribute.WEIGHT_BOLD);
+            fontMap.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
         if (MAKE_ITALIC.isSelected())
-            fontMap.put(TextAttribute.POSTURE,  TextAttribute.POSTURE_OBLIQUE);
+            fontMap.put(TextAttribute.POSTURE, TextAttribute.POSTURE_OBLIQUE);
         if (MAKE_UNDERLINE.isSelected())
-            fontMap.put(TextAttribute.UNDERLINE,  TextAttribute.UNDERLINE_ON);
+            fontMap.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 
-        setFont(
-            new Font(FONT_COMBO_BOX.getSelectedItem().toString(),
-            Font.PLAIN,
-            Integer.parseInt(SIZES_COMBO_BOX.getSelectedItem().toString())
-        ).deriveFont(fontMap)
-        );
+        setFont(new Font(FONT_COMBO_BOX.getSelectedItem().toString(), Font.PLAIN,
+                Integer.parseInt(SIZES_COMBO_BOX.getSelectedItem().toString())).deriveFont(fontMap));
 
         targetStyle.setFont(getFont());
     }
 
     // Override the addActionListener method to keep track of added listeners
-    public void addActionListener(JButton targetButton, ActionListener listener) {
+    public void addActionListener (JButton targetButton, ActionListener listener)
+    {
         actionListeners.add(listener);
         targetButton.addActionListener(listener);
     }
 
 
     // Method to retrieve all added listeners
-    public List<ActionListener> getActionListeners() {
+    public List<ActionListener> getActionListeners ()
+    {
         return actionListeners;
     }
 
@@ -267,7 +270,7 @@ public class FontPanel extends JPanel
     {
 
         @Override
-        public void actionPerformed(ActionEvent arg0)
+        public void actionPerformed (ActionEvent arg0)
         {
             previewFont();
         }
@@ -277,7 +280,7 @@ public class FontPanel extends JPanel
     {
 
         @Override
-        public void itemStateChanged(ItemEvent e)
+        public void itemStateChanged (ItemEvent e)
         {
             previewFont();
         }
@@ -287,7 +290,7 @@ public class FontPanel extends JPanel
     class SaveListener implements ActionListener
     {
         @Override
-        public void actionPerformed(ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
             // FontPanel.this.setFont(TEXT_PREVIEW.getFont(), true);
             setFont(targetStyle, true);
@@ -297,18 +300,18 @@ public class FontPanel extends JPanel
     class ResetListener implements ActionListener
     {
         @Override
-        public void actionPerformed(ActionEvent e)
+        public void actionPerformed (ActionEvent e)
         {
             FontPanel.this.resetFont();
         }
     }
 
-    public void setSettingsPath(Preferences settingsPath)
+    public void setSettingsPath (Preferences settingsPath)
     {
         this.settingsPath = settingsPath;
     }
 
-    public Preferences getSettingsPath()
+    public Preferences getSettingsPath ()
     {
         return settingsPath;
     }

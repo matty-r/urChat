@@ -13,14 +13,14 @@ public class ColourDialog extends DialogBase
     private String styleName = "Default Font";
     private ColourPanel colourPanel;
 
-    public ColourDialog(String styleName, URStyle defaultStyle, Preferences settingsPath)
+    public ColourDialog (String styleName, URStyle defaultStyle, Preferences settingsPath)
     {
         super(DriverGUI.frame, defaultStyle.getName(), true);
         this.styleName = styleName;
         initColourDialog(defaultStyle, settingsPath);
     }
 
-    public void initColourDialog(URStyle defaultStyle, Preferences settingsPath)
+    public void initColourDialog (URStyle defaultStyle, Preferences settingsPath)
     {
         colourPanel = new ColourPanel(styleName, defaultStyle, settingsPath);
 
@@ -38,13 +38,13 @@ public class ColourDialog extends DialogBase
         });
     }
 
-    public ColourPanel getColourPanel()
+    public ColourPanel getColourPanel ()
     {
         return colourPanel;
     }
 
     @Override
-    public void setVisible(boolean shown)
+    public void setVisible (boolean shown)
     {
         if (!shown)
             colourPanel.loadStyle();
@@ -56,8 +56,8 @@ public class ColourDialog extends DialogBase
 
     public class HideColourDialog implements ActionListener
     {
-         @Override
-        public void actionPerformed(ActionEvent arg0)
+        @Override
+        public void actionPerformed (ActionEvent arg0)
         {
             // fontPanel.loadFont();
             colourPanel.loadStyle();
