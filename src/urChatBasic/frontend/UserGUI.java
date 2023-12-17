@@ -18,6 +18,7 @@ import javax.swing.event.*;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
+import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.backend.utils.URStyle;
 import urChatBasic.backend.utils.URUncaughtExceptionHandler;
 import urChatBasic.base.Constants;
@@ -848,8 +849,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
         });
 
-        lafOptions.addActionListener(new ChangeLAFListener());
-
         clientFontPanel = new FontPanel("", getStyle(), getProfilePath());
         clientFontPanel.setPreferredSize(new Dimension(700, 64));
         clientFontPanel.addActionListener(clientFontPanel.getSaveButton(), new SaveFontListener());
@@ -913,8 +912,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         // previewTextArea.setFont(clientFontPanel.getFont());
         if (previewLineFormatter == null)
-            previewLineFormatter =
-                    new LineFormatter(clientFontPanel.getStyle(), previewTextArea, null, getProfilePath());
+            previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea, null, getProfilePath());
 
         if (previewDoc.getLength() <= 0)
         {
@@ -935,7 +933,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     "Join #urchatclient on irc.libera.chat or #anotherroom");
         } else
         {
-            previewLineFormatter.updateStyles(clientFontPanel.getStyle());
+            previewLineFormatter.updateStyles(guiStyle);
         }
     }
 
@@ -1562,10 +1560,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         getProfilePath().putBoolean(Constants.KEY_LIMIT_SERVER_LINES, limitServerLines.isSelected());
         getProfilePath().put(Constants.KEY_LIMIT_SERVER_LINES_COUNT, limitServerLinesCount.getText());
         getProfilePath().putBoolean(Constants.KEY_LOG_CLIENT_TEXT, logClientText.isSelected());
-        getProfilePath().put(Constants.KEY_FONT_FAMILY, clientFontPanel.getFont().getFamily());
-        getProfilePath().putBoolean(Constants.KEY_FONT_BOLD, clientFontPanel.getFont().isBold());
-        getProfilePath().putBoolean(Constants.KEY_FONT_ITALIC, clientFontPanel.getFont().isItalic());
-        getProfilePath().putInt(Constants.KEY_FONT_SIZE, clientFontPanel.getFont().getSize());
+        URPreferencesUtil.saveStyle(Constants.DEFAULT_STYLE, clientFontPanel.getStyle(), getProfilePath());
         getProfilePath().putInt(Constants.KEY_EVENT_TICKER_DELAY, eventTickerDelay.getValue());
 
         getProfilePath().putInt(Constants.KEY_WINDOW_X, (int) DriverGUI.frame.getBounds().getX());
@@ -1618,7 +1613,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         lafOptions.setSelectedItem(getLAF(getProfilePath().get(Constants.KEY_LAF_NAME, Constants.DEFAULT_LAF_NAME)));
 
-        setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
+        // setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
 
         showJoinsQuitsEventTicker.setSelected(getProfilePath().getBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS,
                 Constants.DEFAULT_EVENT_TICKER_JOINS_QUITS));
@@ -1895,14 +1890,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 if (tab instanceof IRCRoomBase)
                 {
                     tab.setFont(clientFontPanel.getFont());
-                    ((IRCRoomBase) tab).getFontPanel().setDefaultFont(clientFontPanel.getFont());
+                    ((IRCRoomBase) tab).getFontPanel().setDefaultStyle(clientFontPanel.getStyle());
                 }
             }
 
             for (int index = 0; index < favouritesList.getModel().getSize(); index++)
             {
                 FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
-                favouriteItem.favFontDialog.getFontPanel().setDefaultFont(clientFontPanel.getFont());
+                favouriteItem.favFontDialog.getFontPanel().setDefaultStyle(clientFontPanel.getStyle());
                 favouriteItem.favFontDialog.getFontPanel().loadStyle();
             }
 
@@ -1940,6 +1935,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         // this.setBackground(Color.gray);
         getClientSettings(true);
+
+        lafOptions.addActionListener(new ChangeLAFListener());
     }
 
     // Disables focus in the text pane
@@ -2057,11 +2054,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         guiStyle.setFont(clientFontPanel.getFont());
 
         // reset the defaults on the guiStyle if they were already at the default
-        if (previousDefaultForeground.equals(URColour.hexEncode(guiStyle.getForeground())))
+        // if (previousDefaultForeground.equals(URColour.hexEncode(guiStyle.getForeground())))
             guiStyle.setForeground(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
 
-        if (previousDefaultBackground.equals(URColour.hexEncode(guiStyle.getBackground())))
+        // if (previousDefaultBackground.equals(URColour.hexEncode(guiStyle.getBackground())))
             guiStyle.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
+
+        clientFontPanel.setDefaultStyle(guiStyle);
 
         SwingUtilities.updateComponentTreeUI(DriverGUI.frame);
         updateExtras();
@@ -2072,8 +2071,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // Update the fonts and popup menus - these aren't under the component tree
     private void updateExtras ()
     {
-        clientFontPanel.setStyle(guiStyle);
-
         for (int index = 0; index < tabbedPane.getTabCount(); index++)
         {
             Component tab = tabbedPane.getComponentAt(index);
@@ -2083,7 +2080,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 // tab.setFont(clientFontPanel.getFont());
                 IRCRoomBase roomTab = IRCRoomBase.class.cast(tab);
                 // roomTab.getFontPanel().setDefaultFont(clientFontPanel.getFont());
-                roomTab.getFontPanel().setStyle(guiStyle);
+                roomTab.getFontPanel().setDefaultStyle(guiStyle);
                 // roomTab.resetLineFormatter();
                 roomTab.getLineFormatter().updateStyles(guiStyle);
                 SwingUtilities.updateComponentTreeUI(roomTab.myMenu);

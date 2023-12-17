@@ -88,16 +88,11 @@ public class LineFormatter
         // The JTextPane is technically 'disabled', so we need to change the colour to be the default enabled colour.
         docOwner.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
 
-        targetStyle = new URStyle(myNick, baseStyle.getFont());
-        targetStyle.setForeground(baseStyle.getForeground());
-        targetStyle.setBackground(baseStyle.getBackground());
+        targetStyle = baseStyle.clone();
 
-        // TODO: should we be using something like UIManager
-        // UIManager.getFont for the default fonts isntead?
-        myForeground = targetStyle.getForeground();
-        myBackground = targetStyle.getBackground();
+        targetStyle.getForeground().ifPresent(fg -> myForeground = fg);
+        targetStyle.getBackground().ifPresent(bg -> myBackground = bg);
 
-        // TODO: split this mess out to a method
         timeStyle = defaultStyle(null, true);
         lineStyle = defaultStyle(null, true);
         nickStyle = nickStyle(true);

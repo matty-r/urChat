@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.font.TextAttribute;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Optional;
 import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import javax.swing.text.SimpleAttributeSet;
@@ -89,15 +90,60 @@ public class URStyle extends SimpleAttributeSet
         StyleConstants.setUnderline(this, isUnderline(newFont));
     }
 
-    public Color getForeground()
+    public Optional<Color> getForeground()
     {
-        return StyleConstants.getForeground(this);
+        if(getAttribute(StyleConstants.Foreground) != null)
+            return Optional.of(StyleConstants.getForeground(this));
+        else
+            return Optional.empty();
     }
 
-
-    public boolean isUnderline()
+    public Optional<Color> getBackground()
     {
-        return StyleConstants.isUnderline(this);
+        if(getAttribute(StyleConstants.Background) != null)
+            return Optional.of(StyleConstants.getBackground(this));
+        else
+            return Optional.empty();
+    }
+
+    public Optional<Boolean> isBold()
+    {
+        if (getAttribute(StyleConstants.Bold) != null)
+            return Optional.of(StyleConstants.isBold(this));
+        else
+            return Optional.empty();
+    }
+
+    public Optional<Boolean> isItalic()
+    {
+        if (getAttribute(StyleConstants.Italic) != null)
+            return Optional.of(StyleConstants.isItalic(this));
+        else
+            return Optional.empty();
+    }
+
+    public Optional<String> getFamily()
+    {
+        if (getAttribute(StyleConstants.FontFamily) != null)
+            return Optional.of(StyleConstants.getFontFamily(this));
+        else
+            return Optional.empty();
+    }
+
+    public Optional<Integer> getSize()
+    {
+        if (getAttribute(StyleConstants.FontSize) != null)
+            return Optional.of(StyleConstants.getFontSize(this));
+        else
+            return Optional.empty();
+    }
+
+    public Optional<Boolean> isUnderline()
+    {
+    if (getAttribute(StyleConstants.Underline) != null)
+            return Optional.of(StyleConstants.isUnderline(this));
+        else
+            return Optional.empty();
     }
 
     // https://docs.oracle.com/javase/6/docs/api/java/awt/font/TextAttribute.html#UNDERLINE
@@ -107,11 +153,6 @@ public class URStyle extends SimpleAttributeSet
             return (int) targetFont.getAttributes().get(TextAttribute.UNDERLINE) == TextAttribute.UNDERLINE_ON;
 
         return false;
-    }
-
-    public Color getBackground()
-    {
-        return StyleConstants.getBackground(this);
     }
 
     public void setForeground(Color newColour)
@@ -128,13 +169,8 @@ public class URStyle extends SimpleAttributeSet
     {
         URStyle loadedStyle = URPreferencesUtil.loadStyle(this, prefPath);
         setFont(loadedStyle.getFont());
-        setForeground(loadedStyle.getForeground());
-        setBackground(loadedStyle.getBackground());
-    }
-
-    public void save(Preferences prefPath)
-    {
-        URPreferencesUtil.saveStyle(this, prefPath);
+        loadedStyle.getForeground().ifPresent(fg -> setForeground(fg));
+        loadedStyle.getBackground().ifPresent(bg -> setBackground(bg));
     }
 
     public boolean equals(URStyle otherStyle)

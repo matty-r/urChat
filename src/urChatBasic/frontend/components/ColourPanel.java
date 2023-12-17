@@ -35,10 +35,9 @@ public class ColourPanel extends JPanel implements ChangeListener
         this.defaultStyle = defaultStyle.clone();
         targetStyle = defaultStyle.clone();
         loadStyle();
-
         bottomPanel = createBottomPanel();
         // Set up color chooser for setting text color
-        tcc = new JColorChooser(targetStyle.getForeground());
+        tcc = new JColorChooser(targetStyle.getForeground().get());
         tcc.setPreviewPanel(bottomPanel);
         tcc.getSelectionModel().addChangeListener(this);
         // bottomPanel.setPreferredSize(new Dimension(tcc.getPreferredSize().width, 56));
@@ -89,9 +88,9 @@ public class ColourPanel extends JPanel implements ChangeListener
             // URPreferencesUtil.deleteStyleColours(targetStyle, settingsPath);
             // defaultStyle.load(settingsPath);
             URPreferencesUtil.deleteStyleColours(targetStyle, settingsPath);
-            previewLabel.setFont(defaultStyle.getFont());
-            setPreviewColour(defaultStyle.getForeground(), true);
-            setPreviewColour(defaultStyle.getBackground(), false);
+            // previewLabel.setFont(defaultStyle.getFont());
+            defaultStyle.getForeground().ifPresent(fg -> setPreviewColour(fg, true));
+            defaultStyle.getBackground().ifPresent(bg -> setPreviewColour(bg, false));
         });
 
         autoColour.addActionListener(e -> {
@@ -109,7 +108,7 @@ public class ColourPanel extends JPanel implements ChangeListener
             if (targetStyle.equals(defaultStyle))
                 URPreferencesUtil.deleteStyleColours(targetStyle, settingsPath);
             else
-                URPreferencesUtil.saveStyle(targetStyle, settingsPath);
+                URPreferencesUtil.saveStyle(defaultStyle, targetStyle, settingsPath);
 
             // now fire the rest of the save listeners
             fireSaveListeners();
@@ -124,12 +123,16 @@ public class ColourPanel extends JPanel implements ChangeListener
         {
             previewLabel.setForeground(newColour);
             targetStyle.setForeground(newColour);
+            if(isForeground & tcc != null)
+                tcc.setColor(newColour);
         } else
         {
             previewLabel.setOpaque(true);
 
             previewLabel.setBackground(newColour);
             targetStyle.setBackground(newColour);
+            if(!isForeground & tcc != null)
+                tcc.setColor(newColour);
         }
     }
 
@@ -159,19 +162,37 @@ public class ColourPanel extends JPanel implements ChangeListener
 
     public void loadStyle ()
     {
-        targetStyle = URPreferencesUtil.loadStyle(targetStyle, settingsPath);
+        targetStyle = URPreferencesUtil.loadStyle(defaultStyle, settingsPath);
 
         // defaultBackground = colourMap.get(Constants.KEY_FONT_BACKGROUND);
         // defaultForeground = colourMap.get(Constants.KEY_FONT_FOREGROUND);
         // TODO: Should also be underlined etc..
         previewLabel.setFont(targetStyle.getFont());
-        setPreviewColour(targetStyle.getForeground(), true);
-        setPreviewColour(targetStyle.getBackground(), false);
+
+        targetStyle.getForeground().ifPresent(fg -> setPreviewColour(fg, true));
+        targetStyle.getBackground().ifPresent(bg -> setPreviewColour(bg, false));
     }
 
     public URStyle getStyle ()
     {
         return targetStyle;
+    }
+
+    public void setDefaultStyle (URStyle newStyle)
+    {
+        defaultStyle = newStyle;
+        loadStyle();
+    }
+
+    private void setStyle (URStyle newStyle)
+    {
+        newStyle.getBackground().ifPresent(bg -> tcc.setColor(bg));
+        setPreviewColour(selectedColor, false);
+
+        newStyle.getForeground().ifPresent(fg -> tcc.setColor(fg));
+        setPreviewColour(selectedColor, true);
+
+        selectedColor = tcc.getColor();
     }
 
     public void stateChanged (ChangeEvent e)

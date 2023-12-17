@@ -12,6 +12,7 @@ import javax.swing.JLabel;
 import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
 import urChatBasic.backend.Connection;
+import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.components.URVersionLabel;
@@ -32,10 +33,11 @@ public class Constants
     public static Class BACKEND_CLASS;
     public static String BACKEND_CLASS_FULLNAME = "urChatBasic.backend.Connection";
     private static Handler LOGGER_TO_FILE;
-    public static Logger LOGGER = Logger.getLogger("Main");
+    public static Logger LOGGER = Logger.getGlobal();
     public static String LOGFILE_NAME = "Errors.log";
     private static final JLabel DEFAULT_LABEL = new JLabel();
     private static final Font DEFAULT_FONT = new Font(DEFAULT_LABEL.getFont().getFamily(), 0, DEFAULT_LABEL.getFont().getSize());
+    public static final URStyle DEFAULT_STYLE = new URStyle("", DEFAULT_FONT);
     public static final String DEFAULT_FOREGROUND_STRING = "TextArea.foreground";
     public static final String DEFAULT_BACKGROUND_STRING = "TextArea.background";
 
@@ -163,7 +165,7 @@ public class Constants
     /**
      * Used to initialize some values that may throw exceptions.
      */
-    public static void init()
+    public static void init ()
     {
         URVersionLabel.setVersion();
 
@@ -180,6 +182,14 @@ public class Constants
                 logFile.createNewFile();
             }
             LOGGER_TO_FILE = new FileHandler(logFile.getAbsolutePath(), true);
+
+            // Change what is logged out to console, and the file
+            // TODO: Add a console view in a debug section under Appearance?
+            // Handler systemOut = new ConsoleHandler();
+            // systemOut.setLevel(Level.ALL);
+            // LOGGER.addHandler(systemOut);
+            // LOGGER.setLevel(Level.ALL);
+
             LOGGER.addHandler(LOGGER_TO_FILE);
         } catch (Exception e)
         {

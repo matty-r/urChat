@@ -3,9 +3,11 @@ package urChatBasic.backend.utils;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -60,14 +62,23 @@ public class URPreferencesUtil {
     public static Map<String, Color> loadStyleColours(URStyle defaultStyle, Preferences settingsPath)
     {
         Map<String, Color> colourMap = new HashMap<String, Color>();
-        colourMap.put(Constants.KEY_FONT_FOREGROUND, defaultStyle.getForeground());
-        colourMap.put(Constants.KEY_FONT_BACKGROUND, defaultStyle.getBackground());
 
-        String loadedForeground = settingsPath.get(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(defaultStyle.getForeground()));
-        String loadedBackground = settingsPath.get(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(defaultStyle.getBackground()));
+        defaultStyle.getForeground().ifPresent(fg -> colourMap.put(Constants.KEY_FONT_FOREGROUND, fg));
+        defaultStyle.getBackground().ifPresent(bg -> colourMap.put(Constants.KEY_FONT_BACKGROUND, bg));
 
-        colourMap.replace(Constants.KEY_FONT_FOREGROUND, URColour.hexDecode(loadedForeground));
-        colourMap.replace(Constants.KEY_FONT_BACKGROUND, URColour.hexDecode(loadedBackground));
+        String loadedForeground;
+        if(defaultStyle.getForeground().isPresent())
+        {
+            loadedForeground = settingsPath.get(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(defaultStyle.getForeground().get()));
+            colourMap.put(Constants.KEY_FONT_FOREGROUND, URColour.hexDecode(loadedForeground));
+        }
+
+        String loadedBackground;
+        if(defaultStyle.getBackground().isPresent())
+        {
+            loadedBackground = settingsPath.get(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(defaultStyle.getBackground().get()));
+            colourMap.put(Constants.KEY_FONT_BACKGROUND, URColour.hexDecode(loadedBackground));
+        }
 
         return colourMap;
     }
@@ -144,54 +155,103 @@ public class URPreferencesUtil {
         }
     }
 
-    public static void saveStyle(URStyle targetStyle, Preferences baseSettingsPath)
+    public static void saveStyle(URStyle oldStyle, URStyle newStyle, Preferences baseSettingsPath)
     {
-        Preferences stylePrefPath = baseSettingsPath.node(targetStyle.getAttribute("name").toString());
+        Preferences stylePrefPath = baseSettingsPath.node(newStyle.getAttribute("name").toString());
         Constants.LOGGER.log(Level.INFO, "Save Style Path: " + stylePrefPath.toString());
-        saveStyleFont(targetStyle.getFont(), stylePrefPath);
-        saveStyleColours(targetStyle.getForeground(), targetStyle.getBackground(), stylePrefPath);
+
+        URStyle diffStyle = oldStyle.clone();
+
+        Enumeration<?> oldAttributes = oldStyle.getAttributeNames();
+        while (oldAttributes.hasMoreElements()) {
+            Object attributeName = oldAttributes.nextElement();
+            Object oldValue = oldStyle.getAttribute(attributeName);
+            Object newValue = newStyle.getAttribute(attributeName);
+
+            if (newValue == null || !newValue.equals(oldValue)) {
+                diffStyle.addAttribute(attributeName, newValue);
+            } else {
+                // If same, remove from diffStyle
+                diffStyle.removeAttribute(attributeName);
+            }
+        }
+
+        // Check attributes in newStyle that are not in oldStyle
+        Enumeration<?> newAttributes = newStyle.getAttributeNames();
+        while (newAttributes.hasMoreElements()) {
+            Object attributeName = newAttributes.nextElement();
+            if (!oldStyle.containsAttribute(attributeName, newStyle.getAttribute(attributeName))) {
+                diffStyle.addAttribute(attributeName, newStyle.getAttribute(attributeName));
+            }
+        }
+
+        saveStyleFont(diffStyle, stylePrefPath);
+        saveStyleColours(diffStyle, stylePrefPath);
+    }
+
+    private static void savePref(String name, Optional<?> optionalValue, Preferences path) {
+        if(optionalValue != null && optionalValue.isPresent())
+        {
+            Object value = optionalValue.get();
+            if (value instanceof String) {
+                path.put(name, (String) value);
+            } else if (value instanceof Integer) {
+                path.putInt(name, (int) value);
+            } else if (value instanceof Boolean) {
+                path.putBoolean(name, (boolean) value);
+            } else {
+                System.err.println("Unsupported data type for preference: " + value.getClass().getSimpleName());
+            }
+        }
     }
 
     /**
-     * TODO: This should be deprecated and just use a saveStyle method.
-     * @param newFont
+     *
+     * @param saveStyle
      * @param settingsPath
      */
-    private static void saveStyleFont(Font newFont, Preferences settingsPath)
-    {
-        // TODO: Don't safe if it's the default font
-        settingsPath.putBoolean(Constants.KEY_FONT_BOLD, newFont.isBold());
-        settingsPath.putBoolean(Constants.KEY_FONT_ITALIC, newFont.isItalic());
-        settingsPath.putBoolean(Constants.KEY_FONT_UNDERLINE, URStyle.isUnderline(newFont));
-        settingsPath.put(Constants.KEY_FONT_FAMILY, newFont.getFamily());
-        settingsPath.putInt(Constants.KEY_FONT_SIZE, newFont.getSize());
+    private static void saveStyleFont(URStyle saveStyle, Preferences settingsPath) {
+        savePref(Constants.KEY_FONT_BOLD, saveStyle.isBold(), settingsPath);
+        savePref(Constants.KEY_FONT_ITALIC, saveStyle.isItalic(), settingsPath);
+        savePref(Constants.KEY_FONT_UNDERLINE, saveStyle.isUnderline(), settingsPath);
+        savePref(Constants.KEY_FONT_FAMILY, saveStyle.getFamily(), settingsPath);
+        savePref(Constants.KEY_FONT_SIZE, saveStyle.getSize(), settingsPath);
     }
 
     /**
      * Removes the saved colours if they've been set to the default, this ensures we're not accidentally
      * overriding the default theme colours when the theme is changed.
-     * @param foreground
-     * @param background
+     * @param newForeground
+     * @param newBackground
      * @param settingsPath
      */
-    private static void saveStyleColours(Color foreground, Color background, Preferences settingsPath)
+    private static void saveStyleColours(URStyle saveStyle, Preferences settingsPath)
     {
+
         // Don't save if it's the default colours
         Color defaultForeground = UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING);
         Color defaultBackground = UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING);
 
-        if(URColour.hexEncode(defaultForeground).equals(URColour.hexEncode(foreground)))
+        if(saveStyle.getForeground().isPresent())
         {
-            settingsPath.remove(Constants.KEY_FONT_FOREGROUND);
-        } else {
-            settingsPath.put(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(foreground));
+            Color newForeground = saveStyle.getForeground().get();
+            if(URColour.hexEncode(defaultForeground).equals(URColour.hexEncode(newForeground)))
+            {
+                settingsPath.remove(Constants.KEY_FONT_FOREGROUND);
+            } else {
+                settingsPath.put(Constants.KEY_FONT_FOREGROUND, URColour.hexEncode(newForeground));
+            }
         }
 
-        if(URColour.hexEncode(defaultBackground).equals(URColour.hexEncode(background)))
+        if(saveStyle.getBackground().isPresent())
         {
-            settingsPath.remove(Constants.KEY_FONT_BACKGROUND);
-        } else {
-            settingsPath.put(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(background));
+            Color newBackground = saveStyle.getBackground().get();
+            if(URColour.hexEncode(defaultBackground).equals(URColour.hexEncode(newBackground)))
+            {
+                settingsPath.remove(Constants.KEY_FONT_BACKGROUND);
+            } else {
+                settingsPath.put(Constants.KEY_FONT_BACKGROUND, URColour.hexEncode(newBackground));
+            }
         }
     }
 }

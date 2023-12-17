@@ -56,10 +56,10 @@ public class FontPanel extends JPanel
     {
         setLayout(new GridBagLayout());
         setSettingsPath(settingsPath);
-        targetStyle = new URStyle(styleName, defaultStyle.getFont());
+        targetStyle = defaultStyle.clone();
         this.defaultStyle = defaultStyle;
-        setDefaultFont(targetStyle.getFont());
         colourDialog = new ColourDialog(styleName, defaultStyle, settingsPath);
+        setDefaultStyle(defaultStyle);
 
         RESET_BUTTON.addActionListener(new ResetListener());
         COLOUR_BUTTON.addActionListener(new ActionListener()
@@ -70,10 +70,7 @@ public class FontPanel extends JPanel
             {
                 if (colourDialog == null)
                 {
-                    ;
-
                     colourDialog.getColourPanel().addSaveListener(e -> {
-                        // URPreferencesUtil.saveStyle(targetStyle, settingsPath);
                         Constants.LOGGER.log(Level.INFO, "Font Panel says: Save Colour pressed");
                     });
 
@@ -161,10 +158,11 @@ public class FontPanel extends JPanel
         return RESET_BUTTON;
     }
 
-    public void setDefaultFont (Font f)
+    public void setDefaultStyle (URStyle f)
     {
         // defaultFont = f;
-        defaultStyle.setFont(f);
+        defaultStyle = f.clone();
+        colourDialog.getColourPanel().setDefaultStyle(defaultStyle);
         loadStyle();
     }
 
@@ -186,7 +184,7 @@ public class FontPanel extends JPanel
     public void loadStyle ()
     {
         // setFont(URPreferencesUtil.loadStyleFont(defaultFont, settingsPath), false);
-        setStyle(URPreferencesUtil.loadStyle(targetStyle, settingsPath));
+        setStyle(URPreferencesUtil.loadStyle(defaultStyle, settingsPath));
         // setFont(URPreferencesUtil.loadStyle(targetStyle, settingsPath).getFont(), false);
     }
 
@@ -202,29 +200,36 @@ public class FontPanel extends JPanel
     public void setStyle (URStyle newStyle)
     {
         targetStyle = newStyle.clone();
-
+        colourDialog.getColourPanel().setDefaultStyle(targetStyle);
         setFont(targetStyle, false);
     }
 
+    /**
+     * Sets the appropriate options in the FontPanel, i.e Bold checkbox is checked if the newStyle is
+     * bold. Will also save the preferences if saveToSettings is set to true.
+     *
+     * @param newStyle
+     * @param saveToSettings
+     */
     public void setFont (URStyle newStyle, Boolean saveToSettings)
     {
         Font newFont = newStyle.getFont();
 
-        if (getFont() != newFont || saveToSettings)
+        if (!getFont().equals(newFont) || saveToSettings)
         {
-            MAKE_BOLD.setSelected(newFont.isBold());
-            MAKE_ITALIC.setSelected(newFont.isItalic());
-            MAKE_UNDERLINE.setSelected(newStyle.isUnderline());
-            FONT_COMBO_BOX.setSelectedItem(newFont.getFamily());
-            SIZES_COMBO_BOX.setSelectedItem(newFont.getSize());
+            newStyle.isBold().ifPresent(bold -> MAKE_BOLD.setSelected(bold));
+            newStyle.isItalic().ifPresent(italic -> MAKE_ITALIC.setSelected(italic));
+            newStyle.isUnderline().ifPresent(underline -> MAKE_UNDERLINE.setSelected(underline));
+            newStyle.getFamily().ifPresent(family -> FONT_COMBO_BOX.setSelectedItem(family));
+            newStyle.getSize().ifPresent(size -> SIZES_COMBO_BOX.setSelectedItem(size));
 
             targetStyle.setFont(newFont);
             if (saveToSettings)
             {
                 URStyle colourPanelStyle = colourDialog.getColourPanel().getStyle();
-                targetStyle.setForeground(colourPanelStyle.getForeground());
-                targetStyle.setBackground(colourPanelStyle.getBackground());
-                targetStyle.save(settingsPath);
+                colourPanelStyle.getForeground().ifPresent(fg -> targetStyle.setForeground(fg));
+                colourPanelStyle.getBackground().ifPresent(bg -> targetStyle.setBackground(bg));
+                URPreferencesUtil.saveStyle(defaultStyle, targetStyle, settingsPath);
             }
 
             revalidate();

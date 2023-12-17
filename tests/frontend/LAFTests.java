@@ -54,7 +54,7 @@ public class LAFTests
 
         URStyle newStyle = testGUI.getStyle();
 
-        assertEquals("New Style should have the background colour of "+Constants.DEFAULT_BACKGROUND_STRING, URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)), URColour.hexEncode(newStyle.getBackground()));
+        assertEquals("New Style should have the background colour of "+Constants.DEFAULT_BACKGROUND_STRING, URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)), URColour.hexEncode(newStyle.getBackground().get()));
     }
 
     @Test(description = "Changing LAF, updates the colours in the preview text area.")
