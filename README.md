@@ -9,6 +9,8 @@ Contributions
 
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
+A Maven pom.xml is included to assist in getting your environment up and running sooner. 
+
 Usage
 ======
 Ensure you've got Java 17 available on your system, download and run the latest JAR release (https://github.com/matty-r/urChat/releases). If you'd like to try out the Theme functionality, create a 'themes' directory next to the urChat.jar and download the FlatLAF.jar release and place within that directory. The theme can be selected under the client options page.
@@ -28,6 +30,8 @@ Screenshots
 Test/Code Coverage Dependencies
 ======
 Dependencies required only for running the tests:
+
+If you're not using Maven use the following instructions, otherwise just download the dependencies via the pom.xml.
 
 Create a **lib/test** directory with the following files:
 
