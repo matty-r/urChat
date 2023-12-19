@@ -14,7 +14,15 @@ import urChatBasic.base.Constants;
 
 public class URStyle extends SimpleAttributeSet
 {
-
+    private static final Map<String, String> ATTRIBUTE_KEYMAP = Map.of(
+        StyleConstants.Bold.toString(),Constants.KEY_FONT_BOLD,
+        StyleConstants.Italic.toString(),Constants.KEY_FONT_ITALIC,
+        StyleConstants.Underline.toString(),Constants.KEY_FONT_UNDERLINE,
+        StyleConstants.FontFamily.toString(),Constants.KEY_FONT_FAMILY,
+        StyleConstants.Size.toString(),Constants.KEY_FONT_SIZE,
+        StyleConstants.Background.toString(),Constants.KEY_FONT_BACKGROUND,
+        StyleConstants.Foreground.toString(),Constants.KEY_FONT_FOREGROUND
+    );
     // /**
     // * Create a URStyle with defaults
     // */
@@ -171,6 +179,16 @@ public class URStyle extends SimpleAttributeSet
         setFont(loadedStyle.getFont());
         loadedStyle.getForeground().ifPresent(fg -> setForeground(fg));
         loadedStyle.getBackground().ifPresent(bg -> setBackground(bg));
+    }
+
+    public static String getKeymap(Object attributeObject)
+    {
+        return getKeymap(attributeObject.toString());
+    }
+
+    public static String getKeymap(String attributeName)
+    {
+        return ATTRIBUTE_KEYMAP.get(attributeName);
     }
 
     public boolean equals(URStyle otherStyle)

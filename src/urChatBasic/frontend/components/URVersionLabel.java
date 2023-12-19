@@ -27,6 +27,7 @@ public class URVersionLabel extends JPanel
         setVersion();
         setLayout(new BorderLayout());
         versionLabel.setText(Constants.UR_VERSION);
+        versionLabel.setToolTipText(Constants.UR_VERSION);
         // Add components to the panel
         add(versionLabel, BorderLayout.SOUTH);
     }

@@ -55,7 +55,7 @@ public class FontDialog extends DialogBase
     public void addSaveListener(ActionListener newActionListener)
     {
         // fontPanel.getSaveButton().addActionListener(newActionListener);
-        fontPanel.addActionListener(fontPanel.getSaveButton(), newActionListener);
+        fontPanel.addSaveListener(newActionListener);
     }
 
     public void addResetListener(ActionListener newActionListener)

@@ -16,94 +16,92 @@ public class ColourPanel extends JPanel implements ChangeListener
     protected EventListenerList listenerList = new EventListenerList();
     protected transient ActionEvent actionEvent = null;
 
-    protected JColorChooser tcc;
     public Color selectedColor;
     private URStyle targetStyle;
     private URStyle defaultStyle;
     private Preferences settingsPath;
     private JPanel bottomPanel;
     private boolean isForeground = true;
-    JButton saveButton;
-    JLabel previewLabel;
+
+    protected final JColorChooser TCC;
+    private final JButton SAVE_BUTTON;
+    private final JLabel PREVIEW_LABEL;
 
     public ColourPanel (String styleName, URStyle defaultStyle, Preferences settingsPath)
     {
         super(new BorderLayout());
-        saveButton = new JButton("Apply & Save");
-        previewLabel = new JLabel("Preview Text");
+        SAVE_BUTTON = new JButton("Apply & Save");
+        PREVIEW_LABEL = new JLabel("Preview Text");
         this.settingsPath = settingsPath;
         this.defaultStyle = defaultStyle.clone();
         targetStyle = defaultStyle.clone();
         loadStyle();
         bottomPanel = createBottomPanel();
         // Set up color chooser for setting text color
-        tcc = new JColorChooser(targetStyle.getForeground().get());
-        tcc.setPreviewPanel(bottomPanel);
-        tcc.getSelectionModel().addChangeListener(this);
+        TCC = new JColorChooser(targetStyle.getForeground().get());
+        TCC.setPreviewPanel(bottomPanel);
+        TCC.getSelectionModel().addChangeListener(this);
         // bottomPanel.setPreferredSize(new Dimension(tcc.getPreferredSize().width, 56));
-        add(tcc, BorderLayout.PAGE_END);
+        add(TCC, BorderLayout.PAGE_END);
     }
 
     public JPanel createBottomPanel ()
     {
-        JPanel bottomPanel = new JPanel();
-        JButton foregroundButton = new JButton("Toggle Background");
-        JButton autoColour = new JButton("Suggest colour");
-        JButton resetButton = new JButton("Reset colour");
+        final JPanel BOTTOM_PANEL = new JPanel();
+        final JButton FG_BUTTON = new JButton("Toggle Background");
+        final JButton AUTO_COLOUR_BUTTON = new JButton("Suggest colour");
+        final JButton RESET_BUTTON = new JButton("Reset colour");
 
 
-        bottomPanel.setLayout(new GridBagLayout());
+        BOTTOM_PANEL.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 4;
         gbc.anchor = GridBagConstraints.CENTER;
-        bottomPanel.add(previewLabel, gbc);
+        BOTTOM_PANEL.add(PREVIEW_LABEL, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        bottomPanel.add(foregroundButton, gbc);
+        BOTTOM_PANEL.add(FG_BUTTON, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 1;
-        bottomPanel.add(autoColour, gbc);
+        BOTTOM_PANEL.add(AUTO_COLOUR_BUTTON, gbc);
 
         gbc.gridx = 2;
         gbc.gridy = 1;
-        bottomPanel.add(resetButton, gbc);
+        BOTTOM_PANEL.add(RESET_BUTTON, gbc);
 
         gbc.gridx = 3;
         gbc.gridy = 1;
-        bottomPanel.add(saveButton, gbc);
+        BOTTOM_PANEL.add(SAVE_BUTTON, gbc);
 
-        foregroundButton.addActionListener(e -> {
+        FG_BUTTON.addActionListener(e -> {
             isForeground = !isForeground;
-            foregroundButton.setText(isForeground ? "Toggle Background" : "Toggle Foreground");
+            FG_BUTTON.setText(isForeground ? "Toggle Background" : "Toggle Foreground");
         });
 
-        resetButton.addActionListener(e -> {
-            // URPreferencesUtil.deleteStyleColours(targetStyle, settingsPath);
-            // defaultStyle.load(settingsPath);
-            URPreferencesUtil.deleteStyleColours(targetStyle, settingsPath);
-            // previewLabel.setFont(defaultStyle.getFont());
+        // Just sets the colours to the default colours
+        RESET_BUTTON.addActionListener(e -> {
             defaultStyle.getForeground().ifPresent(fg -> setPreviewColour(fg, true));
             defaultStyle.getBackground().ifPresent(bg -> setPreviewColour(bg, false));
         });
 
-        autoColour.addActionListener(e -> {
+        AUTO_COLOUR_BUTTON.addActionListener(e -> {
             if (isForeground)
             {
-                tcc.setColor(URColour.getInvertedColour(previewLabel.getBackground()));
+                TCC.setColor(URColour.getInvertedColour(PREVIEW_LABEL.getBackground()));
             } else
             {
-                tcc.setColor(URColour.getInvertedColour(previewLabel.getForeground()));
+                TCC.setColor(URColour.getInvertedColour(PREVIEW_LABEL.getForeground()));
             }
         });
 
-        saveButton.addActionListener(e -> {
+        SAVE_BUTTON.addActionListener(e -> {
             // Save the style first
             if (targetStyle.equals(defaultStyle))
                 URPreferencesUtil.deleteStyleColours(targetStyle, settingsPath);
@@ -114,26 +112,31 @@ public class ColourPanel extends JPanel implements ChangeListener
             fireSaveListeners();
         });
 
-        return bottomPanel;
+        return BOTTOM_PANEL;
     }
 
     private void setPreviewColour (Color newColour, boolean setForeground)
     {
         if (setForeground)
         {
-            previewLabel.setForeground(newColour);
+            PREVIEW_LABEL.setForeground(newColour);
             targetStyle.setForeground(newColour);
-            if(isForeground & tcc != null)
-                tcc.setColor(newColour);
+            if(isForeground & TCC != null)
+                TCC.setColor(newColour);
         } else
         {
-            previewLabel.setOpaque(true);
+            PREVIEW_LABEL.setOpaque(true);
 
-            previewLabel.setBackground(newColour);
+            PREVIEW_LABEL.setBackground(newColour);
             targetStyle.setBackground(newColour);
-            if(!isForeground & tcc != null)
-                tcc.setColor(newColour);
+            if(!isForeground & TCC != null)
+                TCC.setColor(newColour);
         }
+    }
+
+    public ActionEvent createSaveEvent()
+    {
+        return new ActionEvent(SAVE_BUTTON, listenerList.getListenerList().length - 1, TOOL_TIP_TEXT_KEY);
     }
 
     public void addSaveListener (ActionListener actionListener)
@@ -143,7 +146,7 @@ public class ColourPanel extends JPanel implements ChangeListener
 
     protected void fireSaveListeners ()
     {
-        Object[] listeners = this.listenerList.getListenerList();
+        Object[] listeners = listenerList.getListenerList();
 
         // Reverse order
         for (int i = listeners.length - 2; i >= 0; i -= 2)
@@ -152,7 +155,7 @@ public class ColourPanel extends JPanel implements ChangeListener
             {
                 if (this.actionEvent == null)
                 {
-                    this.actionEvent = new ActionEvent(saveButton, i, TOOL_TIP_TEXT_KEY);
+                    this.actionEvent = new ActionEvent(SAVE_BUTTON, i, TOOL_TIP_TEXT_KEY);
                 }
 
                 ((ActionListener) listeners[i + 1]).actionPerformed(this.actionEvent);
@@ -164,10 +167,7 @@ public class ColourPanel extends JPanel implements ChangeListener
     {
         targetStyle = URPreferencesUtil.loadStyle(defaultStyle, settingsPath);
 
-        // defaultBackground = colourMap.get(Constants.KEY_FONT_BACKGROUND);
-        // defaultForeground = colourMap.get(Constants.KEY_FONT_FOREGROUND);
-        // TODO: Should also be underlined etc..
-        previewLabel.setFont(targetStyle.getFont());
+        PREVIEW_LABEL.setFont(targetStyle.getFont());
 
         targetStyle.getForeground().ifPresent(fg -> setPreviewColour(fg, true));
         targetStyle.getBackground().ifPresent(bg -> setPreviewColour(bg, false));
@@ -178,26 +178,30 @@ public class ColourPanel extends JPanel implements ChangeListener
         return targetStyle;
     }
 
-    public void setDefaultStyle (URStyle newStyle)
+    public void setDefaultStyle (final URStyle newStyle)
     {
-        defaultStyle = newStyle;
+        defaultStyle = newStyle.clone();
         loadStyle();
     }
 
-    private void setStyle (URStyle newStyle)
+    public void setStyle (URStyle newStyle)
     {
-        newStyle.getBackground().ifPresent(bg -> tcc.setColor(bg));
-        setPreviewColour(selectedColor, false);
+        newStyle.getBackground().ifPresent(bg -> {
+            TCC.setColor(bg);
+            setPreviewColour(bg, false);
+        });
 
-        newStyle.getForeground().ifPresent(fg -> tcc.setColor(fg));
-        setPreviewColour(selectedColor, true);
+        newStyle.getForeground().ifPresent(fg -> {
+            TCC.setColor(fg);
+            setPreviewColour(fg, true);
+    });
 
-        selectedColor = tcc.getColor();
+        selectedColor = TCC.getColor();
     }
 
     public void stateChanged (ChangeEvent e)
     {
-        selectedColor = tcc.getColor();
+        selectedColor = TCC.getColor();
 
         setPreviewColour(selectedColor, isForeground);
     }

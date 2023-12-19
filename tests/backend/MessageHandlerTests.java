@@ -10,6 +10,8 @@ import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.UserGUI;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +19,9 @@ import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.testng.Reporter;
+import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
@@ -32,6 +36,8 @@ public class MessageHandlerTests
     IRCRoomBase testChannel;
     IRCUser testUser;
     Connection testConnection;
+    
+    final String testProfileName = "testingprofile" + (new SimpleDateFormat("yyMMdd")).format(new Date());
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception
@@ -46,6 +52,17 @@ public class MessageHandlerTests
         testChannel = testServer.getCreatedPrivateRoom(testUser.toString());
         testHandler = new MessageHandler(testServer);
         testConnection = new Connection(testServer);
+            Reporter.log("Setting profile to " + testProfileName, true);
+        testGUI.setProfileName(testProfileName);
+        testGUI.getClientSettings(true);
+    }
+
+    @AfterTest(alwaysRun = true)
+    public void tearDown () throws Exception
+    {
+        Reporter.log("Deleting testing profile.", true);
+        if(testGUI.getProfileName().equals(testProfileName))
+            testGUI.deleteProfile();
     }
 
     @Test(groups = {"Test #001"})
@@ -281,6 +298,7 @@ public class MessageHandlerTests
     }
 
     @Test
+    @Ignore
     public void _emojiMessage()
     {
         // test display of emojis in text

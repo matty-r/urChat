@@ -308,7 +308,7 @@ public class IRCRoomBase extends JPanel
     {
         tickerPanel.setFont(getFontPanel().getFont());
         tickerPanel.setPreferredSize(labelSize);
-        tickerPanel.setBackground(Color.LIGHT_GRAY);
+        tickerPanel.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
         tickerPanel.setLayout(null);
         tickerPanel.addMouseListener(eventTickerListener);
     }
@@ -638,6 +638,8 @@ public class IRCRoomBase extends JPanel
 
                         if (null != newUser) {
                             usersMap.put(newUser.getName().toLowerCase(), newUser);
+                            if (users.length == 1)
+                                createEvent("++ " + newUser + " has joined.");
                             usersListModel.addUser(newUser);
                         }
                     }
@@ -661,10 +663,9 @@ public class IRCRoomBase extends JPanel
     /**
      * Removes a single user, good for when a user leaves the channel
      *
-     * @param channel
      * @param user
      **/
-    public void removeFromUsersList(final String channel, final String user)
+    public void removeFromUsersList(final String user)
     {
         SwingUtilities.invokeLater(new Runnable()
         {
@@ -676,8 +677,12 @@ public class IRCRoomBase extends JPanel
 
 
                 usersMap.remove(thisUser.toLowerCase());
-                usersListModel.removeUser(thisUser);
-                usersListModel.sort();
+                if(usersListModel.hasUser(user))
+                {
+                    usersListModel.removeUser(thisUser);
+                    createEvent("-- " + thisUser + " has quit.");
+                    usersListModel.sort();
+                }
             }
         });
     }

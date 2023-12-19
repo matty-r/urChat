@@ -623,7 +623,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         {
             for (IRCRoomBase tempChannel : createdRooms)
             {
-                tempChannel.removeFromUsersList(tempChannel.getName(), thisUser);
+                tempChannel.removeFromUsersList(thisUser);
             }
         } else
         {
@@ -632,7 +632,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
                 if (thisUser.equals(getNick()))
                     quitRoom(tempChannel);
                 else
-                    tempChannel.removeFromUsersList(channelName, thisUser);
+                    tempChannel.removeFromUsersList(thisUser);
         }
     }
 

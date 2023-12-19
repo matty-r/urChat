@@ -430,8 +430,8 @@ public class LineFormatter
         initStyles(newBaseStyle);
 
         Constants.LOGGER.log(Level.FINE, "Updating styles.");
-        updateDocStyles(0);
-
+        if(doc.getLength() > 0)
+            updateDocStyles(0);
     }
 
     private void updateDocStyles(int startPosition)

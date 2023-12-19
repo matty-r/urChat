@@ -26,7 +26,6 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.dialogs.MessageDialog;
-import urChatBasic.frontend.utils.URColour;
 import urChatBasic.base.UserGUIBase;
 import urChatBasic.base.Constants.Size;
 import urChatBasic.base.capabilities.CapTypeBase;
@@ -81,7 +80,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     // Appearance Panel
     private FontPanel clientFontPanel;
-    private static URStyle guiStyle;
+    /**
+     * This should only ever be changed if the LAF changes
+     */
+    private static URStyle defaultStyle = new URStyle("", UIManager.getFont(Constants.DEFAULT_FONT_STRING), UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING),
+            UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
     private static final JTextField timeStampField = new JTextField();
     public static final JTextPane previewTextArea = new JTextPane();
     private static final JScrollPane previewTextScroll = new JScrollPane(previewTextArea);
@@ -286,7 +289,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // save the current profile settings, if it exists
         if (profilePicker.profileExists(profileName))
         {
-            setClientSettings();
+            // setClientSettings();
         }
 
         // change the profile name
@@ -849,12 +852,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
         });
 
-        clientFontPanel = new FontPanel("", getStyle(), getProfilePath());
+        clientFontPanel = new FontPanel("", defaultStyle, getProfilePath());
         clientFontPanel.setPreferredSize(new Dimension(700, 64));
-        clientFontPanel.addActionListener(clientFontPanel.getSaveButton(), new SaveFontListener());
+        // clientFontPanel.addActionListener(clientFontPanel.getSaveButton(), new SaveFontListener());
 
-        // clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
-        clientFontPanel.getResetButton().addActionListener(new ResetFontListener());
+        clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
+        // clientFontPanel.getResetButton().addActionListener(new ResetFontListener());
 
         previewTextScroll.setPreferredSize(new Dimension(700, 150));
         previewTextArea.setEditable(false);
@@ -881,19 +884,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         });
 
         updatePreviewTextArea();
-        // private static final JLabel timeStampFontLabel = new JLabel("Timestamp Font");
-        // private static final JButton otherNickFontLabel = new JButton("Other Nick Font");
-        // private static final JButton userNickFontLabel = new JButton("My Nick Font");
-        // private static final JButton lowStyleFontLabel = new JButton("Low Priority Text Font");
-        // private static final JButton mediumStyleFontLabel = new JButton("Medium Priority Text Font");
-        // private static final JButton highStyleFontLabel = new JButton("High Priority Text Font");
 
         addToPanel(appearancePanel, clientFontPanel, "Profile Font", null);
         addToPanel(appearancePanel, timeStampField, "Timestamp Format", Size.MEDIUM);
 
         addToPanel(appearancePanel, previewTextScroll, "Font Preview", null);
         addToPanel(appearancePanel, styleLabel, "Preview Style", null);
-        // addToPanel(appearancePanel, timeStampFontButton);
     }
 
     public void updatePreviewTextArea ()
@@ -933,7 +929,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     "Join #urchatclient on irc.libera.chat or #anotherroom");
         } else
         {
-            previewLineFormatter.updateStyles(guiStyle);
+            previewLineFormatter.updateStyles(getStyle());
         }
     }
 
@@ -952,13 +948,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 FontDialog styleFontDialog =
                         new FontDialog(styleName, previewLineFormatter.getStyleDefault(styleName), getProfilePath());
 
-                styleFontDialog.addSaveListener(arg0 -> {
-                    // List<ActionListener> actionListeners = styleFontDialog.getFontPanel().getActionListeners();
-                    // TODO: Need to save attributes and updateStyles after..
-                    // Currently runs the save after updateStyles
-                    previewLineFormatter.updateStyles(clientFontPanel.getStyle());
-                });
-
+                styleFontDialog.addSaveListener(new SaveFontListener());
                 // styleFontDialog.addResetListener(new ActionListener() {
 
                 // @Override
@@ -1171,8 +1161,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             this.favChannel = favChannel;
             settingsPath = getFavouritesPath().node(favServer).node(favChannel);
 
-            favFontDialog = new FontDialog(favChannel, UserGUI.this.getStyle(), settingsPath);
-            favFontDialog.addSaveListener(new SaveChannelFontListener());
             createPopUp();
         }
 
@@ -1241,6 +1229,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             @Override
             public void actionPerformed (ActionEvent arg0)
             {
+                if(favFontDialog == null)
+                {
+                    favFontDialog = new FontDialog(favChannel, UserGUI.this.getStyle(), settingsPath);
+                    favFontDialog.addSaveListener(new SaveChannelFontListener());
+                }
+
                 if (favouritesList.getSelectedIndex() > -1)
                 {
                     FavouritesItem tempItem = favouritesListModel.elementAt(favouritesList.getSelectedIndex());
@@ -1560,7 +1554,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         getProfilePath().putBoolean(Constants.KEY_LIMIT_SERVER_LINES, limitServerLines.isSelected());
         getProfilePath().put(Constants.KEY_LIMIT_SERVER_LINES_COUNT, limitServerLinesCount.getText());
         getProfilePath().putBoolean(Constants.KEY_LOG_CLIENT_TEXT, logClientText.isSelected());
-        URPreferencesUtil.saveStyle(Constants.DEFAULT_STYLE, clientFontPanel.getStyle(), getProfilePath());
+        URPreferencesUtil.saveStyle(defaultStyle, clientFontPanel.getStyle(), getProfilePath());
         getProfilePath().putInt(Constants.KEY_EVENT_TICKER_DELAY, eventTickerDelay.getValue());
 
         getProfilePath().putInt(Constants.KEY_WINDOW_X, (int) DriverGUI.frame.getBounds().getX());
@@ -1897,31 +1891,33 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             for (int index = 0; index < favouritesList.getModel().getSize(); index++)
             {
                 FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
-                favouriteItem.favFontDialog.getFontPanel().setDefaultStyle(clientFontPanel.getStyle());
-                favouriteItem.favFontDialog.getFontPanel().loadStyle();
+                if(favouriteItem.favFontDialog != null)
+                {
+                    favouriteItem.favFontDialog.getFontPanel().setDefaultStyle(clientFontPanel.getStyle());
+                    favouriteItem.favFontDialog.getFontPanel().loadStyle();
+                }
             }
 
-            // previewLineFormatter.setFont(previewTextArea.getStyledDocument(), clientFontPanel.getFont());
-            guiStyle = clientFontPanel.getStyle();
-            previewLineFormatter.updateStyles(clientFontPanel.getStyle());
+            // defaultStyle = clientFontPanel.getStyle();
+            previewLineFormatter.updateStyles(getStyle());
         }
     }
 
-    protected class ResetFontListener implements ActionListener
-    {
-        @Override
-        public void actionPerformed (ActionEvent arg0)
-        {
-            getProfilePath().put(Constants.KEY_FONT_FAMILY, Constants.DEFAULT_FONT_GENERAL.getFamily());
-            getProfilePath().putBoolean(Constants.KEY_FONT_BOLD, Constants.DEFAULT_FONT_GENERAL.isBold());
-            getProfilePath().putBoolean(Constants.KEY_FONT_ITALIC, Constants.DEFAULT_FONT_GENERAL.isItalic());
-            getProfilePath().putInt(Constants.KEY_FONT_SIZE, Constants.DEFAULT_FONT_GENERAL.getSize());
+    // protected class ResetFontListener implements ActionListener
+    // {
+    //     @Override
+    //     public void actionPerformed (ActionEvent arg0)
+    //     {
+    //         getProfilePath().put(Constants.KEY_FONT_FAMILY, Constants.DEFAULT_FONT_GENERAL.getFamily());
+    //         getProfilePath().putBoolean(Constants.KEY_FONT_BOLD, Constants.DEFAULT_FONT_GENERAL.isBold());
+    //         getProfilePath().putBoolean(Constants.KEY_FONT_ITALIC, Constants.DEFAULT_FONT_GENERAL.isItalic());
+    //         getProfilePath().putInt(Constants.KEY_FONT_SIZE, Constants.DEFAULT_FONT_GENERAL.getSize());
 
-            clientFontPanel.loadStyle();
+    //         clientFontPanel.loadStyle();
 
-            clientFontPanel.getSaveButton().doClick();
-        }
-    }
+    //         clientFontPanel.getSaveButton().doClick();
+    //     }
+    // }
 
 
     public UserGUI ()
@@ -1978,14 +1974,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         if (clientFontPanel != null)
         {
-            guiStyle = clientFontPanel.getStyle();
-            return guiStyle;
+            return clientFontPanel.getStyle();
         }
 
-        // Create the default style
-        URStyle newStyle = new URStyle("", getFont());
-        guiStyle = newStyle;
-        return guiStyle;
+        return defaultStyle;
     }
 
     private LookAndFeelInfo getLAF (String lafClassName)
@@ -2006,9 +1998,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     public void setNewLAF (String newLAFname)
     {
-        String previousDefaultForeground = URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
-        String previousDefaultBackground = URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
-        Font previousDefaultFont = getFont();
+        // String previousDefaultForeground = URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
+        // String previousDefaultBackground = URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
+        // Font previousDefaultFont = getFont();
 
         Constants.LOGGER.log(Level.INFO, "Setting to LookAndFeel to " + newLAFname);
         boolean flatLafAvailable = false;
@@ -2051,16 +2043,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // Required because it doesn't pickup the default ui
         tabbedPane.setUI((new JTabbedPane()).getUI());
 
-        guiStyle.setFont(clientFontPanel.getFont());
+        defaultStyle.setFont(UIManager.getFont(Constants.DEFAULT_FONT_STRING));
 
         // reset the defaults on the guiStyle if they were already at the default
         // if (previousDefaultForeground.equals(URColour.hexEncode(guiStyle.getForeground())))
-            guiStyle.setForeground(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
+            defaultStyle.setForeground(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
 
         // if (previousDefaultBackground.equals(URColour.hexEncode(guiStyle.getBackground())))
-            guiStyle.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
+            defaultStyle.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
 
-        clientFontPanel.setDefaultStyle(guiStyle);
+        clientFontPanel.setDefaultStyle(defaultStyle);
 
         SwingUtilities.updateComponentTreeUI(DriverGUI.frame);
         updateExtras();
@@ -2080,9 +2072,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 // tab.setFont(clientFontPanel.getFont());
                 IRCRoomBase roomTab = IRCRoomBase.class.cast(tab);
                 // roomTab.getFontPanel().setDefaultFont(clientFontPanel.getFont());
-                roomTab.getFontPanel().setDefaultStyle(guiStyle);
+                roomTab.getFontPanel().setDefaultStyle(defaultStyle);
                 // roomTab.resetLineFormatter();
-                roomTab.getLineFormatter().updateStyles(guiStyle);
+                roomTab.getLineFormatter().updateStyles(getStyle());
                 SwingUtilities.updateComponentTreeUI(roomTab.myMenu);
                 SwingUtilities.updateComponentTreeUI(roomTab.getFontPanel());
             }

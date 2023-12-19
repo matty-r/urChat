@@ -3,6 +3,7 @@ package urChatBasic.backend.utils;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -91,20 +92,20 @@ public class URPreferencesUtil {
      */
     public static URStyle loadStyle(final URStyle targetStyle, Preferences baseSettingsPath)
     {
-        // targetStyle = targetStyle.clone();
+        URStyle loadedStyle = targetStyle.clone();
         // Default to the profile path node
         Preferences stylePrefPath = baseSettingsPath;
-        if(targetStyle.getAttribute("name") == null)
-            targetStyle.addAttribute("name", "");
+        if(loadedStyle.getAttribute("name") == null)
+            loadedStyle.addAttribute("name", "");
 
         try
         {
-            if(baseSettingsPath.nodeExists(targetStyle.getAttribute("name").toString()))
-                stylePrefPath = baseSettingsPath.node(targetStyle.getAttribute("name").toString());
+            if(baseSettingsPath.nodeExists(loadedStyle.getAttribute("name").toString()))
+                stylePrefPath = baseSettingsPath.node(loadedStyle.getAttribute("name").toString());
             else if (DriverGUI.gui != null)
-                stylePrefPath = DriverGUI.gui.getProfilePath().node(targetStyle.getAttribute("name").toString());
+                stylePrefPath = DriverGUI.gui.getProfilePath().node(loadedStyle.getAttribute("name").toString());
             else
-                stylePrefPath = baseSettingsPath.node(targetStyle.getAttribute("name").toString());
+                stylePrefPath = baseSettingsPath.node(loadedStyle.getAttribute("name").toString());
         } catch (BackingStoreException e)
         {
             // TODO Auto-generated catch block
@@ -112,14 +113,14 @@ public class URPreferencesUtil {
         }
 
         Constants.LOGGER.log(Level.FINE, "Load Style Path: " + stylePrefPath.toString());
-        Font loadedFont = loadStyleFont(targetStyle.getFont(), stylePrefPath);
-        Map<String, Color> loadedColours = loadStyleColours(targetStyle, stylePrefPath);
+        Font loadedFont = loadStyleFont(loadedStyle.getFont(), stylePrefPath);
+        Map<String, Color> loadedColours = loadStyleColours(loadedStyle, stylePrefPath);
 
-        targetStyle.setFont(loadedFont);
-        targetStyle.setForeground(loadedColours.get(Constants.KEY_FONT_FOREGROUND));
-        targetStyle.setBackground(loadedColours.get(Constants.KEY_FONT_BACKGROUND));
+        loadedStyle.setFont(loadedFont);
+        loadedStyle.setForeground(loadedColours.get(Constants.KEY_FONT_FOREGROUND));
+        loadedStyle.setBackground(loadedColours.get(Constants.KEY_FONT_BACKGROUND));
 
-        return targetStyle.clone();
+        return loadedStyle;
     }
 
     public static void deleteStyleFont(URStyle targetStyle, Preferences baseSettingsPath)
@@ -173,6 +174,22 @@ public class URPreferencesUtil {
             } else {
                 // If same, remove from diffStyle
                 diffStyle.removeAttribute(attributeName);
+                try
+                {
+                    // Remove it from the current saved style if what is saved doesn't match what the oldStyle
+                    // oldStyle is the default, so if it doesn't exist then it will use the oldStyle, therefore
+                    // it doesn't need to exist in the preferences.
+                    if(Arrays.asList(stylePrefPath.keys()).contains(URStyle.getKeymap(attributeName)))
+                    {
+                        String savedValue = stylePrefPath.get(URStyle.getKeymap(attributeName), null);
+                        if(savedValue != null && !savedValue.equals(oldValue))
+                            stylePrefPath.remove(URStyle.getKeymap(attributeName));
+                    }
+                } catch (BackingStoreException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
         }
 

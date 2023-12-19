@@ -41,6 +41,16 @@ public class UsersListModel extends AbstractListModel
         users.remove(targetUser);
     }
 
+    public boolean hasUser(String userName)
+    {
+        return users.stream().filter(user -> user.getName().equalsIgnoreCase(userName)).findFirst().isPresent();
+    }
+
+    public boolean hasUser(IRCUser targetUser)
+    {
+        return users.stream().filter(user -> user.equals(targetUser)).findFirst().isPresent();
+    }
+
     public List<IRCUser> getUsersList()
     {
         return users;

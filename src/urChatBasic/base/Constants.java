@@ -3,6 +3,7 @@ package urChatBasic.base;
 import java.awt.Font;
 import java.io.File;
 import java.net.URL;
+// import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -37,8 +38,18 @@ public class Constants
     public static String LOGFILE_NAME = "Errors.log";
     private static final JLabel DEFAULT_LABEL = new JLabel();
     private static final Font DEFAULT_FONT = new Font(DEFAULT_LABEL.getFont().getFamily(), 0, DEFAULT_LABEL.getFont().getSize());
-    public static final URStyle DEFAULT_STYLE = new URStyle("", DEFAULT_FONT);
+    /**
+     * For use with the UIManager.
+     */
+    public static final String DEFAULT_FONT_STRING = "Label.font";
+    public static final URStyle DEFAULT_STYLE = new URStyle("", UIManager.getFont(DEFAULT_FONT_STRING));
+    /**
+     * For use with the UIManager.
+     */
     public static final String DEFAULT_FOREGROUND_STRING = "TextArea.foreground";
+    /**
+     * For use with the UIManager.
+     */
     public static final String DEFAULT_BACKGROUND_STRING = "TextArea.background";
 
     // Preferences

@@ -9,13 +9,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.font.TextAttribute;
-import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.*;
+import javax.swing.event.EventListenerList;
 import urChatBasic.frontend.dialogs.ColourDialog;
 import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.backend.utils.URStyle;
@@ -42,13 +41,8 @@ public class FontPanel extends JPanel
     private URStyle defaultStyle;
     private URStyle targetStyle;
 
-    /**
-     * TODO: This will be used instead for creating the action listeners: private Map<JButton,
-     * EventListenerList> actionList = new HashMap<>();
-     *
-     * @see ColourPanel.fireSaveListeners()
-     */
-    private List<ActionListener> actionListeners = new ArrayList<>();
+    protected EventListenerList listenerList = new EventListenerList();
+    protected transient ActionEvent actionEvent = null;
 
     private Preferences settingsPath;
 
@@ -61,22 +55,27 @@ public class FontPanel extends JPanel
         colourDialog = new ColourDialog(styleName, defaultStyle, settingsPath);
         setDefaultStyle(defaultStyle);
 
-        RESET_BUTTON.addActionListener(new ResetListener());
         COLOUR_BUTTON.addActionListener(new ActionListener()
         {
 
             @Override
             public void actionPerformed (ActionEvent arg0)
             {
-                if (colourDialog == null)
-                {
-                    colourDialog.getColourPanel().addSaveListener(e -> {
-                        Constants.LOGGER.log(Level.INFO, "Font Panel says: Save Colour pressed");
-                    });
+                colourDialog = new ColourDialog(styleName, defaultStyle, settingsPath);
 
-                    for (ActionListener actionListener : actionListeners)
+                colourDialog.getColourPanel().addSaveListener(e -> {
+                    Constants.LOGGER.log(Level.INFO, "Font Panel says: Save Colour pressed");
+                });
+
+                // Forwards the save listeners to the colour panel save listeners
+                Object[] listeners = listenerList.getListenerList();
+
+                for (int i = 0; i < listeners.length; i++)
+                {
+                    if (listeners[i] == ActionListener.class)
                     {
-                        colourDialog.getColourPanel().addSaveListener(actionListener);
+                        colourDialog.getColourPanel()
+                                .addSaveListener((ActionListener) listenerList.getListeners(ActionListener.class)[i]);
                     }
                 }
 
@@ -84,7 +83,16 @@ public class FontPanel extends JPanel
             }
         });
 
-        addActionListener(SAVE_BUTTON, new SaveListener());
+        RESET_BUTTON.addActionListener(new ResetListener());
+
+        SAVE_BUTTON.addActionListener(e -> {
+            // Save the style first
+            setFont(targetStyle, true);
+
+            // now fire the rest of the save listeners
+            fireSaveListeners();
+        });
+
         FONT_COMBO_BOX.addItemListener(new FontSelectionChange());
         SIZES_COMBO_BOX.addItemListener(new FontSelectionChange());
         MAKE_BOLD.addActionListener(new CheckListener());
@@ -158,7 +166,7 @@ public class FontPanel extends JPanel
         return RESET_BUTTON;
     }
 
-    public void setDefaultStyle (URStyle f)
+    public void setDefaultStyle (final URStyle f)
     {
         // defaultFont = f;
         defaultStyle = f.clone();
@@ -197,10 +205,10 @@ public class FontPanel extends JPanel
             TEXT_PREVIEW.setFont(f);
     }
 
-    public void setStyle (URStyle newStyle)
+    public void setStyle (final URStyle newStyle)
     {
         targetStyle = newStyle.clone();
-        colourDialog.getColourPanel().setDefaultStyle(targetStyle);
+        colourDialog.getColourPanel().setStyle(targetStyle);
         setFont(targetStyle, false);
     }
 
@@ -211,7 +219,7 @@ public class FontPanel extends JPanel
      * @param newStyle
      * @param saveToSettings
      */
-    public void setFont (URStyle newStyle, Boolean saveToSettings)
+    public void setFont (final URStyle newStyle, Boolean saveToSettings)
     {
         Font newFont = newStyle.getFont();
 
@@ -224,6 +232,7 @@ public class FontPanel extends JPanel
             newStyle.getSize().ifPresent(size -> SIZES_COMBO_BOX.setSelectedItem(size));
 
             targetStyle.setFont(newFont);
+
             if (saveToSettings)
             {
                 URStyle colourPanelStyle = colourDialog.getColourPanel().getStyle();
@@ -257,19 +266,35 @@ public class FontPanel extends JPanel
         targetStyle.setFont(getFont());
     }
 
-    // Override the addActionListener method to keep track of added listeners
-    public void addActionListener (JButton targetButton, ActionListener listener)
+    public void addSaveListener (ActionListener actionListener)
     {
-        actionListeners.add(listener);
-        targetButton.addActionListener(listener);
+        listenerList.add(ActionListener.class, actionListener);
     }
 
-
-    // Method to retrieve all added listeners
-    public List<ActionListener> getActionListeners ()
+    protected void fireSaveListeners ()
     {
-        return actionListeners;
+        Object[] listeners = this.listenerList.getListenerList();
+
+        // Reverse order
+        for (int i = listeners.length - 2; i >= 0; i -= 2)
+        {
+            if (listeners[i] == ActionListener.class)
+            {
+                if (this.actionEvent == null)
+                {
+                    this.actionEvent = new ActionEvent(SAVE_BUTTON, i, TOOL_TIP_TEXT_KEY);
+                }
+
+                ((ActionListener) listeners[i + 1]).actionPerformed(this.actionEvent);
+            }
+        }
     }
+
+    // // Method to retrieve all added listeners
+    // public List<ActionListener> getActionListeners ()
+    // {
+    // return actionListeners;
+    // }
 
     class CheckListener implements ActionListener
     {
@@ -292,22 +317,12 @@ public class FontPanel extends JPanel
 
     }
 
-    class SaveListener implements ActionListener
-    {
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            // FontPanel.this.setFont(TEXT_PREVIEW.getFont(), true);
-            setFont(targetStyle, true);
-        }
-    }
-
     class ResetListener implements ActionListener
     {
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            FontPanel.this.resetFont();
+            resetFont();
         }
     }
 
