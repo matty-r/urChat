@@ -180,20 +180,29 @@ public class IRCRoomBase extends JPanel
             String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
 
             if(nodeName.equals(roomName))
-                roomPrefs = gui.getFavouritesPath().node(nodeName);
+                setSettingsPath(gui.getFavouritesPath().node(nodeName));
             else
-                roomPrefs = gui.getFavouritesPath().node(nodeName).node(roomName);
+                setSettingsPath(gui.getFavouritesPath().node(nodeName).node(roomName));
 
             fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , getServer(), roomPrefs);
         } else
         {
-            roomPrefs = gui.getFavouritesPath().node(roomName);
+            setSettingsPath(gui.getFavouritesPath().node(roomName));
             fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, null, roomPrefs);
         }
+
+        gui.addProfileChangeListener(e -> {
+            String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
+
+            if(nodeName.equals(roomName))
+                setSettingsPath(gui.getFavouritesPath().node(nodeName));
+            else
+                setSettingsPath(gui.getFavouritesPath().node(nodeName).node(roomName));
+        });
 
         setFont(getFontPanel().getFont());
 
@@ -212,6 +221,21 @@ public class IRCRoomBase extends JPanel
         fontDialog.addSaveListener(new SaveFontListener());
 
         myActions = new IRCActions(this);
+    }
+
+    public void setSettingsPath (Preferences settingsPath)
+    {
+        roomPrefs = settingsPath;
+        if(getFontPanel() != null)
+        {
+            getFontPanel().setSettingsPath(settingsPath);
+            setFont(getFontPanel().getFont());
+        }
+    }
+
+    public Preferences getSettingsPath ()
+    {
+        return roomPrefs;
     }
 
     public void createChannelPopUp()
@@ -248,7 +272,7 @@ public class IRCRoomBase extends JPanel
 
     public FontPanel getFontPanel()
     {
-        return fontDialog.getFontPanel();
+        return fontDialog != null && fontDialog.getFontPanel() != null ? fontDialog.getFontPanel() : null;
     }
 
     // public void resetLineFormatter()

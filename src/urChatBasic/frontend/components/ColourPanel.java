@@ -10,7 +10,6 @@ import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.backend.utils.URStyle;
 import urChatBasic.frontend.utils.URColour;
 
-/* ColorChooserDemo.java requires no other files. */
 public class ColourPanel extends JPanel implements ChangeListener
 {
     protected EventListenerList listenerList = new EventListenerList();
@@ -32,10 +31,9 @@ public class ColourPanel extends JPanel implements ChangeListener
         super(new BorderLayout());
         SAVE_BUTTON = new JButton("Apply & Save");
         PREVIEW_LABEL = new JLabel("Preview Text");
-        this.settingsPath = settingsPath;
         this.defaultStyle = defaultStyle.clone();
         targetStyle = defaultStyle.clone();
-        loadStyle();
+        setSettingsPath(settingsPath);
         bottomPanel = createBottomPanel();
         // Set up color chooser for setting text color
         TCC = new JColorChooser(targetStyle.getForeground().get());
@@ -43,6 +41,12 @@ public class ColourPanel extends JPanel implements ChangeListener
         TCC.getSelectionModel().addChangeListener(this);
         // bottomPanel.setPreferredSize(new Dimension(tcc.getPreferredSize().width, 56));
         add(TCC, BorderLayout.PAGE_END);
+    }
+
+    public void setSettingsPath (Preferences settingsPath)
+    {
+        this.settingsPath = settingsPath;
+        loadStyle();
     }
 
     public JPanel createBottomPanel ()
@@ -134,11 +138,6 @@ public class ColourPanel extends JPanel implements ChangeListener
         }
     }
 
-    public ActionEvent createSaveEvent()
-    {
-        return new ActionEvent(SAVE_BUTTON, listenerList.getListenerList().length - 1, TOOL_TIP_TEXT_KEY);
-    }
-
     public void addSaveListener (ActionListener actionListener)
     {
         listenerList.add(ActionListener.class, actionListener);
@@ -149,7 +148,20 @@ public class ColourPanel extends JPanel implements ChangeListener
         Object[] listeners = listenerList.getListenerList();
 
         // Reverse order
-        for (int i = listeners.length - 2; i >= 0; i -= 2)
+        // for (int i = listeners.length - 2; i >= 0; i -= 2)
+        // {
+        //     if (listeners[i] == ActionListener.class)
+        //     {
+        //         if (this.actionEvent == null)
+        //         {
+        //             this.actionEvent = new ActionEvent(SAVE_BUTTON, i, TOOL_TIP_TEXT_KEY);
+        //         }
+
+        //         ((ActionListener) listeners[i + 1]).actionPerformed(this.actionEvent);
+        //     }
+        // }
+
+        for (int i = 0; i <= listeners.length - 2; i += 2)
         {
             if (listeners[i] == ActionListener.class)
             {

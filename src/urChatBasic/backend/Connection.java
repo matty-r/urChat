@@ -253,7 +253,7 @@ public class Connection implements ConnectionBase
     private void localMessage(String message)
     {
         server.printServerText(message);
-        Constants.LOGGER.log(Level.FINE, "Local Text:-" + message);
+        Constants.LOGGER.log(Level.INFO, "Local Text:-" + message);
     }
 
     private void serverMessage(Message newMessage)

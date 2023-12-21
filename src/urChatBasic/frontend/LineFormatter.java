@@ -39,7 +39,7 @@ public class LineFormatter
     private Color myForeground;
     private Color myBackground;
     private IRCServerBase myServer;
-    private Preferences formatterPrefs;
+    private Preferences settingsPath;
     private URStyle urlStyle;
     private URStyle channelStyle;
     private URStyle timeStyle;
@@ -54,10 +54,10 @@ public class LineFormatter
     private Map<String, URStyle> formatterStyles = new HashMap<>();
 
 
-    public LineFormatter(URStyle baseStyle, JTextPane docOwner ,final IRCServerBase server, Preferences formatterPrefs)
+    public LineFormatter(URStyle baseStyle, JTextPane docOwner ,final IRCServerBase server, Preferences settingsPath)
     {
         // TODO: Need to load attributes from formatterPrefs
-        this.formatterPrefs = formatterPrefs;
+        this.settingsPath = settingsPath;
 
         this.docOwner = docOwner;
 
@@ -134,7 +134,7 @@ public class LineFormatter
         StyleConstants.setForeground(tempStyle, myForeground);
 
         if (load)
-            tempStyle.load(formatterPrefs);
+            tempStyle.load(settingsPath);
 
         return tempStyle;
     }
@@ -158,7 +158,7 @@ public class LineFormatter
             }
 
         if (load)
-            tempStyle.load(formatterPrefs);
+            tempStyle.load(settingsPath);
 
 
         return tempStyle;
@@ -171,7 +171,7 @@ public class LineFormatter
         URStyle tempStyle = defaultStyle(name, load);
 
         if (load)
-            tempStyle.load(formatterPrefs);
+            tempStyle.load(settingsPath);
 
         return tempStyle;
     }
@@ -190,7 +190,7 @@ public class LineFormatter
         StyleConstants.setItalic(tempStyle, true);
 
         if (load)
-            tempStyle.load(formatterPrefs);
+            tempStyle.load(settingsPath);
 
         return tempStyle;
     }
@@ -209,7 +209,7 @@ public class LineFormatter
         StyleConstants.setUnderline(tempStyle, true);
 
         if (load)
-            tempStyle.load(formatterPrefs);
+            tempStyle.load(settingsPath);
 
         return tempStyle;
     }
@@ -230,7 +230,7 @@ public class LineFormatter
         StyleConstants.setUnderline(tempStyle, true);
 
         if (load)
-            tempStyle.load(formatterPrefs);
+            tempStyle.load(settingsPath);
 
         return tempStyle;
     }
@@ -250,7 +250,7 @@ public class LineFormatter
         StyleConstants.setUnderline(tempStyle, true);
 
         if (load)
-            tempStyle.load(formatterPrefs);
+            tempStyle.load(settingsPath);
 
         return tempStyle;
     }
@@ -265,7 +265,7 @@ public class LineFormatter
         StyleConstants.setUnderline(tempStyle, true);
 
         if (load)
-            tempStyle.load(formatterPrefs);
+            tempStyle.load(settingsPath);
 
         return tempStyle;
     }
@@ -414,7 +414,7 @@ public class LineFormatter
         URStyle currentStyle = formatterStyles.get(styleName).clone();
         if(load)
         {
-            currentStyle.load(formatterPrefs);
+            currentStyle.load(settingsPath);
         }
 
         return currentStyle;
@@ -683,10 +683,11 @@ public class LineFormatter
     }
 
     /**
-     * Inserts a string onto the end of the doc.
+     *
+     * @param lineDate
      * @param fromUser
+     * @param fromString
      * @param line
-     * @param timeLine
      */
     public void formattedDocument(Date lineDate, IRCUser fromUser, String fromString, String line)
     {
@@ -733,6 +734,7 @@ public class LineFormatter
                 timePositionStyle.addAttribute("date", lineDate);
                 timePositionStyle.removeAttribute("type");
                 timePositionStyle.addAttribute("type", "time");
+                System.out.println("Append timeline" + timeLine );
                 appendString(timeLine + " ", timePositionStyle);
                 timePositionStyle.removeAttribute("type");
                 linePositionStyle.removeAttribute("date");
@@ -741,6 +743,7 @@ public class LineFormatter
                 linePositionStyle.addAttribute("date", lineDate);
             }
 
+            System.out.println("Append arrow 1");
             appendString("<", linePositionStyle);
             linePositionStyle.removeAttribute("date");
 
@@ -752,12 +755,15 @@ public class LineFormatter
                         new ClickableText(fromUser.toString(), nickPositionStyle, fromUser));
 
                 // doc.insertString(doc.getLength(), fromUser.toString(), clickableNameStyle);
+                System.out.println("Append clicbalk");
                 appendString(fromUser.toString(), clickableNameStyle);
             } else
             {
+                System.out.println("Append nmocl");
                 appendString(fromString, nickPositionStyle);
             }
 
+            System.out.println("Append arrow 2");
             appendString(">", linePositionStyle);
 
             // print the remaining text
@@ -766,6 +772,7 @@ public class LineFormatter
             // parse the outputted line for clickable text
             parseClickableText(fromUser, " " + line, linePositionStyle);
 
+            System.out.println("Append last");
             appendString(System.getProperty("line.separator"), linePositionStyle);
         } catch (BadLocationException e)
         {
@@ -780,7 +787,8 @@ public class LineFormatter
 
     public void setSettingsPath(Preferences profilePath)
     {
-        formatterPrefs = profilePath;
+        settingsPath = profilePath;
+        updateStyles(targetStyle);
     }
 
 }

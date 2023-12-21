@@ -48,6 +48,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     // Profile Preferences
     private static String profileName = "Default";
+    protected EventListenerList profileListenerList = new EventListenerList();
+    protected transient ActionEvent actionEvent = null;
 
     // Options Panel
     private JPanel optionsMainPanel = new JPanel();
@@ -283,19 +285,56 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return null;
     }
 
+    public void addProfileChangeListener (ActionListener actionListener)
+    {
+        profileListenerList.add(ActionListener.class, actionListener);
+    }
+
+    public void fireProfileChangeListeners ()
+    {
+        Object[] listeners = profileListenerList.getListenerList();
+
+        // Reverse order
+        // for (int i = listeners.length - 2; i >= 0; i -= 2)
+        // {
+        //     if (listeners[i] == ActionListener.class)
+        //     {
+        //         if (this.actionEvent == null)
+        //         {
+        //             this.actionEvent = new ActionEvent(SAVE_BUTTON, i, TOOL_TIP_TEXT_KEY);
+        //         }
+
+        //         ((ActionListener) listeners[i + 1]).actionPerformed(this.actionEvent);
+        //     }
+        // }
+
+        for (int i = 0; i <= listeners.length - 2; i += 2)
+        {
+            if (listeners[i] == ActionListener.class)
+            {
+                if (actionEvent == null)
+                {
+                    actionEvent = new ActionEvent(profilePicker.getProfileComboBox(), i, TOOL_TIP_TEXT_KEY);
+                }
+
+                ((ActionListener) listeners[i + 1]).actionPerformed(actionEvent);
+            }
+        }
+    }
+
     @Override
     public void setProfileName (String newProfileName)
     {
         // save the current profile settings, if it exists
         if (profilePicker.profileExists(profileName))
         {
-            // setClientSettings();
+            setClientSettings();
         }
 
         // change the profile name
         profileName = newProfileName;
-        clientFontPanel.setSettingsPath(getProfilePath());
-        previewLineFormatter.setSettingsPath(getProfilePath());
+        // clientFontPanel.setSettingsPath(getProfilePath());
+        // previewLineFormatter.setSettingsPath(getProfilePath());
         // now load the new profile settings
         getClientSettings(false);
     }
@@ -854,9 +893,13 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         clientFontPanel = new FontPanel("", defaultStyle, getProfilePath());
         clientFontPanel.setPreferredSize(new Dimension(700, 64));
-        // clientFontPanel.addActionListener(clientFontPanel.getSaveButton(), new SaveFontListener());
 
-        clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
+        addProfileChangeListener(e -> {
+            clientFontPanel.setSettingsPath(getProfilePath());
+        });
+
+        // clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
+        clientFontPanel.addSaveListener(new SaveFontListener());
         // clientFontPanel.getResetButton().addActionListener(new ResetFontListener());
 
         previewTextScroll.setPreferredSize(new Dimension(700, 150));
@@ -896,19 +939,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         StyledDocument previewDoc = previewTextArea.getStyledDocument();
 
-        // try
-        // {
-        // // Clear all text
-        // previewDoc.remove(0, previewDoc.getLength());
-        // } catch (BadLocationException e)
-        // {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
-
         // previewTextArea.setFont(clientFontPanel.getFont());
         if (previewLineFormatter == null)
+        {
             previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea, null, getProfilePath());
+
+            addProfileChangeListener(e -> {
+                previewLineFormatter.updateStyles(getStyle());
+                previewLineFormatter.setSettingsPath(getProfilePath());
+            });
+        }
 
         if (previewDoc.getLength() <= 0)
         {
@@ -1161,6 +1201,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             this.favChannel = favChannel;
             settingsPath = getFavouritesPath().node(favServer).node(favChannel);
 
+            addProfileChangeListener(e -> {
+                settingsPath = getFavouritesPath().node(favServer).node(favChannel);
+            });
+
             createPopUp();
         }
 
@@ -1397,6 +1441,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 {
                     server.connect();
                 }
+
+                profilePicker.setEnabled(false);
             } else if (!authenticationType().equals(CapabilityTypes.NONE.getType()))
             {
                 MessageDialog dialog = new MessageDialog(
@@ -1419,8 +1465,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         if (server instanceof IRCServer)
         {
             tabbedPane.addTab(server.getName(), ((IRCServer) server).icon, ((IRCServer) server));
-            tabbedPane.setSelectedIndex(tabbedPane.indexOfComponent(((IRCServer) server)));
-            ((IRCServer) server).getUserTextBox().requestFocus();
+            setCurrentTab(server.getName());
+            // ((IRCServer) server).getUserTextBox().requestFocus();
         }
     }
 
@@ -1496,6 +1542,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             createdServers.remove(tempServer);
         }
 
+        if(createdServers.size() == 0)
+            profilePicker.setEnabled(true);
+
         cleanUpSettings();
     }
 
@@ -1510,6 +1559,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         server.disconnect();
         tabbedPane.remove((IRCServer) server);
         createdServers.remove(server);
+
+        if(createdServers.size() == 0)
+            profilePicker.setEnabled(true);
     }
 
     /**
@@ -1899,6 +1951,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
 
             // defaultStyle = clientFontPanel.getStyle();
+            clientFontPanel.loadStyle();
             previewLineFormatter.updateStyles(getStyle());
         }
     }

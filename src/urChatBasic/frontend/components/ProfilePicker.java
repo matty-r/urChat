@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 public class ProfilePicker extends JPanel
 {
-    private JComboBox<String> profileComboBox = new JComboBox<>();
+    private JComboBox<String> profileComboBox = new JComboBox<String>();
     private JLabel selectProfileLabel = new JLabel("Select Profile:");
     private final JButton saveProfile = new JButton("Save");
 
@@ -36,42 +36,39 @@ public class ProfilePicker extends JPanel
         add(profileComboBox);
         add(saveProfile);
 
-        // Add an action listener to the JComboBox for the onChange event
-        profileComboBox.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
+
+        profileComboBox.addActionListener(e -> {
+            String selectedString = profileComboBox.getSelectedItem().toString();
+            if (DriverGUI.gui.getProfileName() != selectedString && !selectedString.isBlank())
             {
-                String selectedString = profileComboBox.getSelectedItem().toString();
-                if (DriverGUI.gui.getProfileName() != selectedString && !selectedString.isBlank())
+                //TODO Show dialog to either rename the existing profile, or create a new profile
+                String currentProfile = DriverGUI.gui.getProfileName();
+
+                DriverGUI.gui.setProfileName(selectedString);
+
+                if (!profileExists(selectedString))
                 {
-                    //TODO Show dialog to either rename the existing profile, or create a new profile
-                    String currentProfile = DriverGUI.gui.getProfileName();
+                    // If create new profile selected
+                    profileComboBox.addItem(selectedString);
 
-                    DriverGUI.gui.setProfileName(selectedString);
+                    // If rename existing profile selected...
+                    // TODO
+                }
+            } else if (selectedString.isBlank())
+            {
 
-                    if (!profileExists(selectedString))
-                    {
-                        // If create new profile selected
-                        profileComboBox.addItem(selectedString);
-
-                        // If rename existing profile selected...
-                        // TODO
-                    }
-                } else if (selectedString.isBlank())
+                // TODO Show a confirmation dialog
+                if (profileExists(DriverGUI.gui.getProfileName()))
                 {
+                    profileComboBox.removeItemAt(getProfileIndex(DriverGUI.gui.getProfileName()));
+                    DriverGUI.gui.deleteProfile();
 
-                    // TODO Show a confirmation dialog
-                    if (profileExists(DriverGUI.gui.getProfileName()))
-                    {
-                        profileComboBox.removeItemAt(getProfileIndex(DriverGUI.gui.getProfileName()));
-                        DriverGUI.gui.deleteProfile();
-
-                        profileComboBox.setSelectedIndex(0);
-                        DriverGUI.gui.setProfileName(profileComboBox.getSelectedItem().toString());
-                    }
+                    profileComboBox.setSelectedIndex(0);
+                    DriverGUI.gui.setProfileName(profileComboBox.getSelectedItem().toString());
                 }
             }
+
+            DriverGUI.gui.fireProfileChangeListeners();
         });
 
         saveProfile.addActionListener(new ActionListener()
@@ -82,6 +79,11 @@ public class ProfilePicker extends JPanel
                 DriverGUI.gui.setClientSettings();
             }
         });
+    }
+
+    public JComboBox<String> getProfileComboBox ()
+    {
+        return profileComboBox;
     }
 
     private int getProfileIndex(String profileName)
@@ -111,6 +113,12 @@ public class ProfilePicker extends JPanel
         }
 
         return false;
+    }
+
+    @Override
+    public void setEnabled(boolean enable)
+    {
+        profileComboBox.setEnabled(enable);
     }
 
     private String[] getProfiles()

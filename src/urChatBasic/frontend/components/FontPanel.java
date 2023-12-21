@@ -49,10 +49,10 @@ public class FontPanel extends JPanel
     public FontPanel (String styleName, URStyle defaultStyle, Preferences settingsPath)
     {
         setLayout(new GridBagLayout());
-        setSettingsPath(settingsPath);
         targetStyle = defaultStyle.clone();
         this.defaultStyle = defaultStyle;
         colourDialog = new ColourDialog(styleName, defaultStyle, settingsPath);
+        setSettingsPath(settingsPath);
         setDefaultStyle(defaultStyle);
 
         COLOUR_BUTTON.addActionListener(new ActionListener()
@@ -61,7 +61,7 @@ public class FontPanel extends JPanel
             @Override
             public void actionPerformed (ActionEvent arg0)
             {
-                colourDialog = new ColourDialog(styleName, defaultStyle, settingsPath);
+                colourDialog = new ColourDialog(styleName, defaultStyle, getSettingsPath());
 
                 colourDialog.getColourPanel().addSaveListener(e -> {
                     Constants.LOGGER.log(Level.INFO, "Font Panel says: Save Colour pressed");
@@ -329,6 +329,9 @@ public class FontPanel extends JPanel
     public void setSettingsPath (Preferences settingsPath)
     {
         this.settingsPath = settingsPath;
+        loadStyle();
+
+        colourDialog.getColourPanel().setSettingsPath(settingsPath);
     }
 
     public Preferences getSettingsPath ()
