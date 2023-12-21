@@ -240,6 +240,27 @@ public class MessageHandler
             }
         }
 
+        public String toPrettyString()
+        {
+            String prettyString = String.format("""
+            Body: %s
+            channel: %s
+            idCommand: %s
+            prefix: %s
+            subType: %s
+            messageBase: %s
+            """,
+            body,
+            channel,
+            idCommand,
+            prefix,
+            subType,
+            messageBase.getClass().toGenericString()
+            );
+
+            return prettyString;
+        }
+
         public String toString()
         {
             return rawMessage;

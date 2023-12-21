@@ -24,6 +24,8 @@ public interface IRCServerBase
 
     public abstract boolean isConnected ();
 
+    public abstract boolean hasConnection ();
+
     public abstract String toString ();
 
     public abstract void setName (String serverName);

@@ -208,7 +208,13 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     @Override
     public boolean isConnected()
     {
-        return serverConnection.isConnected();
+        return hasConnection() && serverConnection.isConnected();
+    }
+
+    @Override
+    public boolean hasConnection ()
+    {
+        return serverConnection != null;
     }
 
     @Override

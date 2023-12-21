@@ -382,7 +382,8 @@ public class LineFormatter
     {
         int position = doc.getLength();
 
-        insertString(insertedString, style, position);
+        if((myServer == null || !myServer.hasConnection()) || myServer.isConnected())
+            insertString(insertedString, style, position);
     }
 
     public URStyle getStyleDefault(String styleName)

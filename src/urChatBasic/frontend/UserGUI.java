@@ -1552,8 +1552,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         if(createdServers.size() == 0)
             profilePicker.setEnabled(true);
-
-        cleanUpSettings();
     }
 
     /*
@@ -1750,6 +1748,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         Constants.LOGGER.log(Level.INFO, "Cleaning up settings");
         try
         {
+            Constants.LOGGER.log(Level.INFO, "Remove empty favourites");
             for (String serverNode : getFavouritesPath().childrenNames())
             {
                 for (String channelNode : getFavouritesPath().node(serverNode).childrenNames())
@@ -1761,6 +1760,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 }
             }
 
+            Constants.LOGGER.log(Level.INFO, "Remove empty profiles");
             for (String profileNode : getProfilePath().childrenNames())
             {
                 if (getProfilePath().node(profileNode) != getFavouritesPath()

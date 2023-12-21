@@ -23,7 +23,7 @@ import javax.swing.JOptionPane;
 public class Connection implements ConnectionBase
 {
     private BufferedWriter writer;
-
+    private BufferedReader reader;
     private boolean shutdown = false;
     // private String creationTime = (new Date()).toString();
 
@@ -56,8 +56,7 @@ public class Connection implements ConnectionBase
     @Override
     public Boolean isConnected()
     {
-        return (mySocket != null) && (server != null) && (mySocket.isConnected())
-                && (gui.getTabIndex(this.server.getName()) > -1);
+        return !shutdown;
     }
 
     /*
@@ -73,18 +72,16 @@ public class Connection implements ConnectionBase
 
     private void startUp() throws IOException
     {
-        BufferedReader reader;
-
         localMessage("Attempting to connect to " + server);
 
         // Determine the socket type to be used
+        InetSocketAddress address = new InetSocketAddress(server.getName(), Integer.parseInt(getServer().getPort()));
+
         if (getServer().usingSOCKS())
         {
             Proxy proxy = new Proxy(Proxy.Type.SOCKS,
                     new InetSocketAddress(getServer().getProxyHost(), Integer.parseInt(getServer().getProxyPort())));
             Socket proxySocket = new Socket(proxy);
-            InetSocketAddress address =
-                    new InetSocketAddress(server.getName(), Integer.parseInt(getServer().getPort()));
 
             if (getServer().usingTLS())
             {
@@ -102,11 +99,12 @@ public class Connection implements ConnectionBase
             if (getServer().usingTLS())
             {
                 SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-                mySocket = sslsocketfactory.createSocket(server.getName(), Integer.parseInt(getServer().getPort()));
+                mySocket = sslsocketfactory.createSocket();
             } else
             {
-                mySocket = new Socket(server.getName(), Integer.parseInt(getServer().getPort()));
+                mySocket = new Socket();
             }
+            mySocket.connect(address, 500);
         }
 
         writer = new BufferedWriter(new OutputStreamWriter(mySocket.getOutputStream()));
@@ -115,15 +113,25 @@ public class Connection implements ConnectionBase
         // if we got this far, we established a connection to the server
         gui.setupServerTab(server);
 
-        localMessage("Connected to " + getServer());
+        localMessage("Initiating authentication...");
 
         String line = null;
+
+        try
+        {
+            //
+            Thread.sleep(500);
+        } catch (InterruptedException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         // Initiate connection to the server.
         writer.write("CAP LS 302\r\n");
         writer.write("NICK " + getServer().getNick() + "\r\n");
         writer.write("USER " + getServer().getLogin() + " 8 * : " + getServer().getLogin() + "\r\n");
-        localMessage("Connect with nick " + getServer().getNick());
+        localMessage("Connecting with nick " + getServer().getNick());
         writer.flush();
 
         while ((line = reader.readLine()) != null && !shutdown)
@@ -295,9 +303,11 @@ public class Connection implements ConnectionBase
                 Constants.LOGGER.log(Level.INFO, "Disconnected safely!");
             } else
             {
+                reader.close();
+                writer.close();
+                mySocket.close();
                 Constants.LOGGER.log(Level.WARNING, "Disconnected unsafely!");
             }
-
         } catch (IOException e)
         {
             Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());
