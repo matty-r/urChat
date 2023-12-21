@@ -1462,12 +1462,20 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     public void setupServerTab (IRCServerBase server)
     {
-        if (server instanceof IRCServer)
-        {
-            tabbedPane.addTab(server.getName(), ((IRCServer) server).icon, ((IRCServer) server));
-            setCurrentTab(server.getName());
-            // ((IRCServer) server).getUserTextBox().requestFocus();
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run ()
+            {
+                if (server instanceof IRCServer)
+                {
+                    tabbedPane.addTab(server.getName(), ((IRCServer) server).icon, ((IRCServer) server));
+                    setCurrentTab(server.getName());
+                    // ((IRCServer) server).getUserTextBox().requestFocus();
+                }
+            }
+
+        });
     }
 
     /*

@@ -734,7 +734,6 @@ public class LineFormatter
                 timePositionStyle.addAttribute("date", lineDate);
                 timePositionStyle.removeAttribute("type");
                 timePositionStyle.addAttribute("type", "time");
-                System.out.println("Append timeline" + timeLine );
                 appendString(timeLine + " ", timePositionStyle);
                 timePositionStyle.removeAttribute("type");
                 linePositionStyle.removeAttribute("date");
@@ -742,8 +741,6 @@ public class LineFormatter
             {
                 linePositionStyle.addAttribute("date", lineDate);
             }
-
-            System.out.println("Append arrow 1");
             appendString("<", linePositionStyle);
             linePositionStyle.removeAttribute("date");
 
@@ -755,15 +752,12 @@ public class LineFormatter
                         new ClickableText(fromUser.toString(), nickPositionStyle, fromUser));
 
                 // doc.insertString(doc.getLength(), fromUser.toString(), clickableNameStyle);
-                System.out.println("Append clicbalk");
                 appendString(fromUser.toString(), clickableNameStyle);
             } else
             {
-                System.out.println("Append nmocl");
                 appendString(fromString, nickPositionStyle);
             }
 
-            System.out.println("Append arrow 2");
             appendString(">", linePositionStyle);
 
             // print the remaining text
@@ -771,8 +765,6 @@ public class LineFormatter
 
             // parse the outputted line for clickable text
             parseClickableText(fromUser, " " + line, linePositionStyle);
-
-            System.out.println("Append last");
             appendString(System.getProperty("line.separator"), linePositionStyle);
         } catch (BadLocationException e)
         {
