@@ -55,7 +55,7 @@ public class IRCRoomBase extends JPanel
 
     // Bottom panel to hold the user text box
     protected JTextField clientTextBox = new JTextField();
-    private JPanel bottomPanel = new JPanel();
+    protected JPanel bottomPanel = new JPanel();
     private int BOTTOM_HEIGHT = 35;
 
     // Event Ticker stuff
@@ -86,7 +86,7 @@ public class IRCRoomBase extends JPanel
 
     // Text Area
     private JTextPane channelTextArea = new JTextPane();
-    private JScrollPane channelScroll = new JScrollPane(channelTextArea);
+    protected JScrollPane channelScroll = new JScrollPane(channelTextArea);
     private BlockingQueue<MessagePair> messageQueue = new ArrayBlockingQueue<>(20);
     public boolean messageQueueInProgress = false;
     private LineFormatter lineFormatter;
@@ -96,10 +96,10 @@ public class IRCRoomBase extends JPanel
     // TODO: Users should be created per Server, and instead have a property to hold what channels
     // they're in
     private ConcurrentHashMap<String, IRCUser> usersMap = new ConcurrentHashMap<>();
-    private UsersListModel usersListModel = new UsersListModel();
+    protected UsersListModel usersListModel = new UsersListModel();
     @SuppressWarnings("unchecked")
     private JList<IRCUser> usersList = new JList<IRCUser>(usersListModel);
-    private JScrollPane userScroller = new JScrollPane(usersList);
+    protected JScrollPane userScroller = new JScrollPane(usersList);
     private Boolean usersListShown = null;
     private int usersListWidth = 100;
 
@@ -243,7 +243,7 @@ public class IRCRoomBase extends JPanel
         myMenu = new ChannelPopUp();
     }
 
-    private void setupMainPanel()
+    protected void setupMainPanel()
     {
         mainPanel.setLayout(new BorderLayout());
         setupMainTextArea();
@@ -280,7 +280,7 @@ public class IRCRoomBase extends JPanel
     //     lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, getServer(), roomPrefs);
     // }
 
-    private void setupMainTextArea()
+    protected void setupMainTextArea()
     {
         channelScroll.setPreferredSize(
                 new Dimension(Constants.MAIN_WIDTH - usersListWidth, Constants.MAIN_HEIGHT - BOTTOM_HEIGHT));
@@ -298,7 +298,7 @@ public class IRCRoomBase extends JPanel
         // resetLineFormatter();
     }
 
-    private void setupUsersList()
+    protected void setupUsersList()
     {
         usersList.setFont(getFontPanel().getFont());
         usersList.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -310,7 +310,7 @@ public class IRCRoomBase extends JPanel
     }
 
 
-    private void setupBottomPanel()
+    protected void setupBottomPanel()
     {
         setupTickerPanel();
 
@@ -394,11 +394,11 @@ public class IRCRoomBase extends JPanel
 
     public void createEvent(String eventText)
     {
-        if (gui.isJoinsQuitsMainEnabled())
+        if (gui.isJoinsQuitsMainEnabled() && !(this instanceof IRCPrivate))
             printText(eventText, Constants.EVENT_USER);
 
         eventTickerTimer.setDelay(gui.getEventTickerDelay());
-        if (gui.isJoinsQuitsTickerEnabled())
+        if (gui.isJoinsQuitsTickerEnabled() && !(this instanceof IRCPrivate))
         {
             JLabel tempLabel = new JLabel(eventText);
             int tempX;
@@ -552,7 +552,8 @@ public class IRCRoomBase extends JPanel
                                 // addToUsersList(getName(), fromUser);
                                 // fromIRCUser = getCreatedUsers(fromUser);
                                 // Constants.LOGGER.log(Level.WARNING, "Message from a user that isn't in the user list!");
-                                fromIRCUser = new IRCUser(server, fromUser);
+                                fromIRCUser = server.getIRCUser(fromUser);
+                                addToUsersList(fromIRCUser);
                             }
                         }
 
@@ -633,7 +634,10 @@ public class IRCRoomBase extends JPanel
      * @return IRCChannel
      */
     public IRCUser getCreatedUser(String userName) {
-        return usersMap.get(userName.toLowerCase());
+        synchronized(usersMap)
+        {
+            return usersMap.get(userName.toLowerCase());
+        }
     }
 
     public void disableFocus()
@@ -647,30 +651,44 @@ public class IRCRoomBase extends JPanel
     }
 
     // Adds users to the list in the users array[]
-    public void addToUsersList(final String[] users) {
+    public void addToUsersList (final String[] users)
+    {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                // Removed as Runnable(), not sure it was necessary
-                // TODO: maybe readd Runnable
-                if (users.length >= 0 && null != getServer()) {
-                    for (int x = 0; x < users.length; x++) {
-                        String tempUserName = users[x];
-                        if (users[x].startsWith(":"))
-                            tempUserName = tempUserName.substring(1);
+                synchronized(usersMap)
+                {
+                    if (users.length >= 0 && null != getServer()) {
+                        for (int x = 0; x < users.length; x++) {
+                            String tempUserName = users[x];
+                            if (users[x].startsWith(":"))
+                                tempUserName = tempUserName.substring(1);
 
-                        IRCUser newUser = getServer().getIRCUser(tempUserName);
+                            IRCUser newUser = getServer().getIRCUser(tempUserName);
 
-                        if (null != newUser) {
-                            usersMap.put(newUser.getName().toLowerCase(), newUser);
-                            if (users.length == 1)
-                                createEvent("++ " + newUser + " has joined.");
-                            usersListModel.addUser(newUser);
+                            if (null != newUser) {
+                                usersMap.put(newUser.getName().toLowerCase(), newUser);
+                                if (users.length == 1)
+                                    createEvent("++ " + newUser + " has joined.");
+                                usersListModel.addUser(newUser);
+                            }
                         }
                     }
+                    usersListModel.sort();
                 }
-                usersListModel.sort();
             }
         });
+    }
+
+    public void addToUsersList (final IRCUser newUser)
+    {
+        synchronized(usersMap)
+        {
+            usersMap.put(newUser.getName().toLowerCase(), newUser);
+            createEvent("++ " + newUser + " has joined.");
+            usersListModel.addUser(newUser);
+
+            usersListModel.sort();
+        }
     }
 
     // Adds a single user, good for when a user joins the channel

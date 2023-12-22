@@ -730,7 +730,7 @@ public class MessageHandler
         @Override
         public void messageExec(Message myMessage)
         {
-            if (!myMessage.channel.equals(myMessage.messageHandler.serverBase.getNick()))
+            if (!myMessage.getSubType().equals(serverBase.getNick()))
             {
                 myMessage.messageHandler.serverBase.printChannelText(myMessage.channel, myMessage.body, myMessage.nick);
             } else

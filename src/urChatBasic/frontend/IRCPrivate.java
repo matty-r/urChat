@@ -1,5 +1,6 @@
 package urChatBasic.frontend;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -34,6 +35,18 @@ public class IRCPrivate extends IRCRoomBase
         }
     }
 
+    /**
+     * Private channel doesn't need the User List, so don't set it up.
+     */
+    @Override
+    protected void setupMainPanel()
+    {
+        mainPanel.setLayout(new BorderLayout());
+        setupMainTextArea();
+        mainPanel.add(channelScroll, BorderLayout.CENTER);
+        setupBottomPanel();
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+    }
 
     private class SendTextListener implements ActionListener
     {
