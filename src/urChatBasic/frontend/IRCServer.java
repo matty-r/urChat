@@ -450,8 +450,13 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     public IRCRoomBase getCreatedRoom(String roomName, boolean asPrivate)
     {
         for (IRCRoomBase tempChannel : createdRooms)
-            if ((tempChannel instanceof IRCPrivate && asPrivate) || tempChannel.getName().equals(roomName))
-                return tempChannel;
+            if (tempChannel.getName().equals(roomName))
+            {
+                if(asPrivate && tempChannel instanceof IRCPrivate)
+                    return tempChannel;
+                else if(!asPrivate)
+                    return tempChannel;
+            }
         return null;
     }
 
