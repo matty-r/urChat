@@ -65,6 +65,7 @@ public interface IRCServerBase
      */
     public abstract IRCChannel getCreatedChannel (String channelName);
 
+    public abstract void setPingReceived();
     /**
      * Return the appropriate created server
      *

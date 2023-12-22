@@ -276,7 +276,11 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         }
     }
 
-
+    @Override
+    public void setPingReceived ()
+    {
+        serverConnection.setPingReceived();
+    }
 
     private class QuitItem implements ActionListener
     {

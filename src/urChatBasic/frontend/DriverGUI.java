@@ -68,14 +68,6 @@ public class DriverGUI
 
     public static void startGUI()
     {
-
-        // ClassLoader mainLoader = Thread.currentThread().getContextClassLoader();
-
-        // mainLoader = new JoinClassLoader(mainLoader, UCAuthTypeComboBox.class.getClassLoader(),
-        // DnDTabbedPane.class.getClassLoader());
-        // Thread.currentThread().setContextClassLoader(mainLoader);
-        // guiThread.setContextClassLoader(threadLoader);
-
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setContentPane(gui);
         frame.pack();
@@ -83,10 +75,6 @@ public class DriverGUI
 
         if (img != null)
             frame.setIconImage(img.getImage());
-
-        // Thread guiThread = new Thread(gui);
-        // guiThread.setContextClassLoader(contextClassLoader);
-        // guiThread.start();
 
         SwingUtilities.invokeLater(gui);
 

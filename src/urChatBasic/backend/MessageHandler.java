@@ -1,5 +1,7 @@
 package urChatBasic.backend;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -169,6 +171,7 @@ public class MessageHandler
         singleIDs.add(new IDSingle("ERROR", new DisconnectMessage()));
         singleIDs.add(new IDSingle("QUIT", new DisconnectMessage()));
         singleIDs.add(new IDSingle("NICK", new RenameUserMessage()));
+        singleIDs.add(new IDSingle("PONG", new PongMessage()));
 
         // CTCP / Extended types
         singleIDs.add(new IDSingle("ACTION", new ActionMessage()));
@@ -637,6 +640,21 @@ public class MessageHandler
                 printServerText(myMessage.rawMessage);
                 serverBase.saslSendAuthentication();
             }
+        }
+    }
+
+    public class PongMessage implements MessageBase
+    {
+        @Override
+        public void messageExec(Message myMessage)
+        {
+            Instant pingTime = Instant.ofEpochMilli(Long.parseLong(myMessage.getBody()));
+
+            long timeToResponse = Duration.between(pingTime, new Date().toInstant()).toMillis();
+
+            printServerText("Took "+timeToResponse+"ms to respond.");
+
+            serverBase.setPingReceived();
         }
     }
 

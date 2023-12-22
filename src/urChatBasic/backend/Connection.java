@@ -9,6 +9,8 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Date;
 import java.util.logging.Level;
 import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.ConnectionBase;
@@ -17,8 +19,12 @@ import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.UserGUIBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.dialogs.MessageDialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.net.ssl.SSLSocketFactory;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 public class Connection implements ConnectionBase
 {
@@ -32,15 +38,21 @@ public class Connection implements ConnectionBase
     private Socket mySocket;
 
     private MessageHandler messageHandler;
-    public UserGUIBase gui = DriverGUI.gui;
 
-    // Used for Logging messages received by the server
-    // Debug Mode
-    // Currently deprecated
-    // private DateFormat debugDateFormat = new SimpleDateFormat("ddMMyyyy");
-    // private DateFormat debugTimeFormat = new SimpleDateFormat("HHmm");
-    // private Date todayDate = new Date();
-    // private String debugFile;
+    // Connection keep alive stuff
+    // Starts the timer with an start delay
+    private Timer keepAliveTimer = new Timer((int)Duration.ofSeconds(30).toMillis(), new PingKeepalive());
+    // Rate in which to send a PING to the server
+    private final int PING_RATE_MS = (int)Duration.ofMinutes(5).toMillis();
+    private boolean pingReceived = true;
+    private final int MAX_RESPONSE_FAILURES = 2;
+    private int currentFailures = 0;
+    // only try to reconnect once
+    private final int MAX_RECONNECT_ATTEMPTS = 1;
+    private boolean reconnect = false;
+    private int reconnectAttempts = 0;
+
+    public UserGUIBase gui = DriverGUI.gui;
 
     public Connection(IRCServerBase server)
     {
@@ -72,6 +84,8 @@ public class Connection implements ConnectionBase
 
     private void startUp() throws IOException
     {
+        shutdown = false;
+
         localMessage("Attempting to connect to " + server);
 
         // Determine the socket type to be used
@@ -89,6 +103,7 @@ public class Connection implements ConnectionBase
 
                 SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
                 mySocket = sslsocketfactory.createSocket(proxySocket, address.getHostName(), address.getPort(), true);
+                mySocket.setKeepAlive(true);
             } else
             {
                 proxySocket.connect(address, 5000);
@@ -119,7 +134,7 @@ public class Connection implements ConnectionBase
 
         try
         {
-            //
+            // TODO: Not great.. sleep for half a second before continuing on. Maybe we could start reading lines then initiate the rest if we receive a line?
             Thread.sleep(500);
         } catch (InterruptedException e)
         {
@@ -133,6 +148,9 @@ public class Connection implements ConnectionBase
         writer.write("USER " + getServer().getLogin() + " 8 * : " + getServer().getLogin() + "\r\n");
         localMessage("Connecting with nick " + getServer().getNick());
         writer.flush();
+
+        keepAliveTimer.setDelay(PING_RATE_MS);
+        keepAliveTimer.start();
 
         while ((line = reader.readLine()) != null && !shutdown)
         {
@@ -161,6 +179,53 @@ public class Connection implements ConnectionBase
         }
     }
 
+    private class PingKeepalive implements ActionListener
+    {
+        public void actionPerformed(ActionEvent event)
+        {
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                public void run()
+                {
+                    try
+                    {
+                        if(shutdown)
+                            keepAliveTimer.stop();
+
+                        if(!pingReceived)
+                        {
+                            currentFailures ++;
+                            localMessage("Haven't received the last "+currentFailures+" pings, something is wrong. Will reconnect after "+MAX_RESPONSE_FAILURES+ " fails");
+                            if(currentFailures >= MAX_RESPONSE_FAILURES)
+                            {
+                                // This will cause stuff to close, but then also reconnect.. maybe?
+                                shutdown = true;
+                                reconnect = true;
+                            }
+                        } else {
+                            pingReceived = false;
+
+                            writer.write("PING "+new Date().toInstant().toEpochMilli()+"\r\n");
+                            writer.flush();
+                        }
+                    } catch (IOException e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public void setPingReceived ()
+    {
+        // Reset the fails
+        currentFailures = 0;
+        pingReceived = true;
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -175,6 +240,10 @@ public class Connection implements ConnectionBase
 
         if (!clientText.equals(""))
         {
+            if (clientText.toLowerCase().startsWith("/info"))
+            {
+                outText = "INFO\r\n";
+            }
             if (clientText.toLowerCase().startsWith("/join"))
             {
                 outText = "JOIN " + clientText.replace("/join ", "") + "\r\n";
@@ -298,11 +367,22 @@ public class Connection implements ConnectionBase
                         + getServer() + ") (Nick " + getServer().getNick() + ") ");
             }
 
+            if (reconnect && reconnectAttempts < MAX_RECONNECT_ATTEMPTS)
+            {
+                reconnect = false;
+                reconnectAttempts++;
+                reader.close();
+                writer.close();
+                mySocket.close();
+                run();
+            }
+            else
             if (shutdown)
             {
                 Constants.LOGGER.log(Level.INFO, "Disconnected safely!");
             } else
             {
+                shutdown = true;
                 reader.close();
                 writer.close();
                 mySocket.close();
