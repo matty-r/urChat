@@ -553,7 +553,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         extrasPanel.setBackground(optionsLeftPanel.getBackground());
 
         urVersionLabel = new URVersionLabel(extrasPanel);
-        profilePicker = new ProfilePicker(extrasPanel);
+        profilePicker = new ProfilePicker(extrasPanel, profileName);
 
         extrasPanel.add(profilePicker, BorderLayout.NORTH);
         extrasPanel.add(urVersionLabel, BorderLayout.SOUTH);
@@ -1981,10 +1981,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // }
 
 
-    public UserGUI ()
+    public UserGUI (Optional<String> initialProfile)
     {
         // this.creationTime = (new Date()).toString();
-
+        if(initialProfile.isPresent())
+            profileName = initialProfile.get();
         // Create the initial size of the panel
         setupTabbedPane();
         this.setLayout(new BorderLayout());

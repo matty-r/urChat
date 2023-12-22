@@ -226,6 +226,11 @@ public class Connection implements ConnectionBase
         pingReceived = true;
     }
 
+    public MessageHandler getMessageHandler()
+    {
+        return messageHandler;
+    }
+
     /*
      * (non-Javadoc)
      *

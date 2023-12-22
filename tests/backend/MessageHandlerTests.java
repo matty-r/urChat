@@ -1,21 +1,14 @@
 package backend;
 
-import urChatBasic.backend.Connection;
-import urChatBasic.backend.MessageHandler;
-import urChatBasic.backend.MessageHandler.Message;
-import urChatBasic.base.Constants;
-import urChatBasic.base.IRCRoomBase;
-import urChatBasic.frontend.DriverGUI;
-import urChatBasic.frontend.IRCServer;
-import urChatBasic.frontend.IRCUser;
-import urChatBasic.frontend.UserGUI;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertSame;
+import static org.testng.AssertJUnit.assertTrue;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.testng.Reporter;
@@ -25,7 +18,16 @@ import org.testng.annotations.Ignore;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
-import static org.testng.AssertJUnit.*;
+import urChatBasic.backend.Connection;
+import urChatBasic.backend.MessageHandler;
+import urChatBasic.backend.MessageHandler.Message;
+import urChatBasic.base.Constants;
+import urChatBasic.base.IRCRoomBase;
+import urChatBasic.frontend.DriverGUI;
+import urChatBasic.frontend.IRCPrivate;
+import urChatBasic.frontend.IRCServer;
+import urChatBasic.frontend.IRCUser;
+import urChatBasic.frontend.UserGUI;
 
 
 public class MessageHandlerTests
@@ -33,28 +35,32 @@ public class MessageHandlerTests
     MessageHandler testHandler;
     IRCServer testServer;
     UserGUI testGUI;
-    IRCRoomBase testChannel;
+    IRCRoomBase testPrivChannel;
+    final String PUB_CHANNEL_NAME = "#someChannel";
+    IRCRoomBase testPubChannel;
     IRCUser testUser;
     Connection testConnection;
-    
+
     final String testProfileName = "testingprofile" + (new SimpleDateFormat("yyMMdd")).format(new Date());
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception
     {
-        DriverGUI.createGUI();
+        // TODO: We should just create a TestDriverGUI instead.
+        DriverGUI.createGUI(java.util.Optional.of(testProfileName));
         testGUI = DriverGUI.gui;
+        Reporter.log("Setting profile to " + testProfileName, true);
+        testGUI.getClientSettings(true);
         UserGUI.setTimeLineString("[HHmm]");
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy",
                 "1234", true);
         testUser = new IRCUser(testServer, "testUser");
         testServer.addToPrivateRooms(testUser);
-        testChannel = testServer.getCreatedPrivateRoom(testUser.toString());
-        testHandler = new MessageHandler(testServer);
+        testPrivChannel = testServer.getCreatedPrivateRoom(testUser.toString());
+        testServer.addToCreatedRooms(PUB_CHANNEL_NAME, false);
+        testPubChannel = testServer.getCreatedChannel(PUB_CHANNEL_NAME);
         testConnection = new Connection(testServer);
-            Reporter.log("Setting profile to " + testProfileName, true);
-        testGUI.setProfileName(testProfileName);
-        testGUI.getClientSettings(true);
+        testHandler = testConnection.getMessageHandler();
     }
 
     @AfterTest(alwaysRun = true)
@@ -68,19 +74,21 @@ public class MessageHandlerTests
     @Test(groups = {"Test #001"})
     public void nickIsHighStyleTest() throws BadLocationException, InterruptedException
     {
+        // This should create a someuser private room
         String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG testUser :hello testUser!";
         Message testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
-        String testLine = testChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser> hello testUser!"
+        IRCPrivate someUserChannel = testServer.getCreatedPrivateRoom("someuser");
+        String testLine = someUserChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser> hello testUser!"
 
-        while (testChannel.messageQueueWorking())
+        while (someUserChannel.messageQueueWorking())
         {
             TimeUnit.SECONDS.sleep(1);
         }
 
         // Should be highStyle because someuser mentioned my nick, testUser
         assertEquals("highStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(11, testLine).getAttribute("name"));
+                someUserChannel.getLineFormatter().getStyleAtPosition(11, testLine).getAttribute("name"));
     }
 
     @Test(groups = {"Test #001"})
@@ -95,36 +103,35 @@ public class MessageHandlerTests
 
     @Test(groups = {"Test #002"})
     @Parameters({"channelName"})
-    public void noticeMessageParseTest(@Optional("someChannel") String channelName)
+    public void noticeMessageParseTest(@Optional(PUB_CHANNEL_NAME) String channelName)
     {
         Reporter.log("Using @Optional variable channelName: " + channelName);
 
-        String rawMessage = ":ChanServ!ChanServ@services.libera.chat NOTICE userName :[#" + channelName
-                + "] Welcome to #" + channelName + ".";
+        String rawMessage = ":ChanServ!ChanServ@services.libera.chat NOTICE userName :[" + channelName
+                + "] Welcome to " + channelName + ".";
         Message testMessage = testHandler.new Message(rawMessage);
 
-        assertEquals("#" + channelName, testMessage.getChannel());
-        // assertEquals("Welcome to #somechannel.", testMessage.getBody());
+        assertEquals(channelName, testMessage.getChannel());
+        // assertEquals("Welcome to #someChannel.", testMessage.getBody());
     }
 
 
-    @Test(groups = {"Test #003"}, timeOut = 5000)
+    @Test(groups = {"Test #003"})
     public void nickIsNickStyleTest() throws BadLocationException, InterruptedException
     {
-        String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG #somechannel :Welcome to somechannel!";
+        String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG "+PUB_CHANNEL_NAME+" :Welcome to somechannel!";
         Message testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
-        StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
-        String testLine = testChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser> hello world!"
+        String testLine = testPubChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser> hello world!"
 
-        while (testChannel.messageQueueWorking())
+        while (testPubChannel.messageQueueWorking())
         {
             TimeUnit.SECONDS.sleep(1);
         }
 
         // Should be nickStyle because the user didn't mention testUser and is just a normal message
         assertEquals("nickStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(11, testLine).getAttribute("name"));
+                testPubChannel.getLineFormatter().getStyleAtPosition(11, testLine).getAttribute("name"));
     }
 
     @Test(groups = {"Test #003"}, dependsOnMethods = {"backend.MessageHandlerTests.nickIsNickStyleTest"})
@@ -186,7 +193,7 @@ public class MessageHandlerTests
     @Test
     public void handleChannelNoticeUrl()
     {
-        String rawMessage = ":services. 328 userName #somechannel :https://somechannel.com/url";
+        String rawMessage = ":services. 328 userName "+PUB_CHANNEL_NAME+" :https://somechannel.com/url";
         Message testMessage = testHandler.new Message(rawMessage);
 
         assertEquals(MessageHandler.NoticeMessage.class, testMessage.getMessageBase().getClass());
@@ -226,7 +233,7 @@ public class MessageHandlerTests
         testGUI.setJoinsQuitsMain(false);
         int channelLinesLimit = testGUI.getLimitChannelLinesCount();
 
-        String channelMessage = ":" + testUser + "!~" + testUser + "@urchatclient PRIVMSG #somechannel :line # ";
+        String channelMessage = ":" + testUser + "!~" + testUser + "@urchatclient PRIVMSG "+PUB_CHANNEL_NAME+" :line # ";
 
         for (int i = 0; i < channelLinesLimit + 10; i++)
         {
@@ -234,7 +241,7 @@ public class MessageHandlerTests
             testHandler.parseMessage(testMessage);
         }
 
-        while (testChannel.messageQueueWorking())
+        while (testPubChannel.messageQueueWorking())
         {
             TimeUnit.SECONDS.sleep(1);
         }
@@ -247,12 +254,12 @@ public class MessageHandlerTests
         // int serverLinesCount =
         // testServer.getChannelTextPane().getStyledDocument().getDefaultRootElement().getElementCount();
         int channelLinesCount =
-                testChannel.getLineFormatter().getDocument().getDefaultRootElement().getElementCount();
+                testPubChannel.getLineFormatter().getDocument().getDefaultRootElement().getElementCount();
 
 
 
-        String firstLine = testChannel.getLineFormatter().getFirstLine();
-        String lastLine = testChannel.getLineFormatter().getLatestLine(); // "<testUser> line # 509"
+        String firstLine = testPubChannel.getLineFormatter().getFirstLine();
+        String lastLine = testPubChannel.getLineFormatter().getLatestLine(); // "<testUser> line # 509"
 
         assertTrue("Last line should line # 19 but it was" + lastLine, lastLine.endsWith("line # 19"));
 
@@ -303,7 +310,7 @@ public class MessageHandlerTests
     {
         // test display of emojis in text
         String rawMessage =
-                ":sd!~discord@user/sd PRIVMSG #somechannel :02<textwithEMOJI 🇦🇺> this should show a flag";
+                ":sd!~discord@user/sd PRIVMSG "+PUB_CHANNEL_NAME+" :02<textwithEMOJI 🇦🇺> this should show a flag";
         // TODO create this test
     }
 
@@ -312,23 +319,22 @@ public class MessageHandlerTests
     {
         // test displaying urls
 
-        String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG #somechannel :https://google.com";
+        String rawMessage = ":"+testUser.getName()+"!~"+testUser.getName()+"@urchatclient PRIVMSG "+testUser.getName()+" :https://google.com";
         // String rawMessage2 = "https://duckduckgo.com/?q=irc+urchat&kp=1&t=h_&ia=web";
 
         Message testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
-        StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
 
-        while (testChannel.messageQueueWorking())
+        while (testPrivChannel.messageQueueWorking())
         {
             TimeUnit.SECONDS.sleep(1);
         }
 
-        String testLine = testChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser>
+        String testLine = testPrivChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser>
                                                                                  // https://google.com"
         // Should be urlStyle, i.e a clickable link
         assertEquals("urlStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(19, testLine).getAttribute("name"));
+                testPrivChannel.getLineFormatter().getStyleAtPosition(19, testLine).getAttribute("name"));
     }
 
     @Test
@@ -357,28 +363,28 @@ public class MessageHandlerTests
 
         // test displaying channel
         Message testMessage =
-                testHandler.new Message(":someuser!~someuser@urchatclient PRIVMSG #somechannel :first line");
+                testHandler.new Message(":"+testUser.getName()+"!~"+testUser.getName()+"@urchatclient PRIVMSG "+testUser.getName()+" :first line");
         testHandler.parseMessage(testMessage);
 
         String rawMessage =
-                ":someuser!~someuser@urchatclient PRIVMSG #somechannel :Please join #urchatclient and go to https://github.com/matty-r/urChat then go back to #anotherchannel";
+                ":"+testUser.getName()+"!~"+testUser.getName()+"@urchatclient PRIVMSG "+testUser.getName()+" :Please join #urchatclient and go to https://github.com/matty-r/urChat then go back to #anotherchannel";
 
         testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
-        StyledDocument testDoc = testChannel.getChannelTextPane().getStyledDocument();
+        StyledDocument testDoc = testPrivChannel.getChannelTextPane().getStyledDocument();
 
-        while (testChannel.messageQueueWorking())
+        while (testPrivChannel.messageQueueWorking())
         {
             TimeUnit.SECONDS.sleep(1);
         }
 
-        String testLine = testChannel.getLineFormatter().getLatestLine();
+        String testLine = testPrivChannel.getLineFormatter().getLatestLine();
         // Should be channel, i.e clickable name which allows you to join the channel
         assertEquals("channelStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(33, testLine).getAttribute("name"));
+                testPrivChannel.getLineFormatter().getStyleAtPosition(33, testLine).getAttribute("name"));
         assertEquals("urlStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(58, testLine).getAttribute("name"));
+                testPrivChannel.getLineFormatter().getStyleAtPosition(58, testLine).getAttribute("name"));
         assertEquals("channelStyle",
-                testChannel.getLineFormatter().getStyleAtPosition(110, testLine).getAttribute("name"));
+                testPrivChannel.getLineFormatter().getStyleAtPosition(110, testLine).getAttribute("name"));
     }
 }

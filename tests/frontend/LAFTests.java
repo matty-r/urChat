@@ -4,11 +4,10 @@ import static org.testng.AssertJUnit.*;
 import java.awt.Color;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
 import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
 import org.testng.Reporter;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -29,9 +28,10 @@ public class LAFTests
     public void setUp() throws Exception
     {
         Reporter.log("Creating test gui", true);
+        // TODO: We should just create a TestDriverGUI instead.
         testDriver = new DriverGUI();
         DriverGUI.initLAFLoader();
-        DriverGUI.createGUI();
+        DriverGUI.createGUI(Optional.of(testProfileName));
         testGUI = DriverGUI.gui;
         Reporter.log("Setting profile to " + testProfileName, true);
         testGUI.setProfileName(testProfileName);

@@ -5,6 +5,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import javax.swing.ImageIcon;
@@ -20,10 +21,11 @@ public class DriverGUI
     public static JFrame frame = null;
     private static ImageIcon img;
     public static ClassLoader contextClassLoader;
+    public static boolean isTesting = true; // TODO: We should just create a TestDriverGUI instead.
 
     public static void main(String[] args) throws IOException
     {
-
+        isTesting = false;
         Constants.init();
         try
         {
@@ -39,7 +41,7 @@ public class DriverGUI
 
         initLAFLoader();
 
-        createGUI();
+        createGUI(Optional.of("Default"));
 
         startGUI();
     }
@@ -60,10 +62,10 @@ public class DriverGUI
                 + " MB; space left in heap = " + (r.freeMemory() / (mb)) + " MB";
     }
 
-    public static void createGUI()
+    public static void createGUI(Optional<String> profileName)
     {
         frame = new JFrame("urChat");
-        gui = new UserGUI();
+        gui = new UserGUI(profileName);
     }
 
     public static void startGUI()
