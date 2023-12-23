@@ -1,5 +1,6 @@
 package urChatBasic.frontend;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -247,6 +248,19 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         return proxyPort;
     }
 
+    /**
+     * Server doesn't need the User List, so don't set it up.
+     */
+    @Override
+    protected void setupMainPanel()
+    {
+        mainPanel.setLayout(new BorderLayout());
+        setupMainTextArea();
+        mainPanel.add(channelScroll, BorderLayout.CENTER);
+        setupBottomPanel();
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+    }
+
     // The server tab right-click menu
     class ServerPopUp extends JPopupMenu
     {
@@ -416,7 +430,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     {
         IRCRoomBase tempRoom = getCreatedRoom(channelName, false);
 
-        if(tempRoom != null)
+        if(tempRoom != null && tempRoom instanceof IRCChannel)
         {
             return (IRCChannel) tempRoom;
         }

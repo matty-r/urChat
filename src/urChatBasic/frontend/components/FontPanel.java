@@ -61,7 +61,7 @@ public class FontPanel extends JPanel
             @Override
             public void actionPerformed (ActionEvent arg0)
             {
-                colourDialog = new ColourDialog(styleName, defaultStyle, getSettingsPath());
+                colourDialog = new ColourDialog(styleName, getDefaultStyle(), getSettingsPath());
 
                 colourDialog.getColourPanel().addSaveListener(e -> {
                     Constants.LOGGER.log(Level.INFO, "Font Panel says: Save Colour pressed");
@@ -172,6 +172,12 @@ public class FontPanel extends JPanel
         defaultStyle = f.clone();
         colourDialog.getColourPanel().setDefaultStyle(defaultStyle);
         loadStyle();
+        fireSaveListeners();
+    }
+
+    private URStyle getDefaultStyle ()
+    {
+        return defaultStyle;
     }
 
     public URStyle getStyle ()

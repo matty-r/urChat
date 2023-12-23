@@ -1937,14 +1937,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         @Override
         public void actionPerformed (ActionEvent arg0)
         {
+            clientFontPanel.loadStyle();
+
             for (int index = 0; index < tabbedPane.getTabCount(); index++)
             {
                 Component tab = tabbedPane.getComponentAt(index);
 
                 if (tab instanceof IRCRoomBase)
                 {
-                    tab.setFont(clientFontPanel.getFont());
-                    ((IRCRoomBase) tab).getFontPanel().setDefaultStyle(clientFontPanel.getStyle());
+                    tab.setFont(getStyle().getFont());
+                    ((IRCRoomBase) tab).getFontPanel().setDefaultStyle(getStyle());
                 }
             }
 
@@ -1953,13 +1955,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
                 if(favouriteItem.favFontDialog != null)
                 {
-                    favouriteItem.favFontDialog.getFontPanel().setDefaultStyle(clientFontPanel.getStyle());
+                    favouriteItem.favFontDialog.getFontPanel().setDefaultStyle(getStyle());
                     favouriteItem.favFontDialog.getFontPanel().loadStyle();
                 }
             }
 
             // defaultStyle = clientFontPanel.getStyle();
-            clientFontPanel.loadStyle();
             previewLineFormatter.updateStyles(getStyle());
         }
     }
@@ -2125,31 +2126,39 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // Update the fonts and popup menus - these aren't under the component tree
     private void updateExtras ()
     {
-        for (int index = 0; index < tabbedPane.getTabCount(); index++)
-        {
-            Component tab = tabbedPane.getComponentAt(index);
+        SwingUtilities.invokeLater(new Runnable() {
 
-            if (tab instanceof IRCRoomBase)
+            @Override
+            public void run ()
             {
-                // tab.setFont(clientFontPanel.getFont());
-                IRCRoomBase roomTab = IRCRoomBase.class.cast(tab);
-                // roomTab.getFontPanel().setDefaultFont(clientFontPanel.getFont());
-                roomTab.getFontPanel().setDefaultStyle(defaultStyle);
-                // roomTab.resetLineFormatter();
-                roomTab.getLineFormatter().updateStyles(getStyle());
-                SwingUtilities.updateComponentTreeUI(roomTab.myMenu);
-                SwingUtilities.updateComponentTreeUI(roomTab.getFontPanel());
+                for (int index = 0; index < tabbedPane.getTabCount(); index++)
+                {
+                    Component tab = tabbedPane.getComponentAt(index);
+
+                    if (tab instanceof IRCRoomBase)
+                    {
+                        // tab.setFont(clientFontPanel.getFont());
+                        IRCRoomBase roomTab = IRCRoomBase.class.cast(tab);
+                        // roomTab.getFontPanel().setDefaultFont(clientFontPanel.getFont());
+                        roomTab.getFontPanel().setDefaultStyle(defaultStyle);
+                        // roomTab.resetLineFormatter();
+                        roomTab.getLineFormatter().updateStyles(getStyle());
+                        SwingUtilities.updateComponentTreeUI(roomTab.myMenu);
+                        SwingUtilities.updateComponentTreeUI(roomTab.getFontPanel());
+                    }
+                }
+
+                for (int index = 0; index < favouritesList.getModel().getSize(); index++)
+                {
+                    FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
+                    SwingUtilities.updateComponentTreeUI(favouriteItem.myMenu);
+                }
+
+                // update the styles in the preview text area
+                updatePreviewTextArea();
             }
-        }
 
-        for (int index = 0; index < favouritesList.getModel().getSize(); index++)
-        {
-            FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
-            SwingUtilities.updateComponentTreeUI(favouriteItem.myMenu);
-        }
-
-        // update the styles in the preview text area
-        updatePreviewTextArea();
+        });
     }
 
     /*

@@ -194,17 +194,16 @@ public class ColourPanel extends JPanel implements ChangeListener
     {
         defaultStyle = newStyle.clone();
         loadStyle();
+        fireSaveListeners();
     }
 
     public void setStyle (URStyle newStyle)
     {
         newStyle.getBackground().ifPresent(bg -> {
-            TCC.setColor(bg);
             setPreviewColour(bg, false);
         });
 
         newStyle.getForeground().ifPresent(fg -> {
-            TCC.setColor(fg);
             setPreviewColour(fg, true);
     });
 

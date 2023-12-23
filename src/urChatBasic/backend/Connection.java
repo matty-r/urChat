@@ -41,9 +41,9 @@ public class Connection implements ConnectionBase
 
     // Connection keep alive stuff
     // Starts the timer with an start delay
-    private Timer keepAliveTimer = new Timer((int)Duration.ofSeconds(30).toMillis(), new PingKeepalive());
+    private Timer keepAliveTimer = new Timer((int) Duration.ofSeconds(30).toMillis(), new PingKeepalive());
     // Rate in which to send a PING to the server
-    private final int PING_RATE_MS = (int)Duration.ofMinutes(5).toMillis();
+    private final int PING_RATE_MS = (int) Duration.ofMinutes(5).toMillis();
     private boolean pingReceived = true;
     private final int MAX_RESPONSE_FAILURES = 2;
     private int currentFailures = 0;
@@ -54,7 +54,7 @@ public class Connection implements ConnectionBase
 
     public UserGUIBase gui = DriverGUI.gui;
 
-    public Connection(IRCServerBase server)
+    public Connection (IRCServerBase server)
     {
         messageHandler = new MessageHandler(server);
         this.server = server;
@@ -66,7 +66,7 @@ public class Connection implements ConnectionBase
      * @see urChatBasic.base.ConnectionBase#isConnected()
      */
     @Override
-    public Boolean isConnected()
+    public Boolean isConnected ()
     {
         return !shutdown;
     }
@@ -77,12 +77,12 @@ public class Connection implements ConnectionBase
      * @see urChatBasic.base.ConnectionBase#getServer()
      */
     @Override
-    public IRCServerBase getServer()
+    public IRCServerBase getServer ()
     {
         return this.server;
     }
 
-    private void startUp() throws IOException
+    private void startUp () throws IOException
     {
         shutdown = false;
 
@@ -181,32 +181,38 @@ public class Connection implements ConnectionBase
 
     private class PingKeepalive implements ActionListener
     {
-        public void actionPerformed(ActionEvent event)
+        public void actionPerformed (ActionEvent event)
         {
             SwingUtilities.invokeLater(new Runnable()
             {
-                public void run()
+                public void run ()
                 {
                     try
                     {
-                        if(shutdown)
-                            keepAliveTimer.stop();
-
-                        if(!pingReceived)
+                        if (shutdown)
                         {
-                            currentFailures ++;
-                            localMessage("Haven't received the last "+currentFailures+" pings, something is wrong. Will reconnect after "+MAX_RESPONSE_FAILURES+ " fails");
-                            if(currentFailures >= MAX_RESPONSE_FAILURES)
+                            keepAliveTimer.stop();
+                        } else
+                        {
+                            if (!pingReceived)
                             {
-                                // This will cause stuff to close, but then also reconnect.. maybe?
-                                shutdown = true;
-                                reconnect = true;
-                            }
-                        } else {
-                            pingReceived = false;
+                                currentFailures++;
+                                localMessage("Haven't received the last " + currentFailures
+                                        + " pings, something is wrong. Will reconnect after " + MAX_RESPONSE_FAILURES
+                                        + " fails");
+                                if (currentFailures >= MAX_RESPONSE_FAILURES)
+                                {
+                                    // This will cause stuff to close, but then also reconnect.. maybe?
+                                    shutdown = true;
+                                    reconnect = true;
+                                }
+                            } else
+                            {
+                                pingReceived = false;
 
-                            writer.write("PING "+new Date().toInstant().toEpochMilli()+"\r\n");
-                            writer.flush();
+                                writer.write("PING " + new Date().toInstant().toEpochMilli() + "\r\n");
+                                writer.flush();
+                            }
                         }
                     } catch (IOException e)
                     {
@@ -226,7 +232,7 @@ public class Connection implements ConnectionBase
         pingReceived = true;
     }
 
-    public MessageHandler getMessageHandler()
+    public MessageHandler getMessageHandler ()
     {
         return messageHandler;
     }
@@ -237,7 +243,7 @@ public class Connection implements ConnectionBase
      * @see urChatBasic.base.ConnectionBase#sendClientText(java.lang.String, java.lang.String)
      */
     @Override
-    public void sendClientText(String clientText, String fromChannel) throws IOException
+    public void sendClientText (String clientText, String fromChannel) throws IOException
     {
         String[] tempTextArray = clientText.split(" ");
         String outText = "";
@@ -264,11 +270,11 @@ public class Connection implements ConnectionBase
 
 
 
-                String msgPrefix = ":"+ getServer().getNick()+"!~"+ getServer().getNick()+"@urchatclient";
+                String msgPrefix = ":" + getServer().getNick() + "!~" + getServer().getNick() + "@urchatclient";
 
-                if(!tempTextArray[1].equalsIgnoreCase(getServer().getNick()))
+                if (!tempTextArray[1].equalsIgnoreCase(getServer().getNick()))
                 {
-                    clientMessage = messageHandler.new Message(msgPrefix + " " +outText);
+                    clientMessage = messageHandler.new Message(msgPrefix + " " + outText);
                 }
 
                 // TODO: Set current tab to this new priv tab
@@ -288,19 +294,19 @@ public class Connection implements ConnectionBase
                 outText = "PRIVMSG " + fromChannel + " :" + Constants.CTCP_DELIMITER + "ACTION " + tempText
                         + Constants.CTCP_DELIMITER + "\r\n";
 
-                String msgPrefix = ":"+ getServer().getNick()+"!~"+ getServer().getNick()+"@urchatclient";
-                clientMessage = messageHandler.new Message(msgPrefix + " " +outText);
+                String msgPrefix = ":" + getServer().getNick() + "!~" + getServer().getNick() + "@urchatclient";
+                clientMessage = messageHandler.new Message(msgPrefix + " " + outText);
             } else if (clientText.startsWith("CAP") || clientText.startsWith("AUTHENTICATE"))
             {
                 outText = clientText + "\r\n";
             } else
             {
-                if(null != getServer().getCreatedChannel(fromChannel))
+                if (null != getServer().getCreatedChannel(fromChannel))
                 {
                     outText = "PRIVMSG " + fromChannel + " :" + clientText + "\r\n";
 
-                    String msgPrefix = ":"+ getServer().getNick()+"!~"+ getServer().getNick()+"@urchatclient";
-                    clientMessage = messageHandler.new Message(msgPrefix + " " +outText);
+                    String msgPrefix = ":" + getServer().getNick() + "!~" + getServer().getNick() + "@urchatclient";
+                    clientMessage = messageHandler.new Message(msgPrefix + " " + outText);
 
                     // server.printChannelText(fromChannel, clientText, getServer().getNick());
                 }
@@ -308,37 +314,44 @@ public class Connection implements ConnectionBase
 
             if (isConnected())
             {
-                try {
+                try
+                {
                     writer.write(outText);
                     writer.flush();
-                } catch (Exception e) {
+                } catch (Exception e)
+                {
                     Constants.LOGGER.log(Level.SEVERE, "Problem writing to socket: " + e.toString() + outText);
                 }
 
-                try {
-                    if(null != clientMessage)
+                try
+                {
+                    if (null != clientMessage)
                     {
                         clientMessage.exec();
                     }
-                } catch (Exception e) {
-                    Constants.LOGGER.log(Level.SEVERE, "Problem writing out client message: " + e.toString() + clientMessage.getRawMessage());
+                } catch (Exception e)
+                {
+                    Constants.LOGGER.log(Level.SEVERE,
+                            "Problem writing out client message: " + e.toString() + clientMessage.getRawMessage());
                 }
 
                 Constants.LOGGER.log(Level.FINE, "Client Text:- " + fromChannel + " " + outText);
-            } else {
+            } else
+            {
 
-                Constants.LOGGER.log(Level.WARNING, "Not connected. Unable to send text:- " + fromChannel + " " + clientMessage.getRawMessage());
+                Constants.LOGGER.log(Level.WARNING,
+                        "Not connected. Unable to send text:- " + fromChannel + " " + clientMessage.getRawMessage());
             }
         }
     }
 
-    private void localMessage(String message)
+    private void localMessage (String message)
     {
         server.printServerText(message);
         Constants.LOGGER.log(Level.INFO, "Local Text:-" + message);
     }
 
-    private void serverMessage(Message newMessage)
+    private void serverMessage (Message newMessage)
     {
         if (isConnected())
         {
@@ -359,7 +372,7 @@ public class Connection implements ConnectionBase
      * @see urChatBasic.base.ConnectionBase#run()
      */
     @Override
-    public void run()
+    public void run ()
     {
         try
         {
@@ -380,9 +393,7 @@ public class Connection implements ConnectionBase
                 writer.close();
                 mySocket.close();
                 run();
-            }
-            else
-            if (shutdown)
+            } else if (shutdown)
             {
                 Constants.LOGGER.log(Level.INFO, "Disconnected safely!");
             } else
@@ -403,7 +414,7 @@ public class Connection implements ConnectionBase
     }
 
     @Override
-    public void disconnect()
+    public void disconnect ()
     {
         shutdown = true;
     }
