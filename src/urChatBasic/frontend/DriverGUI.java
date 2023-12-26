@@ -41,7 +41,8 @@ public class DriverGUI
 
         initLAFLoader();
 
-        createGUI(Optional.of("Default"));
+        // This will load the default profile
+        createGUI(Optional.empty());
 
         startGUI();
     }

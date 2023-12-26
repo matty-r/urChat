@@ -96,8 +96,10 @@ public class Constants
     public static final String KEY_WINDOW_Y = "window position y";
     public static final String KEY_WINDOW_WIDTH = "window position width";
     public static final String KEY_WINDOW_HEIGHT = "window position height";
+    public static final String KEY_DEFAULT_PROFILE_NAME = "default profile";
 
     // Setting defaults
+    public static final String DEFAULT_PROFILE_NAME = "Default";
     public static final String DEFAULT_FIRST_CHANNEL = "#linux";
     public static final String DEFAULT_FIRST_SERVER = "irc.libera.chat";
     public static final String DEFAULT_FIRST_PORT = "6697";
@@ -157,6 +159,14 @@ public class Constants
         MEDIUM,
         SMALL,
         NONE
+    }
+
+    public enum Placement {
+        TOP,
+        RIGHT,
+        BOTTOM,
+        LEFT,
+        DEFAULT
     }
 
     // TODO: put all the font prefs in an enum?

@@ -28,6 +28,7 @@ import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.frontend.utils.Panels;
 import urChatBasic.base.UserGUIBase;
+import urChatBasic.base.Constants.Placement;
 import urChatBasic.base.Constants.Size;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
@@ -47,13 +48,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public Component currentSelectedTab;
 
     // Profile Preferences
-    public static String profileName = "Default";
-    protected EventListenerList profileListenerList = new EventListenerList();
+    public static String profileName;
+    protected static EventListenerList profileListenerList = new EventListenerList();
     protected transient ActionEvent actionEvent = null;
 
     // Options Panel
-    private JPanel optionsMainPanel = new OptionsPanel();
+    private JPanel optionsMainPanel = new MainOptionsPanel();
 
+    // Profile Panel
+    private JPanel profilePanel = new ProfilePanel((MainOptionsPanel) optionsMainPanel);
 
     // Client Options Panel
     private static final JPanel interfacePanel = new JPanel();
@@ -279,7 +282,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return null;
     }
 
-    public void addProfileChangeListener (ActionListener actionListener)
+    public static void addProfileChangeListener (ActionListener actionListener)
     {
         profileListenerList.add(ActionListener.class, actionListener);
     }
@@ -308,7 +311,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             {
                 if (actionEvent == null)
                 {
-                    actionEvent = new ActionEvent(((OptionsPanel) optionsMainPanel).getProfilePicker().getProfileComboBox(), i, TOOL_TIP_TEXT_KEY);
+                    actionEvent = new ActionEvent(((MainOptionsPanel) optionsMainPanel).getProfilePicker().getProfileComboBox(), i, TOOL_TIP_TEXT_KEY);
                 }
 
                 ((ActionListener) listeners[i + 1]).actionPerformed(actionEvent);
@@ -316,11 +319,35 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
+    public String getDefaultProfile ()
+    {
+        try
+        {
+            if(Arrays.asList(Constants.BASE_PREFS.keys()).contains(Constants.KEY_DEFAULT_PROFILE_NAME))
+            {
+                return Constants.BASE_PREFS.get(Constants.KEY_DEFAULT_PROFILE_NAME, Constants.DEFAULT_PROFILE_NAME);
+            }
+        } catch (BackingStoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        setDefaultProfile(Constants.DEFAULT_PROFILE_NAME);
+
+        return Constants.DEFAULT_PROFILE_NAME;
+    }
+
+    public void setDefaultProfile (String profileName)
+    {
+        Constants.BASE_PREFS.put(Constants.KEY_DEFAULT_PROFILE_NAME, profileName);
+    }
+
     @Override
     public void setProfileName (String newProfileName)
     {
         // save the current profile settings, if it exists
-        if ((((OptionsPanel) optionsMainPanel).getProfilePicker()).profileExists(profileName))
+        if ((((MainOptionsPanel) optionsMainPanel).getProfilePicker()).profileExists(profileName))
         {
             setClientSettings();
         }
@@ -331,6 +358,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // previewLineFormatter.setSettingsPath(getProfilePath());
         // now load the new profile settings
         getClientSettings(false);
+
+        fireProfileChangeListeners();
     }
 
     public void deleteProfile ()
@@ -760,7 +789,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     private void setupAppearancePanel ()
     {
-        Panels.addToPanel(appearancePanel, lafOptions, "Theme", Size.MEDIUM);
+        Panels.addToPanel(appearancePanel, lafOptions, "Theme", Placement.DEFAULT, Size.MEDIUM);
 
         // Set a custom renderer to display the look and feel names
         lafOptions.setRenderer(new DefaultListCellRenderer()
@@ -811,11 +840,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         updatePreviewTextArea();
 
-        Panels.addToPanel(appearancePanel, clientFontPanel, "Profile Font", null);
-        Panels.addToPanel(appearancePanel, timeStampField, "Timestamp Format", Size.MEDIUM);
+        Panels.addToPanel(appearancePanel, clientFontPanel, "Profile Font", Placement.DEFAULT, null);
+        Panels.addToPanel(appearancePanel, timeStampField, "Timestamp Format", Placement.DEFAULT, Size.MEDIUM);
 
-        Panels.addToPanel(appearancePanel, previewTextScroll, "Font Preview", null);
-        Panels.addToPanel(appearancePanel, styleLabel, "Preview Style", null);
+        Panels.addToPanel(appearancePanel, previewTextScroll, "Font Preview", Placement.DEFAULT, null);
+        Panels.addToPanel(appearancePanel, styleLabel, "Preview Style", Placement.DEFAULT, null);
     }
 
     public void updatePreviewTextArea ()
@@ -1509,6 +1538,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     public void getClientSettings (boolean loadWindowSettings)
     {
+        fireProfileChangeListeners();
+
         firstChannelTextField
                 .setText(getProfilePath().get(Constants.KEY_FIRST_CHANNEL, Constants.DEFAULT_FIRST_CHANNEL));
         servernameTextField.setText(getProfilePath().get(Constants.KEY_FIRST_SERVER, Constants.DEFAULT_FIRST_SERVER));
@@ -1706,7 +1737,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         tabbedPane.addChangeListener(new MainTabbedPanel_changeAdapter(this));
         tabbedPane.addMouseListener(new TabbedMouseListener());
-        ((OptionsPanel) optionsMainPanel).setupOptionsPanel();
+        ((MainOptionsPanel) optionsMainPanel).setupOptionsPanel();
         tabbedPane.addTab("Options", optionsMainPanel);
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
@@ -1823,6 +1854,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         if(initialProfile.isPresent())
             profileName = initialProfile.get();
+        else
+            profileName = getDefaultProfile();
     }
 
     public void setupUserGUI ()
