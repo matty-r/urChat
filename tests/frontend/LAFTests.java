@@ -33,6 +33,7 @@ public class LAFTests
         DriverGUI.initLAFLoader();
         DriverGUI.createGUI(Optional.of(testProfileName));
         testGUI = DriverGUI.gui;
+        testGUI.setupUserGUI();
         Reporter.log("Setting profile to " + testProfileName, true);
         testGUI.setProfileName(testProfileName);
         testGUI.getClientSettings(true);

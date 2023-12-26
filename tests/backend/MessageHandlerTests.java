@@ -49,6 +49,8 @@ public class MessageHandlerTests
         // TODO: We should just create a TestDriverGUI instead.
         DriverGUI.createGUI(java.util.Optional.of(testProfileName));
         testGUI = DriverGUI.gui;
+        testGUI.setupUserGUI();
+        
         Reporter.log("Setting profile to " + testProfileName, true);
         testGUI.getClientSettings(true);
         UserGUI.setTimeLineString("[HHmm]");

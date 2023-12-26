@@ -26,6 +26,7 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.dialogs.MessageDialog;
+import urChatBasic.frontend.utils.Panels;
 import urChatBasic.base.UserGUIBase;
 import urChatBasic.base.Constants.Size;
 import urChatBasic.base.capabilities.CapTypeBase;
@@ -42,28 +43,21 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // private String creationTime = (new Date()).toString();
     // Tabs
     public JTabbedPane tabbedPane = new DnDTabbedPane();
-    private final int OPTIONS_INDEX = 0;
     public Component previousSelectedTab;
     public Component currentSelectedTab;
 
     // Profile Preferences
-    private static String profileName = "Default";
+    public static String profileName = "Default";
     protected EventListenerList profileListenerList = new EventListenerList();
     protected transient ActionEvent actionEvent = null;
 
     // Options Panel
-    private JPanel optionsMainPanel = new JPanel();
-    private JPanel optionsLeftPanel = new JPanel();
-    private DefaultListModel<String> optionsArray = new DefaultListModel<String>();
-    private JList<String> optionsList = new JList<String>(optionsArray);
-    private JPanel optionsRightPanel = new JPanel();
+    private JPanel optionsMainPanel = new OptionsPanel();
 
-    private URVersionLabel urVersionLabel;
-    private ProfilePicker profilePicker;
 
     // Client Options Panel
     private static final JPanel interfacePanel = new JPanel();
-    private static final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
+    public static final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
 
     private static final JComboBox<LookAndFeelInfo> lafOptions =
             new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
@@ -107,11 +101,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     // Server Options Panel
     private static final JPanel connectionPanel = new JPanel();
-    private static final JScrollPane connectionScroller = new JScrollPane(connectionPanel);
+    public static final JScrollPane connectionScroller = new JScrollPane(connectionPanel);
 
     // Appearance Options Panel
     private static final JPanel appearancePanel = new JPanel();
-    private static final JScrollPane appearanceScroller = new JScrollPane(appearancePanel);
+    public static final JScrollPane appearanceScroller = new JScrollPane(appearancePanel);
 
     // Identification
     private static final JLabel userNameLabel = new JLabel("Nick:");
@@ -314,7 +308,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             {
                 if (actionEvent == null)
                 {
-                    actionEvent = new ActionEvent(profilePicker.getProfileComboBox(), i, TOOL_TIP_TEXT_KEY);
+                    actionEvent = new ActionEvent(((OptionsPanel) optionsMainPanel).getProfilePicker().getProfileComboBox(), i, TOOL_TIP_TEXT_KEY);
                 }
 
                 ((ActionListener) listeners[i + 1]).actionPerformed(actionEvent);
@@ -326,7 +320,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public void setProfileName (String newProfileName)
     {
         // save the current profile settings, if it exists
-        if (profilePicker.profileExists(profileName))
+        if ((((OptionsPanel) optionsMainPanel).getProfilePicker()).profileExists(profileName))
         {
             setClientSettings();
         }
@@ -513,117 +507,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return logClientText.isSelected();
 
     }
-
-    /*
-     * public Boolean isLinksClickable(){ return enableClickableLinks.isSelected(); }
-     */
-
-    private void setupOptionsPanel ()
-    {
-        optionsMainPanel.setLayout(new BorderLayout());
-
-        optionsArray.addElement("Connection");
-        optionsArray.addElement("Interface");
-        optionsArray.addElement("Appearance");
-
-        setupLeftOptionsPanel();
-        setupRightOptionsPanel();
-
-        optionsMainPanel.add(optionsLeftPanel, BorderLayout.LINE_START);
-        optionsMainPanel.add(optionsRightPanel, BorderLayout.CENTER);
-        optionsList.setSelectedIndex(OPTIONS_INDEX);
-
-        optionsRightPanel.add(connectionScroller, "Connection");
-        optionsRightPanel.add(interfaceScroller, "Interface");
-        optionsRightPanel.add(appearanceScroller, "Appearance");
-    }
-
-    /**
-     * Houses the options list
-     */
-    private void setupLeftOptionsPanel ()
-    {
-        optionsLeftPanel.setBackground(optionsList.getBackground());
-        optionsLeftPanel.setPreferredSize(new Dimension(100, 0));
-        optionsLeftPanel.setLayout(new BorderLayout());
-
-        optionsLeftPanel.add(optionsList, BorderLayout.NORTH);
-
-        JPanel extrasPanel = new JPanel(new BorderLayout());
-        extrasPanel.setBackground(optionsLeftPanel.getBackground());
-
-        urVersionLabel = new URVersionLabel(extrasPanel);
-        profilePicker = new ProfilePicker(extrasPanel, profileName);
-
-        extrasPanel.add(profilePicker, BorderLayout.NORTH);
-        extrasPanel.add(urVersionLabel, BorderLayout.SOUTH);
-
-        optionsLeftPanel.add(extrasPanel, BorderLayout.SOUTH);
-    }
-
-    private void setupRightOptionsPanel ()
-    {
-        ListSelectionModel listSelectionModel = optionsList.getSelectionModel();
-        listSelectionModel.addListSelectionListener(new OptionsListSelectionHandler());
-
-        // optionsRightPanel.setBackground(Color.BLACK);
-        optionsRightPanel.setLayout(new CardLayout());
-
-        setupConnectionPanel();
-        setupInterfacePanel();
-        setupAppearancePanel();
-    }
-
-    private static void addToPanel (JPanel targetPanel, Component newComponent, String label, Size targetSize)
-    {
-
-        int topSpacing = 6;
-        final int TOP_ALIGNED = 0;
-        final int LEFT_ALIGNED = 0;
-        final int LEFT_SPACING = 6;
-
-        if (null != label && !label.isBlank())
-        {
-            addToPanel(targetPanel, new JLabel(label + ":"), null, targetSize);
-            // There is a label, so we want the added component to be aligned with the label
-            topSpacing = 0;
-        }
-
-        if (targetPanel.getLayout().getClass() != SpringLayout.class)
-        {
-            targetPanel.setLayout(new SpringLayout());
-        }
-
-        SpringLayout layout = (SpringLayout) targetPanel.getLayout();
-        Component[] components = targetPanel.getComponents();
-
-        if (components.length > 0)
-        {
-            Component previousComponent = components[components.length - 1];
-
-            // Add newComponent to the targetPanel
-            targetPanel.add(newComponent);
-
-            // Set constraints for newComponent
-            layout.putConstraint(SpringLayout.NORTH, newComponent, topSpacing, SpringLayout.SOUTH, previousComponent);
-            layout.putConstraint(SpringLayout.WEST, newComponent, LEFT_ALIGNED, SpringLayout.WEST, previousComponent);
-
-            if (null != targetSize && newComponent instanceof JTextField)
-                ((JTextField) newComponent).setColumns(12);
-        } else
-        {
-            // If it's the first component, align it against the targetPanel
-            targetPanel.add(newComponent);
-
-            // Set constraints for newComponent when it's the first component
-            layout.putConstraint(SpringLayout.NORTH, newComponent, topSpacing * 2, SpringLayout.NORTH, targetPanel);
-            layout.putConstraint(SpringLayout.WEST, newComponent, LEFT_SPACING * 2, SpringLayout.WEST, targetPanel);
-
-            if (null != targetSize && newComponent instanceof JTextField)
-                ((JTextField) newComponent).setColumns(12);
-        }
-    }
-
 
     /**
      * Add the components to the Server Options Panel.
@@ -877,7 +760,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     private void setupAppearancePanel ()
     {
-        addToPanel(appearancePanel, lafOptions, "Theme", Size.MEDIUM);
+        Panels.addToPanel(appearancePanel, lafOptions, "Theme", Size.MEDIUM);
 
         // Set a custom renderer to display the look and feel names
         lafOptions.setRenderer(new DefaultListCellRenderer()
@@ -928,11 +811,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         updatePreviewTextArea();
 
-        addToPanel(appearancePanel, clientFontPanel, "Profile Font", null);
-        addToPanel(appearancePanel, timeStampField, "Timestamp Format", Size.MEDIUM);
+        Panels.addToPanel(appearancePanel, clientFontPanel, "Profile Font", null);
+        Panels.addToPanel(appearancePanel, timeStampField, "Timestamp Format", Size.MEDIUM);
 
-        addToPanel(appearancePanel, previewTextScroll, "Font Preview", null);
-        addToPanel(appearancePanel, styleLabel, "Preview Style", null);
+        Panels.addToPanel(appearancePanel, previewTextScroll, "Font Preview", null);
+        Panels.addToPanel(appearancePanel, styleLabel, "Preview Style", null);
     }
 
     public void updatePreviewTextArea ()
@@ -1442,7 +1325,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     server.connect();
                 }
 
-                profilePicker.setEnabled(false);
+                // profilePicker.setEnabled(false);
             } else if (!authenticationType().equals(CapabilityTypes.NONE.getType()))
             {
                 MessageDialog dialog = new MessageDialog(
@@ -1550,8 +1433,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             createdServers.remove(tempServer);
         }
 
-        if(createdServers.size() == 0)
-            profilePicker.setEnabled(true);
+        // if(createdServers.size() == 0)
+        //     profilePicker.setEnabled(true);
     }
 
     /*
@@ -1566,8 +1449,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         tabbedPane.remove((IRCServer) server);
         createdServers.remove(server);
 
-        if(createdServers.size() == 0)
-            profilePicker.setEnabled(true);
+        // if(createdServers.size() == 0)
+        //     profilePicker.setEnabled(true);
     }
 
     /**
@@ -1819,40 +1702,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    /**
-     * Used to change which panel to show when you choose an option under the Options Tab.
-     *
-     * @author Matt
-     *
-     */
-    class OptionsListSelectionHandler implements ListSelectionListener
-    {
-        public void valueChanged (ListSelectionEvent e)
-        {
-            ListSelectionModel lsm = (ListSelectionModel) e.getSource();
-
-            if (!(lsm.isSelectionEmpty()))
-            {
-                // Find out which indexes are selected.
-                int minIndex = lsm.getMinSelectionIndex();
-                int maxIndex = lsm.getMaxSelectionIndex();
-                for (int i = minIndex; i <= maxIndex; i++)
-                {
-                    if (lsm.isSelectedIndex(i))
-                    {
-                        CardLayout cl = (CardLayout) (optionsRightPanel.getLayout());
-                        cl.show(optionsRightPanel, (String) optionsArray.getElementAt(i));
-                    }
-                }
-            }
-        }
-    }
-
     private void setupTabbedPane ()
     {
         tabbedPane.addChangeListener(new MainTabbedPanel_changeAdapter(this));
         tabbedPane.addMouseListener(new TabbedMouseListener());
-        setupOptionsPanel();
+        ((OptionsPanel) optionsMainPanel).setupOptionsPanel();
         tabbedPane.addTab("Options", optionsMainPanel);
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
@@ -1965,32 +1819,22 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    // protected class ResetFontListener implements ActionListener
-    // {
-    //     @Override
-    //     public void actionPerformed (ActionEvent arg0)
-    //     {
-    //         getProfilePath().put(Constants.KEY_FONT_FAMILY, Constants.DEFAULT_FONT_GENERAL.getFamily());
-    //         getProfilePath().putBoolean(Constants.KEY_FONT_BOLD, Constants.DEFAULT_FONT_GENERAL.isBold());
-    //         getProfilePath().putBoolean(Constants.KEY_FONT_ITALIC, Constants.DEFAULT_FONT_GENERAL.isItalic());
-    //         getProfilePath().putInt(Constants.KEY_FONT_SIZE, Constants.DEFAULT_FONT_GENERAL.getSize());
-
-    //         clientFontPanel.loadStyle();
-
-    //         clientFontPanel.getSaveButton().doClick();
-    //     }
-    // }
-
-
     public UserGUI (Optional<String> initialProfile)
     {
-        // this.creationTime = (new Date()).toString();
         if(initialProfile.isPresent())
             profileName = initialProfile.get();
+    }
+
+    public void setupUserGUI ()
+    {
         // Create the initial size of the panel
         setupTabbedPane();
-        this.setLayout(new BorderLayout());
-        this.add(tabbedPane, BorderLayout.CENTER);
+        setLayout(new BorderLayout());
+        add(tabbedPane, BorderLayout.CENTER);
+
+        setupConnectionPanel();
+        setupInterfacePanel();
+        setupAppearancePanel();
 
         // this.setBackground(Color.gray);
         getClientSettings(true);
@@ -2169,6 +2013,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     @Override
     public void run ()
     {
+        setupUserGUI();
+
         Thread.currentThread().setContextClassLoader(DriverGUI.contextClassLoader);
         Thread.currentThread().setUncaughtExceptionHandler(new URUncaughtExceptionHandler());
 
