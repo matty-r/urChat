@@ -2,7 +2,6 @@ package urChatBasic.frontend.components;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -23,22 +22,29 @@ import java.util.stream.Stream;
 
 public class ProfilePicker extends JPanel
 {
-    private JComboBox<String> profileComboBox = new JComboBox<String>();
-    private JLabel selectProfileLabel = new JLabel("Select Profile:");
+    private JComboBox<String> profileComboBox;
     private final JButton saveProfile = new JButton("Save");
 
-    public ProfilePicker (JPanel parentPanel, String initialProfile)
+    public ProfilePicker (String initialProfile, Boolean showSaveButton)
     {
-        loadProfiles(initialProfile);
+        if (profileComboBox == null)
+        {
+            profileComboBox = new JComboBox<String>();
+            loadProfiles(initialProfile);
+            profileComboBox.setEditable(true);
+        }
 
-        profileComboBox.setEditable(true);
-        setBackground(parentPanel.getBackground());
-        setLayout(new GridLayout(3, 1));
+        // setBackground(Color.BLUE);
+        setLayout(new GridLayout(1, 1));
 
         // Add components to the panel
-        add(selectProfileLabel);
         add(profileComboBox);
-        add(saveProfile);
+
+        if (showSaveButton)
+        {
+            setLayout(new GridLayout(2, 1));
+            add(saveProfile);
+        }
 
         profileComboBox.addActionListener(e -> {
             String selectedString = profileComboBox.getSelectedItem().toString();

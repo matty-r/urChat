@@ -26,6 +26,7 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.dialogs.MessageDialog;
+import urChatBasic.frontend.panels.UROptionsPanel;
 import urChatBasic.frontend.utils.Panels;
 import urChatBasic.base.UserGUIBase;
 import urChatBasic.base.Constants.Placement;
@@ -53,14 +54,19 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     protected transient ActionEvent actionEvent = null;
 
     // Options Panel
-    private JPanel optionsMainPanel = new MainOptionsPanel();
+    private static JPanel optionsMainPanel = new MainOptionsPanel();
+    // Server Options Panel
+    private final UROptionsPanel connectionPanel = new UROptionsPanel("Connection", (MainOptionsPanel) optionsMainPanel);
+
+    private final UROptionsPanel interfacePanel = new UROptionsPanel("Interface", (MainOptionsPanel) optionsMainPanel);
+
+    // Appearance Options Panel
+    private final UROptionsPanel appearancePanel = new UROptionsPanel("Appearance", (MainOptionsPanel) optionsMainPanel);
 
     // Profile Panel
-    private JPanel profilePanel = new ProfilePanel((MainOptionsPanel) optionsMainPanel);
+    private UROptionsPanel profilePanel = new ProfilePanel((MainOptionsPanel) optionsMainPanel);
 
-    // Client Options Panel
-    private static final JPanel interfacePanel = new JPanel();
-    public static final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
+    // public static final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
 
     private static final JComboBox<LookAndFeelInfo> lafOptions =
             new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
@@ -101,14 +107,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static final JLabel eventTickerLabel = new JLabel("Event Ticker Delay:");
     private final JSlider eventTickerDelay =
             new JSlider(JSlider.HORIZONTAL, TICKER_DELAY_MIN, TICKER_DELAY_MAX, TICKER_DELAY_INIT);
-
-    // Server Options Panel
-    private static final JPanel connectionPanel = new JPanel();
-    public static final JScrollPane connectionScroller = new JScrollPane(connectionPanel);
-
-    // Appearance Options Panel
-    private static final JPanel appearancePanel = new JPanel();
-    public static final JScrollPane appearanceScroller = new JScrollPane(appearancePanel);
 
     // Identification
     private static final JLabel userNameLabel = new JLabel("Nick:");
@@ -311,7 +309,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             {
                 if (actionEvent == null)
                 {
-                    actionEvent = new ActionEvent(((MainOptionsPanel) optionsMainPanel).getProfilePicker().getProfileComboBox(), i, TOOL_TIP_TEXT_KEY);
+                    actionEvent = new ActionEvent(getProfilePicker().getProfileComboBox(), i, TOOL_TIP_TEXT_KEY);
                 }
 
                 ((ActionListener) listeners[i + 1]).actionPerformed(actionEvent);
@@ -319,7 +317,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    public String getDefaultProfile ()
+    public static String getDefaultProfile ()
     {
         try
         {
@@ -338,16 +336,26 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return Constants.DEFAULT_PROFILE_NAME;
     }
 
-    public void setDefaultProfile (String profileName)
+    public static void setDefaultProfile (String profileName)
     {
         Constants.BASE_PREFS.put(Constants.KEY_DEFAULT_PROFILE_NAME, profileName);
+    }
+
+    public ProfilePicker getProfilePicker ()
+    {
+        return (((MainOptionsPanel) optionsMainPanel).getProfilePicker());
+    }
+
+    public UROptionsPanel getProfilePanel ()
+    {
+        return profilePanel;
     }
 
     @Override
     public void setProfileName (String newProfileName)
     {
         // save the current profile settings, if it exists
-        if ((((MainOptionsPanel) optionsMainPanel).getProfilePicker()).profileExists(profileName))
+        if (getProfilePicker().profileExists(profileName))
         {
             setClientSettings();
         }

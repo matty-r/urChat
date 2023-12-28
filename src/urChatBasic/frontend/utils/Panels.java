@@ -8,9 +8,28 @@ import javax.swing.SpringLayout;
 import urChatBasic.base.Constants.Placement;
 import urChatBasic.base.Constants.Size;
 
-public class Panels {
+public class Panels
+{
 
-    public static void addToPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment, Size targetSize)
+    public static void addToPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
+            Size targetSize)
+    {
+        Class<? extends LayoutManager> layoutClass = targetPanel.getLayout().getClass();
+
+        if (layoutClass == BorderLayout.class)
+        {
+            addToBorderPanel(targetPanel, newComponent, label, alignment, targetSize);
+        } else
+        {
+            if (targetPanel.getLayout().getClass() != SpringLayout.class)
+                targetPanel.setLayout(new SpringLayout());
+
+            addToSpringPanel(targetPanel, newComponent, label, alignment, targetSize);
+        }
+    }
+
+    public static void addToSpringPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
+            Size targetSize)
     {
 
         int topSpacing = 6;
@@ -52,27 +71,30 @@ public class Panels {
             String previousLeftAlign = SpringLayout.WEST;
 
             // Set constraints for newComponent
-            switch (alignment) {
+            switch (alignment)
+            {
                 case RIGHT:
-                        // attach the new component inline and to the right of the previous
-                        topSpacing = 0;
-                        newComponentTopAlign = SpringLayout.NORTH;
-                        previousTopAlign = SpringLayout.NORTH;
-                        newComponentLeftAlign = SpringLayout.WEST;
-                        previousLeftAlign = SpringLayout.EAST;
+                    // attach the new component inline and to the right of the previous
+                    topSpacing = 0;
+                    newComponentTopAlign = SpringLayout.NORTH;
+                    previousTopAlign = SpringLayout.NORTH;
+                    newComponentLeftAlign = SpringLayout.WEST;
+                    previousLeftAlign = SpringLayout.EAST;
                     break;
                 default:
-                        // Aligned with the first component
-                        previousLeftComponent = components[0];
-                        newComponentTopAlign = SpringLayout.NORTH;
-                        previousTopAlign = SpringLayout.SOUTH;
-                        newComponentLeftAlign = SpringLayout.WEST;
-                        previousLeftAlign = SpringLayout.WEST;
+                    // Aligned with the first component
+                    previousLeftComponent = components[0];
+                    newComponentTopAlign = SpringLayout.NORTH;
+                    previousTopAlign = SpringLayout.SOUTH;
+                    newComponentLeftAlign = SpringLayout.WEST;
+                    previousLeftAlign = SpringLayout.WEST;
                     break;
             }
 
-            layout.putConstraint(newComponentTopAlign, newComponent, topSpacing, previousTopAlign, previousTopComponent);
-            layout.putConstraint(newComponentLeftAlign, newComponent, LEFT_ALIGNED, previousLeftAlign, previousLeftComponent);
+            layout.putConstraint(newComponentTopAlign, newComponent, topSpacing, previousTopAlign,
+                    previousTopComponent);
+            layout.putConstraint(newComponentLeftAlign, newComponent, LEFT_ALIGNED, previousLeftAlign,
+                    previousLeftComponent);
 
             if (null != targetSize && newComponent instanceof JTextField)
                 ((JTextField) newComponent).setColumns(12);
@@ -88,5 +110,38 @@ public class Panels {
             if (null != targetSize && newComponent instanceof JTextField)
                 ((JTextField) newComponent).setColumns(12);
         }
+    }
+
+    public static void addToBorderPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
+            Size targetSize)
+    {
+        if (null != label && !label.isBlank())
+        {
+            JPanel newPanelWithLabel = new JPanel(new BorderLayout());
+            Panels.addToPanel(newPanelWithLabel, new JLabel(label + ":"), null, Placement.TOP, targetSize);
+            Panels.addToPanel(newPanelWithLabel, newComponent, null, Placement.BOTTOM, targetSize);
+            newComponent = newPanelWithLabel;
+        }
+
+        switch (alignment)
+        {
+            case BOTTOM:
+                targetPanel.add(newComponent, BorderLayout.SOUTH);
+                break;
+            case TOP:
+                targetPanel.add(newComponent, BorderLayout.NORTH);
+                break;
+            default:
+                targetPanel.add(newComponent);
+                break;
+        }
+
+        if (null != targetSize && newComponent instanceof JTextField)
+            ((JTextField) newComponent).setColumns(12);
+
+        // layout.putConstraint(newComponentTopAlign, newComponent, topSpacing, previousTopAlign,
+        // previousTopComponent);
+        // layout.putConstraint(newComponentLeftAlign, newComponent, LEFT_ALIGNED, previousLeftAlign,
+        // previousLeftComponent);
     }
 }
