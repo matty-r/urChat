@@ -1,5 +1,6 @@
 package urChatBasic.base;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
 import java.net.URL;
@@ -158,7 +159,21 @@ public class Constants
         LARGE,
         MEDIUM,
         SMALL,
-        NONE
+        CUSTOM,
+        NONE;
+
+        Dimension sizeDimension;
+
+        public Size customSize (int width, int height)
+        {
+            sizeDimension = new Dimension(width, height);
+            return CUSTOM;
+        }
+
+        public Dimension getDimension ()
+        {
+            return sizeDimension;
+        }
     }
 
     public enum Placement {

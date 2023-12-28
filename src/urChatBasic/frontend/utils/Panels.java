@@ -96,8 +96,14 @@ public class Panels
             layout.putConstraint(newComponentLeftAlign, newComponent, LEFT_ALIGNED, previousLeftAlign,
                     previousLeftComponent);
 
-            if (null != targetSize && newComponent instanceof JTextField)
-                ((JTextField) newComponent).setColumns(12);
+            if (null != targetSize)
+            {
+                if(newComponent instanceof JTextField)
+                    ((JTextField) newComponent).setColumns(12);
+                else if(targetSize == Size.CUSTOM)
+                    newComponent.setPreferredSize(targetSize.getDimension());
+            }
+
         } else
         {
             // If it's the first component, align it against the targetPanel

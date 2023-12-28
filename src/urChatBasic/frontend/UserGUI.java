@@ -365,9 +365,20 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // clientFontPanel.setSettingsPath(getProfilePath());
         // previewLineFormatter.setSettingsPath(getProfilePath());
         // now load the new profile settings
-        getClientSettings(false);
 
-        fireProfileChangeListeners();
+        getClientSettings(false);
+    }
+
+    public void deleteProfile (String profileName)
+    {
+        try
+        {
+            Constants.BASE_PREFS.node(profileName).removeNode();
+        } catch (BackingStoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public void deleteProfile ()
@@ -1542,7 +1553,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     }
 
     /**
-     * Loads the settings from the registry/Settings API
+     * Loads the settings from the registry/Settings API, and fires the profile change listeners.
      */
     public void getClientSettings (boolean loadWindowSettings)
     {

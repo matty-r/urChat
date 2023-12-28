@@ -5,33 +5,31 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.frontend.DriverGUI;
+import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.dialogs.MessageDialog;
+import urChatBasic.frontend.dialogs.YesNoDialog;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import java.util.prefs.BackingStoreException;
-import java.util.stream.Collectors;
 
 public class ProfilePicker extends JPanel
 {
     private List<String> allProfiles;
     private JComboBox<String> profileComboBox;
     private final JButton saveProfile = new JButton("Save");
+    private int selectedIndex = 0;
 
     public ProfilePicker (String initialProfile, Boolean showSaveButton)
     {
-        if (profileComboBox == null)
-        {
-            profileComboBox = new JComboBox<String>();
-            loadProfiles(initialProfile);
-            profileComboBox.setEditable(true);
-        }
+        profileComboBox = new JComboBox<String>();
+        loadProfiles(initialProfile);
+        profileComboBox.setEditable(true);
 
         // setBackground(Color.BLUE);
         setLayout(new GridLayout(1, 1));
@@ -46,33 +44,61 @@ public class ProfilePicker extends JPanel
         }
 
         profileComboBox.addActionListener(e -> {
-            String selectedString = profileComboBox.getSelectedItem().toString();
-            if (DriverGUI.gui.getProfileName() != selectedString && !selectedString.isBlank())
+            String profileString = profileComboBox.getSelectedItem().toString();
+            boolean deleteProfile = false;
+            // Did we have an item selected, but we just deleted the text?
+            if(profileString.isEmpty() && profileComboBox.getSelectedIndex() == -1 && profileComboBox.getComponentCount() > 0)
+            {
+                deleteProfile = true;
+                profileString = profileComboBox.getItemAt(selectedIndex);
+            } else {
+                selectedIndex = profileComboBox.getSelectedIndex();
+            }
+
+            if (DriverGUI.gui.getProfileName() != profileString && !deleteProfile)
             {
                 // TODO Show dialog to either rename the existing profile, or create a new profile
                 String currentProfile = DriverGUI.gui.getProfileName();
 
-                if (!profileExists(selectedString))
+                if (!profileExists(profileString))
                 {
                     // If create new profile selected
-                    profileComboBox.addItem(selectedString);
+                    profileComboBox.addItem(profileString);
 
                     // If rename existing profile selected...
                     // TODO
                 }
 
-                DriverGUI.gui.setProfileName(selectedString);
-            } else if (selectedString.isBlank())
+                DriverGUI.gui.setProfileName(profileString);
+            } else if (deleteProfile)
             {
 
                 // TODO Show a confirmation dialog
-                if (profileExists(DriverGUI.gui.getProfileName()))
+                if (profileExists(profileString))
                 {
-                    profileComboBox.removeItemAt(getProfileIndex(DriverGUI.gui.getProfileName()));
-                    DriverGUI.gui.deleteProfile();
+                    if(profileString.equals(UserGUI.getDefaultProfile()))
+                    {
+                        MessageDialog cantDelete = new MessageDialog("Can't delete the default profile. Select another profile as default and try again.", "Delete Profile", JOptionPane.INFORMATION_MESSAGE);
+                        cantDelete.setVisible(true);
+                    } else {
+                        AtomicBoolean confirmDelete = new AtomicBoolean(false);
 
-                    profileComboBox.setSelectedIndex(0);
-                    DriverGUI.gui.setProfileName(profileComboBox.getSelectedItem().toString());
+                        YesNoDialog deleteProfileDialog = new YesNoDialog("Delete the '" + profileString + "' profile?", "Delete Profile", JOptionPane.WARNING_MESSAGE,
+                                dialog -> {
+                                confirmDelete.set(dialog.getActionCommand().equalsIgnoreCase("Yes"));
+                            });
+
+                        deleteProfileDialog.setVisible(true);
+
+                        if(confirmDelete.get())
+                        {
+                            profileComboBox.removeItemAt(selectedIndex);
+                            DriverGUI.gui.deleteProfile(profileString);
+
+                            profileComboBox.setSelectedIndex(getProfileIndex(UserGUI.getDefaultProfile()));
+                            DriverGUI.gui.setProfileName(profileComboBox.getSelectedItem().toString());
+                        }
+                    }
                 }
             }
         });
@@ -127,42 +153,14 @@ public class ProfilePicker extends JPanel
         profileComboBox.setEnabled(enable);
     }
 
-    /**
-     * Retrieves all profiles that have been created and returns a String[] of the names. If no profiles are available, it creates the "Default" profile and sets it as the
-     * default.
-     * @return
-     */
-    public String[] getProfiles ()
-    {
-        try
-        {
-            if (Constants.BASE_PREFS.childrenNames().length == 0)
-            {
-                profileComboBox = new JComboBox<>(new String[] {Constants.DEFAULT_PROFILE_NAME});
-                Constants.BASE_PREFS.put(Constants.KEY_DEFAULT_PROFILE_NAME, Constants.DEFAULT_PROFILE_NAME);
-                allProfiles = Arrays.asList(new String[] {Constants.DEFAULT_PROFILE_NAME});
-            } else {
-                allProfiles = Arrays.stream(Constants.BASE_PREFS.childrenNames()).collect(Collectors.toList());
-            }
-        } catch (BackingStoreException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        // Use a Set, then convert to Array to drop any duplicates
-        String[] profileNames = (new HashSet<>(allProfiles)).toArray(String[]::new);
-
-        return profileNames;
-    }
-
     private void loadProfiles (String initialProfile)
     {
-        profileComboBox = new JComboBox<>(getProfiles());
+        profileComboBox = new JComboBox<>(URProfilesUtil.getProfiles());
 
         if (profileExists(initialProfile))
         {
             profileComboBox.setSelectedItem(initialProfile);
+            selectedIndex = profileComboBox.getSelectedIndex();
         } else
         {
             // TODO: Change this to a YesNoDialog to ask to create the profile
