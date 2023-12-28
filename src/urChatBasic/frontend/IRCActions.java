@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import urChatBasic.base.IRCActionsBase;
 import urChatBasic.base.IRCRoomBase;
 
@@ -43,12 +44,12 @@ public class IRCActions implements IRCActionsBase {
             {
                 ircRoom.getUserTextBox().requestFocus();
 
-                if (gui.tabbedPane.getBackgroundAt(tabIndex) == Color.red)
+                if (gui.tabbedPane.getBackgroundAt(tabIndex) == UIManager.getColor("CheckBoxMenuItem.selectionBackground"))
                 {
                     gui.tabbedPane.setBackgroundAt(tabIndex, originalColour);
                 } else
                 {
-                    gui.tabbedPane.setBackgroundAt(tabIndex, Color.red);
+                    gui.tabbedPane.setBackgroundAt(tabIndex, UIManager.getColor("CheckBoxMenuItem.selectionBackground"));
                 }
 
                 // repaint();
