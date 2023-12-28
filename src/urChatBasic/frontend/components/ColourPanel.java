@@ -125,7 +125,7 @@ public class ColourPanel extends JPanel implements ChangeListener
         {
             PREVIEW_LABEL.setForeground(newColour);
             targetStyle.setForeground(newColour);
-            if(isForeground & TCC != null)
+            if (isForeground & TCC != null)
                 TCC.setColor(newColour);
         } else
         {
@@ -133,7 +133,7 @@ public class ColourPanel extends JPanel implements ChangeListener
 
             PREVIEW_LABEL.setBackground(newColour);
             targetStyle.setBackground(newColour);
-            if(!isForeground & TCC != null)
+            if (!isForeground & TCC != null)
                 TCC.setColor(newColour);
         }
     }
@@ -205,7 +205,7 @@ public class ColourPanel extends JPanel implements ChangeListener
 
         newStyle.getForeground().ifPresent(fg -> {
             setPreviewColour(fg, true);
-    });
+        });
 
         selectedColor = TCC.getColor();
     }

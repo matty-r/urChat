@@ -88,9 +88,8 @@ public class MainOptionsPanel extends JPanel
     }
 
     /**
-     * Used to change which panel to show when you choose an option under the Options Tab.
-     * ActionListeners will be fired as appropriate i.e. the display listeners will be fired when a
-     * selection is made, and the hide listeners will be fired for all others.
+     * Used to change which panel to show when you choose an option under the Options Tab. ActionListeners will be fired as appropriate i.e. the display
+     * listeners will be fired when a selection is made, and the hide listeners will be fired for all others.
      */
     class OptionsListSelectionHandler implements ListSelectionListener
     {

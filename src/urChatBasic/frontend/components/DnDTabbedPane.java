@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
 public class DnDTabbedPane extends JTabbedPane {
   private static final int LINE_SIZE = 3;
   private static final int RWH = 20;
-  private static final int BUTTON_SIZE = 30; 
+  private static final int BUTTON_SIZE = 30;
 
   private final GhostGlassPane glassPane = new GhostGlassPane(this);
   protected int dragTabIndex = -1;

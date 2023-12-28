@@ -74,8 +74,7 @@ public class FontPanel extends JPanel
                 {
                     if (listeners[i] == ActionListener.class)
                     {
-                        colourDialog.getColourPanel()
-                                .addSaveListener((ActionListener) listenerList.getListeners(ActionListener.class)[i]);
+                        colourDialog.getColourPanel().addSaveListener((ActionListener) listenerList.getListeners(ActionListener.class)[i]);
                     }
                 }
 
@@ -219,8 +218,8 @@ public class FontPanel extends JPanel
     }
 
     /**
-     * Sets the appropriate options in the FontPanel, i.e Bold checkbox is checked if the newStyle is
-     * bold. Will also save the preferences if saveToSettings is set to true.
+     * Sets the appropriate options in the FontPanel, i.e Bold checkbox is checked if the newStyle is bold. Will also save the preferences if saveToSettings is
+     * set to true.
      *
      * @param newStyle
      * @param saveToSettings
@@ -266,8 +265,8 @@ public class FontPanel extends JPanel
         if (MAKE_UNDERLINE.isSelected())
             fontMap.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 
-        setFont(new Font(FONT_COMBO_BOX.getSelectedItem().toString(), Font.PLAIN,
-                Integer.parseInt(SIZES_COMBO_BOX.getSelectedItem().toString())).deriveFont(fontMap));
+        setFont(new Font(FONT_COMBO_BOX.getSelectedItem().toString(), Font.PLAIN, Integer.parseInt(SIZES_COMBO_BOX.getSelectedItem().toString()))
+                .deriveFont(fontMap));
 
         targetStyle.setFont(getFont());
     }

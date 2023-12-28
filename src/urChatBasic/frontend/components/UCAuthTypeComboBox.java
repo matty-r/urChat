@@ -11,12 +11,12 @@ public class UCAuthTypeComboBox extends JComboBox<CapTypeBase>
 {
     private String passwordFieldName = "Password";
 
-    public UCAuthTypeComboBox()
+    public UCAuthTypeComboBox ()
     {
         initialize();
     }
 
-    private void initialize()
+    private void initialize ()
     {
         CapTypeBase[] authTypes = CapabilityTypes.getCategory(CapTypeBase.Category.AUTHENTICATION);
 
@@ -26,17 +26,17 @@ public class UCAuthTypeComboBox extends JComboBox<CapTypeBase>
         }
     }
 
-    public String getPasswordFieldName()
+    public String getPasswordFieldName ()
     {
         return passwordFieldName;
     }
 
-    private void setPasswordFieldName(String passwordFieldName)
+    private void setPasswordFieldName (String passwordFieldName)
     {
         this.passwordFieldName = passwordFieldName;
     }
 
-    public void runChangeListener()
+    public void runChangeListener ()
     {
         CapTypeBase selectedAuthType = (CapTypeBase) getSelectedItem();
 

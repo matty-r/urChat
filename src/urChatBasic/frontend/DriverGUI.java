@@ -21,7 +21,10 @@ public class DriverGUI
     public static JFrame frame = null;
     private static ImageIcon img;
     public static ClassLoader contextClassLoader;
-    public static boolean isTesting = true; // TODO: We should just create a TestDriverGUI instead.
+    /**
+     * TODO: This shouldn't exist. Instead a TestDriverGUI should be created, which will set something in DialogBase to hide dialogs.
+     */
+    public static boolean isTesting = true;
 
     public static void main(String[] args) throws IOException
     {

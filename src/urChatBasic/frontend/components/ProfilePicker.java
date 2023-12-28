@@ -11,17 +11,16 @@ import urChatBasic.frontend.dialogs.MessageDialog;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ProfilePicker extends JPanel
 {
+    private List<String> allProfiles;
     private JComboBox<String> profileComboBox;
     private final JButton saveProfile = new JButton("Save");
 
@@ -128,19 +127,12 @@ public class ProfilePicker extends JPanel
         profileComboBox.setEnabled(enable);
     }
 
-    private String[] getProfiles ()
-    {
-        ArrayList<String> currentProfiles = new ArrayList<String>();
-
-        for (int i = 0; i < profileComboBox.getItemCount(); i++)
-        {
-            currentProfiles.add(profileComboBox.getItemAt(i).toString());
-        }
-
-        return currentProfiles.toArray(String[]::new);
-    }
-
-    private void loadProfiles (String initialProfile)
+    /**
+     * Retrieves all profiles that have been created and returns a String[] of the names. If no profiles are available, it creates the "Default" profile and sets it as the
+     * default.
+     * @return
+     */
+    public String[] getProfiles ()
     {
         try
         {
@@ -148,42 +140,45 @@ public class ProfilePicker extends JPanel
             {
                 profileComboBox = new JComboBox<>(new String[] {Constants.DEFAULT_PROFILE_NAME});
                 Constants.BASE_PREFS.put(Constants.KEY_DEFAULT_PROFILE_NAME, Constants.DEFAULT_PROFILE_NAME);
-            }
-            // Collect them into a list
-            List<String> allProfiles =
-                    Stream.concat(Arrays.stream(getProfiles()), Arrays.stream(Constants.BASE_PREFS.childrenNames()))
-                            .collect(Collectors.toList());
-
-            // Use a Set, then convert to Array to drop any duplicates
-            String[] profileNames = (new HashSet<>(allProfiles)).toArray(String[]::new);
-            profileComboBox = new JComboBox<>(profileNames);
-
-            if (profileExists(initialProfile))
-            {
-                profileComboBox.setSelectedItem(initialProfile);
-            } else
-            {
-                // TODO: Change this to a YesNoDialog to ask to create the profile
-                SwingUtilities.invokeLater(new Runnable()
-                {
-
-                    @Override
-                    public void run ()
-                    {
-                        MessageDialog dialog =
-                                new MessageDialog("Initial Profile: [" + initialProfile + "] doesn't exist.",
-                                        "Missing Profile", JOptionPane.ERROR_MESSAGE);
-                        dialog.setVisible(!DriverGUI.isTesting);
-                    }
-
-                });
-
-                Constants.LOGGER.log(Level.WARNING, "Initial Profile: [" + initialProfile + "] doesn't exist.");
+                allProfiles = Arrays.asList(new String[] {Constants.DEFAULT_PROFILE_NAME});
+            } else {
+                allProfiles = Arrays.stream(Constants.BASE_PREFS.childrenNames()).collect(Collectors.toList());
             }
         } catch (BackingStoreException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+
+        // Use a Set, then convert to Array to drop any duplicates
+        String[] profileNames = (new HashSet<>(allProfiles)).toArray(String[]::new);
+
+        return profileNames;
+    }
+
+    private void loadProfiles (String initialProfile)
+    {
+        profileComboBox = new JComboBox<>(getProfiles());
+
+        if (profileExists(initialProfile))
+        {
+            profileComboBox.setSelectedItem(initialProfile);
+        } else
+        {
+            // TODO: Change this to a YesNoDialog to ask to create the profile
+            SwingUtilities.invokeLater(new Runnable()
+            {
+
+                @Override
+                public void run ()
+                {
+                    MessageDialog dialog = new MessageDialog("Initial Profile: [" + initialProfile + "] doesn't exist.", "Missing Profile", JOptionPane.ERROR_MESSAGE);
+                    dialog.setVisible(!DriverGUI.isTesting);
+                }
+
+            });
+
+            Constants.LOGGER.log(Level.WARNING, "Initial Profile: [" + initialProfile + "] doesn't exist.");
         }
     }
 }

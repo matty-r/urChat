@@ -2,7 +2,6 @@ package urChatBasic.frontend.components;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import urChatBasic.base.Constants.Placement;
@@ -17,22 +16,16 @@ public class ProfilePanel extends UROptionsPanel
     public static final String PANEL_DISPLAY_NAME = "Profiles";
     private JTextField profileName = new JTextField(UserGUI.getDefaultProfile());
     private JCheckBox setAsDefault = new JCheckBox("", true);
-    private JButton createNewProfile = new JButton("Create new");
-    private JButton saveProfile = new JButton("Save");
-    // public ProfilePicker profilePicker = new ProfilePicker(UserGUI.getDefaultProfile(), false);
 
     public ProfilePanel (MainOptionsPanel optionsPanel)
     {
         super(PANEL_DISPLAY_NAME, optionsPanel);
 
-        // Panels.addToPanel(this, profilePicker, "Select Profile", Placement.DEFAULT, null);
-        Panels.addToPanel(this, profileName, "Profile Name", Placement.DEFAULT, Size.SMALL);
-        Panels.addToPanel(this, saveProfile, null, Placement.RIGHT, null);
-        Panels.addToPanel(this, createNewProfile, null, Placement.RIGHT, null);
+        profileName.setEnabled(false);
+        Panels.addToPanel(this, profileName, "Current Profile", Placement.DEFAULT, Size.SMALL);
 
         setAsDefault.addActionListener(new ActionListener()
         {
-
             @Override
             public void actionPerformed (ActionEvent arg0)
             {
@@ -40,7 +33,6 @@ public class ProfilePanel extends UROptionsPanel
                 UserGUI.setDefaultProfile(profileName.getText());
                 setDefaultCheckboxState();
             }
-
         });
 
         Panels.addToPanel(this, setAsDefault, "Set as default", Placement.DEFAULT, null);
