@@ -77,7 +77,7 @@ public class Constants
     public static final String KEY_CLICKABLE_LINKS_ENABLED = "clickable links";
     public static final String KEY_EVENT_TICKER_JOINS_QUITS = "show events in ticker";
     public static final String KEY_MAIN_WINDOW_JOINS_QUITS = "show events in main window";
-    public static final String KEY_LOG_CHANNEL_HISTORY = "log channel history";
+    public static final String KEY_LOG_CHANNEL_ACTIVITY = "log channel history";
     public static final String KEY_LOG_SERVER_ACTIVITY = "log server activity";
     public static final String KEY_LIMIT_CHANNEL_LINES = "limit number of channel lines";
     public static final String KEY_AUTO_CONNECT_FAVOURITES = "connect to favourites";
@@ -121,7 +121,7 @@ public class Constants
     public static final Boolean DEFAULT_USERS_LIST_ACTIVE = true;
     public static final Boolean DEFAULT_EVENT_TICKER_JOINS_QUITS = true;
     public static final Boolean DEFAULT_MAIN_WINDOW_JOINS_QUITS = true;
-    public static final Boolean DEFAULT_LOG_CHANNEL_HISTORY = false;
+    public static final Boolean DEFAULT_LOG_CHANNEL_ACTIVITY = false;
     public static final Boolean DEFAULT_LOG_SERVER_ACTIVITY = false;
     public static final Boolean DEFAULT_AUTO_CONNECT_FAVOURITES = false;
     public static final Boolean DEFAULT_LIMIT_CHANNEL_LINES = true;

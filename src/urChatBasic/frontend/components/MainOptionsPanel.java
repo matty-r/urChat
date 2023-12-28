@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants.Placement;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.panels.UROptionsPanel;
@@ -64,23 +65,24 @@ public class MainOptionsPanel extends JPanel
         // Extras panel is below the options list, and just contains the profile switcher and the version
         // label
         Panels.addToPanel(extrasPanel, urVersionLabel, null, Placement.BOTTOM, null);
-        // extrasPanel.add(urVersionLabel, BorderLayout.SOUTH);
-    }
 
-    public void setupOptionsPanel ()
-    {
-        profilePicker = new ProfilePicker(DriverGUI.gui.getProfileName(), false);
+        profilePicker = new ProfilePicker(URProfilesUtil.getActiveProfileName(), false);
 
         Panels.addToPanel(extrasPanel, profilePicker, "Active Profile", Placement.TOP, null);
-        // extrasPanel.add(profilePicker, BorderLayout.NORTH);
+
+        // extrasPanel.add(urVersionLabel, BorderLayout.SOUTH);
     }
 
     public void addToOptions (String displayName, UROptionsPanel displayComponent, Optional<Integer> index)
     {
-        if (index.isEmpty())
+        if (index.isEmpty() || index.get() >= optionsArray.size())
+        {
             optionsArray.addElement(displayComponent);
+        }
         else
+        {
             optionsArray.add(index.get(), displayComponent);
+        }
 
         optionsRightPanel.add(displayComponent.getScroller(), displayName);
 

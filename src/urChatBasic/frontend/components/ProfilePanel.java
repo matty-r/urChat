@@ -15,7 +15,6 @@ import javax.swing.event.ListSelectionListener;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants.Placement;
 import urChatBasic.base.Constants.Size;
-import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.panels.UROptionsPanel;
 import urChatBasic.frontend.utils.Panels;
@@ -27,7 +26,7 @@ public class ProfilePanel extends UROptionsPanel
     private static final JList<String> profilesList = new JList<String>(profilesListModel);
     protected JScrollPane profileScroller = new JScrollPane(profilesList);
 
-    private JTextField profileName = new JTextField(UserGUI.getDefaultProfile());
+    private JTextField profileName = new JTextField(URProfilesUtil.getDefaultProfile());
     private JCheckBox setAsDefault = new JCheckBox("", true);
 
     public ProfilePanel (MainOptionsPanel optionsPanel)
@@ -44,7 +43,7 @@ public class ProfilePanel extends UROptionsPanel
             public void actionPerformed (ActionEvent arg0)
             {
 
-                UserGUI.setDefaultProfile(profileName.getText());
+                URProfilesUtil.setDefaultProfile(profileName.getText());
                 setDefaultCheckboxState();
             }
         });
@@ -56,7 +55,7 @@ public class ProfilePanel extends UROptionsPanel
         Panels.addToPanel(this, setAsDefault, "Set as default", Placement.DEFAULT, null);
 
         UserGUI.addProfileChangeListener(e -> {
-            String selectedProfileName = DriverGUI.gui.getProfileName();
+            String selectedProfileName = URProfilesUtil.getActiveProfileName();
 
             profilesList.setSelectedIndex(IntStream.range(0, profilesListModel.toArray().length)
                     .filter(i -> profilesListModel.toArray()[i].equals(selectedProfileName)).findFirst().orElse(-1));
@@ -83,7 +82,7 @@ public class ProfilePanel extends UROptionsPanel
      */
     private void setDefaultCheckboxState ()
     {
-        if (UserGUI.getDefaultProfile().equals(profileName.getText()))
+        if (URProfilesUtil.getDefaultProfile().equals(profileName.getText()))
         {
             setAsDefault.setEnabled(false);
             setAsDefault.setSelected(true);

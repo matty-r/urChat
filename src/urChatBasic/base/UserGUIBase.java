@@ -177,9 +177,7 @@ public interface UserGUIBase
      */
     public abstract void shutdownAll();
 
-    public abstract void setProfileName(String newProfileName);
-
-    public abstract String getProfileName();
+    public abstract void setActiveProfile(String newProfileName);
 
     /**
      * Loops through all servers and disconnects and deletes the tab
@@ -193,8 +191,6 @@ public interface UserGUIBase
     public abstract int getEventTickerDelay();
 
     public abstract void setClientSettings();
-
-    public abstract Preferences getProfilePath();
 
     public abstract void run();
 

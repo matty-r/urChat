@@ -29,7 +29,7 @@ public class ProfilePicker extends JPanel
     {
         profileComboBox = new JComboBox<String>();
         loadProfiles(initialProfile);
-        profileComboBox.setEditable(true);
+        profileComboBox.setEditable(false);
 
         // setBackground(Color.BLUE);
         setLayout(new GridLayout(1, 1));
@@ -55,12 +55,12 @@ public class ProfilePicker extends JPanel
                 selectedIndex = profileComboBox.getSelectedIndex();
             }
 
-            if (DriverGUI.gui.getProfileName() != profileString && !deleteProfile)
+            if (URProfilesUtil.getActiveProfileName() != profileString && !deleteProfile)
             {
                 // TODO Show dialog to either rename the existing profile, or create a new profile
-                String currentProfile = DriverGUI.gui.getProfileName();
+                String currentProfile = URProfilesUtil.getActiveProfileName();
 
-                if (!profileExists(profileString))
+                if (!URProfilesUtil.profileExists(profileString))
                 {
                     // If create new profile selected
                     profileComboBox.addItem(profileString);
@@ -69,14 +69,14 @@ public class ProfilePicker extends JPanel
                     // TODO
                 }
 
-                DriverGUI.gui.setProfileName(profileString);
+                DriverGUI.gui.setActiveProfile(profileString);
             } else if (deleteProfile)
             {
 
                 // TODO Show a confirmation dialog
-                if (profileExists(profileString))
+                if (URProfilesUtil.profileExists(profileString))
                 {
-                    if(profileString.equals(UserGUI.getDefaultProfile()))
+                    if(profileString.equals(URProfilesUtil.getDefaultProfile()))
                     {
                         MessageDialog cantDelete = new MessageDialog("Can't delete the default profile. Select another profile as default and try again.", "Delete Profile", JOptionPane.INFORMATION_MESSAGE);
                         cantDelete.setVisible(true);
@@ -93,10 +93,10 @@ public class ProfilePicker extends JPanel
                         if(confirmDelete.get())
                         {
                             profileComboBox.removeItemAt(selectedIndex);
-                            DriverGUI.gui.deleteProfile(profileString);
+                            URProfilesUtil.deleteProfile(profileString);
 
-                            profileComboBox.setSelectedIndex(getProfileIndex(UserGUI.getDefaultProfile()));
-                            DriverGUI.gui.setProfileName(profileComboBox.getSelectedItem().toString());
+                            profileComboBox.setSelectedIndex(getProfileIndex(URProfilesUtil.getDefaultProfile()));
+                            DriverGUI.gui.setActiveProfile(profileComboBox.getSelectedItem().toString());
                         }
                     }
                 }
@@ -120,7 +120,7 @@ public class ProfilePicker extends JPanel
 
     private int getProfileIndex (String profileName)
     {
-        if (profileExists(profileName))
+        if (URProfilesUtil.profileExists(profileName))
         {
             for (int i = 0; i < profileComboBox.getItemCount(); i++)
             {
@@ -134,19 +134,6 @@ public class ProfilePicker extends JPanel
         return -1;
     }
 
-    public boolean profileExists (String profileName)
-    {
-        for (int i = 0; i < profileComboBox.getItemCount(); i++)
-        {
-            if (profileComboBox.getItemAt(i).toString().equalsIgnoreCase(profileName))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     @Override
     public void setEnabled (boolean enable)
     {
@@ -157,7 +144,7 @@ public class ProfilePicker extends JPanel
     {
         profileComboBox = new JComboBox<>(URProfilesUtil.getProfiles());
 
-        if (profileExists(initialProfile))
+        if (URProfilesUtil.profileExists(initialProfile))
         {
             profileComboBox.setSelectedItem(initialProfile);
             selectedIndex = profileComboBox.getSelectedIndex();

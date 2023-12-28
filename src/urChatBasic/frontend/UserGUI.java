@@ -19,6 +19,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import urChatBasic.backend.utils.URPreferencesUtil;
+import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.backend.utils.URStyle;
 import urChatBasic.backend.utils.URUncaughtExceptionHandler;
 import urChatBasic.base.Constants;
@@ -49,22 +50,21 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public Component currentSelectedTab;
 
     // Profile Preferences
-    public static String profileName;
     protected static EventListenerList profileListenerList = new EventListenerList();
-    protected transient ActionEvent actionEvent = null;
+    protected static transient ActionEvent actionEvent = null;
 
     // Options Panel
     private static JPanel optionsMainPanel = new MainOptionsPanel();
     // Server Options Panel
-    private final UROptionsPanel connectionPanel = new UROptionsPanel("Connection", (MainOptionsPanel) optionsMainPanel);
+    private final UROptionsPanel connectionPanel = new UROptionsPanel("Connection", (MainOptionsPanel) optionsMainPanel, Optional.of(0));
 
-    private final UROptionsPanel interfacePanel = new UROptionsPanel("Interface", (MainOptionsPanel) optionsMainPanel);
+    private final UROptionsPanel interfacePanel = new UROptionsPanel("Interface", (MainOptionsPanel) optionsMainPanel, Optional.of(1));
 
     // Appearance Options Panel
-    private final UROptionsPanel appearancePanel = new UROptionsPanel("Appearance", (MainOptionsPanel) optionsMainPanel);
+    private final UROptionsPanel appearancePanel = new UROptionsPanel("Appearance", (MainOptionsPanel) optionsMainPanel, Optional.of(2));
 
     // Profile Panel
-    private UROptionsPanel profilePanel = new ProfilePanel((MainOptionsPanel) optionsMainPanel);
+    private static final UROptionsPanel profilePanel = new ProfilePanel((MainOptionsPanel) optionsMainPanel);
 
     // public static final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
 
@@ -285,7 +285,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         profileListenerList.add(ActionListener.class, actionListener);
     }
 
-    public void fireProfileChangeListeners ()
+    public static void fireProfileChangeListeners ()
     {
         Object[] listeners = profileListenerList.getListenerList();
 
@@ -309,7 +309,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             {
                 if (actionEvent == null)
                 {
-                    actionEvent = new ActionEvent(getProfilePicker().getProfileComboBox(), i, TOOL_TIP_TEXT_KEY);
+                    actionEvent = new ActionEvent(getProfilePicker(), i, TOOL_TIP_TEXT_KEY);
                 }
 
                 ((ActionListener) listeners[i + 1]).actionPerformed(actionEvent);
@@ -317,97 +317,38 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    public static String getDefaultProfile ()
-    {
-        try
-        {
-            if(Arrays.asList(Constants.BASE_PREFS.keys()).contains(Constants.KEY_DEFAULT_PROFILE_NAME))
-            {
-                return Constants.BASE_PREFS.get(Constants.KEY_DEFAULT_PROFILE_NAME, Constants.DEFAULT_PROFILE_NAME);
-            }
-        } catch (BackingStoreException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        setDefaultProfile(Constants.DEFAULT_PROFILE_NAME);
-
-        return Constants.DEFAULT_PROFILE_NAME;
-    }
-
-    public static void setDefaultProfile (String profileName)
-    {
-        Constants.BASE_PREFS.put(Constants.KEY_DEFAULT_PROFILE_NAME, profileName);
-    }
-
-    public ProfilePicker getProfilePicker ()
+    public static ProfilePicker getProfilePicker ()
     {
         return (((MainOptionsPanel) optionsMainPanel).getProfilePicker());
     }
 
-    public UROptionsPanel getProfilePanel ()
+    public static UROptionsPanel getProfilePanel ()
     {
         return profilePanel;
     }
 
-    @Override
-    public void setProfileName (String newProfileName)
+    /**
+     * Sets the current active profile - if the newProfileName doesn't exist it will be created.
+     * @param newProfileName
+     */
+    public void setActiveProfile (String newProfileName)
     {
         // save the current profile settings, if it exists
-        if (getProfilePicker().profileExists(profileName))
+        if (URProfilesUtil.profileExists(URProfilesUtil.getActiveProfileName()))
         {
             setClientSettings();
         }
 
+        if(!URProfilesUtil.profileExists(newProfileName))
+        {
+            URProfilesUtil.createProfile(newProfileName);
+        }
+
         // change the profile name
-        profileName = newProfileName;
-        // clientFontPanel.setSettingsPath(getProfilePath());
-        // previewLineFormatter.setSettingsPath(getProfilePath());
+        URProfilesUtil.setActiveProfileName(newProfileName);
+
         // now load the new profile settings
-
         getClientSettings(false);
-    }
-
-    public void deleteProfile (String profileName)
-    {
-        try
-        {
-            Constants.BASE_PREFS.node(profileName).removeNode();
-        } catch (BackingStoreException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    public void deleteProfile ()
-    {
-        try
-        {
-            getFavouritesPath().removeNode();
-            getProfilePath().removeNode();
-        } catch (BackingStoreException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public String getProfileName ()
-    {
-        return profileName;
-    }
-
-    public Preferences getProfilePath ()
-    {
-        return Constants.BASE_PREFS.node(profileName);
-    }
-
-    public Preferences getFavouritesPath ()
-    {
-        return getProfilePath().node("favourites");
     }
 
     /*
@@ -822,11 +763,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
         });
 
-        clientFontPanel = new FontPanel("", defaultStyle, getProfilePath());
+        clientFontPanel = new FontPanel("", defaultStyle, URProfilesUtil.getProfilePath());
         clientFontPanel.setPreferredSize(new Dimension(700, 64));
 
         addProfileChangeListener(e -> {
-            clientFontPanel.setSettingsPath(getProfilePath());
+            clientFontPanel.setSettingsPath(URProfilesUtil.getProfilePath());
         });
 
         // clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
@@ -873,11 +814,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // previewTextArea.setFont(clientFontPanel.getFont());
         if (previewLineFormatter == null)
         {
-            previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea, null, getProfilePath());
+            previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea, null, URProfilesUtil.getProfilePath());
 
             addProfileChangeListener(e -> {
+                previewLineFormatter.setSettingsPath(URProfilesUtil.getProfilePath());
                 previewLineFormatter.updateStyles(getStyle());
-                previewLineFormatter.setSettingsPath(getProfilePath());
             });
         }
 
@@ -897,7 +838,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             previewLineFormatter.formattedDocument(new Date(), tempUser2, System.getProperty("user.name"),
                     "Go to https://github.com/matty-r/urChat");
             previewLineFormatter.formattedDocument(new Date(), tempUser2, System.getProperty("user.name"),
-                    "Join #urchatclient on irc.libera.chat or #anotherroom");
+                    "Join #urchat on irc.libera.chat");
         } else
         {
             previewLineFormatter.updateStyles(getStyle());
@@ -917,7 +858,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             {
                 String styleName = styleLabel.getText();
                 FontDialog styleFontDialog =
-                        new FontDialog(styleName, previewLineFormatter.getStyleDefault(styleName), getProfilePath());
+                        new FontDialog(styleName, previewLineFormatter.getStyleDefault(styleName), URProfilesUtil.getProfilePath());
 
                 styleFontDialog.addSaveListener(new SaveFontListener());
                 // styleFontDialog.addResetListener(new ActionListener() {
@@ -925,7 +866,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 // @Override
                 // public void actionPerformed(ActionEvent arg0) {
                 // try {
-                // getProfilePath().node(styleName).removeNode();
+                // URProfilesUtil.getProfilePath().node(styleName).removeNode();
                 // } catch (BackingStoreException e) {
                 // // TODO Auto-generated catch block
                 // e.printStackTrace();
@@ -1130,10 +1071,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         {
             this.favServer = favServer;
             this.favChannel = favChannel;
-            settingsPath = getFavouritesPath().node(favServer).node(favChannel);
+            settingsPath = URProfilesUtil.getFavouritesPath().node(favServer).node(favChannel);
 
             addProfileChangeListener(e -> {
-                settingsPath = getFavouritesPath().node(favServer).node(favChannel);
+                settingsPath = URProfilesUtil.getFavouritesPath().node(favServer).node(favChannel);
             });
 
             createPopUp();
@@ -1228,7 +1169,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 {
                     FavouritesItem tempItem = favouritesListModel.elementAt(favouritesList.getSelectedIndex());
                     removeFavourite(tempItem.favServer, tempItem.favChannel);
-                    Preferences channelNode = getFavouritesPath().node(tempItem.favServer).node(tempItem.favChannel);
+                    Preferences channelNode = URProfilesUtil.getFavouritesPath().node(tempItem.favServer).node(tempItem.favChannel);
                     try
                     {
                         String[] channelKeys = channelNode.keys();
@@ -1261,7 +1202,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         favouritesListModel.addElement(new FavouritesItem(favServer, favChannel));
 
-        getFavouritesPath().node(favServer).node(favChannel).put("PORT", getCreatedServer(favServer).getPort());
+        URProfilesUtil.getFavouritesPath().node(favServer).node(favChannel).put("PORT", getCreatedServer(favServer).getPort());
     }
 
 
@@ -1506,11 +1447,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     public void setClientSettings ()
     {
-        getProfilePath().put(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText());
-        getProfilePath().put(Constants.KEY_FIRST_SERVER, servernameTextField.getText());
-        getProfilePath().put(Constants.KEY_FIRST_PORT, serverPortTextField.getText());
-        getProfilePath().put(Constants.KEY_AUTH_TYPE, authenticationTypeChoice.getSelectedItem().toString());
-        getProfilePath().putBoolean(Constants.KEY_PASSWORD_REMEMBER, rememberPassCheckBox.isSelected());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_FIRST_SERVER, servernameTextField.getText());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_FIRST_PORT, serverPortTextField.getText());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_AUTH_TYPE, authenticationTypeChoice.getSelectedItem().toString());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_PASSWORD_REMEMBER, rememberPassCheckBox.isSelected());
 
         String rememberString = "";
 
@@ -1519,37 +1460,37 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             rememberString = new String(passwordTextField.getPassword());
         }
 
-        getProfilePath().put(Constants.KEY_PASSWORD, rememberString);
+        URProfilesUtil.getProfilePath().put(Constants.KEY_PASSWORD, rememberString);
 
-        getProfilePath().putBoolean(Constants.KEY_USE_TLS, serverTLSCheckBox.isSelected());
-        getProfilePath().put(Constants.KEY_PROXY_HOST, proxyHostNameTextField.getText());
-        getProfilePath().put(Constants.KEY_PROXY_PORT, proxyPortTextField.getText());
-        getProfilePath().putBoolean(Constants.KEY_USE_PROXY, serverProxyCheckBox.isSelected());
-        getProfilePath().put(Constants.KEY_NICK_NAME, userNameTextField.getText());
-        getProfilePath().put(Constants.KEY_REAL_NAME, realNameTextField.getText());
-        getProfilePath().putBoolean(Constants.KEY_TIME_STAMPS, enableTimeStamps.isSelected());
-        getProfilePath().put(Constants.KEY_TIME_STAMP_FORMAT, timeStampField.getText());
-        getProfilePath().put(Constants.KEY_LAF_NAME, ((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
-        getProfilePath().putBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, showEventTicker.isSelected());
-        getProfilePath().putBoolean(Constants.KEY_USERS_LIST_ACTIVE, showUsersList.isSelected());
-        getProfilePath().putBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED, enableClickableLinks.isSelected());
-        getProfilePath().putBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS, showJoinsQuitsEventTicker.isSelected());
-        getProfilePath().putBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS, showJoinsQuitsMainWindow.isSelected());
-        getProfilePath().putBoolean(Constants.KEY_LOG_CHANNEL_HISTORY, logChannelText.isSelected());
-        getProfilePath().putBoolean(Constants.KEY_LOG_SERVER_ACTIVITY, logServerActivity.isSelected());
-        getProfilePath().putBoolean(Constants.KEY_LIMIT_CHANNEL_LINES, limitChannelLines.isSelected());
-        getProfilePath().putBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES, autoConnectToFavourites.isSelected());
-        getProfilePath().put(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT, limitChannelLinesCount.getText());
-        getProfilePath().putBoolean(Constants.KEY_LIMIT_SERVER_LINES, limitServerLines.isSelected());
-        getProfilePath().put(Constants.KEY_LIMIT_SERVER_LINES_COUNT, limitServerLinesCount.getText());
-        getProfilePath().putBoolean(Constants.KEY_LOG_CLIENT_TEXT, logClientText.isSelected());
-        URPreferencesUtil.saveStyle(defaultStyle, clientFontPanel.getStyle(), getProfilePath());
-        getProfilePath().putInt(Constants.KEY_EVENT_TICKER_DELAY, eventTickerDelay.getValue());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_USE_TLS, serverTLSCheckBox.isSelected());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_PROXY_HOST, proxyHostNameTextField.getText());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_PROXY_PORT, proxyPortTextField.getText());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_USE_PROXY, serverProxyCheckBox.isSelected());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_NICK_NAME, userNameTextField.getText());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_REAL_NAME, realNameTextField.getText());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_TIME_STAMPS, enableTimeStamps.isSelected());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_TIME_STAMP_FORMAT, timeStampField.getText());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_LAF_NAME, ((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, showEventTicker.isSelected());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_USERS_LIST_ACTIVE, showUsersList.isSelected());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED, enableClickableLinks.isSelected());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS, showJoinsQuitsEventTicker.isSelected());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS, showJoinsQuitsMainWindow.isSelected());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_LOG_CHANNEL_ACTIVITY, logChannelText.isSelected());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_LOG_SERVER_ACTIVITY, logServerActivity.isSelected());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_LIMIT_CHANNEL_LINES, limitChannelLines.isSelected());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES, autoConnectToFavourites.isSelected());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT, limitChannelLinesCount.getText());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_LIMIT_SERVER_LINES, limitServerLines.isSelected());
+        URProfilesUtil.getProfilePath().put(Constants.KEY_LIMIT_SERVER_LINES_COUNT, limitServerLinesCount.getText());
+        URProfilesUtil.getProfilePath().putBoolean(Constants.KEY_LOG_CLIENT_TEXT, logClientText.isSelected());
+        URPreferencesUtil.saveStyle(defaultStyle, clientFontPanel.getStyle(), URProfilesUtil.getProfilePath());
+        URProfilesUtil.getProfilePath().putInt(Constants.KEY_EVENT_TICKER_DELAY, eventTickerDelay.getValue());
 
-        getProfilePath().putInt(Constants.KEY_WINDOW_X, (int) DriverGUI.frame.getBounds().getX());
-        getProfilePath().putInt(Constants.KEY_WINDOW_Y, (int) DriverGUI.frame.getBounds().getY());
-        getProfilePath().putInt(Constants.KEY_WINDOW_WIDTH, (int) DriverGUI.frame.getBounds().getWidth());
-        getProfilePath().putInt(Constants.KEY_WINDOW_HEIGHT, (int) DriverGUI.frame.getBounds().getHeight());
+        URProfilesUtil.getProfilePath().putInt(Constants.KEY_WINDOW_X, (int) DriverGUI.frame.getBounds().getX());
+        URProfilesUtil.getProfilePath().putInt(Constants.KEY_WINDOW_Y, (int) DriverGUI.frame.getBounds().getY());
+        URProfilesUtil.getProfilePath().putInt(Constants.KEY_WINDOW_WIDTH, (int) DriverGUI.frame.getBounds().getWidth());
+        URProfilesUtil.getProfilePath().putInt(Constants.KEY_WINDOW_HEIGHT, (int) DriverGUI.frame.getBounds().getHeight());
     }
 
     /**
@@ -1560,98 +1501,98 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         fireProfileChangeListeners();
 
         firstChannelTextField
-                .setText(getProfilePath().get(Constants.KEY_FIRST_CHANNEL, Constants.DEFAULT_FIRST_CHANNEL));
-        servernameTextField.setText(getProfilePath().get(Constants.KEY_FIRST_SERVER, Constants.DEFAULT_FIRST_SERVER));
-        serverPortTextField.setText(getProfilePath().get(Constants.KEY_FIRST_PORT, Constants.DEFAULT_FIRST_PORT));
-        serverTLSCheckBox.setSelected(getProfilePath().getBoolean(Constants.KEY_USE_TLS, Constants.DEFAULT_USE_TLS));
+                .setText(URProfilesUtil.getProfilePath().get(Constants.KEY_FIRST_CHANNEL, Constants.DEFAULT_FIRST_CHANNEL));
+        servernameTextField.setText(URProfilesUtil.getProfilePath().get(Constants.KEY_FIRST_SERVER, Constants.DEFAULT_FIRST_SERVER));
+        serverPortTextField.setText(URProfilesUtil.getProfilePath().get(Constants.KEY_FIRST_PORT, Constants.DEFAULT_FIRST_PORT));
+        serverTLSCheckBox.setSelected(URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_USE_TLS, Constants.DEFAULT_USE_TLS));
 
         authenticationTypeChoice.setSelectedItem(
-                CapabilityTypes.getCapType(getProfilePath().get(Constants.KEY_AUTH_TYPE, Constants.DEFAULT_AUTH_TYPE)));
+                CapabilityTypes.getCapType(URProfilesUtil.getProfilePath().get(Constants.KEY_AUTH_TYPE, Constants.DEFAULT_AUTH_TYPE)));
 
         rememberPassCheckBox.setSelected(
-                getProfilePath().getBoolean(Constants.KEY_PASSWORD_REMEMBER, Constants.DEFAULT_PASSWORD_REMEMBER));
+                URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_PASSWORD_REMEMBER, Constants.DEFAULT_PASSWORD_REMEMBER));
 
         if (rememberPassCheckBox.isSelected())
         {
-            passwordTextField.setText(getProfilePath().get(Constants.KEY_PASSWORD, Constants.DEFAULT_PASSWORD));
+            passwordTextField.setText(URProfilesUtil.getProfilePath().get(Constants.KEY_PASSWORD, Constants.DEFAULT_PASSWORD));
         }
 
-        proxyHostNameTextField.setText(getProfilePath().get(Constants.KEY_PROXY_HOST, Constants.DEFAULT_PROXY_HOST));
-        proxyPortTextField.setText(getProfilePath().get(Constants.KEY_PROXY_PORT, Constants.DEFAULT_PROXY_PORT));
+        proxyHostNameTextField.setText(URProfilesUtil.getProfilePath().get(Constants.KEY_PROXY_HOST, Constants.DEFAULT_PROXY_HOST));
+        proxyPortTextField.setText(URProfilesUtil.getProfilePath().get(Constants.KEY_PROXY_PORT, Constants.DEFAULT_PROXY_PORT));
         serverProxyCheckBox
-                .setSelected(getProfilePath().getBoolean(Constants.KEY_USE_PROXY, Constants.DEFAULT_USE_PROXY));
+                .setSelected(URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_USE_PROXY, Constants.DEFAULT_USE_PROXY));
 
-        userNameTextField.setText(getProfilePath().get(Constants.KEY_NICK_NAME, Constants.DEFAULT_NICK_NAME));
-        realNameTextField.setText(getProfilePath().get(Constants.KEY_REAL_NAME, Constants.DEFAULT_REAL_NAME));
+        userNameTextField.setText(URProfilesUtil.getProfilePath().get(Constants.KEY_NICK_NAME, Constants.DEFAULT_NICK_NAME));
+        realNameTextField.setText(URProfilesUtil.getProfilePath().get(Constants.KEY_REAL_NAME, Constants.DEFAULT_REAL_NAME));
 
         showUsersList.setSelected(
-                getProfilePath().getBoolean(Constants.KEY_USERS_LIST_ACTIVE, Constants.DEFAULT_USERS_LIST_ACTIVE));
+                URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_USERS_LIST_ACTIVE, Constants.DEFAULT_USERS_LIST_ACTIVE));
 
         showEventTicker.setSelected(
-                getProfilePath().getBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, Constants.DEFAULT_EVENT_TICKER_ACTIVE));
+                URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, Constants.DEFAULT_EVENT_TICKER_ACTIVE));
 
-        enableClickableLinks.setSelected(getProfilePath().getBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED,
+        enableClickableLinks.setSelected(URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED,
                 Constants.DEFAULT_CLICKABLE_LINKS_ENABLED));
 
         enableTimeStamps
-                .setSelected(getProfilePath().getBoolean(Constants.KEY_TIME_STAMPS, Constants.DEFAULT_TIME_STAMPS));
+                .setSelected(URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_TIME_STAMPS, Constants.DEFAULT_TIME_STAMPS));
 
-        lafOptions.setSelectedItem(getLAF(getProfilePath().get(Constants.KEY_LAF_NAME, Constants.DEFAULT_LAF_NAME)));
+        lafOptions.setSelectedItem(getLAF(URProfilesUtil.getProfilePath().get(Constants.KEY_LAF_NAME, Constants.DEFAULT_LAF_NAME)));
 
         // setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
 
-        showJoinsQuitsEventTicker.setSelected(getProfilePath().getBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS,
+        showJoinsQuitsEventTicker.setSelected(URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS,
                 Constants.DEFAULT_EVENT_TICKER_JOINS_QUITS));
-        showJoinsQuitsMainWindow.setSelected(getProfilePath().getBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS,
+        showJoinsQuitsMainWindow.setSelected(URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS,
                 Constants.DEFAULT_MAIN_WINDOW_JOINS_QUITS));
         logChannelText.setSelected(
-                getProfilePath().getBoolean(Constants.KEY_LOG_CHANNEL_HISTORY, Constants.DEFAULT_LOG_CHANNEL_HISTORY));
+                URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_LOG_CHANNEL_ACTIVITY, Constants.DEFAULT_LOG_CHANNEL_ACTIVITY));
         logServerActivity.setSelected(
-                getProfilePath().getBoolean(Constants.KEY_LOG_SERVER_ACTIVITY, Constants.DEFAULT_LOG_SERVER_ACTIVITY));
+                URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_LOG_SERVER_ACTIVITY, Constants.DEFAULT_LOG_SERVER_ACTIVITY));
         limitChannelLines.setSelected(
-                getProfilePath().getBoolean(Constants.KEY_LIMIT_CHANNEL_LINES, Constants.DEFAULT_LIMIT_CHANNEL_LINES));
-        limitChannelLinesCount.setText(getProfilePath().get(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT,
+                URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_LIMIT_CHANNEL_LINES, Constants.DEFAULT_LIMIT_CHANNEL_LINES));
+        limitChannelLinesCount.setText(URProfilesUtil.getProfilePath().get(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT,
                 Constants.DEFAULT_LIMIT_CHANNEL_LINES_COUNT));
         limitServerLines.setSelected(
-                getProfilePath().getBoolean(Constants.KEY_LIMIT_SERVER_LINES, Constants.DEFAULT_LIMIT_SERVER_LINES));
-        limitServerLinesCount.setText(getProfilePath().get(Constants.KEY_LIMIT_SERVER_LINES_COUNT,
+                URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_LIMIT_SERVER_LINES, Constants.DEFAULT_LIMIT_SERVER_LINES));
+        limitServerLinesCount.setText(URProfilesUtil.getProfilePath().get(Constants.KEY_LIMIT_SERVER_LINES_COUNT,
                 Constants.DEFAULT_LIMIT_SERVER_LINES_COUNT));
         logClientText.setSelected(
-                getProfilePath().getBoolean(Constants.KEY_LOG_CLIENT_TEXT, Constants.DEFAULT_LOG_CLIENT_TEXT));
+                URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_LOG_CLIENT_TEXT, Constants.DEFAULT_LOG_CLIENT_TEXT));
 
         clientFontPanel.loadStyle();
 
         timeStampField
-                .setText(getProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, Constants.DEFAULT_TIME_STAMP_FORMAT));
+                .setText(URProfilesUtil.getProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, Constants.DEFAULT_TIME_STAMP_FORMAT));
 
         updatePreviewTextArea();
 
         eventTickerDelay.setValue(
-                getProfilePath().getInt(Constants.KEY_EVENT_TICKER_DELAY, Constants.DEFAULT_EVENT_TICKER_DELAY));
-        autoConnectToFavourites.setSelected(getProfilePath().getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES,
+                URProfilesUtil.getProfilePath().getInt(Constants.KEY_EVENT_TICKER_DELAY, Constants.DEFAULT_EVENT_TICKER_DELAY));
+        autoConnectToFavourites.setSelected(URProfilesUtil.getProfilePath().getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES,
                 Constants.DEFAULT_AUTO_CONNECT_FAVOURITES));
 
         if (loadWindowSettings)
         {
-            DriverGUI.frame.setBounds(getProfilePath().getInt(Constants.KEY_WINDOW_X, Constants.DEFAULT_WINDOW_X),
-                    getProfilePath().getInt(Constants.KEY_WINDOW_Y, Constants.DEFAULT_WINDOW_Y),
-                    getProfilePath().getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),
-                    getProfilePath().getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT));
+            DriverGUI.frame.setBounds(URProfilesUtil.getProfilePath().getInt(Constants.KEY_WINDOW_X, Constants.DEFAULT_WINDOW_X),
+                    URProfilesUtil.getProfilePath().getInt(Constants.KEY_WINDOW_Y, Constants.DEFAULT_WINDOW_Y),
+                    URProfilesUtil.getProfilePath().getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),
+                    URProfilesUtil.getProfilePath().getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT));
 
             this.setPreferredSize(
-                    new Dimension(getProfilePath().getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),
-                            getProfilePath().getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT)));
+                    new Dimension(URProfilesUtil.getProfilePath().getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),
+                            URProfilesUtil.getProfilePath().getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT)));
         }
 
         // TODO Add Port number to favourites.
         try
         {
             favouritesListModel.removeAllElements();
-            for (String serverNode : getFavouritesPath().childrenNames())
+            for (String serverNode : URProfilesUtil.getFavouritesPath().childrenNames())
             {
-                for (String channelNode : getFavouritesPath().node(serverNode).childrenNames())
+                for (String channelNode : URProfilesUtil.getFavouritesPath().node(serverNode).childrenNames())
                 {
-                    if (getFavouritesPath().node(serverNode).node(channelNode).keys().length > 0)
+                    if (URProfilesUtil.getFavouritesPath().node(serverNode).node(channelNode).keys().length > 0)
                     {
                         favouritesListModel.addElement(new FavouritesItem(serverNode, channelNode));
                     }
@@ -1671,7 +1612,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     @Override
     public void removeClientSetting (String node, String key)
     {
-        getProfilePath().node(node).remove(key);
+        URProfilesUtil.getProfilePath().node(node).remove(key);
     }
 
     @Override
@@ -1682,24 +1623,24 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         try
         {
             Constants.LOGGER.log(Level.INFO, "Remove empty favourites");
-            for (String serverNode : getFavouritesPath().childrenNames())
+            for (String serverNode : URProfilesUtil.getFavouritesPath().childrenNames())
             {
-                for (String channelNode : getFavouritesPath().node(serverNode).childrenNames())
+                for (String channelNode : URProfilesUtil.getFavouritesPath().node(serverNode).childrenNames())
                 {
-                    if (getFavouritesPath().node(serverNode).node(channelNode).keys().length == 0)
+                    if (URProfilesUtil.getFavouritesPath().node(serverNode).node(channelNode).keys().length == 0)
                     {
-                        getFavouritesPath().node(serverNode).node(channelNode).removeNode();
+                        URProfilesUtil.getFavouritesPath().node(serverNode).node(channelNode).removeNode();
                     }
                 }
             }
 
             Constants.LOGGER.log(Level.INFO, "Remove empty profiles");
-            for (String profileNode : getProfilePath().childrenNames())
+            for (String profileNode : URProfilesUtil.getProfilePath().childrenNames())
             {
-                if (getProfilePath().node(profileNode) != getFavouritesPath()
-                        && getProfilePath().node(profileNode).keys().length == 0)
+                if (URProfilesUtil.getProfilePath().node(profileNode) != URProfilesUtil.getFavouritesPath()
+                        && URProfilesUtil.getProfilePath().node(profileNode).keys().length == 0)
                 {
-                    getProfilePath().node(profileNode).removeNode();
+                    URProfilesUtil.getProfilePath().node(profileNode).removeNode();
                 }
             }
         } catch (BackingStoreException e)
@@ -1756,7 +1697,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         tabbedPane.addChangeListener(new MainTabbedPanel_changeAdapter(this));
         tabbedPane.addMouseListener(new TabbedMouseListener());
-        ((MainOptionsPanel) optionsMainPanel).setupOptionsPanel();
         tabbedPane.addTab("Options", optionsMainPanel);
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
@@ -1872,9 +1812,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public UserGUI (Optional<String> initialProfile)
     {
         if(initialProfile.isPresent())
-            profileName = initialProfile.get();
+            URProfilesUtil.setActiveProfileName(initialProfile.get());
         else
-            profileName = getDefaultProfile();
+            URProfilesUtil.setActiveProfileName(URProfilesUtil.getDefaultProfile());
     }
 
     public void setupUserGUI ()

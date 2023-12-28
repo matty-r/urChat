@@ -103,10 +103,10 @@ public class URPreferencesUtil {
             if(baseSettingsPath.nodeExists(loadedStyle.getAttribute("name").toString()))
                 stylePrefPath = baseSettingsPath.node(loadedStyle.getAttribute("name").toString());
             else if (DriverGUI.gui != null)
-                stylePrefPath = DriverGUI.gui.getProfilePath().node(loadedStyle.getAttribute("name").toString());
+                stylePrefPath = URProfilesUtil.getProfilePath().node(loadedStyle.getAttribute("name").toString());
             else
                 stylePrefPath = baseSettingsPath.node(loadedStyle.getAttribute("name").toString());
-        } catch (BackingStoreException e)
+        } catch (IllegalStateException | BackingStoreException e)
         {
             // TODO Auto-generated catch block
             e.printStackTrace();

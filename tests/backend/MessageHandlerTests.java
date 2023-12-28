@@ -1,8 +1,6 @@
 package backend;
 
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertSame;
-import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.*;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -21,6 +19,7 @@ import org.testng.annotations.Test;
 import urChatBasic.backend.Connection;
 import urChatBasic.backend.MessageHandler;
 import urChatBasic.backend.MessageHandler.Message;
+import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.DriverGUI;
@@ -50,7 +49,7 @@ public class MessageHandlerTests
         DriverGUI.createGUI(java.util.Optional.of(testProfileName));
         testGUI = DriverGUI.gui;
         testGUI.setupUserGUI();
-        
+
         Reporter.log("Setting profile to " + testProfileName, true);
         testGUI.getClientSettings(true);
         UserGUI.setTimeLineString("[HHmm]");
@@ -69,8 +68,8 @@ public class MessageHandlerTests
     public void tearDown () throws Exception
     {
         Reporter.log("Deleting testing profile.", true);
-        if(testGUI.getProfileName().equals(testProfileName))
-            testGUI.deleteProfile();
+        if(URProfilesUtil.getActiveProfileName().equals(testProfileName))
+            URProfilesUtil.deleteProfile();
     }
 
     @Test(groups = {"Test #001"})
@@ -272,8 +271,7 @@ public class MessageHandlerTests
         assertSame("Channel line count should equal the line limit", channelLinesLimit, channelLinesCount - 1);
     }
 
-    @Test(groups = {"Test #005"}, dependsOnMethods = {"backend.MessageHandlerTests.testChannelLineLimit"}
-        , description = "Test Description")
+    @Test(groups = {"Test #005"}, description = "Test Description")
     public void testServerLineLimit() throws BadLocationException, InterruptedException
     {
         testGUI.setLimitServerLines(10);
@@ -343,7 +341,7 @@ public class MessageHandlerTests
     public void channelRegex()
     {
         // find and match against any URLs that may be in the text
-        String line = "join #urchatclient to test the regex";
+        String line = "join #urchat to test the regex";
 
         Pattern pattern = Pattern.compile(Constants.CHANNEL_REGEX);
         Matcher matcher = pattern.matcher(line);
@@ -355,7 +353,7 @@ public class MessageHandlerTests
             regexLine = matcher.group(1);
         }
 
-        assertTrue(regexLine.equalsIgnoreCase("#urchatclient"));
+        assertTrue(regexLine.equalsIgnoreCase("#urchat"));
     }
 
     @Test(groups = {"Test #005"})
@@ -369,7 +367,7 @@ public class MessageHandlerTests
         testHandler.parseMessage(testMessage);
 
         String rawMessage =
-                ":"+testUser.getName()+"!~"+testUser.getName()+"@urchatclient PRIVMSG "+testUser.getName()+" :Please join #urchatclient and go to https://github.com/matty-r/urChat then go back to #anotherchannel";
+                ":"+testUser.getName()+"!~"+testUser.getName()+"@urchatclient PRIVMSG "+testUser.getName()+" :Please join #urchat and go to https://github.com/matty-r/urChat then go back to #anotherchannel";
 
         testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);

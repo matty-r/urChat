@@ -13,6 +13,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.utils.URColour;
+import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.Constants;
 import urChatBasic.frontend.DriverGUI;
@@ -35,7 +36,7 @@ public class LAFTests
         testGUI = DriverGUI.gui;
         testGUI.setupUserGUI();
         Reporter.log("Setting profile to " + testProfileName, true);
-        testGUI.setProfileName(testProfileName);
+        testGUI.setActiveProfile(testProfileName);
         testGUI.getClientSettings(true);
     }
 
@@ -43,8 +44,8 @@ public class LAFTests
     public void tearDown () throws Exception
     {
         Reporter.log("Deleting testing profile.", true);
-        if(testGUI.getProfileName().equals(testProfileName))
-            testGUI.deleteProfile();
+        if(URProfilesUtil.getActiveProfileName().equals(testProfileName))
+            URProfilesUtil.deleteProfile();
     }
 
     @Test(description = "Check that changing the Look and Feel, also correctly changes the style of the text")

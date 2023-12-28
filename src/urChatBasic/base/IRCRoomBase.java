@@ -1,5 +1,6 @@
 package urChatBasic.base;
 
+import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCActions;
@@ -180,28 +181,28 @@ public class IRCRoomBase extends JPanel
             String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
 
             if(nodeName.equals(roomName))
-                setSettingsPath(gui.getFavouritesPath().node(nodeName));
+                setSettingsPath(URProfilesUtil.getFavouritesPath().node(nodeName));
             else
-                setSettingsPath(gui.getFavouritesPath().node(nodeName).node(roomName));
+                setSettingsPath(URProfilesUtil.getFavouritesPath().node(nodeName).node(roomName));
 
             fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , getServer(), roomPrefs);
         } else
         {
-            setSettingsPath(gui.getFavouritesPath().node(roomName));
+            setSettingsPath(URProfilesUtil.getFavouritesPath().node(roomName));
             fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, null, roomPrefs);
         }
 
-        gui.addProfileChangeListener(e -> {
+        UserGUI.addProfileChangeListener(e -> {
             String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
 
             if(nodeName.equals(roomName))
-                setSettingsPath(gui.getFavouritesPath().node(nodeName));
+                setSettingsPath(URProfilesUtil.getFavouritesPath().node(nodeName));
             else
-                setSettingsPath(gui.getFavouritesPath().node(nodeName).node(roomName));
+                setSettingsPath(URProfilesUtil.getFavouritesPath().node(nodeName).node(roomName));
         });
 
         setFont(getFontPanel().getFont());

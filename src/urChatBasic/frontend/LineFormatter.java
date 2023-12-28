@@ -112,6 +112,8 @@ public class LineFormatter
         formatterStyles.put(highStyle.getName(), highStyle);
         formatterStyles.put(mediumStyle.getName(), mediumStyle);
         formatterStyles.put(lowStyle.getName(), lowStyle);
+
+
     }
 
     public URStyle defaultStyle(String name, boolean load)
