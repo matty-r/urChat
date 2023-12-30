@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -14,7 +15,10 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants.EventType;
 import urChatBasic.base.Constants.Placement;
@@ -42,6 +46,7 @@ public class ProfilePanel extends UROptionsPanel
 
         loadProfiles();
         profilesTable.setTableHeader(null);
+        profilesTable.setShowGrid(false);
 
         URProfilesUtil.addListener(EventType.DELETE, e -> {
             loadProfiles();
@@ -119,6 +124,27 @@ public class ProfilePanel extends UROptionsPanel
             }
         });
 
+        profilesTableModel.addTableModelListener(new TableModelListener() {
+
+            @Override
+            public void tableChanged (TableModelEvent e)
+            {
+                int selectedRow = profilesTable.getSelectedRow();
+
+                if (selectedRow >= 0)
+                {
+                    if (e.getType() == TableModelEvent.UPDATE) {
+                        String oldValue = profileName.getText();
+                        String newValue = profilesTableModel.getValueAt(selectedRow, 0).toString();
+
+                        URProfilesUtil.cloneProfile(oldValue, Optional.of(newValue));
+                        URProfilesUtil.deleteProfile(oldValue);
+                        // Add your handling code here for the cell change event
+                    }
+                }
+            }
+        });
+
         UserGUI.addProfileChangeListener(e -> {
             String selectedProfileName = URProfilesUtil.getActiveProfileName();
 
@@ -132,8 +158,12 @@ public class ProfilePanel extends UROptionsPanel
             if (selectedRow >= 0)
             {
                 String profileString = profilesTableModel.getValueAt(selectedRow, 0).toString();
-                URProfilesUtil.cloneProfile(profileString);
+                URProfilesUtil.cloneProfile(profileString, Optional.empty());
             }
+        });
+
+        createProfile.addActionListener(e -> {
+            URProfilesUtil.createProfile("New Profile");
         });
     }
 

@@ -7,8 +7,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.text.html.Option;
 import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
@@ -87,11 +89,10 @@ public class ProfileTests
     }
 
     @Test
-    @Ignore
     public void cloneProfileTest () throws BackingStoreException
     {
         Preferences originalPathRoot = URProfilesUtil.getProfilePath(testDriver.getTestProfileName());
-        Preferences clonedProfileRoot = URProfilesUtil.cloneProfile(testDriver.getTestProfileName());
+        Preferences clonedProfileRoot = URProfilesUtil.cloneProfile(testDriver.getTestProfileName(), Optional.empty());
 
         ArrayList<Preferences> originalNodes = URPreferencesUtil.getAllNodes(originalPathRoot);
 
@@ -121,10 +122,9 @@ public class ProfileTests
     }
 
     @Test
-    @Ignore
     public void switchToClonedProfileTest () throws BackingStoreException
     {
-        Preferences clonedProfileRoot = URProfilesUtil.cloneProfile(testDriver.getTestProfileName());
+        Preferences clonedProfileRoot = URProfilesUtil.cloneProfile(testDriver.getTestProfileName(), Optional.empty());
         final String clonedProfileName;
 
         clonedProfileName = Arrays.stream(URProfilesUtil.getProfiles()).filter(e -> clonedProfileRoot.toString().endsWith(e)).findFirst().get();

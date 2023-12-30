@@ -156,18 +156,26 @@ public class URProfilesUtil
         return false;
     }
 
-    public static Preferences cloneProfile (String originalProfileName)
+    public static Preferences cloneProfile (String originalProfileName, Optional<String> newProfileName)
     {
         Preferences originalPathRoot = getProfilePath(originalProfileName);
         int cloneNumber = 1;
-        String clonedProfileName = originalProfileName+" ("+cloneNumber+")";
+        String clonedProfileName;
+        if(newProfileName.isEmpty())
+            clonedProfileName = originalProfileName;
+        else
+            clonedProfileName = newProfileName.get();
 
         try
         {
             while(originalPathRoot.parent().nodeExists(clonedProfileName))
             {
+                if(newProfileName.isEmpty())
+                    clonedProfileName = originalProfileName+" ("+cloneNumber+")";
+                else
+                    clonedProfileName = newProfileName.get()+" ("+cloneNumber+")";
+
                 cloneNumber++;
-                clonedProfileName = originalProfileName+" ("+cloneNumber+")";
             }
         } catch (BackingStoreException e)
         {
@@ -233,8 +241,24 @@ public class URProfilesUtil
 
     public static void createProfile (String profileName)
     {
-        Constants.LOGGER.log(Level.INFO, "Creating new profile [" + profileName + "]");
-        setDefaultSettings(profileName);
+        int newProfileNumber = 0;
+        String newProfileName = profileName;
+
+        try
+        {
+            while(Constants.BASE_PREFS.nodeExists(newProfileName))
+            {
+                newProfileNumber++;
+                newProfileName = profileName + " ("+newProfileNumber+")";
+            }
+        } catch (BackingStoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        Constants.LOGGER.log(Level.INFO, "Creating new profile [" + newProfileName + "]");
+        setDefaultSettings(newProfileName);
         fireListeners(EventType.CREATE);
     }
 
