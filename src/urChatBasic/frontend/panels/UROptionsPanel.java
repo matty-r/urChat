@@ -23,14 +23,6 @@ public class UROptionsPanel extends JPanel
 
     public UROptionsPanel (String displayName, MainOptionsPanel optionsPanel, Optional<Integer> preferredIndex)
     {
-        addDisplayListener(e -> {
-            System.out.println("Showing: " + displayName);
-        });
-
-        addHideListener(e -> {
-            System.out.println("Hiding: " + displayName);
-        });
-
         panelDisplayName = displayName;
         panelScroller = new JScrollPane(this);
         optionsPanel.addToOptions(displayName, this, preferredIndex);
