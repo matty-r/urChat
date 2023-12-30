@@ -28,7 +28,7 @@ public class Panels
         }
     }
 
-    public static void addToSpringPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
+    private static void addToSpringPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
             Size targetSize)
     {
 
@@ -118,7 +118,7 @@ public class Panels
         }
     }
 
-    public static void addToBorderPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
+    private static void addToBorderPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
             Size targetSize)
     {
         if (null != label && !label.isBlank())

@@ -22,17 +22,18 @@ import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
-import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCPrivate;
 import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.UserGUI;
+import utils.TestDriverGUI;
 
 
 public class MessageHandlerTests
 {
     MessageHandler testHandler;
     IRCServer testServer;
+    TestDriverGUI testDriver;
     UserGUI testGUI;
     IRCRoomBase testPrivChannel;
     final String PUB_CHANNEL_NAME = "#someChannel";
@@ -40,18 +41,14 @@ public class MessageHandlerTests
     IRCUser testUser;
     Connection testConnection;
 
-    final String testProfileName = "testingprofile" + (new SimpleDateFormat("yyMMdd")).format(new Date());
-
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception
     {
-        // TODO: We should just create a TestDriverGUI instead.
-        DriverGUI.createGUI(java.util.Optional.of(testProfileName));
-        testGUI = DriverGUI.gui;
-        testGUI.setupUserGUI();
+        testDriver = new TestDriverGUI();
+        testGUI = TestDriverGUI.gui;
 
-        Reporter.log("Setting profile to " + testProfileName, true);
-        testGUI.getClientSettings(true);
+        Reporter.log("Setting profile to " + testDriver.getTestProfileName(), true);
+
         UserGUI.setTimeLineString("[HHmm]");
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy",
                 "1234", true);
@@ -68,7 +65,7 @@ public class MessageHandlerTests
     public void tearDown () throws Exception
     {
         Reporter.log("Deleting testing profile.", true);
-        if(URProfilesUtil.getActiveProfileName().equals(testProfileName))
+        if(URProfilesUtil.getActiveProfileName().equals(testDriver.getTestProfileName()))
             URProfilesUtil.deleteProfile();
     }
 
@@ -135,7 +132,7 @@ public class MessageHandlerTests
                 testPubChannel.getLineFormatter().getStyleAtPosition(11, testLine).getAttribute("name"));
     }
 
-    @Test(groups = {"Test #003"}, dependsOnMethods = {"backend.MessageHandlerTests.nickIsNickStyleTest"})
+    @Test(groups = {"Test #003"})
     public void sendActionMessageChannel()
     {
         String rawMessage = "/me claps hands";
@@ -166,7 +163,7 @@ public class MessageHandlerTests
         }
     }
 
-    @Test(groups = {"Test #004"}, dependsOnMethods = {"backend.MessageHandlerTests.sendPrivateMessageMessageUser"})
+    @Test(groups = {"Test #004"})
     public void sendActionMessageUser()
     {
         Reporter.log("Depends on sendPrivateMessageMessageUser which will be implicitly included in this test group.");
@@ -371,7 +368,7 @@ public class MessageHandlerTests
 
         testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
-        StyledDocument testDoc = testPrivChannel.getChannelTextPane().getStyledDocument();
+        // StyledDocument testDoc = testPrivChannel.getChannelTextPane().getStyledDocument();
 
         while (testPrivChannel.messageQueueWorking())
         {

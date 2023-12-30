@@ -2,7 +2,9 @@ package urChatBasic.backend.utils;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.List;
 import java.awt.font.TextAttribute;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -103,7 +105,7 @@ public class URPreferencesUtil {
             if(baseSettingsPath.nodeExists(loadedStyle.getAttribute("name").toString()))
                 stylePrefPath = baseSettingsPath.node(loadedStyle.getAttribute("name").toString());
             else if (DriverGUI.gui != null)
-                stylePrefPath = URProfilesUtil.getProfilePath().node(loadedStyle.getAttribute("name").toString());
+                stylePrefPath = URProfilesUtil.getActiveProfilePath().node(loadedStyle.getAttribute("name").toString());
             else
                 stylePrefPath = baseSettingsPath.node(loadedStyle.getAttribute("name").toString());
         } catch (IllegalStateException | BackingStoreException e)
@@ -206,7 +208,7 @@ public class URPreferencesUtil {
         saveStyleColours(diffStyle, stylePrefPath);
     }
 
-    private static void savePref(String name, Optional<?> optionalValue, Preferences path) {
+    public static void putPref(String name, Optional<?> optionalValue, Preferences path) {
         if(optionalValue != null && optionalValue.isPresent())
         {
             Object value = optionalValue.get();
@@ -222,17 +224,75 @@ public class URPreferencesUtil {
         }
     }
 
+    public static Object getPref (String name, Object defaultValue, Preferences path)
+    {
+
+        // TODO: Exception handling
+        // if (!(defaultValue instanceof String || defaultValue instanceof Integer || defaultValue instanceof Boolean)) {
+        //     throw new IllegalArgumentException("Invalid defaultValue type. Allowed types: String, Integer, Boolean");
+        // }
+        Object stringValue = path.get(name, null);
+        if (stringValue != null && defaultValue != null) {
+            // Check if the value exists in preferences
+            if (defaultValue instanceof String) {
+                return path.get(name, (String) defaultValue);
+            } else if (defaultValue instanceof Integer) {
+                return path.getInt(name, (int) defaultValue);
+            } else if (defaultValue instanceof Boolean) {
+                return path.getBoolean(name, (boolean) defaultValue);
+            }
+        } else if (stringValue != null && defaultValue == null)
+        {
+            try {
+                if (stringValue != null) {
+                    // Attempt to parse the stored value to int
+                    return Integer.parseInt((String) stringValue);
+                }
+            } catch (NumberFormatException e) {
+                // If parsing to int fails, attempt to get the boolean value
+                try {
+                    return path.getBoolean(name, false);
+                } catch (ClassCastException ex) {
+                    // If parsing to boolean fails, return the string value
+                    return stringValue;
+                }
+            }
+        }
+
+        return defaultValue;
+    }
+
+    public static ArrayList<Preferences> getAllNodes (Preferences rootPath)
+    {
+        ArrayList<Preferences> prefPaths = new ArrayList<Preferences>();
+
+        try
+        {
+            prefPaths.add(rootPath);
+
+            for (String nodeName : rootPath.childrenNames()) {
+                prefPaths.addAll(getAllNodes(rootPath.node(nodeName)));
+            }
+        } catch (BackingStoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return prefPaths;
+    }
+
     /**
      *
      * @param saveStyle
      * @param settingsPath
      */
     private static void saveStyleFont(URStyle saveStyle, Preferences settingsPath) {
-        savePref(Constants.KEY_FONT_BOLD, saveStyle.isBold(), settingsPath);
-        savePref(Constants.KEY_FONT_ITALIC, saveStyle.isItalic(), settingsPath);
-        savePref(Constants.KEY_FONT_UNDERLINE, saveStyle.isUnderline(), settingsPath);
-        savePref(Constants.KEY_FONT_FAMILY, saveStyle.getFamily(), settingsPath);
-        savePref(Constants.KEY_FONT_SIZE, saveStyle.getSize(), settingsPath);
+        putPref(Constants.KEY_FONT_BOLD, saveStyle.isBold(), settingsPath);
+        putPref(Constants.KEY_FONT_ITALIC, saveStyle.isItalic(), settingsPath);
+        putPref(Constants.KEY_FONT_UNDERLINE, saveStyle.isUnderline(), settingsPath);
+        putPref(Constants.KEY_FONT_FAMILY, saveStyle.getFamily(), settingsPath);
+        putPref(Constants.KEY_FONT_SIZE, saveStyle.getSize(), settingsPath);
     }
 
     /**

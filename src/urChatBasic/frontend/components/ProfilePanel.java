@@ -2,39 +2,59 @@ package urChatBasic.frontend.components;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
-import java.util.stream.IntStream;
-import javax.swing.DefaultListModel;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JList;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
 import urChatBasic.backend.utils.URProfilesUtil;
+import urChatBasic.base.Constants.EventType;
 import urChatBasic.base.Constants.Placement;
 import urChatBasic.base.Constants.Size;
 import urChatBasic.frontend.UserGUI;
+import urChatBasic.frontend.dialogs.MessageDialog;
+import urChatBasic.frontend.dialogs.YesNoDialog;
 import urChatBasic.frontend.panels.UROptionsPanel;
 import urChatBasic.frontend.utils.Panels;
 
 public class ProfilePanel extends UROptionsPanel
 {
     public static final String PANEL_DISPLAY_NAME = "Profiles";
-    private static final DefaultListModel<String> profilesListModel = new DefaultListModel<String>();
-    private static final JList<String> profilesList = new JList<String>(profilesListModel);
-    protected JScrollPane profileScroller = new JScrollPane(profilesList);
-
-    private JTextField profileName = new JTextField(URProfilesUtil.getDefaultProfile());
+    private static final DefaultTableModel profilesTableModel = new DefaultTableModel(new Object[] {"Profiles"}, 0);
+    private static final JTable profilesTable = new JTable(profilesTableModel);
+    protected JScrollPane profileScroller = new JScrollPane(profilesTable);
+    private JButton cloneProfile = new JButton("Clone");
+    private JButton createProfile = new JButton("Create");
+    private JLabel profileName = new JLabel(URProfilesUtil.getDefaultProfile());
     private JCheckBox setAsDefault = new JCheckBox("", true);
 
     public ProfilePanel (MainOptionsPanel optionsPanel)
     {
         super(PANEL_DISPLAY_NAME, optionsPanel);
-        profilesListModel.addAll(Arrays.asList(URProfilesUtil.getProfiles()));
-        profileName.setEditable(false);
+
+        loadProfiles();
+        profilesTable.setTableHeader(null);
+
+        URProfilesUtil.addListener(EventType.DELETE, e -> {
+            loadProfiles();
+        });
+
+        URProfilesUtil.addListener(EventType.CREATE, e -> {
+            loadProfiles();
+        });
+
         Panels.addToPanel(this, profileScroller, "Available Profiles", Placement.DEFAULT, Size.CUSTOM.customSize(200, 200));
+        Panels.addToPanel(this, cloneProfile, null, Placement.DEFAULT, null);
+        Panels.addToPanel(this, createProfile, null, Placement.RIGHT, null);
+
         Panels.addToPanel(this, profileName, "Selected Profile", Placement.DEFAULT, Size.SMALL);
 
         setAsDefault.addActionListener(new ActionListener()
@@ -42,43 +62,132 @@ public class ProfilePanel extends UROptionsPanel
             @Override
             public void actionPerformed (ActionEvent arg0)
             {
-
                 URProfilesUtil.setDefaultProfile(profileName.getText());
                 setDefaultCheckboxState();
             }
         });
 
-        ListSelectionModel listSelectionModel = profilesList.getSelectionModel();
+        ListSelectionModel listSelectionModel = profilesTable.getSelectionModel();
         listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         listSelectionModel.addListSelectionListener(new ProfilesListSelectionHandler());
 
         Panels.addToPanel(this, setAsDefault, "Set as default", Placement.DEFAULT, null);
 
+        // Add KeyListener to the table for key events
+        profilesTable.addKeyListener(new KeyAdapter()
+        {
+            @Override
+            public void keyPressed (KeyEvent e)
+            {
+                if (e.getKeyCode() == KeyEvent.VK_DELETE)
+                {
+                    int selectedRow = profilesTable.getSelectedRow();
+                    if (selectedRow >= 0)
+                    {
+                        String profileString = profilesTableModel.getValueAt(selectedRow, 0).toString();
+                        if (URProfilesUtil.profileExists(profileString))
+                        {
+                            if (profileString.equals(URProfilesUtil.getDefaultProfile()))
+                            {
+                                MessageDialog cantDelete =
+                                        new MessageDialog("Can't delete the default profile. Select another profile as default and try again.",
+                                                "Delete Profile", JOptionPane.INFORMATION_MESSAGE);
+                                cantDelete.setVisible(true);
+                            } else
+                            {
+                                AtomicBoolean confirmDelete = new AtomicBoolean(false);
+
+                                YesNoDialog deleteProfileDialog = new YesNoDialog("Delete the '" + profileString + "' profile?", "Delete Profile",
+                                        JOptionPane.WARNING_MESSAGE, dialog -> {
+                                            confirmDelete.set(dialog.getActionCommand().equalsIgnoreCase("Yes"));
+                                        });
+
+                                deleteProfileDialog.setVisible(true);
+
+                                if (confirmDelete.get())
+                                {
+                                    profilesTableModel.removeRow(selectedRow);
+                                    URProfilesUtil.deleteProfile(profileString);
+
+                                    int profileIndex = getProfileIndex(URProfilesUtil.getDefaultProfile());
+                                    profilesTable.setRowSelectionInterval(profileIndex, profileIndex);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
         UserGUI.addProfileChangeListener(e -> {
             String selectedProfileName = URProfilesUtil.getActiveProfileName();
 
-            profilesList.setSelectedIndex(IntStream.range(0, profilesListModel.toArray().length)
-                    .filter(i -> profilesListModel.toArray()[i].equals(selectedProfileName)).findFirst().orElse(-1));
+            int profileIndex = getProfileIndex(selectedProfileName);
+            profilesTable.setRowSelectionInterval(profileIndex, profileIndex);
+        });
+
+        cloneProfile.addActionListener(e -> {
+            int selectedRow = profilesTable.getSelectedRow();
+
+            if (selectedRow >= 0)
+            {
+                String profileString = profilesTableModel.getValueAt(selectedRow, 0).toString();
+                URProfilesUtil.cloneProfile(profileString);
+            }
         });
     }
+
+    private void loadProfiles ()
+    {
+        // delete all the loaded profiles
+        while (profilesTableModel.getRowCount() > 0)
+        {
+            profilesTableModel.removeRow(profilesTableModel.getRowCount() - 1);
+        }
+
+        // add them all back in
+        for (String profile : URProfilesUtil.getProfiles())
+        {
+            profilesTableModel.addRow(new Object[] {profile});
+        }
+    }
+
+    private int getProfileIndex (String profileName)
+    {
+        if (URProfilesUtil.profileExists(profileName))
+        {
+            for (int i = 0; i < profilesTableModel.getRowCount(); i++)
+            {
+                if (profilesTableModel.getValueAt(i, 0).toString().equals(profileName))
+                {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+
 
     class ProfilesListSelectionHandler implements ListSelectionListener
     {
         public void valueChanged (ListSelectionEvent e)
         {
-            ListSelectionModel lsm = (ListSelectionModel) e.getSource();
-
-            if (!(lsm.isSelectionEmpty()) && !e.getValueIsAdjusting())
+            if (!e.getValueIsAdjusting())
             {
-                profileName.setText(profilesList.getSelectedValue());
-                setDefaultCheckboxState();
+                int selectedRow = profilesTable.getSelectedRow();
+                if (selectedRow >= 0)
+                {
+                    profileName.setText(profilesTableModel.getValueAt(selectedRow, 0).toString());
+                    setDefaultCheckboxState();
+                }
             }
         }
     }
 
     /**
-     * If a profile is set to be the default, don't let the checkbox to be unchecked. This forces
-     * the selecting another profile then checking Set as Default.
+     * If a profile is set to be the default, don't let the checkbox be unchecked.
      */
     private void setDefaultCheckboxState ()
     {
@@ -92,5 +201,4 @@ public class ProfilePanel extends UROptionsPanel
             setAsDefault.setSelected(false);
         }
     }
-
 }

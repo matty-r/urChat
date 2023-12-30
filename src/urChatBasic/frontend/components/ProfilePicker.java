@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
+import urChatBasic.base.Constants.EventType;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.dialogs.MessageDialog;
@@ -21,13 +22,14 @@ import java.util.logging.Level;
 public class ProfilePicker extends JPanel
 {
     private List<String> allProfiles;
-    private JComboBox<String> profileComboBox;
+    private JComboBox<String> profileComboBox = new JComboBox<>(URProfilesUtil.getProfiles());
+    private ActionListener changeListener = new ProfileChangeListener();
     private final JButton saveProfile = new JButton("Save");
     private int selectedIndex = 0;
 
     public ProfilePicker (String initialProfile, Boolean showSaveButton)
     {
-        profileComboBox = new JComboBox<String>();
+        // profileComboBox = new JComboBox<String>();
         loadProfiles(initialProfile);
         profileComboBox.setEditable(false);
 
@@ -43,64 +45,14 @@ public class ProfilePicker extends JPanel
             add(saveProfile);
         }
 
-        profileComboBox.addActionListener(e -> {
-            String profileString = profileComboBox.getSelectedItem().toString();
-            boolean deleteProfile = false;
-            // Did we have an item selected, but we just deleted the text?
-            if(profileString.isEmpty() && profileComboBox.getSelectedIndex() == -1 && profileComboBox.getComponentCount() > 0)
-            {
-                deleteProfile = true;
-                profileString = profileComboBox.getItemAt(selectedIndex);
-            } else {
-                selectedIndex = profileComboBox.getSelectedIndex();
-            }
+        profileComboBox.addActionListener(changeListener);
 
-            if (URProfilesUtil.getActiveProfileName() != profileString && !deleteProfile)
-            {
-                // TODO Show dialog to either rename the existing profile, or create a new profile
-                String currentProfile = URProfilesUtil.getActiveProfileName();
+        URProfilesUtil.addListener(EventType.CREATE, e -> {
+            loadProfiles(initialProfile);
+        });
 
-                if (!URProfilesUtil.profileExists(profileString))
-                {
-                    // If create new profile selected
-                    profileComboBox.addItem(profileString);
-
-                    // If rename existing profile selected...
-                    // TODO
-                }
-
-                DriverGUI.gui.setActiveProfile(profileString);
-            } else if (deleteProfile)
-            {
-
-                // TODO Show a confirmation dialog
-                if (URProfilesUtil.profileExists(profileString))
-                {
-                    if(profileString.equals(URProfilesUtil.getDefaultProfile()))
-                    {
-                        MessageDialog cantDelete = new MessageDialog("Can't delete the default profile. Select another profile as default and try again.", "Delete Profile", JOptionPane.INFORMATION_MESSAGE);
-                        cantDelete.setVisible(true);
-                    } else {
-                        AtomicBoolean confirmDelete = new AtomicBoolean(false);
-
-                        YesNoDialog deleteProfileDialog = new YesNoDialog("Delete the '" + profileString + "' profile?", "Delete Profile", JOptionPane.WARNING_MESSAGE,
-                                dialog -> {
-                                confirmDelete.set(dialog.getActionCommand().equalsIgnoreCase("Yes"));
-                            });
-
-                        deleteProfileDialog.setVisible(true);
-
-                        if(confirmDelete.get())
-                        {
-                            profileComboBox.removeItemAt(selectedIndex);
-                            URProfilesUtil.deleteProfile(profileString);
-
-                            profileComboBox.setSelectedIndex(getProfileIndex(URProfilesUtil.getDefaultProfile()));
-                            DriverGUI.gui.setActiveProfile(profileComboBox.getSelectedItem().toString());
-                        }
-                    }
-                }
-            }
+        URProfilesUtil.addListener(EventType.DELETE, e -> {
+            loadProfiles(initialProfile);
         });
 
         saveProfile.addActionListener(new ActionListener()
@@ -118,20 +70,41 @@ public class ProfilePicker extends JPanel
         return profileComboBox;
     }
 
-    private int getProfileIndex (String profileName)
+    private class ProfileChangeListener implements ActionListener
     {
-        if (URProfilesUtil.profileExists(profileName))
+
+        @Override
+        public void actionPerformed (ActionEvent arg0)
         {
-            for (int i = 0; i < profileComboBox.getItemCount(); i++)
+            String profileString = "";
+            if(profileComboBox.getSelectedItem() != null)
+                profileString = profileComboBox.getSelectedItem().toString();
+
+            // if(profileString.isEmpty() && profileComboBox.getSelectedIndex() == -1 && profileComboBox.getComponentCount() > 0)
+            // {
+            //     profileString = profileComboBox.getItemAt(selectedIndex);
+            // } else {
+            //     selectedIndex = profileComboBox.getSelectedIndex();
+            // }
+
+            if (URProfilesUtil.getActiveProfileName() != profileString && !profileString.isEmpty())
             {
-                if (profileComboBox.getItemAt(i).toString().equalsIgnoreCase(profileName))
+                // TODO Show dialog to either rename the existing profile, or create a new profile
+                String currentProfile = URProfilesUtil.getActiveProfileName();
+
+                if (!URProfilesUtil.profileExists(profileString))
                 {
-                    return i;
+                    // If create new profile selected
+                    profileComboBox.addItem(profileString);
+
+                    // If rename existing profile selected...
+                    // TODO
                 }
+
+                DriverGUI.gui.setActiveProfile(profileString);
             }
         }
 
-        return -1;
     }
 
     @Override
@@ -142,7 +115,17 @@ public class ProfilePicker extends JPanel
 
     private void loadProfiles (String initialProfile)
     {
-        profileComboBox = new JComboBox<>(URProfilesUtil.getProfiles());
+        profileComboBox.removeAllItems();
+
+        profileComboBox.removeActionListener(changeListener);
+
+        for (String profileName : URProfilesUtil.getProfiles()) {
+            profileComboBox.addItem(profileName);
+        }
+
+        // Don't readd the listener if the gui hasn't been initialized
+        if(DriverGUI.gui != null)
+            profileComboBox.addActionListener(changeListener);
 
         if (URProfilesUtil.profileExists(initialProfile))
         {

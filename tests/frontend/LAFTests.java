@@ -32,6 +32,7 @@ public class LAFTests
         // TODO: We should just create a TestDriverGUI instead.
         testDriver = new DriverGUI();
         DriverGUI.initLAFLoader();
+        URProfilesUtil.createProfile(testProfileName);
         DriverGUI.createGUI(Optional.of(testProfileName));
         testGUI = DriverGUI.gui;
         testGUI.setupUserGUI();

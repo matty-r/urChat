@@ -1,44 +1,38 @@
 package backend;
 
 import static org.testng.AssertJUnit.*;
+import java.io.File;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
-import urChatBasic.frontend.DriverGUI;
-import urChatBasic.frontend.UserGUI;
+import utils.TestDriverGUI;
 
-public class ProfileTests {
-
-    DriverGUI testDriver;
-    UserGUI testGUI;
-    final String testProfileName = "testingprofile" + (new SimpleDateFormat("yyMMdd")).format(new Date());
+public class ProfileTests
+{
+    TestDriverGUI testDriver;
     // final String testLAFName
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception
     {
-        Reporter.log("Creating test gui", true);
-        // TODO: We should just create a TestDriverGUI instead.
-        testDriver = new DriverGUI();
-        DriverGUI.initLAFLoader();
-        DriverGUI.createGUI(Optional.of(testProfileName));
-        testGUI = DriverGUI.gui;
-        testGUI.setupUserGUI();
-        Reporter.log("Setting profile to " + testProfileName, true);
-        testGUI.setActiveProfile(testProfileName);
-        testGUI.getClientSettings(true);
+        testDriver = new TestDriverGUI();
     }
 
     @AfterTest(alwaysRun = true)
     public void tearDown () throws Exception
     {
-        if(URProfilesUtil.getActiveProfileName().equals(testProfileName))
+        if(URProfilesUtil.getActiveProfileName().equals(testDriver.getTestProfileName()))
         {
             Reporter.log("Deleting testing profile.", true);
             URProfilesUtil.deleteProfile();
@@ -53,16 +47,16 @@ public class ProfileTests {
     @Test
     public void createdTestProfileTest ()
     {
-        assertTrue(URProfilesUtil.profileExists(testProfileName));
+        assertTrue(URProfilesUtil.profileExists(testDriver.getTestProfileName()));
     }
 
     @Test
     public void deleteTestProfileTest ()
     {
-        assertTrue(URProfilesUtil.getActiveProfileName().equals(testProfileName));
+        assertTrue(URProfilesUtil.getActiveProfileName().equals(testDriver.getTestProfileName()));
         // Delete the active profile
-        URProfilesUtil.deleteProfile();
-        assertFalse(URProfilesUtil.profileExists(testProfileName));
+        URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
+        assertFalse(URProfilesUtil.profileExists(testDriver.getTestProfileName()));
     }
 
     @Test
@@ -73,8 +67,10 @@ public class ProfileTests {
         // Profile Exists
         assertTrue(URProfilesUtil.profileExists(anotherTestProfileName));
 
+        URProfilesUtil.setActiveProfileName(anotherTestProfileName);
+
         // Has the default setting
-        assertEquals(Constants.DEFAULT_TIME_STAMP_FORMAT, URProfilesUtil.getProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, "ERROR!"));
+        assertEquals(Constants.DEFAULT_TIME_STAMP_FORMAT, URProfilesUtil.getActiveProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, "ERROR!"));
 
         URProfilesUtil.deleteProfile(anotherTestProfileName);
     }
@@ -92,10 +88,43 @@ public class ProfileTests {
         assertEquals(originalActiveProfile, URProfilesUtil.getActiveProfileName());
     }
 
+    @Test
+    public void cloneProfileTest () throws BackingStoreException
+    {
+        Preferences originalPathRoot = URProfilesUtil.getProfilePath(testDriver.getTestProfileName());
+        Preferences clonedProfileRoot = URProfilesUtil.cloneProfile(testDriver.getTestProfileName());
+
+        ArrayList<Preferences> originalNodes = URPreferencesUtil.getAllNodes(originalPathRoot);
+
+        for (Preferences originalPrefPath : originalNodes) {
+            Preferences clonedPath = clonedProfileRoot;
+
+            String[] childNodes = Path.of(originalPrefPath.absolutePath().replace(originalPathRoot.absolutePath(), "")).toString().split(File.separator);
+
+            for (String childName : childNodes) {
+                clonedPath = clonedPath.node(childName);
+            }
+
+            try
+            {
+                for (String originalKey : originalPrefPath.keys()) {
+                    assertEquals(URPreferencesUtil.getPref(originalKey, null, originalPrefPath), URPreferencesUtil.getPref(originalKey, null, clonedPath));
+                }
+            } catch (BackingStoreException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+        // Delete the cloned profile
+        clonedProfileRoot.removeNode();
+    }
+
     // @Test
     // public void loadInvalidProfileTest ()
     // {
     //     DriverGUI testInvalidDriver = new DriverGUI();
-    //     DriverGUI.createGUI(Optional.of(testProfileName));
+    //     DriverGUI.createGUI(Optional.of(testDriver.getTestProfileName()));
     // }
 }

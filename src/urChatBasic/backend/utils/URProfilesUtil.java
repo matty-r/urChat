@@ -1,20 +1,34 @@
 package urChatBasic.backend.utils;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
-import javax.naming.ConfigurationException;
+import javax.swing.event.EventListenerList;
 import urChatBasic.base.Constants;
+import urChatBasic.base.Constants.EventType;
 import urChatBasic.frontend.UserGUI;
 
 public class URProfilesUtil
 {
     static String activeProfileName = "";
+
+    // protected EventListenerList createsListenerList = new EventListenerList();
+    // protected EventListenerList deletesListenerList = new EventListenerList();
+    // protected EventListenerList renamesListenerList = new EventListenerList();
+    protected static Map<EventType, EventListenerList> listenerLists = new HashMap<>();
+    protected transient static ActionEvent actionEvent = null;
 
     static final Preferences BASE = Constants.BASE_PREFS;
         /**
@@ -57,6 +71,7 @@ public class URProfilesUtil
             {
                 Constants.LOGGER.log(Level.INFO, "Deleting profile [" + profileName + "].");
                 Constants.BASE_PREFS.node(profileName).removeNode();
+                fireListeners(EventType.DELETE);
             }
             else
                 throw new BackingStoreException("Unable to delete the last profile.");
@@ -99,20 +114,31 @@ public class URProfilesUtil
         {
             URProfilesUtil.activeProfileName = activeProfileName;
             UserGUI.fireProfileChangeListeners();
+            fireListeners(EventType.CHANGE);
         } else {
             Constants.LOGGER.log(Level.WARNING, "Profile ["+activeProfileName+"] doesn't exist.");
             // throw new ConfigurationException("Profile ["+activeProfileName+"] doesn't exist.");
         }
     }
 
-    public static Preferences getProfilePath ()
+    public static Preferences getProfilePath (String profileName)
     {
-        return Constants.BASE_PREFS.node(getActiveProfileName());
+        return Constants.BASE_PREFS.node(profileName);
     }
 
-    public static Preferences getFavouritesPath ()
+    public static Preferences getActiveProfilePath ()
     {
-        return getProfilePath().node("favourites");
+        return getProfilePath(getActiveProfileName());
+    }
+
+    public static Preferences getFavouritesPath (String profileName)
+    {
+        return getProfilePath(profileName).node("favourites");
+    }
+
+    public static Preferences getActiveFavouritesPath ()
+    {
+        return getFavouritesPath(getActiveProfileName());
     }
 
     public static boolean profileExists (String profileName)
@@ -128,6 +154,56 @@ public class URProfilesUtil
         }
 
         return false;
+    }
+
+    public static Preferences cloneProfile (String originalProfileName)
+    {
+        Preferences originalPathRoot = getProfilePath(originalProfileName);
+        int cloneNumber = 1;
+        String clonedProfileName = originalProfileName+" ("+cloneNumber+")";
+
+        try
+        {
+            while(originalPathRoot.parent().nodeExists(clonedProfileName))
+            {
+                cloneNumber++;
+                clonedProfileName = originalProfileName+" ("+cloneNumber+")";
+            }
+        } catch (BackingStoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        final Preferences clonedPathRoot = originalPathRoot.parent().node(clonedProfileName);
+
+        ArrayList<Preferences> originalNodes = URPreferencesUtil.getAllNodes(originalPathRoot);
+
+        for (Preferences originalPrefPath : originalNodes) {
+            Preferences clonedPath = clonedPathRoot;
+
+            String[] childNodes = Path.of(originalPrefPath.absolutePath().replace(originalPathRoot.absolutePath(), "")).toString().split(File.separator);
+
+            for (String childName : childNodes) {
+                if(!childName.isEmpty())
+                    clonedPath = clonedPath.node(childName);
+            }
+
+            try
+            {
+                for (String originalKey : originalPrefPath.keys()) {
+                    URPreferencesUtil.putPref(originalKey, Optional.of(URPreferencesUtil.getPref(originalKey, null, originalPrefPath)), clonedPath);
+                }
+            } catch (BackingStoreException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+
+        fireListeners(EventType.CREATE);
+        return clonedPathRoot;
     }
 
     public static String getDefaultProfile ()
@@ -159,6 +235,7 @@ public class URProfilesUtil
     {
         Constants.LOGGER.log(Level.INFO, "Creating new profile [" + profileName + "]");
         setDefaultSettings(profileName);
+        fireListeners(EventType.CREATE);
     }
 
     private static void setDefaultSettings (String profileName)
@@ -200,5 +277,35 @@ public class URProfilesUtil
         profileNode.putInt(Constants.KEY_WINDOW_Y, Constants.DEFAULT_WINDOW_Y);
         profileNode.putInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH);
         profileNode.putInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT);
+    }
+
+    public static void addListener(EventType eventType, ActionListener actionListener)
+    {
+        if(!listenerLists.containsKey(eventType))
+            listenerLists.put(eventType, new EventListenerList());
+
+        listenerLists.get(eventType).add(ActionListener.class, actionListener);
+    }
+
+    public static void fireListeners (EventType eventType)
+    {
+        if(!listenerLists.containsKey(eventType))
+            listenerLists.put(eventType, new EventListenerList());
+
+        Object[] listeners = listenerLists.get(eventType).getListenerList();
+
+        // Reverse order
+        for (int i = listeners.length - 2; i >= 0; i -= 2)
+        {
+            if (listeners[i] == ActionListener.class)
+            {
+                if (actionEvent == null)
+                {
+                    actionEvent = new ActionEvent(listeners, i, null);
+                }
+
+                ((ActionListener) listeners[i + 1]).actionPerformed(actionEvent);
+            }
+        }
     }
 }

@@ -21,8 +21,7 @@ import urChatBasic.frontend.components.URVersionLabel;
 import urChatBasic.frontend.utils.URColour;
 
 /**
- * Used to store constants that are the same and do not change often. These are things used commonly
- * across the [front,back]end
+ * Used to store constants that are the same and do not change often. These are things used commonly across the [front,back]end
  *
  */
 public class Constants
@@ -155,12 +154,9 @@ public class Constants
     public static final int MAIN_WIDTH = 500;
     public static final int MAIN_HEIGHT = 400;
 
-    public enum Size {
-        LARGE,
-        MEDIUM,
-        SMALL,
-        CUSTOM,
-        NONE;
+    public enum Size
+    {
+        LARGE, MEDIUM, SMALL, CUSTOM, NONE;
 
         Dimension sizeDimension;
 
@@ -176,16 +172,19 @@ public class Constants
         }
     }
 
-    public enum Placement {
-        TOP,
-        RIGHT,
-        BOTTOM,
-        LEFT,
-        DEFAULT
+    public enum Placement
+    {
+        TOP, RIGHT, BOTTOM, LEFT, DEFAULT
+    }
+
+    public enum EventType
+    {
+        CREATE, DELETE, RENAME, CHANGE
     }
 
     // TODO: put all the font prefs in an enum?
-    public enum FONT_PREFS {
+    public enum FONT_PREFS
+    {
         KEY_FONT_FAMILY(StyleConstants.FontFamily.toString(), DEFAULT_FONT.getFamily());
 
         String keyStr = "";

@@ -10,7 +10,7 @@ public class URTestRunner {
 
     public static void main(String[] args) {
         TestNG testNG = new TestNG();
-
+        
         // Define your test classes
         List<Class> classes = new ArrayList<>();
         classes.add(DialogTests.class);

@@ -181,16 +181,16 @@ public class IRCRoomBase extends JPanel
             String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
 
             if(nodeName.equals(roomName))
-                setSettingsPath(URProfilesUtil.getFavouritesPath().node(nodeName));
+                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName));
             else
-                setSettingsPath(URProfilesUtil.getFavouritesPath().node(nodeName).node(roomName));
+                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName).node(roomName));
 
             fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , getServer(), roomPrefs);
         } else
         {
-            setSettingsPath(URProfilesUtil.getFavouritesPath().node(roomName));
+            setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(roomName));
             fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, null, roomPrefs);
@@ -200,9 +200,9 @@ public class IRCRoomBase extends JPanel
             String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
 
             if(nodeName.equals(roomName))
-                setSettingsPath(URProfilesUtil.getFavouritesPath().node(nodeName));
+                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName));
             else
-                setSettingsPath(URProfilesUtil.getFavouritesPath().node(nodeName).node(roomName));
+                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName).node(roomName));
         });
 
         setFont(getFontPanel().getFont());
