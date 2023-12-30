@@ -12,6 +12,7 @@ import javax.swing.text.StyledDocument;
 import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
@@ -41,7 +42,7 @@ public class MessageHandlerTests
     IRCUser testUser;
     Connection testConnection;
 
-    @BeforeMethod(alwaysRun = true)
+    @BeforeTest(alwaysRun = true)
     public void setUp() throws Exception
     {
         testDriver = new TestDriverGUI();

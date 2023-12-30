@@ -2,51 +2,38 @@ package frontend;
 
 import static org.testng.AssertJUnit.*;
 import java.awt.Color;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Optional;
 import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
 import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.utils.URColour;
+import utils.TestDriverGUI;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.Constants;
-import urChatBasic.frontend.DriverGUI;
 
 public class LAFTests
 {
-    DriverGUI testDriver;
+    TestDriverGUI testDriver;
     UserGUI testGUI;
-    final String testProfileName = "testingprofile" + (new SimpleDateFormat("yyMMdd")).format(new Date());
     // final String testLAFName
 
-    @BeforeMethod(alwaysRun = true)
+    @BeforeTest(alwaysRun = true)
     public void setUp() throws Exception
     {
-        Reporter.log("Creating test gui", true);
-        // TODO: We should just create a TestDriverGUI instead.
-        testDriver = new DriverGUI();
-        DriverGUI.initLAFLoader();
-        URProfilesUtil.createProfile(testProfileName);
-        DriverGUI.createGUI(Optional.of(testProfileName));
-        testGUI = DriverGUI.gui;
-        testGUI.setupUserGUI();
-        Reporter.log("Setting profile to " + testProfileName, true);
-        testGUI.setActiveProfile(testProfileName);
-        testGUI.getClientSettings(true);
+        testDriver = new TestDriverGUI();
+        testGUI = TestDriverGUI.gui;
     }
 
     @AfterTest(alwaysRun = true)
     public void tearDown () throws Exception
     {
         Reporter.log("Deleting testing profile.", true);
-        if(URProfilesUtil.getActiveProfileName().equals(testProfileName))
-            URProfilesUtil.deleteProfile();
+        URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
     }
 
     @Test(description = "Check that changing the Look and Feel, also correctly changes the style of the text")

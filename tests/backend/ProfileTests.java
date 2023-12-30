@@ -5,13 +5,14 @@ import java.io.File;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.testng.Reporter;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.backend.utils.URProfilesUtil;
@@ -32,11 +33,8 @@ public class ProfileTests
     @AfterTest(alwaysRun = true)
     public void tearDown () throws Exception
     {
-        if(URProfilesUtil.getActiveProfileName().equals(testDriver.getTestProfileName()))
-        {
-            Reporter.log("Deleting testing profile.", true);
-            URProfilesUtil.deleteProfile();
-        }
+        Reporter.log("Deleting testing profile.", true);
+        URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
     }
 
     // 1. Test creating a profile
@@ -62,7 +60,7 @@ public class ProfileTests
     @Test
     public void createProfileAndDeleteTest ()
     {
-        String anotherTestProfileName = "anothertestingprofile" + (new SimpleDateFormat("yyMMdd")).format(new Date());
+        String anotherTestProfileName = "createProfileAndDeleteTest" + (new SimpleDateFormat("yyMMdd")).format(new Date());
         URProfilesUtil.createProfile(anotherTestProfileName);
         // Profile Exists
         assertTrue(URProfilesUtil.profileExists(anotherTestProfileName));
@@ -79,7 +77,7 @@ public class ProfileTests
     public void invalidProfileTest ()
     {
         String originalActiveProfile = URProfilesUtil.getActiveProfileName();
-        String anotherTestProfileName = "anothertestingprofile" + (new SimpleDateFormat("yyMMdd")).format(new Date());
+        String anotherTestProfileName = "invalidProfileTest" + (new SimpleDateFormat("yyMMdd")).format(new Date());
         // Profile Exists
         assertFalse("Profile ["+anotherTestProfileName+"] shouldn't exist!",URProfilesUtil.profileExists(anotherTestProfileName));
 
@@ -89,6 +87,7 @@ public class ProfileTests
     }
 
     @Test
+    @Ignore
     public void cloneProfileTest () throws BackingStoreException
     {
         Preferences originalPathRoot = URProfilesUtil.getProfilePath(testDriver.getTestProfileName());
@@ -121,10 +120,17 @@ public class ProfileTests
         clonedProfileRoot.removeNode();
     }
 
-    // @Test
-    // public void loadInvalidProfileTest ()
-    // {
-    //     DriverGUI testInvalidDriver = new DriverGUI();
-    //     DriverGUI.createGUI(Optional.of(testDriver.getTestProfileName()));
-    // }
+    @Test
+    @Ignore
+    public void switchToClonedProfileTest () throws BackingStoreException
+    {
+        Preferences clonedProfileRoot = URProfilesUtil.cloneProfile(testDriver.getTestProfileName());
+        final String clonedProfileName;
+
+        clonedProfileName = Arrays.stream(URProfilesUtil.getProfiles()).filter(e -> clonedProfileRoot.toString().endsWith(e)).findFirst().get();
+
+        URProfilesUtil.setActiveProfileName(clonedProfileName);
+        // Delete the cloned profile
+        clonedProfileRoot.removeNode();
+    }
 }

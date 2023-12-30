@@ -177,8 +177,6 @@ public interface UserGUIBase
      */
     public abstract void shutdownAll();
 
-    public abstract void setActiveProfile(String newProfileName);
-
     /**
      * Loops through all servers and disconnects and deletes the tab
      */

@@ -30,6 +30,7 @@ import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.frontend.panels.UROptionsPanel;
 import urChatBasic.frontend.utils.Panels;
 import urChatBasic.base.UserGUIBase;
+import urChatBasic.base.Constants.EventType;
 import urChatBasic.base.Constants.Placement;
 import urChatBasic.base.Constants.Size;
 import urChatBasic.base.capabilities.CapTypeBase;
@@ -327,29 +328,29 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return profilePanel;
     }
 
-    /**
-     * Sets the current active profile - if the newProfileName doesn't exist it will be created.
-     * @param newProfileName
-     */
-    public void setActiveProfile (String newProfileName)
-    {
-        // save the current profile settings, if it exists
-        if (URProfilesUtil.profileExists(URProfilesUtil.getActiveProfileName()))
-        {
-            setClientSettings();
-        }
+    // /**
+    //  * Sets the current active profile - if the newProfileName doesn't exist it will be created.
+    //  * @param newProfileName
+    //  */
+    // public void setActiveProfile (String newProfileName)
+    // {
+    //     // save the current profile settings, if it exists
+    //     if (URProfilesUtil.profileExists(URProfilesUtil.getActiveProfileName()))
+    //     {
+    //         setClientSettings();
+    //     }
 
-        if(!URProfilesUtil.profileExists(newProfileName))
-        {
-            URProfilesUtil.createProfile(newProfileName);
-        }
+    //     if(!URProfilesUtil.profileExists(newProfileName))
+    //     {
+    //         URProfilesUtil.createProfile(newProfileName);
+    //     }
 
-        // change the profile name
-        URProfilesUtil.setActiveProfileName(newProfileName);
+    //     // change the profile name
+    //     URProfilesUtil.setActiveProfileName(newProfileName);
 
-        // now load the new profile settings
-        getClientSettings(false);
-    }
+    //     // now load the new profile settings
+    //     getClientSettings(false);
+    // }
 
     /*
      * (non-Javadoc)
@@ -1477,20 +1478,17 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     }
 
     /**
-     * Loads the settings from the registry/Settings API, and fires the profile change listeners.
+     * Loads the settings from the registry/Settings API
      */
     public void getClientSettings (boolean loadWindowSettings)
     {
-        fireProfileChangeListeners();
-
         firstChannelTextField
                 .setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_FIRST_CHANNEL, Constants.DEFAULT_FIRST_CHANNEL));
         servernameTextField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_FIRST_SERVER, Constants.DEFAULT_FIRST_SERVER));
         serverPortTextField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_FIRST_PORT, Constants.DEFAULT_FIRST_PORT));
         serverTLSCheckBox.setSelected(URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_USE_TLS, Constants.DEFAULT_USE_TLS));
 
-        authenticationTypeChoice.setSelectedItem(
-                CapabilityTypes.getCapType(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_AUTH_TYPE, Constants.DEFAULT_AUTH_TYPE)));
+        authenticationTypeChoice.setSelectedItem(CapabilityTypes.getCapType(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_AUTH_TYPE, Constants.DEFAULT_AUTH_TYPE)));
 
         rememberPassCheckBox.setSelected(
                 URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_PASSWORD_REMEMBER, Constants.DEFAULT_PASSWORD_REMEMBER));
@@ -1814,6 +1812,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // this.setBackground(Color.gray);
         getClientSettings(true);
 
+        URProfilesUtil.addListener(EventType.CHANGE, e-> {
+            getClientSettings(false);
+        });
         lafOptions.addActionListener(new ChangeLAFListener());
     }
 

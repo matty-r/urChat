@@ -101,7 +101,7 @@ public class ProfilePicker extends JPanel
                     // TODO
                 }
 
-                DriverGUI.gui.setActiveProfile(profileString);
+                URProfilesUtil.setActiveProfileName(profileString);
             }
         }
 
@@ -124,13 +124,14 @@ public class ProfilePicker extends JPanel
         }
 
         // Don't readd the listener if the gui hasn't been initialized
-        if(DriverGUI.gui != null)
-            profileComboBox.addActionListener(changeListener);
 
         if (URProfilesUtil.profileExists(initialProfile))
         {
             profileComboBox.setSelectedItem(initialProfile);
             selectedIndex = profileComboBox.getSelectedIndex();
+
+            if(DriverGUI.gui != null)
+                profileComboBox.addActionListener(changeListener);
         } else
         {
             // TODO: Change this to a YesNoDialog to ask to create the profile

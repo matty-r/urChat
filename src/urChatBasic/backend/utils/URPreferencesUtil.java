@@ -250,12 +250,12 @@ public class URPreferencesUtil {
                 }
             } catch (NumberFormatException e) {
                 // If parsing to int fails, attempt to get the boolean value
-                try {
-                    return path.getBoolean(name, false);
-                } catch (ClassCastException ex) {
-                    // If parsing to boolean fails, return the string value
-                    return stringValue;
+                if(((String) stringValue).equalsIgnoreCase("true") || ((String) stringValue).equalsIgnoreCase("false"))
+                {
+                    return Boolean.parseBoolean((String) stringValue);
                 }
+                // If parsing to boolean fails, return the string value
+                return stringValue;
             }
         }
 
