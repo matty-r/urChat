@@ -137,8 +137,11 @@ public class ProfilePanel extends UROptionsPanel
                         String oldValue = profileName.getText();
                         String newValue = profilesTableModel.getValueAt(selectedRow, 0).toString();
 
-                        URProfilesUtil.cloneProfile(oldValue, Optional.of(newValue));
-                        URProfilesUtil.deleteProfile(oldValue);
+                        if(!oldValue.equals(newValue))
+                        {
+                            URProfilesUtil.cloneProfile(oldValue, Optional.of(newValue));
+                            URProfilesUtil.deleteProfile(oldValue);
+                        }
                         // Add your handling code here for the cell change event
                     }
                 }

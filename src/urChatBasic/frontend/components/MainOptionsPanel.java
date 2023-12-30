@@ -66,7 +66,7 @@ public class MainOptionsPanel extends JPanel
         // label
         Panels.addToPanel(extrasPanel, urVersionLabel, null, Placement.BOTTOM, null);
 
-        profilePicker = new ProfilePicker(URProfilesUtil.getActiveProfileName(), false);
+        profilePicker = new ProfilePicker(URProfilesUtil.getActiveProfileName(), true);
 
         Panels.addToPanel(extrasPanel, profilePicker, "Active Profile", Placement.TOP, null);
 

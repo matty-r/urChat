@@ -1596,40 +1596,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         URProfilesUtil.getActiveProfilePath().node(node).remove(key);
     }
 
-    @Override
-    public void cleanUpSettings ()
-    {
-        // TODO: Clean up all nodes if they have empty keys
-        Constants.LOGGER.log(Level.INFO, "Cleaning up settings");
-        try
-        {
-            Constants.LOGGER.log(Level.INFO, "Remove empty favourites");
-            for (String serverNode : URProfilesUtil.getActiveFavouritesPath().childrenNames())
-            {
-                for (String channelNode : URProfilesUtil.getActiveFavouritesPath().node(serverNode).childrenNames())
-                {
-                    if (URProfilesUtil.getActiveFavouritesPath().node(serverNode).node(channelNode).keys().length == 0)
-                    {
-                        URProfilesUtil.getActiveFavouritesPath().node(serverNode).node(channelNode).removeNode();
-                    }
-                }
-            }
-
-            Constants.LOGGER.log(Level.INFO, "Remove empty profiles");
-            for (String profileNode : URProfilesUtil.getActiveProfilePath().childrenNames())
-            {
-                if (URProfilesUtil.getActiveProfilePath().node(profileNode) != URProfilesUtil.getActiveFavouritesPath()
-                        && URProfilesUtil.getActiveProfilePath().node(profileNode).keys().length == 0)
-                {
-                    URProfilesUtil.getActiveProfilePath().node(profileNode).removeNode();
-                }
-            }
-        } catch (BackingStoreException e)
-        {
-            Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
-        }
-    }
-
     /*
      * (non-Javadoc)
      *

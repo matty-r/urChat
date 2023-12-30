@@ -156,6 +156,37 @@ public class URProfilesUtil
         return false;
     }
 
+    public static void cleanUpSettings ()
+    {
+        Constants.LOGGER.log(Level.INFO, "Cleaning up settings");
+        try
+        {
+            Constants.LOGGER.log(Level.INFO, "Remove empty favourites");
+            ArrayList<Preferences> allNodes = URPreferencesUtil.getAllNodes(Constants.BASE_PREFS);
+
+            List<Preferences> deletePreferences = new ArrayList<>();
+
+            for (Preferences nodePreferences : allNodes) {
+                if(nodePreferences.keys().length == 0 && nodePreferences.childrenNames().length == 0)
+                    deletePreferences.add(nodePreferences);
+            }
+
+            while(deletePreferences.size() > 0)
+            {
+                try {
+                    deletePreferences.get(0).removeNode();
+                    deletePreferences.remove(0);
+                } catch (Exception ex)
+                {
+                    // todo
+                }
+            }
+        } catch (BackingStoreException e)
+        {
+            Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+        }
+    }
+
     public static Preferences cloneProfile (String originalProfileName, Optional<String> newProfileName)
     {
         Preferences originalPathRoot = getProfilePath(originalProfileName);

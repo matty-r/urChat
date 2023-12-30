@@ -12,6 +12,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import urChatBasic.backend.LookAndFeelLoader;
+import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.backend.utils.URUncaughtExceptionHandler;
 import urChatBasic.base.Constants;
 
@@ -116,7 +117,7 @@ public class DriverGUI
             public void windowClosing(WindowEvent e)
             {
                 gui.setClientSettings();
-                gui.cleanUpSettings();
+                URProfilesUtil.cleanUpSettings();
                 if (!gui.isCreatedServersEmpty())
                     gui.sendGlobalMessage("/quit Goodbye cruel world", "Server");
                 for (Handler tempHandler : Constants.LOGGER.getHandlers())
