@@ -2,17 +2,13 @@ package backend;
 
 import static org.testng.AssertJUnit.*;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
 import org.testng.Reporter;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeTest;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
@@ -42,13 +38,11 @@ public class MessageHandlerTests
     IRCUser testUser;
     Connection testConnection;
 
-    @BeforeTest(alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void setUp() throws Exception
     {
         testDriver = new TestDriverGUI();
         testGUI = TestDriverGUI.gui;
-
-        Reporter.log("Setting profile to " + testDriver.getTestProfileName(), true);
 
         UserGUI.setTimeLineString("[HHmm]");
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy",
@@ -62,12 +56,14 @@ public class MessageHandlerTests
         testHandler = testConnection.getMessageHandler();
     }
 
-    @AfterTest(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void tearDown () throws Exception
     {
-        Reporter.log("Deleting testing profile.", true);
-        if(URProfilesUtil.getActiveProfileName().equals(testDriver.getTestProfileName()))
-            URProfilesUtil.deleteProfile();
+        // Reporter.log("Deleting testing profile.", true);
+        testServer.quitRooms();
+        // URProfilesUtil.getActiveProfilePath().sync();
+        // URProfilesUtil.getActiveProfilePath().sync();
+        URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
     }
 
     @Test(groups = {"Test #001"})

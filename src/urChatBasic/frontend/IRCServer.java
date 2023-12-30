@@ -22,10 +22,12 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import urChatBasic.backend.Connection;
+import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
+import urChatBasic.base.Constants.EventType;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 
@@ -441,6 +443,8 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     @Override
     public void quitRooms()
     {
+        URProfilesUtil.removeListener(EventType.CHANGE, changeListener);
+
         Iterator<IRCRoomBase> channelIterator = createdRooms.iterator();
         while (channelIterator.hasNext())
         {

@@ -42,6 +42,18 @@ public class URPreferencesUtil {
         //         savedFontBoldItalic, settingsPath.getInt(Constants.KEY_FONT_SIZE, defaultFont.getSize()));
 
         // return savedFont;
+
+        try
+        {
+            if(settingsPath.keys().length == 0)
+                return defaultFont;
+        } catch (BackingStoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return defaultFont;
+        }
+
         Font savedFont = defaultFont;
 
         Map<TextAttribute, Object> fontMap = new Hashtable<TextAttribute, Object>();
@@ -64,10 +76,23 @@ public class URPreferencesUtil {
      */
     public static Map<String, Color> loadStyleColours(URStyle defaultStyle, Preferences settingsPath)
     {
+
+
         Map<String, Color> colourMap = new HashMap<String, Color>();
 
         defaultStyle.getForeground().ifPresent(fg -> colourMap.put(Constants.KEY_FONT_FOREGROUND, fg));
         defaultStyle.getBackground().ifPresent(bg -> colourMap.put(Constants.KEY_FONT_BACKGROUND, bg));
+
+        try
+        {
+            if(settingsPath.keys().length == 0)
+                return colourMap;
+        } catch (BackingStoreException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return colourMap;
+        }
 
         String loadedForeground;
         if(defaultStyle.getForeground().isPresent())
@@ -100,18 +125,25 @@ public class URPreferencesUtil {
         if(loadedStyle.getAttribute("name") == null)
             loadedStyle.addAttribute("name", "");
 
+        String styleName = loadedStyle.getAttribute("name").toString();
+
+
         try
         {
-            if(baseSettingsPath.nodeExists(loadedStyle.getAttribute("name").toString()))
-                stylePrefPath = baseSettingsPath.node(loadedStyle.getAttribute("name").toString());
-            else if (DriverGUI.gui != null)
-                stylePrefPath = URProfilesUtil.getActiveProfilePath().node(loadedStyle.getAttribute("name").toString());
+
+            if(baseSettingsPath.nodeExists(styleName))
+                stylePrefPath = baseSettingsPath.node(styleName);
+            else if (DriverGUI.gui != null && URProfilesUtil.getActiveProfilePath().nodeExists(styleName))
+                stylePrefPath = URProfilesUtil.getActiveProfilePath().node(styleName);
             else
-                stylePrefPath = baseSettingsPath.node(loadedStyle.getAttribute("name").toString());
-        } catch (IllegalStateException | BackingStoreException e)
+                return targetStyle;
+
+        } catch (Exception e)
         {
+            System.err.println("Active Profile: ["+URProfilesUtil.getActiveProfileName()+"] Unable to load ["+loadedStyle.getAttribute("name")+"]"+ " attempted with path: " + stylePrefPath);
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            // e.printStackTrace();
+            return targetStyle;
         }
 
         Constants.LOGGER.log(Level.FINE, "Load Style Path: " + stylePrefPath.toString());

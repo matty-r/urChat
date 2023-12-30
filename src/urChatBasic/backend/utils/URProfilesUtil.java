@@ -113,7 +113,7 @@ public class URProfilesUtil
         if(profileExists(activeProfileName))
         {
             URProfilesUtil.activeProfileName = activeProfileName;
-            UserGUI.fireProfileChangeListeners();
+            // UserGUI.fireProfileChangeListeners();
             fireListeners(EventType.CHANGE);
         } else {
             Constants.LOGGER.log(Level.WARNING, "Profile ["+activeProfileName+"] doesn't exist.");
@@ -340,6 +340,12 @@ public class URProfilesUtil
             listenerLists.put(eventType, new EventListenerList());
 
         listenerLists.get(eventType).add(ActionListener.class, actionListener);
+    }
+
+    public static void removeListener(EventType eventType, ActionListener actionListener)
+    {
+        if(listenerLists.containsKey(eventType))
+            listenerLists.get(eventType).remove(ActionListener.class, actionListener);
     }
 
     public static void fireListeners (EventType eventType)

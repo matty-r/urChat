@@ -168,11 +168,6 @@ public interface UserGUIBase
     public abstract void connectFavourites(IRCServerBase server);
 
     /**
-     * Remove and disconnect all private rooms, channels and servers
-     */
-    public abstract void shutdownAll();
-
-    /**
      * Loops through all servers and disconnects and deletes the tab
      */
     public abstract void quitServers();

@@ -175,10 +175,15 @@ public class URStyle extends SimpleAttributeSet
 
     public void load(Preferences prefPath)
     {
-        URStyle loadedStyle = URPreferencesUtil.loadStyle(this, prefPath);
-        setFont(loadedStyle.getFont());
-        loadedStyle.getForeground().ifPresent(fg -> setForeground(fg));
-        loadedStyle.getBackground().ifPresent(bg -> setBackground(bg));
+        try {
+            URStyle loadedStyle = URPreferencesUtil.loadStyle(this, prefPath);
+            setFont(loadedStyle.getFont());
+            loadedStyle.getForeground().ifPresent(fg -> setForeground(fg));
+            loadedStyle.getBackground().ifPresent(bg -> setBackground(bg));
+        } catch (IllegalStateException ise)
+        {
+            System.out.println("TODO");
+        }
     }
 
     public static String getKeymap(Object attributeObject)

@@ -281,43 +281,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return null;
     }
 
-    public static void addProfileChangeListener (ActionListener actionListener)
-    {
-        profileListenerList.add(ActionListener.class, actionListener);
-    }
-
-    public static void fireProfileChangeListeners ()
-    {
-        Object[] listeners = profileListenerList.getListenerList();
-
-        // Reverse order
-        // for (int i = listeners.length - 2; i >= 0; i -= 2)
-        // {
-        //     if (listeners[i] == ActionListener.class)
-        //     {
-        //         if (this.actionEvent == null)
-        //         {
-        //             this.actionEvent = new ActionEvent(SAVE_BUTTON, i, TOOL_TIP_TEXT_KEY);
-        //         }
-
-        //         ((ActionListener) listeners[i + 1]).actionPerformed(this.actionEvent);
-        //     }
-        // }
-
-        for (int i = 0; i <= listeners.length - 2; i += 2)
-        {
-            if (listeners[i] == ActionListener.class)
-            {
-                if (actionEvent == null)
-                {
-                    actionEvent = new ActionEvent(getProfilePicker(), i, TOOL_TIP_TEXT_KEY);
-                }
-
-                ((ActionListener) listeners[i + 1]).actionPerformed(actionEvent);
-            }
-        }
-    }
-
     public static ProfilePicker getProfilePicker ()
     {
         return (((MainOptionsPanel) optionsMainPanel).getProfilePicker());
@@ -767,7 +730,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         clientFontPanel = new FontPanel("", defaultStyle, URProfilesUtil.getActiveProfilePath());
         clientFontPanel.setPreferredSize(new Dimension(700, 64));
 
-        addProfileChangeListener(e -> {
+        URProfilesUtil.addListener(EventType.CHANGE, e -> {
             clientFontPanel.setSettingsPath(URProfilesUtil.getActiveProfilePath());
         });
 
@@ -817,7 +780,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         {
             previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea, null, URProfilesUtil.getActiveProfilePath());
 
-            addProfileChangeListener(e -> {
+            URProfilesUtil.addListener(EventType.CHANGE, e -> {
                 previewLineFormatter.setSettingsPath(URProfilesUtil.getActiveProfilePath());
                 previewLineFormatter.updateStyles(getStyle());
             });
@@ -1057,7 +1020,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             this.favChannel = favChannel;
             settingsPath = URProfilesUtil.getActiveFavouritesPath().node(favServer).node(favChannel);
 
-            addProfileChangeListener(e -> {
+            URProfilesUtil.addListener(EventType.CHANGE, e -> {
                 settingsPath = URProfilesUtil.getActiveFavouritesPath().node(favServer).node(favChannel);
             });
 
@@ -1368,21 +1331,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     if (server.getCreatedChannel(castItem.favChannel) == null)
                         server.sendClientText("/join " + castItem.favChannel, castItem.favServer);
             }
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#shutdownAll()
-     */
-    @Override
-    public void shutdownAll ()
-    {
-        if (!isCreatedServersEmpty())
-        {
-            quitServers();
-            connectButton.setText("Connect");
         }
     }
 

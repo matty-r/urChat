@@ -148,7 +148,7 @@ public class ProfilePanel extends UROptionsPanel
             }
         });
 
-        UserGUI.addProfileChangeListener(e -> {
+        URProfilesUtil.addListener(EventType.CHANGE, e -> {
             String selectedProfileName = URProfilesUtil.getActiveProfileName();
 
             int profileIndex = getProfileIndex(selectedProfileName);

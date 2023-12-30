@@ -2,6 +2,7 @@ package urChatBasic.base;
 
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.Constants.EventType;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCActions;
 import urChatBasic.frontend.IRCPrivate;
@@ -53,6 +54,7 @@ public class IRCRoomBase extends JPanel
     // Main Panel
     protected JPanel mainPanel = new JPanel();
     protected JSplitPane mainResizer = new JSplitPane();
+    protected ActionListener changeListener = new ProfileChangeListener();
 
     // Bottom panel to hold the user text box
     protected JTextField clientTextBox = new JTextField();
@@ -196,14 +198,7 @@ public class IRCRoomBase extends JPanel
             lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, null, roomPrefs);
         }
 
-        UserGUI.addProfileChangeListener(e -> {
-            String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
-
-            if(nodeName.equals(roomName))
-                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName));
-            else
-                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName).node(roomName));
-        });
+        URProfilesUtil.addListener(EventType.CHANGE, changeListener);
 
         setFont(getFontPanel().getFont());
 
@@ -222,6 +217,22 @@ public class IRCRoomBase extends JPanel
         fontDialog.addSaveListener(new SaveFontListener());
 
         myActions = new IRCActions(this);
+    }
+
+    private class ProfileChangeListener implements ActionListener
+    {
+
+        @Override
+        public void actionPerformed (ActionEvent arg0)
+        {
+            String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
+
+            if(nodeName.equals(roomName))
+                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName));
+            else
+                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName).node(roomName));
+        }
+
     }
 
     public void setSettingsPath (Preferences settingsPath)
@@ -1039,6 +1050,7 @@ public class IRCRoomBase extends JPanel
 
     public void quitRoom()
     {
+        URProfilesUtil.removeListener(EventType.CHANGE, changeListener);
         eventTickerTimer.stop();
         tickerPanel.setVisible(false);
         usersList.setVisible(false);

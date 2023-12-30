@@ -28,9 +28,7 @@ public class TestDriverGUI extends DriverGUI
         DriverGUI.createGUI(Optional.of(testProfileName));
         testGUI = DriverGUI.gui;
         testGUI.setupUserGUI();
-        Reporter.log("Setting profile to " + testProfileName, true);
-        // testGUI.setActiveProfile(testProfileName);
-        URProfilesUtil.setActiveProfileName(testProfileName);
-        testGUI.getClientSettings(true);
     }
+
+
 }

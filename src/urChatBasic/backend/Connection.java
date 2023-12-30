@@ -16,7 +16,6 @@ import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
-import urChatBasic.base.UserGUIBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import java.awt.event.ActionEvent;
@@ -51,8 +50,6 @@ public class Connection implements ConnectionBase
     private final int MAX_RECONNECT_ATTEMPTS = 1;
     private boolean reconnect = false;
     private int reconnectAttempts = 0;
-
-    public UserGUIBase gui = DriverGUI.gui;
 
     public Connection (IRCServerBase server)
     {
@@ -126,7 +123,7 @@ public class Connection implements ConnectionBase
         reader = new BufferedReader(new InputStreamReader(mySocket.getInputStream(), StandardCharsets.UTF_8));
 
         // if we got this far, we established a connection to the server
-        gui.setupServerTab(server);
+        DriverGUI.gui.setupServerTab(server);
 
         localMessage("Initiating authentication...");
 

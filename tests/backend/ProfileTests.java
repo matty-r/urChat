@@ -10,11 +10,9 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.text.html.Option;
 import org.testng.Reporter;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Ignore;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.backend.utils.URProfilesUtil;
@@ -26,13 +24,13 @@ public class ProfileTests
     TestDriverGUI testDriver;
     // final String testLAFName
 
-    @BeforeMethod(alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void setUp() throws Exception
     {
         testDriver = new TestDriverGUI();
     }
 
-    @AfterTest(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void tearDown () throws Exception
     {
         Reporter.log("Deleting testing profile.", true);
@@ -53,6 +51,8 @@ public class ProfileTests
     @Test
     public void deleteTestProfileTest ()
     {
+        URProfilesUtil.createProfile(testDriver.getTestProfileName());
+        URProfilesUtil.setActiveProfileName(testDriver.getTestProfileName());
         assertTrue(URProfilesUtil.getActiveProfileName().equals(testDriver.getTestProfileName()));
         // Delete the active profile
         URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
