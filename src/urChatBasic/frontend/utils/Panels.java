@@ -31,17 +31,19 @@ public class Panels
     private static void addToSpringPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
             Size targetSize)
     {
-
+        boolean labelAdded = false;
         int topSpacing = 6;
         int leftSpacing = 6;
         final int TOP_ALIGNED = 0;
         final int LEFT_ALIGNED = 0;
 
-        if (null != label && !label.isBlank())
+        // Only add it now if the label would be "next" in the components list
+        if (null != label && !label.isBlank() && alignment == Placement.DEFAULT || alignment == Placement.BOTTOM)
         {
             Panels.addToPanel(targetPanel, new JLabel(label + ":"), null, alignment, targetSize);
             // There is a label, so we want the added component to be aligned with the label
             topSpacing = 0;
+            labelAdded = true;
         }
 
         if (targetPanel.getLayout().getClass() != SpringLayout.class)
@@ -81,6 +83,14 @@ public class Panels
                     newComponentLeftAlign = SpringLayout.WEST;
                     previousLeftAlign = SpringLayout.EAST;
                     break;
+                case TOP:
+                    // attach the new component inline and to the right of the previous
+                    topSpacing = 0;
+                    newComponentTopAlign = SpringLayout.SOUTH;
+                    previousTopAlign = SpringLayout.NORTH;
+                    newComponentLeftAlign = SpringLayout.WEST;
+                    previousLeftAlign = SpringLayout.WEST;
+                    break;
                 default:
                     // Aligned with the first component
                     previousLeftComponent = components[0];
@@ -95,6 +105,14 @@ public class Panels
                     previousTopComponent);
             layout.putConstraint(newComponentLeftAlign, newComponent, LEFT_ALIGNED, previousLeftAlign,
                     previousLeftComponent);
+
+            // Add the label above the newComponent, then reorder the newComponent to be the next logical
+            // component
+            if (null != label && !label.isBlank() && !labelAdded)
+            {
+                Panels.addToPanel(targetPanel, new JLabel(label + ":"), null, Placement.TOP, targetSize);
+                targetPanel.setComponentZOrder(newComponent, targetPanel.getComponentZOrder(newComponent) + 1);
+            }
 
             if (null != targetSize)
             {

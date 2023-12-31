@@ -92,6 +92,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private static URStyle defaultStyle = new URStyle("", UIManager.getFont(Constants.DEFAULT_FONT_STRING), UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING),
             UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
     private static final JTextField timeStampField = new JTextField();
+    private static final JTextField nickFormatField = new JTextField();
     public static final JTextPane previewTextArea = new JTextPane();
     private static final JScrollPane previewTextScroll = new JScrollPane(previewTextArea);
     private static final JLabel styleLabel = new JLabel("Mouse over text to view style, right-click to edit.");
@@ -766,6 +767,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         Panels.addToPanel(appearancePanel, clientFontPanel, "Profile Font", Placement.DEFAULT, null);
         Panels.addToPanel(appearancePanel, timeStampField, "Timestamp Format", Placement.DEFAULT, Size.MEDIUM);
+        Panels.addToPanel(appearancePanel, nickFormatField, "Nick Format", Placement.RIGHT, Size.MEDIUM);
 
         Panels.addToPanel(appearancePanel, previewTextScroll, "Font Preview", Placement.DEFAULT, null);
         Panels.addToPanel(appearancePanel, styleLabel, "Preview Style", Placement.DEFAULT, null);
@@ -867,6 +869,37 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public static void setTimeLineString (String newFormat)
     {
         timeStampField.setText(newFormat);
+    }
+
+    public static String[] getNickFormatString (String nick)
+    {
+        String[] nickParts = new String[3];
+        nickParts[1] = nick;
+        String nickString = nickFormatField.getText();
+
+        if(nickString.indexOf("nick") >= 0)
+        {
+            String[] formatParts = nickString.split("nick");
+            if(formatParts.length == 2)
+            {
+                nickParts[0] = formatParts[0];
+                nickParts[2] = formatParts[1];
+            } else {
+                nickParts[0] = formatParts[0];
+                nickParts[2] = formatParts[0];
+            }
+        } else if(nickString.length() % 2 == 0)
+        {
+            nickParts[0] = nickString.substring(0, nickString.length() / 2);
+            nickParts[2] = nickString.substring(nickString.length() / 2);
+        }
+
+        return nickParts;
+    }
+
+    public static void setNickFormatString (String newFormat)
+    {
+        nickFormatField.setText(newFormat);
     }
 
     private void setupInterfacePanel ()
@@ -1493,6 +1526,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         timeStampField
                 .setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, Constants.DEFAULT_TIME_STAMP_FORMAT));
+
+        nickFormatField
+                .setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_NICK_FORMAT, Constants.DEFAULT_NICK_FORMAT));
+
 
         updatePreviewTextArea();
 

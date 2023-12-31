@@ -45,6 +45,7 @@ public class MessageHandlerTests
         testGUI = TestDriverGUI.gui;
 
         UserGUI.setTimeLineString("[HHmm]");
+        UserGUI.setNickFormatString("<nick>");
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy",
                 "1234", true);
         testUser = new IRCUser(testServer, "testUser");
