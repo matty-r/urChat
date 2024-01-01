@@ -140,7 +140,7 @@ public class URPreferencesUtil {
 
         } catch (Exception e)
         {
-            System.err.println("Active Profile: ["+URProfilesUtil.getActiveProfileName()+"] Unable to load ["+loadedStyle.getAttribute("name")+"]"+ " attempted with path: " + stylePrefPath);
+            Constants.LOGGER.log(Level.WARNING, "Active Profile: ["+URProfilesUtil.getActiveProfileName()+"] Unable to load ["+loadedStyle.getAttribute("name")+"]"+ " attempted with path: " + stylePrefPath);
             // TODO Auto-generated catch block
             // e.printStackTrace();
             return targetStyle;
@@ -245,7 +245,6 @@ public class URPreferencesUtil {
     }
 
     public static void putPref(String name, Optional<?> optionalValue, Preferences path) {
-        System.out.println("Saving name:" + name);
         if(optionalValue != null && optionalValue.isPresent())
         {
             Object value = optionalValue.get();
@@ -256,7 +255,7 @@ public class URPreferencesUtil {
             } else if (value instanceof Boolean) {
                 path.putBoolean(name, (boolean) value);
             } else {
-                System.err.println("Unsupported data type for preference: " + value.getClass().getSimpleName());
+                Constants.LOGGER.log(Level.WARNING,"Unsupported data type for preference: " + value.getClass().getSimpleName());
             }
         }
     }
