@@ -245,7 +245,7 @@ public class LineFormatter
         String name = "myStyle";
 
         URStyle tempStyle = defaultStyle(name, load);
-        tempStyle.addAttribute("type", "myNick");
+        tempStyle.addAttribute("type", "IRCUser");
 
         // StyleConstants.setForeground(tempStyle, Color.GREEN);
         StyleConstants.setForeground(tempStyle,
@@ -265,7 +265,7 @@ public class LineFormatter
         String name = "nickStyle";
 
         URStyle tempStyle = defaultStyle(name, load);
-        tempStyle.addAttribute("type", "nick");
+        tempStyle.addAttribute("type", "IRCUser");
 
         StyleConstants.setUnderline(tempStyle, true);
 
@@ -696,6 +696,26 @@ public class LineFormatter
         }
 
         return finalLine;
+    }
+
+     // New method to get line at position
+     public String getLineAtPosition(int position) throws BadLocationException {
+        Element root = doc.getDefaultRootElement();
+        int lineCount = root.getElementCount();
+
+        // Find the line that contains the given position
+        int lineIndex = root.getElementIndex(position);
+        Element lineElement = root.getElement(lineIndex);
+
+        // Get start and end offsets of the line
+        int startOffset = lineElement.getStartOffset();
+        int endOffset = lineElement.getEndOffset();
+
+        // Extract the text of the line
+        String lineText = doc.getText(startOffset, endOffset - startOffset);
+
+        // Return the line text
+        return lineText;
     }
 
     private int getLinePosition(String targetLine) throws BadLocationException

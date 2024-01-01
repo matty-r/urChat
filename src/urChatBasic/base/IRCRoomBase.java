@@ -365,7 +365,7 @@ public class IRCRoomBase extends JPanel
 
     }
 
-    class ChannelClickListener extends MouseInputAdapter
+    public class ChannelClickListener extends MouseInputAdapter
     {
         public void mouseClicked(MouseEvent e)
         {
