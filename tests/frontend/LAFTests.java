@@ -5,9 +5,8 @@ import java.awt.Color;
 import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
 import org.testng.Reporter;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeTest;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.utils.URColour;
@@ -22,14 +21,14 @@ public class LAFTests
     UserGUI testGUI;
     // final String testLAFName
 
-    @BeforeTest(alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void setUp() throws Exception
     {
         testDriver = new TestDriverGUI();
         testGUI = TestDriverGUI.gui;
     }
 
-    @AfterTest(alwaysRun = true)
+    @AfterClass(alwaysRun = true)
     public void tearDown () throws Exception
     {
         Reporter.log("Deleting testing profile.", true);
