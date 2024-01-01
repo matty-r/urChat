@@ -221,7 +221,7 @@ public class URProfilesUtil
         for (Preferences originalPrefPath : originalNodes) {
             Preferences clonedPath = clonedPathRoot;
 
-            String[] childNodes = Path.of(originalPrefPath.absolutePath().replace(originalPathRoot.absolutePath(), "")).toString().split(File.separator);
+            String[] childNodes = Path.of(originalPrefPath.absolutePath().replace(originalPathRoot.absolutePath(), "")).toString().split("/");
 
             for (String childName : childNodes) {
                 if(!childName.isEmpty())

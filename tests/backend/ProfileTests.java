@@ -99,7 +99,7 @@ public class ProfileTests
         for (Preferences originalPrefPath : originalNodes) {
             Preferences clonedPath = clonedProfileRoot;
 
-            String[] childNodes = Path.of(originalPrefPath.absolutePath().replace(originalPathRoot.absolutePath(), "")).toString().split(File.separator);
+            String[] childNodes = Path.of(originalPrefPath.absolutePath().replace(originalPathRoot.absolutePath(), "")).toString().split("/");
 
             for (String childName : childNodes) {
                 clonedPath = clonedPath.node(childName);
