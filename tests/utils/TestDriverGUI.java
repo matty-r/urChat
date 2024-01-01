@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Optional;
 import org.testng.Reporter;
 import urChatBasic.backend.utils.URProfilesUtil;
+import urChatBasic.base.Constants;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.UserGUI;
 
@@ -28,6 +29,8 @@ public class TestDriverGUI extends DriverGUI
         DriverGUI.createGUI(Optional.of(testProfileName));
         testGUI = DriverGUI.gui;
         testGUI.setupUserGUI();
+        UserGUI.setTimeLineString(Constants.DEFAULT_TIME_STAMP_FORMAT);
+        UserGUI.setNickFormatString(Constants.DEFAULT_NICK_FORMAT);
     }
 
 

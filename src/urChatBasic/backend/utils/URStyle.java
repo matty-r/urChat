@@ -59,6 +59,11 @@ public class URStyle extends SimpleAttributeSet
         setBackground(defaultBackground);
     }
 
+    public URStyle(SimpleAttributeSet fromAttributeSet)
+    {
+        super(fromAttributeSet);
+    }
+
     public String getName()
     {
         return getAttribute("name").toString();

@@ -240,7 +240,12 @@ public class URPreferencesUtil {
         saveStyleColours(diffStyle, stylePrefPath);
     }
 
+    public static void putPref(String name, Object value, Preferences path) {
+        putPref(name, Optional.of(value), path);
+    }
+
     public static void putPref(String name, Optional<?> optionalValue, Preferences path) {
+        System.out.println("Saving name:" + name);
         if(optionalValue != null && optionalValue.isPresent())
         {
             Object value = optionalValue.get();

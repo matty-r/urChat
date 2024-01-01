@@ -125,7 +125,7 @@ public class LineFormatter
             name = "defaultStyle";
 
         URStyle tempStyle = new URStyle(name, targetStyle.getFont());
-        tempStyle.addAttribute("type", "default");
+        // tempStyle.addAttribute("type", "default");
         // get the contrasting colour of the background colour
         // StyleConstants.setForeground(defaultStyle, new Color(formatterPrefs.node(name).getInt("font
         // foreground",
@@ -368,7 +368,7 @@ public class LineFormatter
     }
 
     // Inserts the string at the position
-    private void insertString(String insertedString, URStyle style, int position)
+    private void insertString(String insertedString, URStyle style, int position, boolean setCharacterAttributes)
             throws BadLocationException
     {
         style = style.clone();
@@ -389,6 +389,37 @@ public class LineFormatter
         }
 
         doc.insertString(position, insertedString, style);
+
+        String styleName = style.getAttribute("name").toString();
+        SimpleAttributeSet matchingStyle = getStyle(styleName, false);
+        matchingStyle.removeAttribute("type");
+        if(setCharacterAttributes)
+        {
+            Iterator<?> attributeIterator = style.getAttributeNames().asIterator();
+            while (attributeIterator.hasNext())
+            {
+                String nextAttributeName = attributeIterator.next().toString();
+
+                if (matchingStyle.getAttribute(nextAttributeName) == null)
+                {
+                    Iterator<?> matchingIterator = matchingStyle.getAttributeNames().asIterator();
+                    boolean needsToBeSet = true;
+
+                    while (matchingIterator.hasNext())
+                    {
+                        if (matchingIterator.next().toString().equalsIgnoreCase(nextAttributeName))
+                        {
+                            needsToBeSet = false;
+                            break;
+                        }
+                    }
+                    if (needsToBeSet)
+                        matchingStyle.addAttribute(nextAttributeName, style.getAttribute(nextAttributeName));
+                }
+            }
+
+            doc.setCharacterAttributes(position, insertedString.length(), matchingStyle, true);
+        }
     }
 
     // Adds the string (with all needed attributes) to the end of the document
@@ -398,7 +429,7 @@ public class LineFormatter
         int position = doc.getLength();
 
         if((myServer == null || !myServer.hasConnection()) || myServer.isConnected())
-            insertString(insertedString, style, position);
+            insertString(insertedString, style, position, false);
     }
 
     public URStyle getStyleDefault(String styleName)
@@ -452,15 +483,15 @@ public class LineFormatter
 
     private void updateDocStyles(int startPosition)
     {
-        SimpleAttributeSet textStyle = new SimpleAttributeSet(doc.getCharacterElement(startPosition).getAttributes());
+        URStyle textStyle = getStyleAtPosition(startPosition, null);
         String styleName = textStyle.getAttribute("name").toString();
         int styleStart = startPosition;
         int styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
 
         // String styleText = doc.getText(startPosition, styleLength);
 
-        SimpleAttributeSet matchingStyle = getStyle(styleName, false);
-
+        URStyle matchingStyle = getStyle(styleName, false);
+        matchingStyle.removeAttribute("type");
         boolean isDateStyle = false;
         if (null != DriverGUI.gui && null != textStyle.getAttribute("date"))
         {
@@ -493,13 +524,13 @@ public class LineFormatter
 
                     timeStyle.addAttribute("date", lineDate);
                     timeStyle.addAttribute("type", "time");
-                    insertString(newTimeString, timeStyle, styleStart);
+                    insertString(newTimeString, timeStyle, styleStart, true);
                     styleLength = newTimeString.length();
                 } else
                 {
                     if (hasTime)
                     {
-                        textStyle = new SimpleAttributeSet(doc.getCharacterElement(startPosition).getAttributes());
+                        textStyle = getStyleAtPosition(startPosition, null);
 
                         styleName = textStyle.getAttribute("name").toString();
                         styleStart = startPosition;
@@ -514,6 +545,71 @@ public class LineFormatter
             } catch (BadLocationException ble)
             {
                 Constants.LOGGER.log(Level.WARNING, ble.getLocalizedMessage());
+            }
+        } else if (DriverGUI.gui != null && textStyle.getAttribute("type") != null && textStyle.getAttribute("nickParts") != null)
+        {
+            String[] styleNickParts = (String[]) textStyle.getAttribute("nickParts");
+            String[] nickParts = UserGUI.getNickFormatString(styleNickParts[1]);
+
+            try
+            {
+                URStyle previousStyle = getStyleAtPosition(styleStart - 1, null);
+                URStyle nextStyle = getStyleAtPosition(styleStart + styleLength, null);
+
+                switch (textStyle.getAttribute("type").toString()) {
+                    case "nickPart0":
+                            doc.remove(styleStart, styleLength);
+                            while(nextStyle.getAttribute("type") != null && !nextStyle.getAttribute("type").equals("nick") && !nextStyle.getAttribute("type").equals("IRCUser"))
+                            {
+                                doc.remove(styleStart, styleLength++);
+                                nextStyle = getStyleAtPosition(styleStart + styleLength, null);
+                            }
+
+                            if(nextStyle.getAttribute("type") != null && (nextStyle.getAttribute("type").equals("nick") || nextStyle.getAttribute("type").equals("IRCUser")))
+                            {
+                                styleLength = nickParts[0].length();
+                                textStyle.addAttribute("styleLength", styleLength);
+                                insertString(nickParts[0], textStyle, styleStart, false);
+                            }
+                        break;
+                    case "nickPart2":
+                            doc.remove(styleStart, styleLength);
+                            while(previousStyle.getAttribute("type") != null && !previousStyle.getAttribute("type").equals("nick") && !previousStyle.getAttribute("type").equals("IRCUser"))
+                            {
+                                doc.remove(styleStart, styleLength++);
+                                previousStyle = getStyleAtPosition(styleStart + styleLength, null);
+                            }
+
+                            if(previousStyle.getAttribute("type") != null && (previousStyle.getAttribute("type").equals("nick") || previousStyle.getAttribute("type").equals("IRCUser")))
+                            {
+                                styleLength = nickParts[2].length();
+                                textStyle.addAttribute("styleLength", styleLength);
+                                insertString(nickParts[2], textStyle, styleStart, false);
+                            }
+                        break;
+                    default:
+                            if(previousStyle.getAttribute("type") == null || !previousStyle.getAttribute("type").equals("nickPart0"))
+                            {
+                                URStyle updatedPreviousStyle = getStyle(previousStyle.getName(), false);
+                                updatedPreviousStyle.addAttribute("type", "nickPart0");
+                                updatedPreviousStyle.addAttribute("nickParts", nickParts);
+                                insertString(nickParts[0], updatedPreviousStyle, styleStart, true);
+                                styleStart += nickParts[0].length();
+                            }
+
+                            if(nextStyle.getAttribute("type") == null || !nextStyle.getAttribute("type").equals("nickPart2"))
+                            {
+                                URStyle updatedNextStyle = getStyle(nextStyle.getName(), false);
+                                updatedNextStyle.addAttribute("type", "nickPart2");
+                                updatedNextStyle.addAttribute("nickParts", nickParts);
+                                insertString(nickParts[2], updatedNextStyle, styleStart+styleLength, true);
+                            }
+                        break;
+                }
+            } catch (BadLocationException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         }
 
@@ -627,15 +723,20 @@ public class LineFormatter
         return 0;
     }
 
-    public SimpleAttributeSet getStyleAtPosition(int position, String relativeLine)
-            throws BadLocationException
+    public URStyle getStyleAtPosition(int position, String relativeLine)
     {
-        if (!relativeLine.isBlank())
+        try{
+        if (relativeLine != null && !relativeLine.isBlank())
             position = position + getLinePosition(relativeLine);
 
+        } catch (BadLocationException ble)
+        {
+            // TODO
+            Constants.LOGGER.log(Level.WARNING, ble.getLocalizedMessage());
+        }
         AttributeSet textStyle = doc.getCharacterElement(position).getAttributes();
 
-        return new SimpleAttributeSet(textStyle);
+        return new URStyle(new SimpleAttributeSet(textStyle));
     }
 
     private void parseClickableText(IRCUser fromUser, String line, URStyle defaultStyle)
@@ -765,6 +866,8 @@ public class LineFormatter
                 timePositionStyle.removeAttribute("type");
             }
 
+            linePositionStyle.addAttribute("type", "nickPart0");
+            linePositionStyle.addAttribute("nickParts", nickParts);
             appendString(nickParts[0], linePositionStyle);
 
             if (fromUser != null)
@@ -774,14 +877,20 @@ public class LineFormatter
                 clickableNameStyle.addAttribute("clickableText",
                         new ClickableText(fromUser.toString(), nickPositionStyle, fromUser));
 
-                // doc.insertString(doc.getLength(), fromUser.toString(), clickableNameStyle);
+                clickableNameStyle.addAttribute("nickParts", nickParts);
                 appendString(nickParts[1], clickableNameStyle);
             } else
             {
+                nickPositionStyle.addAttribute("type", "nick");
+                nickPositionStyle.addAttribute("nickParts", nickParts);
                 appendString(nickParts[1], nickPositionStyle);
             }
 
+            linePositionStyle.addAttribute("type", "nickPart2");
             appendString(nickParts[2], linePositionStyle);
+
+            linePositionStyle.removeAttribute("type");
+            linePositionStyle.removeAttribute("nickParts");
 
             // print the remaining text
             // appendString(doc, " "+line, lineStyle);
