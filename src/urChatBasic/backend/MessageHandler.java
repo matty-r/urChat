@@ -199,8 +199,8 @@ public class MessageHandler
 
         public Message(String fullMessage)
         {
-            this.rawMessage = fullMessage;
-            this.messageHandler = MessageHandler.this;
+            rawMessage = fullMessage;
+            messageHandler = MessageHandler.this;
             // System.out.println(fullMessage);
             setPrefix();
 

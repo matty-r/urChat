@@ -267,7 +267,7 @@ public class Connection implements ConnectionBase
 
 
 
-                String msgPrefix = ":" + getServer().getNick() + "!~" + getServer().getNick() + "@urchatclient";
+                String msgPrefix = ":" + getServer().getNick() + "!~" + getServer().getNick() + "@"+Constants.APP_NAME;
 
                 if (!tempTextArray[1].equalsIgnoreCase(getServer().getNick()))
                 {
@@ -291,7 +291,7 @@ public class Connection implements ConnectionBase
                 outText = "PRIVMSG " + fromChannel + " :" + Constants.CTCP_DELIMITER + "ACTION " + tempText
                         + Constants.CTCP_DELIMITER + "\r\n";
 
-                String msgPrefix = ":" + getServer().getNick() + "!~" + getServer().getNick() + "@urchatclient";
+                String msgPrefix = ":" + getServer().getNick() + "!~" + getServer().getNick() + "@"+Constants.APP_NAME;
                 clientMessage = messageHandler.new Message(msgPrefix + " " + outText);
             } else if (clientText.startsWith("CAP") || clientText.startsWith("AUTHENTICATE"))
             {

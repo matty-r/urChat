@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
 import java.net.URL;
+import java.util.Random;
 // import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -27,6 +28,7 @@ import urChatBasic.frontend.utils.URColour;
 public class Constants
 {
     public static String UR_VERSION = "v0.5.0";
+    public static String APP_NAME = "urChatClient" + UR_VERSION;
     public static String URL_SEPARATOR = "/";
     public static final URL RESOURCES_DIR = DriverGUI.class.getResource(URL_SEPARATOR + "images" + URL_SEPARATOR);
     public static final String THEMES_DIR = "themes" + URL_SEPARATOR;
@@ -101,7 +103,7 @@ public class Constants
 
     // Setting defaults
     public static final String DEFAULT_PROFILE_NAME = "Default";
-    public static final String DEFAULT_FIRST_CHANNEL = "#linux";
+    public static final String DEFAULT_FIRST_CHANNEL = "#urchat";
     public static final String DEFAULT_FIRST_SERVER = "irc.libera.chat";
     public static final String DEFAULT_FIRST_PORT = "6697";
     public static final String DEFAULT_AUTH_TYPE = CapabilityTypes.NONE.toString();
@@ -111,8 +113,8 @@ public class Constants
     public static final Boolean DEFAULT_USE_PROXY = false;
     public static final String DEFAULT_PROXY_HOST = "";
     public static final String DEFAULT_PROXY_PORT = "";
-    public static final String DEFAULT_NICK_NAME = "urChatClient";
-    public static final String DEFAULT_REAL_NAME = "urChatClient";
+    public static final String DEFAULT_NICK_NAME = "urChat"+new Random().nextInt(100, 999);
+    public static final String DEFAULT_REAL_NAME = DEFAULT_NICK_NAME;
     public static final Boolean DEFAULT_TIME_STAMPS = true;
     public static final String DEFAULT_TIME_STAMP_FORMAT = "[HHmm]";
     public static final String DEFAULT_NICK_FORMAT = "<nick>";
