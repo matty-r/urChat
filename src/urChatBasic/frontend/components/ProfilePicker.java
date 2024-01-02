@@ -9,23 +9,17 @@ import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.base.Constants.EventType;
 import urChatBasic.frontend.DriverGUI;
-import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.dialogs.MessageDialog;
-import urChatBasic.frontend.dialogs.YesNoDialog;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 public class ProfilePicker extends JPanel
 {
-    private List<String> allProfiles;
     private JComboBox<String> profileComboBox = new JComboBox<>(URProfilesUtil.getProfiles());
     private ActionListener changeListener = new ProfileChangeListener();
     private final JButton saveProfile = new JButton("Save");
-    private int selectedIndex = 0;
 
     public ProfilePicker (String initialProfile, Boolean showSaveButton)
     {
@@ -128,7 +122,6 @@ public class ProfilePicker extends JPanel
         if (URProfilesUtil.profileExists(initialProfile))
         {
             profileComboBox.setSelectedItem(initialProfile);
-            selectedIndex = profileComboBox.getSelectedIndex();
 
             if(DriverGUI.gui != null)
                 profileComboBox.addActionListener(changeListener);
@@ -142,7 +135,9 @@ public class ProfilePicker extends JPanel
                 public void run ()
                 {
                     MessageDialog dialog = new MessageDialog("Initial Profile: [" + initialProfile + "] doesn't exist.", "Missing Profile", JOptionPane.ERROR_MESSAGE);
-                    dialog.setVisible(true);
+
+                    if(DriverGUI.frame.isShowing())
+                        dialog.setVisible(true);
                 }
 
             });
