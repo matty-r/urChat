@@ -7,10 +7,9 @@
 
   <groupId>com.mattyr</groupId>
   <artifactId>urchat</artifactId>
-  <version>0.4.0</version>
+  <version>0.5.0</version>
 
   <name>urchat</name>
-  <!-- FIXME change it to the project's website -->
   <url>https://github.com/matty-r/urChat</url>
 
   <properties>
