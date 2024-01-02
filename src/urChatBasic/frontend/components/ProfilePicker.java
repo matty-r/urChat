@@ -142,7 +142,7 @@ public class ProfilePicker extends JPanel
                 public void run ()
                 {
                     MessageDialog dialog = new MessageDialog("Initial Profile: [" + initialProfile + "] doesn't exist.", "Missing Profile", JOptionPane.ERROR_MESSAGE);
-                    dialog.setVisible(!DriverGUI.isTesting);
+                    dialog.setVisible(true);
                 }
 
             });

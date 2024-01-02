@@ -6,6 +6,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import urChatBasic.base.Constants;
+import utils.TestDriverGUI;
 import static org.junit.Assert.assertNotEquals;
 import static org.testng.AssertJUnit.*;
 
@@ -24,6 +25,7 @@ public class UserGUITests {
     @AfterClass
     public void tearDown() throws BackingStoreException {
         baseTestPreference.removeNode();
+        TestDriverGUI.closeWindow();
     }
 
     @Test

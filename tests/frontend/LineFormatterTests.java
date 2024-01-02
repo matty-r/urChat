@@ -54,6 +54,7 @@ public class LineFormatterTests
         // URProfilesUtil.getActiveProfilePath().sync();
         // URProfilesUtil.getActiveProfilePath().sync();
         URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
+        TestDriverGUI.closeWindow();
     }
 
     // Test right-click on a nick and selecting whois

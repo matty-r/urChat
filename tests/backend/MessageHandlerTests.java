@@ -62,6 +62,7 @@ public class MessageHandlerTests
         // URProfilesUtil.getActiveProfilePath().sync();
         // URProfilesUtil.getActiveProfilePath().sync();
         URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
+        TestDriverGUI.closeWindow();
     }
 
     @Test(groups = {"Test #001"})

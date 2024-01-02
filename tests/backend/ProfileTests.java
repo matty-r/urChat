@@ -1,7 +1,6 @@
 package backend;
 
 import static org.testng.AssertJUnit.*;
-import java.io.File;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -11,8 +10,8 @@ import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.testng.Reporter;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import urChatBasic.backend.utils.URPreferencesUtil;
 import urChatBasic.backend.utils.URProfilesUtil;
@@ -24,17 +23,18 @@ public class ProfileTests
     TestDriverGUI testDriver;
     // final String testLAFName
 
-    @BeforeClass(alwaysRun = true)
+    @BeforeMethod(alwaysRun = true)
     public void setUp() throws Exception
     {
         testDriver = new TestDriverGUI();
     }
 
-    @AfterClass(alwaysRun = true)
+    @AfterMethod(alwaysRun = true)
     public void tearDown () throws Exception
     {
         Reporter.log("Deleting testing profile.", true);
         URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
+        TestDriverGUI.closeWindow();
     }
 
     // 1. Test creating a profile

@@ -18,14 +18,12 @@ import urChatBasic.base.Constants;
 public class LAFTests
 {
     TestDriverGUI testDriver;
-    UserGUI testGUI;
     // final String testLAFName
 
     @BeforeClass(alwaysRun = true)
     public void setUp() throws Exception
     {
         testDriver = new TestDriverGUI();
-        testGUI = TestDriverGUI.gui;
     }
 
     @AfterClass(alwaysRun = true)
@@ -33,6 +31,7 @@ public class LAFTests
     {
         Reporter.log("Deleting testing profile.", true);
         URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
+        TestDriverGUI.closeWindow();
     }
 
     @Test(description = "Check that changing the Look and Feel, also correctly changes the style of the text")
@@ -42,9 +41,9 @@ public class LAFTests
         String currentLAF = UIManager.getLookAndFeel().getClass().getName();
 
         if(!currentLAF.equals("com.sun.java.swing.plaf.motif.MotifLookAndFeel"))
-            testGUI.setNewLAF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+            TestDriverGUI.gui.setNewLAF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
 
-        URStyle newStyle = testGUI.getStyle();
+        URStyle newStyle = TestDriverGUI.gui.getStyle();
 
         assertEquals("New Style should have the background colour of "+Constants.DEFAULT_BACKGROUND_STRING, URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)), URColour.hexEncode(newStyle.getBackground().get()));
     }
@@ -56,7 +55,7 @@ public class LAFTests
         String currentLAF = UIManager.getLookAndFeel().getClass().getName();
 
         if(!currentLAF.equals("com.sun.java.swing.plaf.motif.MotifLookAndFeel"))
-            testGUI.setNewLAF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+            TestDriverGUI.gui.setNewLAF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
 
         // URStyle newStyle = testGUI.getStyle();
 
