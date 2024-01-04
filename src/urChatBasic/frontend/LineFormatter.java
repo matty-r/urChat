@@ -427,14 +427,14 @@ public class LineFormatter
             }
         }
 
-        Constants.LOGGER.log(Level.INFO, "Setting character attributes at: " + startPosition + " length: " + length);
+        Constants.LOGGER.log(Level.FINE, "Setting character attributes at: " + startPosition + " length: " + length);
         doc.setCharacterAttributes(startPosition, length, matchingStyle, true);
     }
 
     // Inserts the string at the position
     private synchronized void insertString(String insertedString, URStyle style, int position)
     {
-        Constants.LOGGER.log(Level.INFO, "Inserting a string: " + insertedString + " at position: " + position);
+        Constants.LOGGER.log(Level.FINE, "Inserting a string: " + insertedString + " at position: " + position);
         // Append the date to the first entry on this line, and don't append it elsewhere
         if(timeLine.isPresent() && insertedString.length() > 0)
         {
@@ -507,7 +507,6 @@ public class LineFormatter
     {
         initStyles(newBaseStyle);
 
-        Constants.LOGGER.log(Level.FINE, "Updating styles.");
         if (doc.getLength() > 0)
         {
             SwingUtilities.invokeLater(new Runnable()
@@ -518,6 +517,7 @@ public class LineFormatter
                     {
                         if(!updateStylesInProgress.get())
                         {
+                            Constants.LOGGER.log(Level.INFO, "Updating styles.");
                             updateStylesTime.set(Instant.now().getEpochSecond());
                             updateDocStyles(0);
                         } else {
@@ -549,20 +549,18 @@ public class LineFormatter
         // looping all lines in the doc
         while (lineIndex < lineCount)
         {
-            Constants.LOGGER.log(Level.INFO, "Updating line "+lineIndex);
+            Constants.LOGGER.log(Level.FINE, "Updating line "+lineIndex);
             Element lineElement = root.getElement(lineIndex);
 
             // looping all the styles used in this line
             while (currentPosition < lineElement.getEndOffset())
             {
-                Constants.LOGGER.log(Level.INFO, "Working at: " + currentPosition + " to: " + lineElement.getEndOffset());
+                Constants.LOGGER.log(Level.FINE, "Working at: " + currentPosition + " to: " + lineElement.getEndOffset());
                 URStyle currentStyle = getStyleAtPosition(currentPosition, null);
 
                 // Has style to update
                 if (currentStyle != null && currentStyle.getAttributeCount() > 0)
                 {
-                    if(currentStyle.getAttribute("styleLength") == null)
-                        System.out.println("test");
                     int styleLength = Integer.parseInt(currentStyle.getAttribute("styleLength").toString());
                     String styleString = doc.getText(currentPosition, styleLength);
 
@@ -672,7 +670,7 @@ public class LineFormatter
             lineIndex++;
         }
 
-        Constants.LOGGER.log(Level.INFO, "Took " + Duration.between(Instant.ofEpochSecond(updateStylesTime.get()), Instant.now()).toSeconds() +  " seconds to update styles.");
+        Constants.LOGGER.log(Level.INFO, "Took " + Duration.between(Instant.ofEpochSecond(updateStylesTime.get()), Instant.now()).toMillis() +  "ms to update styles.");
         updateStylesTime.set(0);
     }
 
