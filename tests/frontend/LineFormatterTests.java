@@ -15,6 +15,7 @@ import urChatBasic.backend.MessageHandler;
 import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.IRCRoomBase;
+import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.UserGUI;
@@ -36,8 +37,8 @@ public class LineFormatterTests
     public void setUp () throws Exception
     {
         testDriver = new TestDriverGUI();
-        TestDriverGUI.startTestGUI();
-        testGUI = TestDriverGUI.gui;
+        TestDriverGUI.startTestGUI(DriverGUI.gui);
+        testGUI = DriverGUI.gui;
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy", "1234", true);
         testUser = new IRCUser(testServer, "testUser");
         testServer.addToCreatedRooms(PUB_CHANNEL_NAME, false);

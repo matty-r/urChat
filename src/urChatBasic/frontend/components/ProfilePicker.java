@@ -9,6 +9,7 @@ import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.base.Constants.EventType;
 import urChatBasic.frontend.DriverGUI;
+import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;

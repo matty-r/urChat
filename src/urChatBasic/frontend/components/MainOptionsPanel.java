@@ -13,7 +13,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants.Placement;
-import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.panels.UROptionsPanel;
 import urChatBasic.frontend.utils.Panels;
 

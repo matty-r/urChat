@@ -5,6 +5,8 @@ import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -12,6 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
@@ -20,6 +23,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -27,7 +31,6 @@ import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import javax.swing.text.html.Option;
 import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
@@ -55,7 +58,8 @@ public class LineFormatter
     public URStyle myStyle;
     private Map<String, URStyle> formatterStyles = new HashMap<>();
     private Optional<Date> timeLine = Optional.empty();
-
+    private AtomicLong updateStylesTime = new AtomicLong(0);
+    public AtomicBoolean updateStylesInProgress = new AtomicBoolean(false);
 
     public LineFormatter(URStyle baseStyle, JTextPane docOwner ,final IRCServerBase server, Preferences settingsPath)
     {
@@ -119,13 +123,27 @@ public class LineFormatter
 
     }
 
+    public URStyle dateStyle(URStyle baseStyle, Date date, boolean load)
+    {
+        // TODO: date style can only be lowStyle or defaultStyle
+        // for now.
+        if(!baseStyle.getName().equals("lowStyle"))
+            baseStyle = defaultStyle(null, false);
+
+        URStyle matchingStyle = getStyle(baseStyle.getName(), load);
+        matchingStyle.addAttribute("type", "time");
+        matchingStyle.addAttribute("date", date);
+
+        return matchingStyle;
+    }
+
     public URStyle defaultStyle(String name, boolean load)
     {
         if (name == null)
             name = "defaultStyle";
 
         URStyle tempStyle = new URStyle(name, targetStyle.getFont());
-        // tempStyle.addAttribute("type", "default");
+        tempStyle.addAttribute("type", "default");
         // get the contrasting colour of the background colour
         // StyleConstants.setForeground(defaultStyle, new Color(formatterPrefs.node(name).getInt("font
         // foreground",
@@ -367,20 +385,56 @@ public class LineFormatter
         }
     }
 
-    // Inserts the string at the position
-    private void insertString(String insertedString, URStyle style, int position, boolean setCharacterAttributes)
-            throws BadLocationException
+    private synchronized void setDocAttributes(int startPosition, int length, URStyle oldStyle)
     {
-        style = style.clone();
+        // Don't do anything if there is no length
+        if(length <= 0 )
+            return;
 
-        // remove the existing attributes
-        style.removeAttribute("styleStart");
-        style.removeAttribute("styleLength");
+        // update/add the attributes which help update the doc styles later
+        oldStyle.addAttribute("styleStart", startPosition);
+        oldStyle.addAttribute("styleLength", length);
 
-        // add an attribute so we know when the style is expected to start and end.
-        style.addAttribute("styleStart", position);
-        style.addAttribute("styleLength", insertedString.length());
+        if(oldStyle.getAttribute("type") == null)
+            oldStyle.addAttribute("type", "default");
 
+        SimpleAttributeSet matchingStyle = getStyle(oldStyle.getName(), false);
+
+        // remove the type because it will be copied back in when the style is rebuilt later
+        matchingStyle.removeAttribute("type");
+
+        // Copy the attributes, but only if they aren't already set
+        Iterator<?> attributeIterator = oldStyle.getAttributeNames().asIterator();
+        while (attributeIterator.hasNext())
+        {
+            String nextAttributeName = attributeIterator.next().toString();
+
+            if (matchingStyle.getAttribute(nextAttributeName) == null)
+            {
+                Iterator<?> matchingIterator = matchingStyle.getAttributeNames().asIterator();
+                boolean needsToBeSet = true;
+
+                while (matchingIterator.hasNext())
+                {
+                    if (matchingIterator.next().toString().equalsIgnoreCase(nextAttributeName))
+                    {
+                        needsToBeSet = false;
+                        break;
+                    }
+                }
+                if (needsToBeSet)
+                    matchingStyle.addAttribute(nextAttributeName, oldStyle.getAttribute(nextAttributeName));
+            }
+        }
+
+        Constants.LOGGER.log(Level.INFO, "Setting character attributes at: " + startPosition + " length: " + length);
+        doc.setCharacterAttributes(startPosition, length, matchingStyle, true);
+    }
+
+    // Inserts the string at the position
+    private synchronized void insertString(String insertedString, URStyle style, int position)
+    {
+        Constants.LOGGER.log(Level.INFO, "Inserting a string: " + insertedString + " at position: " + position);
         // Append the date to the first entry on this line, and don't append it elsewhere
         if(timeLine.isPresent() && insertedString.length() > 0)
         {
@@ -388,38 +442,14 @@ public class LineFormatter
             timeLine = Optional.empty();
         }
 
-        doc.insertString(position, insertedString, style);
-
-        String styleName = style.getAttribute("name").toString();
-        SimpleAttributeSet matchingStyle = getStyle(styleName, false);
-        matchingStyle.removeAttribute("type");
-        if(setCharacterAttributes)
+        try {
+            doc.insertString(position, insertedString, style);
+        } catch (BadLocationException ble)
         {
-            Iterator<?> attributeIterator = style.getAttributeNames().asIterator();
-            while (attributeIterator.hasNext())
-            {
-                String nextAttributeName = attributeIterator.next().toString();
-
-                if (matchingStyle.getAttribute(nextAttributeName) == null)
-                {
-                    Iterator<?> matchingIterator = matchingStyle.getAttributeNames().asIterator();
-                    boolean needsToBeSet = true;
-
-                    while (matchingIterator.hasNext())
-                    {
-                        if (matchingIterator.next().toString().equalsIgnoreCase(nextAttributeName))
-                        {
-                            needsToBeSet = false;
-                            break;
-                        }
-                    }
-                    if (needsToBeSet)
-                        matchingStyle.addAttribute(nextAttributeName, style.getAttribute(nextAttributeName));
-                }
-            }
-
-            doc.setCharacterAttributes(position, insertedString.length(), matchingStyle, true);
+            Constants.LOGGER.log(Level.WARNING, ble.getLocalizedMessage());
         }
+
+        setDocAttributes(position, insertedString.length(), style);
     }
 
     // Adds the string (with all needed attributes) to the end of the document
@@ -429,7 +459,7 @@ public class LineFormatter
         int position = doc.getLength();
 
         if((myServer == null || !myServer.hasConnection()) || myServer.isConnected())
-            insertString(insertedString, style, position, false);
+            insertString(insertedString, style, position);
     }
 
     public URStyle getStyleDefault(String styleName)
@@ -470,178 +500,180 @@ public class LineFormatter
 
     /**
      * Reloads all the styles, then updates the doc
+     *
      * @param newBaseStyle
      */
-    public void updateStyles(URStyle newBaseStyle)
+    public void updateStyles (URStyle newBaseStyle)
     {
         initStyles(newBaseStyle);
 
         Constants.LOGGER.log(Level.FINE, "Updating styles.");
-        if(doc.getLength() > 0)
-            updateDocStyles(0);
+        if (doc.getLength() > 0)
+        {
+            SwingUtilities.invokeLater(new Runnable()
+            {
+                public void run ()
+                {
+                    try
+                    {
+                        if(!updateStylesInProgress.get())
+                        {
+                            updateStylesTime.set(Instant.now().getEpochSecond());
+                            updateDocStyles(0);
+                        } else {
+                            Constants.LOGGER.log(Level.INFO, "Update already in progress.");
+                        }
+                    } catch (BadLocationException e)
+                    {
+                        // TODO Auto-generated catch block
+
+                        e.printStackTrace();
+                    } finally {
+                        updateStylesInProgress.set(false);
+                    }
+                }
+            });
+        }
     }
 
-    private void updateDocStyles(int startPosition)
+    private void updateDocStyles (int currentPosition) throws BadLocationException
     {
-        URStyle textStyle = getStyleAtPosition(startPosition, null);
-        String styleName = textStyle.getAttribute("name").toString();
-        int styleStart = startPosition;
-        int styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
+        updateStylesInProgress.set(true);
+        Element root = doc.getDefaultRootElement();
+        int lineCount = root.getElementCount();
+        int lineIndex = 0;
 
-        // String styleText = doc.getText(startPosition, styleLength);
+        // Get the nick format initially, then we will just replace the nickPart[1] (which is the actual nick) when needed
+        String[] nickParts = DriverGUI.gui.getNickFormatString("nick");
 
-        URStyle matchingStyle = getStyle(styleName, false);
-        matchingStyle.removeAttribute("type");
-        boolean isDateStyle = false;
-        if (null != DriverGUI.gui && null != textStyle.getAttribute("date"))
+        // looping all lines in the doc
+        while (lineIndex < lineCount)
         {
-            isDateStyle = true;
-            try
+            Constants.LOGGER.log(Level.INFO, "Updating line "+lineIndex);
+            Element lineElement = root.getElement(lineIndex);
+
+            // looping all the styles used in this line
+            while (currentPosition < lineElement.getEndOffset())
             {
-                Date lineDate = (Date) textStyle.getAttribute("date");
-                String newTimeString = UserGUI.getTimeLineString(lineDate) + " ";
-                boolean hasTime = false;
+                Constants.LOGGER.log(Level.INFO, "Working at: " + currentPosition + " to: " + lineElement.getEndOffset());
+                URStyle currentStyle = getStyleAtPosition(currentPosition, null);
 
-                if (null != textStyle.getAttribute("type")
-                        && textStyle.getAttribute("type").toString().equalsIgnoreCase("time"))
+                // Has style to update
+                if (currentStyle != null && currentStyle.getAttributeCount() > 0)
                 {
-                    hasTime = true;
-                    doc.remove(styleStart, styleLength);
-                }
+                    if(currentStyle.getAttribute("styleLength") == null)
+                        System.out.println("test");
+                    int styleLength = Integer.parseInt(currentStyle.getAttribute("styleLength").toString());
+                    String styleString = doc.getText(currentPosition, styleLength);
 
-                if (DriverGUI.gui.isTimeStampsEnabled())
-                {
-                    textStyle.removeAttribute("date");
-                    textStyle.removeAttribute("time");
+                    if (currentStyle.getAttribute("date") != null) // Has a date, could be a timestamp
+                    {
+                        Date lineDate = (Date) currentStyle.getAttribute("date");
+                        String newTimeStamp = DriverGUI.gui.getTimeStampString(lineDate) + " ";
 
-                    if (!hasTime)
-                        doc.setCharacterAttributes(styleStart, styleLength, textStyle, true);
+                        // Is a timestamp?
+                        if (currentStyle.getAttribute("type").toString().equals("time"))
+                        {
+                            // It's not formatted correctly, so it needs to be updated
+                            if (!newTimeStamp.equals(styleString))
+                            {
+                                doc.remove(currentPosition, styleLength);
+                                currentStyle = dateStyle(currentStyle, lineDate, false);
+                                // Inserts the new timestamp, and updates the formatting
+                                insertString(newTimeStamp, currentStyle, currentPosition);
+                            } else {
+                                setDocAttributes(currentPosition, styleLength, currentStyle);
+                            }
+                        } else
+                        {
+                            // it has a date but isn't a timestamp, so check date time is enabled and insert the timestamp string
+                            if (DriverGUI.gui.isTimeStampsEnabled())
+                            {
+                                // this removes the date from what will become the next style on the line so that we don't insert the timestamp
+                                // multiple times
+                                currentStyle.removeAttribute("date");
+                                setDocAttributes(currentPosition, styleLength, currentStyle);
 
-                    if(textStyle.getAttribute("name").equals("lowStyle"))
-                        timeStyle = getStyle(textStyle.getAttribute("name").toString(), false);
-                    else
-                        timeStyle = defaultStyle(null, false);
+                                currentStyle = dateStyle(currentStyle, lineDate, false);
+                                // Inserts the new string, and updates the formatting
+                                insertString(newTimeStamp, currentStyle, currentPosition);
+                            }
+                        }
+                    } else if (currentStyle.getAttribute("nickParts") != null) // Has nickParts, could be the nick
+                    {
+                        URStyle previousStyle = getStyleAtPosition(currentPosition - 1, null);
+                        URStyle nextStyle = getStyleAtPosition(currentPosition + styleLength, null);
 
-                    timeStyle.addAttribute("date", lineDate);
-                    timeStyle.addAttribute("type", "time");
-                    insertString(newTimeString, timeStyle, styleStart, true);
-                    styleLength = newTimeString.length();
+                        switch (currentStyle.getAttribute("type").toString()) {
+                            case "nickPart0":
+                                    doc.remove(currentPosition, styleLength);
+                                    while(nextStyle.getAttribute("type") != null && !nextStyle.getAttribute("type").equals("nick") && !nextStyle.getAttribute("type").equals("IRCUser"))
+                                    {
+                                        doc.remove(currentPosition, styleLength++);
+                                        nextStyle = getStyleAtPosition(currentPosition + styleLength, null);
+                                    }
+
+                                    if(nextStyle.getAttribute("type") != null && (nextStyle.getAttribute("type").equals("nick") || nextStyle.getAttribute("type").equals("IRCUser")))
+                                    {
+                                        styleLength = nickParts[0].length();
+                                        currentStyle.addAttribute("styleLength", styleLength);
+                                        insertString(nickParts[0], currentStyle, currentPosition);
+                                    }
+                                break;
+                            case "nickPart2":
+                                    doc.remove(currentPosition, styleLength);
+                                    while(previousStyle.getAttribute("type") != null && !previousStyle.getAttribute("type").equals("nick") && !previousStyle.getAttribute("type").equals("IRCUser"))
+                                    {
+                                        doc.remove(currentPosition, styleLength++);
+                                        previousStyle = getStyleAtPosition(currentPosition + styleLength, null);
+                                    }
+
+                                    if(previousStyle.getAttribute("type") != null && (previousStyle.getAttribute("type").equals("nick") || previousStyle.getAttribute("type").equals("IRCUser")))
+                                    {
+                                        styleLength = nickParts[2].length();
+                                        currentStyle.addAttribute("styleLength", styleLength);
+                                        insertString(nickParts[2], currentStyle, currentPosition);
+                                    }
+                                break;
+                            default:
+                                    if(previousStyle.getAttribute("type") == null || !previousStyle.getAttribute("type").equals("nickPart0"))
+                                    {
+                                        URStyle updatedPreviousStyle = getStyle(previousStyle.getName(), false);
+                                        updatedPreviousStyle.addAttribute("type", "nickPart0");
+                                        updatedPreviousStyle.addAttribute("nickParts", nickParts);
+                                        insertString(nickParts[0], updatedPreviousStyle, currentPosition);
+                                        currentPosition += nickParts[0].length();
+                                    }
+
+                                    setDocAttributes(currentPosition, styleLength, currentStyle);
+
+                                    if(nextStyle.getAttribute("type") == null || !nextStyle.getAttribute("type").equals("nickPart2"))
+                                    {
+                                        URStyle updatedNextStyle = getStyle(nextStyle.getName(), false);
+                                        updatedNextStyle.addAttribute("type", "nickPart2");
+                                        updatedNextStyle.addAttribute("nickParts", nickParts);
+                                        insertString(nickParts[2], updatedNextStyle, currentPosition+styleLength);
+                                    }
+                                break;
+                        }
+                    } else {
+                        setDocAttributes(currentPosition, styleLength, currentStyle);
+                    }
+
+                    // set position for the next style in the line
+                    currentPosition += Integer.parseInt(currentStyle.getAttribute("styleLength").toString());
                 } else
                 {
-                    if (hasTime)
-                    {
-                        textStyle = getStyleAtPosition(startPosition, null);
-
-                        styleName = textStyle.getAttribute("name").toString();
-                        styleStart = startPosition;
-                        styleLength = Integer.parseInt(textStyle.getAttribute("styleLength").toString());
-
-                        matchingStyle = getStyle(styleName, false);
-                        matchingStyle.addAttribute("date", lineDate);
-
-                        isDateStyle = false;
-                    }
+                    currentPosition++;
                 }
-            } catch (BadLocationException ble)
-            {
-                Constants.LOGGER.log(Level.WARNING, ble.getLocalizedMessage());
             }
-        } else if (DriverGUI.gui != null && textStyle.getAttribute("type") != null && textStyle.getAttribute("nickParts") != null)
-        {
-            String[] styleNickParts = (String[]) textStyle.getAttribute("nickParts");
-            String[] nickParts = UserGUI.getNickFormatString(styleNickParts[1]);
 
-            try
-            {
-                URStyle previousStyle = getStyleAtPosition(styleStart - 1, null);
-                URStyle nextStyle = getStyleAtPosition(styleStart + styleLength, null);
-
-                switch (textStyle.getAttribute("type").toString()) {
-                    case "nickPart0":
-                            doc.remove(styleStart, styleLength);
-                            while(nextStyle.getAttribute("type") != null && !nextStyle.getAttribute("type").equals("nick") && !nextStyle.getAttribute("type").equals("IRCUser"))
-                            {
-                                doc.remove(styleStart, styleLength++);
-                                nextStyle = getStyleAtPosition(styleStart + styleLength, null);
-                            }
-
-                            if(nextStyle.getAttribute("type") != null && (nextStyle.getAttribute("type").equals("nick") || nextStyle.getAttribute("type").equals("IRCUser")))
-                            {
-                                styleLength = nickParts[0].length();
-                                textStyle.addAttribute("styleLength", styleLength);
-                                insertString(nickParts[0], textStyle, styleStart, false);
-                            }
-                        break;
-                    case "nickPart2":
-                            doc.remove(styleStart, styleLength);
-                            while(previousStyle.getAttribute("type") != null && !previousStyle.getAttribute("type").equals("nick") && !previousStyle.getAttribute("type").equals("IRCUser"))
-                            {
-                                doc.remove(styleStart, styleLength++);
-                                previousStyle = getStyleAtPosition(styleStart + styleLength, null);
-                            }
-
-                            if(previousStyle.getAttribute("type") != null && (previousStyle.getAttribute("type").equals("nick") || previousStyle.getAttribute("type").equals("IRCUser")))
-                            {
-                                styleLength = nickParts[2].length();
-                                textStyle.addAttribute("styleLength", styleLength);
-                                insertString(nickParts[2], textStyle, styleStart, false);
-                            }
-                        break;
-                    default:
-                            if(previousStyle.getAttribute("type") == null || !previousStyle.getAttribute("type").equals("nickPart0"))
-                            {
-                                URStyle updatedPreviousStyle = getStyle(previousStyle.getName(), false);
-                                updatedPreviousStyle.addAttribute("type", "nickPart0");
-                                updatedPreviousStyle.addAttribute("nickParts", nickParts);
-                                insertString(nickParts[0], updatedPreviousStyle, styleStart, true);
-                                styleStart += nickParts[0].length();
-                            }
-
-                            if(nextStyle.getAttribute("type") == null || !nextStyle.getAttribute("type").equals("nickPart2"))
-                            {
-                                URStyle updatedNextStyle = getStyle(nextStyle.getName(), false);
-                                updatedNextStyle.addAttribute("type", "nickPart2");
-                                updatedNextStyle.addAttribute("nickParts", nickParts);
-                                insertString(nickParts[2], updatedNextStyle, styleStart+styleLength, true);
-                            }
-                        break;
-                }
-            } catch (BadLocationException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            // move to the next position (should be the start of the next line)
+            lineIndex++;
         }
 
-        // Copy the attributes, but only if they aren't already set
-        Iterator<?> attributeIterator = textStyle.getAttributeNames().asIterator();
-        while (attributeIterator.hasNext())
-        {
-            String nextAttributeName = attributeIterator.next().toString();
-
-            if (matchingStyle.getAttribute(nextAttributeName) == null)
-            {
-                Iterator<?> matchingIterator = matchingStyle.getAttributeNames().asIterator();
-                boolean needsToBeSet = true;
-
-                while (matchingIterator.hasNext())
-                {
-                    if (matchingIterator.next().toString().equalsIgnoreCase(nextAttributeName))
-                    {
-                        needsToBeSet = false;
-                        break;
-                    }
-                }
-                if (needsToBeSet)
-                    matchingStyle.addAttribute(nextAttributeName, textStyle.getAttribute(nextAttributeName));
-            }
-        }
-
-        if (!isDateStyle)
-            doc.setCharacterAttributes(styleStart, styleLength, matchingStyle, true);
-
-        if ((styleStart + styleLength) < doc.getLength())
-            updateDocStyles((styleStart + styleLength));
+        Constants.LOGGER.log(Level.INFO, "Took " + Duration.between(Instant.ofEpochSecond(updateStylesTime.get()), Instant.now()).toSeconds() +  " seconds to update styles.");
+        updateStylesTime.set(0);
     }
 
     public String getFirstLine() throws BadLocationException
@@ -699,9 +731,8 @@ public class LineFormatter
     }
 
      // New method to get line at position
-     public String getLineAtPosition(int position) throws BadLocationException {
+    public String getLineAtPosition(int position) throws BadLocationException {
         Element root = doc.getDefaultRootElement();
-        int lineCount = root.getElementCount();
 
         // Find the line that contains the given position
         int lineIndex = root.getElementIndex(position);
@@ -846,18 +877,18 @@ public class LineFormatter
             // This message is from me
             nickPositionStyle = myStyle.clone();
             linePositionStyle = lineStyle.clone();
-            timePositionStyle = timeStyle.clone();
-            nickParts = UserGUI.getNickFormatString(fromUser.getName());
+            timePositionStyle =  timeStyle.clone();
+            nickParts = DriverGUI.gui.getNickFormatString(fromUser.getName());
         } else if (fromUser == null && fromString.equals(Constants.EVENT_USER))
         {
             // This is an event message
             nickPositionStyle = lowStyle.clone();
             linePositionStyle = lowStyle.clone();
             timePositionStyle = lowStyle.clone();
-            nickParts = UserGUI.getNickFormatString(fromString);
+            nickParts = DriverGUI.gui.getNickFormatString(fromString);
         } else
         {
-            nickParts = UserGUI.getNickFormatString(fromUser.getName());
+            nickParts = DriverGUI.gui.getNickFormatString(fromUser.getName());
 
             // This message is from someone else
             // Does this message have my nick in it?
@@ -879,11 +910,7 @@ public class LineFormatter
             {
                 // add the date to the end of the string to preserve the timestamp of the line
                 // when updating styles
-                // timePositionStyle.addAttribute("date", lineDate);
-                timePositionStyle.removeAttribute("type");
-                timePositionStyle.addAttribute("type", "time");
-                appendString(UserGUI.getTimeLineString(timeLine.get()) + " ", timePositionStyle);
-                timePositionStyle.removeAttribute("type");
+                appendString(DriverGUI.gui.getTimeStampString(timeLine.get()) + " ", dateStyle(timePositionStyle, lineDate, false));
             }
 
             linePositionStyle.addAttribute("type", "nickPart0");

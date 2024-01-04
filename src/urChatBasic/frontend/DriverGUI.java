@@ -39,9 +39,10 @@ public class DriverGUI
         Constants.LOGGER.log(Level.INFO, "Starting up..");
 
         initLAFLoader();
+        frame = new JFrame("urChat");
 
         // This will load the default profile
-        createGUI(Optional.empty());
+        gui = createGUI(Optional.empty());
 
         startGUI();
     }
@@ -62,10 +63,9 @@ public class DriverGUI
                 + " MB; space left in heap = " + (r.freeMemory() / (mb)) + " MB";
     }
 
-    public static void createGUI(Optional<String> profileName)
+    public static UserGUI createGUI(Optional<String> profileName)
     {
-        frame = new JFrame("urChat");
-        gui = new UserGUI(profileName);
+        return new UserGUI(profileName);
     }
 
     public static void startGUI()

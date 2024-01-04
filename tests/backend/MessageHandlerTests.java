@@ -19,6 +19,7 @@ import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
+import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCPrivate;
 import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
@@ -42,7 +43,7 @@ public class MessageHandlerTests
     public void setUp() throws Exception
     {
         testDriver = new TestDriverGUI();
-        testGUI = TestDriverGUI.gui;
+        testGUI = DriverGUI.gui;
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy",
                 "1234", true);
         testUser = new IRCUser(testServer, "testUser");

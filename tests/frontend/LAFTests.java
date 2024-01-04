@@ -8,6 +8,7 @@ import org.testng.Reporter;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.utils.URColour;
 import utils.TestDriverGUI;
@@ -19,11 +20,13 @@ public class LAFTests
 {
     TestDriverGUI testDriver;
     // final String testLAFName
+    UserGUI gui;
 
     @BeforeClass(alwaysRun = true)
     public void setUp() throws Exception
     {
         testDriver = new TestDriverGUI();
+        gui = DriverGUI.gui;
     }
 
     @AfterClass(alwaysRun = true)
@@ -41,9 +44,9 @@ public class LAFTests
         String currentLAF = UIManager.getLookAndFeel().getClass().getName();
 
         if(!currentLAF.equals("com.sun.java.swing.plaf.motif.MotifLookAndFeel"))
-            TestDriverGUI.gui.setNewLAF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+            gui.setNewLAF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
 
-        URStyle newStyle = TestDriverGUI.gui.getStyle();
+        URStyle newStyle = gui.getStyle();
 
         assertEquals("New Style should have the background colour of "+Constants.DEFAULT_BACKGROUND_STRING, URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)), URColour.hexEncode(newStyle.getBackground().get()));
     }
@@ -54,13 +57,18 @@ public class LAFTests
         // Get current LAF name
         String currentLAF = UIManager.getLookAndFeel().getClass().getName();
 
+        TestDriverGUI.waitForEverything(gui);
+
         if(!currentLAF.equals("com.sun.java.swing.plaf.motif.MotifLookAndFeel"))
-            TestDriverGUI.gui.setNewLAF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+            gui.setNewLAF("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
 
         // URStyle newStyle = testGUI.getStyle();
 
-        Color newBackgroundColor = (Color) UserGUI.previewLineFormatter.getStyleAtPosition(0, "urChat has loaded - this is an Event").getAttribute(StyleConstants.Background);
-        Color lineFormatterBackground = UserGUI.previewTextArea.getBackground();
+        TestDriverGUI.waitForEverything(gui);
+
+        Color newBackgroundColor = (Color) gui.previewLineFormatter.getStyleAtPosition(0, "urChat has loaded - this is an Event").getAttribute(StyleConstants.Background);
+        Color lineFormatterBackground = gui.previewTextArea.getBackground();
+
 
         assertEquals("previewTextArea background colour should be the default", URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)), URColour.hexEncode(lineFormatterBackground));
         assertEquals("Line should have the background colour of "+Constants.DEFAULT_BACKGROUND_STRING, URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)), URColour.hexEncode(newBackgroundColor));

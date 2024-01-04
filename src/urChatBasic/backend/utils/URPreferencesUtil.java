@@ -133,7 +133,7 @@ public class URPreferencesUtil {
 
             if(baseSettingsPath.nodeExists(styleName))
                 stylePrefPath = baseSettingsPath.node(styleName);
-            else if (DriverGUI.gui != null && URProfilesUtil.getActiveProfilePath().nodeExists(styleName))
+            else if (URProfilesUtil.getActiveProfilePath().nodeExists(styleName))
                 stylePrefPath = URProfilesUtil.getActiveProfilePath().node(styleName);
             else
                 return targetStyle;

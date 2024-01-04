@@ -53,7 +53,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     private Boolean useSOCKS;
 
     // Created channels/tabs
-    private List<IRCRoomBase> createdRooms = new ArrayList<IRCRoomBase>();
+    public List<IRCRoomBase> createdRooms = new ArrayList<IRCRoomBase>();
 
     // Server capabilities
     private ArrayList<CapabilityTypes> capabilities = new ArrayList<CapabilityTypes>();

@@ -43,7 +43,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     /**
      *
      */
-    private static final long serialVersionUID = 2595649865577419300L;
+    private final long serialVersionUID = 2595649865577419300L;
     // private String creationTime = (new Date()).toString();
     // Tabs
     public JTabbedPane tabbedPane = new DnDTabbedPane();
@@ -51,11 +51,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public Component currentSelectedTab;
 
     // Profile Preferences
-    protected static EventListenerList profileListenerList = new EventListenerList();
-    protected static transient ActionEvent actionEvent = null;
+    protected EventListenerList profileListenerList = new EventListenerList();
+    protected transient ActionEvent actionEvent = null;
 
     // Options Panel
-    private static JPanel optionsMainPanel = new MainOptionsPanel();
+    private JPanel optionsMainPanel = new MainOptionsPanel();
     // Server Options Panel
     private final UROptionsPanel connectionPanel = new UROptionsPanel("Connection", (MainOptionsPanel) optionsMainPanel, Optional.of(0));
 
@@ -65,90 +65,90 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private final UROptionsPanel appearancePanel = new UROptionsPanel("Appearance", (MainOptionsPanel) optionsMainPanel, Optional.of(2));
 
     // Profile Panel
-    private static final UROptionsPanel profilePanel = new ProfilePanel((MainOptionsPanel) optionsMainPanel);
+    private final UROptionsPanel profilePanel = new ProfilePanel((MainOptionsPanel) optionsMainPanel);
 
-    // public static final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
+    // public final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
 
-    private static final JComboBox<LookAndFeelInfo> lafOptions =
+    private final JComboBox<LookAndFeelInfo> lafOptions =
             new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
 
-    private static final JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
-    private static final JCheckBox showUsersList = new JCheckBox("Show Users List");
-    private static final JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
-    private static final JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
-    private static final JCheckBox showJoinsQuitsMainWindow = new JCheckBox("Show Joins/Quits in the Chat Window");
-    private static final JCheckBox logChannelText = new JCheckBox("Save and log all channel text");
-    private static final JCheckBox logServerActivity = new JCheckBox("Save and log all Server activity");
-    private static final JCheckBox logClientText = new JCheckBox("Log client text (Allows up or down history)");
-    private static final JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
-    private static final JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
-    private static final JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
+    private final JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
+    private final JCheckBox showUsersList = new JCheckBox("Show Users List");
+    private final JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
+    private final JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
+    private final JCheckBox showJoinsQuitsMainWindow = new JCheckBox("Show Joins/Quits in the Chat Window");
+    private final JCheckBox logChannelText = new JCheckBox("Save and log all channel text");
+    private final JCheckBox logServerActivity = new JCheckBox("Save and log all Server activity");
+    private final JCheckBox logClientText = new JCheckBox("Log client text (Allows up or down history)");
+    private final JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
+    private final JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
+    private final JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
 
     // Appearance Panel
     private FontPanel clientFontPanel;
     /**
      * This should only ever be changed if the LAF changes
      */
-    private static URStyle defaultStyle = new URStyle("", UIManager.getFont(Constants.DEFAULT_FONT_STRING), UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING),
+    private URStyle defaultStyle = new URStyle("", UIManager.getFont(Constants.DEFAULT_FONT_STRING), UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING),
             UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
-    private static final JTextField timeStampField = new JTextField();
-    private static final JTextField nickFormatField = new JTextField();
-    public static final JTextPane previewTextArea = new JTextPane();
-    private static final JScrollPane previewTextScroll = new JScrollPane(previewTextArea);
-    private static final JLabel styleLabel = new JLabel("Mouse over text to view style, right-click to edit.");
-    public static LineFormatter previewLineFormatter;
+    private final JTextField timeStampField = new JTextField();
+    private final JTextField nickFormatField = new JTextField();
+    public final JTextPane previewTextArea = new JTextPane();
+    private final JScrollPane previewTextScroll = new JScrollPane(previewTextArea);
+    private final JLabel styleLabel = new JLabel("Mouse over text to view style, right-click to edit.");
+    public LineFormatter previewLineFormatter;
 
 
-    private static final JTextField limitServerLinesCount = new JTextField();
-    private static final JTextField limitChannelLinesCount = new JTextField();
+    private final JTextField limitServerLinesCount = new JTextField();
+    private final JTextField limitChannelLinesCount = new JTextField();
 
-    private static final int TICKER_DELAY_MIN = 0;
-    private static final int TICKER_DELAY_MAX = 30;
-    private static final int TICKER_DELAY_INIT = 20;
-    private static final int DEFAULT_LINES_LIMIT = 500;
-    private static final JLabel eventTickerLabel = new JLabel("Event Ticker Delay:");
+    private final int TICKER_DELAY_MIN = 0;
+    private final int TICKER_DELAY_MAX = 30;
+    private final int TICKER_DELAY_INIT = 20;
+    private final int DEFAULT_LINES_LIMIT = 500;
+    private final JLabel eventTickerLabel = new JLabel("Event Ticker Delay:");
     private final JSlider eventTickerDelay =
             new JSlider(JSlider.HORIZONTAL, TICKER_DELAY_MIN, TICKER_DELAY_MAX, TICKER_DELAY_INIT);
 
     // Identification
-    private static final JLabel userNameLabel = new JLabel("Nick:");
-    private static final JTextField userNameTextField = new JTextField("", 12);
-    private static final JLabel realNameLabel = new JLabel("Real name:");
-    private static final JTextField realNameTextField = new JTextField("");
+    private final JLabel userNameLabel = new JLabel("Nick:");
+    private final JTextField userNameTextField = new JTextField("", 12);
+    private final JLabel realNameLabel = new JLabel("Real name:");
+    private final JTextField realNameTextField = new JTextField("");
 
     // Authentication
-    private static final JLabel authenticationTypeLabel = new JLabel("Authentication Type:");
-    private static final UCAuthTypeComboBox authenticationTypeChoice = new UCAuthTypeComboBox();
-    private static final JLabel passwordLabel = new JLabel("Password:");
-    private static final JPasswordField passwordTextField = new JPasswordField("");
-    private static final JLabel rememberPassLabel = new JLabel("Remember:");
-    private static final JCheckBox rememberPassCheckBox = new JCheckBox();
+    private final JLabel authenticationTypeLabel = new JLabel("Authentication Type:");
+    private final UCAuthTypeComboBox authenticationTypeChoice = new UCAuthTypeComboBox();
+    private final JLabel passwordLabel = new JLabel("Password:");
+    private final JPasswordField passwordTextField = new JPasswordField("");
+    private final JLabel rememberPassLabel = new JLabel("Remember:");
+    private final JCheckBox rememberPassCheckBox = new JCheckBox();
 
     // Connection
-    private static final JLabel serverNameLabel = new JLabel("Server:");
-    private static final JTextField servernameTextField = new JTextField("", 8);
-    private static final JLabel serverPortLabel = new JLabel("Port:");
-    private static final JTextField serverPortTextField = new JTextField("", 4);
-    private static final JLabel serverUseTLSLabel = new JLabel("TLS:");
-    private static final JCheckBox serverTLSCheckBox = new JCheckBox();
-    private static final JButton connectButton = new JButton("Connect");
+    private final JLabel serverNameLabel = new JLabel("Server:");
+    private final JTextField servernameTextField = new JTextField("", 8);
+    private final JLabel serverPortLabel = new JLabel("Port:");
+    private final JTextField serverPortTextField = new JTextField("", 4);
+    private final JLabel serverUseTLSLabel = new JLabel("TLS:");
+    private final JCheckBox serverTLSCheckBox = new JCheckBox();
+    private final JButton connectButton = new JButton("Connect");
 
     // Proxy
-    private static final JLabel proxyHostLabel = new JLabel("Proxy Host:");
-    private static final JTextField proxyHostNameTextField = new JTextField("");
-    private static final JLabel proxyPortLabel = new JLabel("Port:", 4);
-    private static final JTextField proxyPortTextField = new JTextField("");
-    private static final JLabel serverUseProxyLabel = new JLabel("Use SOCKS:");
-    private static final JCheckBox serverProxyCheckBox = new JCheckBox();
+    private final JLabel proxyHostLabel = new JLabel("Proxy Host:");
+    private final JTextField proxyHostNameTextField = new JTextField("");
+    private final JLabel proxyPortLabel = new JLabel("Port:", 4);
+    private final JTextField proxyPortTextField = new JTextField("");
+    private final JLabel serverUseProxyLabel = new JLabel("Use SOCKS:");
+    private final JCheckBox serverProxyCheckBox = new JCheckBox();
 
-    private static final JLabel firstChannelLabel = new JLabel("Channel:");
-    private static final JTextField firstChannelTextField = new JTextField("");
+    private final JLabel firstChannelLabel = new JLabel("Channel:");
+    private final JTextField firstChannelTextField = new JTextField("");
 
     // Favourites Panel
-    private static final JCheckBox autoConnectToFavourites = new JCheckBox("Automatically join favourite channels");
-    private static final DefaultListModel<FavouritesItem> favouritesListModel = new DefaultListModel<FavouritesItem>();
-    private static final JList<FavouritesItem> favouritesList = new JList<FavouritesItem>(favouritesListModel);
-    private static final JScrollPane favouritesScroller = new JScrollPane(favouritesList);
+    private final JCheckBox autoConnectToFavourites = new JCheckBox("Automatically join favourite channels");
+    private final DefaultListModel<FavouritesItem> favouritesListModel = new DefaultListModel<FavouritesItem>();
+    private final JList<FavouritesItem> favouritesList = new JList<FavouritesItem>(favouritesListModel);
+    private final JScrollPane favouritesScroller = new JScrollPane(favouritesList);
 
     // Created Servers/Tabs
     private final List<IRCServerBase> createdServers = new ArrayList<IRCServerBase>();
@@ -282,12 +282,17 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return null;
     }
 
-    public static ProfilePicker getProfilePicker ()
+    public List<IRCServerBase> getCreatedServers ()
+    {
+        return createdServers;
+    }
+
+    public ProfilePicker getProfilePicker ()
     {
         return (((MainOptionsPanel) optionsMainPanel).getProfilePicker());
     }
 
-    public static UROptionsPanel getProfilePanel ()
+    public UROptionsPanel getProfilePanel ()
     {
         return profilePanel;
     }
@@ -880,19 +885,19 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    public static String getTimeLineString (Date date)
+    public String getTimeStampString (Date date)
     {
         SimpleDateFormat chatDateFormat = new SimpleDateFormat(timeStampField.getText());
 
         return chatDateFormat.format(date);
     }
 
-    public static void setTimeLineString (String newFormat)
+    public void setTimeLineString (String newFormat)
     {
         timeStampField.setText(newFormat);
     }
 
-    public static String[] getNickFormatString (String nick)
+    public String[] getNickFormatString (String nick)
     {
         String[] nickParts = new String[3];
         nickParts[1] = nick;
@@ -921,7 +926,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return nickParts;
     }
 
-    public static void setNickFormatString (String newFormat)
+    public void setNickFormatString (String newFormat)
     {
         nickFormatField.setText(newFormat);
     }
@@ -1122,7 +1127,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             /**
              *
              */
-            private static final long serialVersionUID = -3599612559330380653L;
+            private final long serialVersionUID = -3599612559330380653L;
             JMenuItem nameItem;
             JMenuItem removeItem;
             JMenuItem fontItem;
@@ -1563,7 +1568,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         autoConnectToFavourites.setSelected(URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES,
                 Constants.DEFAULT_AUTO_CONNECT_FAVOURITES));
 
-        if (loadWindowSettings)
+        if (loadWindowSettings && DriverGUI.frame != null)
         {
             DriverGUI.frame.setBounds(URProfilesUtil.getActiveProfilePath().getInt(Constants.KEY_WINDOW_X, Constants.DEFAULT_WINDOW_X),
                     URProfilesUtil.getActiveProfilePath().getInt(Constants.KEY_WINDOW_Y, Constants.DEFAULT_WINDOW_Y),
