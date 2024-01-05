@@ -83,7 +83,7 @@ public class LineFormatter
         initStyles(baseStyle);
     }
 
-    public void setFont(Font newFont)
+    public void setFont (Font newFont)
     {
         targetStyle.setFont(newFont);
         if (doc.getLength() > 0)
@@ -517,7 +517,7 @@ public class LineFormatter
                     {
                         if(!updateStylesInProgress.get())
                         {
-                            Constants.LOGGER.log(Level.INFO, "Updating styles.");
+                            Constants.LOGGER.log(Level.INFO, "Updating styles for " + settingsPath.name());
                             updateStylesTime.set(Instant.now().getEpochSecond());
                             updateDocStyles(0);
                         } else {

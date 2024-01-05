@@ -1024,11 +1024,7 @@ public class IRCRoomBase extends JPanel
             {
                 public void run()
                 {
-
-                    // fontDialog.getFontPanel().setDefaultFont(f);
                     lineFormatter.setFont(fontDialog.getFontPanel().getFont());
-                    // TODO: Should this updateStyles if the font is changed?
-                    lineFormatter.updateStyles(fontDialog.getFontPanel().getStyle());
                 }
             });
         } else
