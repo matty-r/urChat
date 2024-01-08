@@ -24,6 +24,7 @@ import urChatBasic.frontend.IRCPrivate;
 import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.UserGUI;
+import urChatBasic.frontend.panels.InterfacePanel;
 import utils.TestDriverGUI;
 
 
@@ -224,9 +225,9 @@ public class MessageHandlerTests
     @Test(groups = {"Test #005"})
     public void testChannelLineLimit() throws BadLocationException, InterruptedException
     {
-        testGUI.setLimitChannelLines(10);
-        testGUI.setJoinsQuitsMain(false);
-        int channelLinesLimit = testGUI.getLimitChannelLinesCount();
+        ((InterfacePanel) testGUI.interfacePanel).setLimitChannelLinesCount(10);
+        ((InterfacePanel) testGUI.interfacePanel).setJoinsQuitsMain(false);
+        int channelLinesLimit = ((InterfacePanel) testGUI.interfacePanel).getLimitChannelLinesCount();
 
         String channelMessage = ":" + testUser + "!~" + testUser + "@urchatclient PRIVMSG "+PUB_CHANNEL_NAME+" :line # ";
 
@@ -268,9 +269,9 @@ public class MessageHandlerTests
     @Test(groups = {"Test #005"}, description = "Test Description")
     public void testServerLineLimit() throws BadLocationException, InterruptedException
     {
-        testGUI.setLimitServerLines(10);
-        testGUI.setJoinsQuitsMain(false);
-        int serverLinesLimit = testGUI.getLimitServerLinesCount();
+        ((InterfacePanel) testGUI.interfacePanel).setLimitServerLinesCount(10);
+        ((InterfacePanel) testGUI.interfacePanel).setJoinsQuitsMain(false);
+        int serverLinesLimit = ((InterfacePanel) testGUI.interfacePanel).getLimitServerLinesCount();
 
         String serverMessage = ":" + testServer.getName() + " 001 " + testUser + " :line # ";
 

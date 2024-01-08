@@ -27,8 +27,11 @@ import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.dialogs.MessageDialog;
+import urChatBasic.frontend.panels.MainOptionsPanel;
+import urChatBasic.frontend.panels.ProfilePanel;
+import urChatBasic.frontend.panels.InterfacePanel;
 import urChatBasic.frontend.panels.UROptionsPanel;
-import urChatBasic.frontend.utils.Panels;
+import urChatBasic.frontend.utils.URPanels;
 import urChatBasic.base.UserGUIBase;
 import urChatBasic.base.Constants.EventType;
 import urChatBasic.base.Constants.Placement;
@@ -59,7 +62,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // Server Options Panel
     private final UROptionsPanel connectionPanel = new UROptionsPanel("Connection", (MainOptionsPanel) optionsMainPanel, Optional.of(0));
 
-    private final UROptionsPanel interfacePanel = new UROptionsPanel("Interface", (MainOptionsPanel) optionsMainPanel, Optional.of(1));
+    public final UROptionsPanel interfacePanel = new InterfacePanel((MainOptionsPanel) optionsMainPanel, Optional.of(1));
 
     // Appearance Options Panel
     private final UROptionsPanel appearancePanel = new UROptionsPanel("Appearance", (MainOptionsPanel) optionsMainPanel, Optional.of(2));
@@ -67,22 +70,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // Profile Panel
     private final UROptionsPanel profilePanel = new ProfilePanel((MainOptionsPanel) optionsMainPanel);
 
-    // public final JScrollPane interfaceScroller = new JScrollPane(interfacePanel);
 
     private final JComboBox<LookAndFeelInfo> lafOptions =
             new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
-
-    private final JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
-    private final JCheckBox showUsersList = new JCheckBox("Show Users List");
-    private final JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
-    private final JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
-    private final JCheckBox showJoinsQuitsMainWindow = new JCheckBox("Show Joins/Quits in the Chat Window");
-    private final JCheckBox logChannelText = new JCheckBox("Save and log all channel text");
-    private final JCheckBox logServerActivity = new JCheckBox("Save and log all Server activity");
-    private final JCheckBox logClientText = new JCheckBox("Log client text (Allows up or down history)");
-    private final JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
-    private final JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
-    private final JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
 
     // Appearance Panel
     private FontPanel clientFontPanel;
@@ -97,18 +87,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private final JScrollPane previewTextScroll = new JScrollPane(previewTextArea);
     private final JLabel styleLabel = new JLabel("Mouse over text to view style, right-click to edit.");
     public LineFormatter previewLineFormatter;
-
-
-    private final JTextField limitServerLinesCount = new JTextField();
-    private final JTextField limitChannelLinesCount = new JTextField();
-
-    private final int TICKER_DELAY_MIN = 0;
-    private final int TICKER_DELAY_MAX = 30;
-    private final int TICKER_DELAY_INIT = 20;
-    private final int DEFAULT_LINES_LIMIT = 500;
-    private final JLabel eventTickerLabel = new JLabel("Event Ticker Delay:");
-    private final JSlider eventTickerDelay =
-            new JSlider(JSlider.HORIZONTAL, TICKER_DELAY_MIN, TICKER_DELAY_MAX, TICKER_DELAY_INIT);
 
     // Identification
     private final JLabel userNameLabel = new JLabel("Nick:");
@@ -156,52 +134,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     /*
      * (non-Javadoc)
      *
-     * @see urChatBasic.frontend.UserGUIBase#getLimitServerLinesCount()
-     */
-    @Override
-    public int getLimitServerLinesCount ()
-    {
-        try
-        {
-            return Integer.parseInt(limitServerLinesCount.getText());
-        } catch (Exception e)
-        {
-            // Was an error, default to 1000
-            return DEFAULT_LINES_LIMIT;
-        }
-    }
-
-    public void setLimitChannelLines (int limit)
-    {
-        limitChannelLinesCount.setText(Integer.toString(limit));
-    }
-
-    public void setLimitServerLines (int limit)
-    {
-        limitServerLinesCount.setText(Integer.toString(limit));
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#getLimitChannelLinesCount()
-     */
-    @Override
-    public int getLimitChannelLinesCount ()
-    {
-        try
-        {
-            return Integer.parseInt(limitChannelLinesCount.getText());
-        } catch (Exception e)
-        {
-            // Was an error, set to default
-            return DEFAULT_LINES_LIMIT;
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see urChatBasic.frontend.UserGUIBase#setCurrentTab(int)
      */
     @Override
@@ -239,28 +171,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 return x;
         }
         return -1;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#saveChannelHistory()
-     */
-    @Override
-    public Boolean saveChannelHistory ()
-    {
-        return logChannelText.isSelected();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#saveServerHistory()
-     */
-    @Override
-    public Boolean saveServerHistory ()
-    {
-        return logServerActivity.isSelected();
     }
 
     /*
@@ -349,122 +259,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return createdServers.isEmpty();
     }
 
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#isShowingEventTicker()
-     */
-    @Override
-    public Boolean isShowingEventTicker ()
-    {
-        return showEventTicker.isSelected();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#isShowingUsersList()
-     */
-    @Override
-    public Boolean isShowingUsersList ()
-    {
-        return showUsersList.isSelected();
-    }
-
-    @Override
-    public Boolean isClickableLinksEnabled ()
-    {
-        return enableClickableLinks.isSelected();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#isJoinsQuitsTickerEnabled()
-     */
-    @Override
-    public Boolean isJoinsQuitsTickerEnabled ()
-    {
-        return showJoinsQuitsEventTicker.isSelected();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#isJoinsQuitsMainEnabled()
-     */
-    @Override
-    public Boolean isJoinsQuitsMainEnabled ()
-    {
-        return showJoinsQuitsMainWindow.isSelected();
-    }
-
-    public void setJoinsQuitsMain (boolean enable)
-    {
-        showJoinsQuitsMainWindow.setSelected(enable);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#isChannelHistoryEnabled()
-     */
-    @Override
-    public Boolean isChannelHistoryEnabled ()
-    {
-        return logChannelText.isSelected();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#isLimitedServerActivity()
-     */
-    @Override
-    public Boolean isLimitedServerActivity ()
-    {
-        return limitServerLines.isSelected();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#isLimitedChannelActivity()
-     */
-    @Override
-    public Boolean isLimitedChannelActivity ()
-    {
-        return limitChannelLines.isSelected();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#isTimeStampsEnabled()
-     */
-    @Override
-    public Boolean isTimeStampsEnabled ()
-    {
-        return enableTimeStamps.isSelected();
-    }
-
     @Override
     public CapTypeBase authenticationType ()
     {
         return (CapTypeBase) authenticationTypeChoice.getSelectedItem();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#isClientHistoryEnabled()
-     */
-    @Override
-    public Boolean isClientHistoryEnabled ()
-    {
-        return logClientText.isSelected();
-
     }
 
     /**
@@ -719,7 +517,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     private void setupAppearancePanel ()
     {
-        Panels.addToPanel(appearancePanel, lafOptions, "Theme", Placement.DEFAULT, Size.MEDIUM);
+        URPanels.addToPanel(appearancePanel, lafOptions, "Theme", Placement.DEFAULT, Size.MEDIUM, null);
 
         // Set a custom renderer to display the look and feel names
         lafOptions.setRenderer(new DefaultListCellRenderer()
@@ -791,12 +589,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         updatePreviewTextArea();
 
-        Panels.addToPanel(appearancePanel, clientFontPanel, "Profile Font", Placement.DEFAULT, null);
-        Panels.addToPanel(appearancePanel, timeStampField, "Timestamp Format", Placement.DEFAULT, Size.MEDIUM);
-        Panels.addToPanel(appearancePanel, nickFormatField, "Nick Format", Placement.RIGHT, Size.MEDIUM);
+        URPanels.addToPanel(appearancePanel, clientFontPanel, "Profile Font", Placement.DEFAULT, null, null);
+        URPanels.addToPanel(appearancePanel, timeStampField, "Timestamp Format", Placement.DEFAULT, Size.MEDIUM, null);
+        URPanels.addToPanel(appearancePanel, nickFormatField, "Nick Format", Placement.RIGHT, Size.MEDIUM, null);
 
-        Panels.addToPanel(appearancePanel, previewTextScroll, "Font Preview", Placement.DEFAULT, null);
-        Panels.addToPanel(appearancePanel, styleLabel, "Preview Style", Placement.DEFAULT, null);
+        URPanels.addToPanel(appearancePanel, previewTextScroll, "Font Preview", Placement.DEFAULT, null, null);
+        URPanels.addToPanel(appearancePanel, styleLabel, "Preview Style", Placement.DEFAULT, null, null);
     }
 
     public void updatePreviewTextArea ()
@@ -875,7 +673,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             else
                 styleLabel.setText("Mouse over text to view style, right-click to edit.");
 
-            if (isClickableText != null && isClickableLinksEnabled())
+            if (isClickableText != null && ((InterfacePanel) interfacePanel).isClickableLinksEnabled())
             {
                 previewTextArea.setCursor(new Cursor(Cursor.HAND_CURSOR));
             } else
@@ -929,134 +727,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public void setNickFormatString (String newFormat)
     {
         nickFormatField.setText(newFormat);
-    }
-
-    private void setupInterfacePanel ()
-    {
-        interfacePanel.add(showEventTicker);
-        interfacePanel.add(showUsersList);
-        interfacePanel.add(enableClickableLinks);
-        interfacePanel.add(showJoinsQuitsEventTicker);
-        interfacePanel.add(showJoinsQuitsMainWindow);
-        interfacePanel.add(logChannelText);
-        interfacePanel.add(logServerActivity);
-        interfacePanel.add(logClientText);
-        interfacePanel.add(limitServerLines);
-        interfacePanel.add(limitServerLinesCount);
-        interfacePanel.add(limitChannelLines);
-        interfacePanel.add(limitChannelLinesCount);
-        interfacePanel.add(enableTimeStamps);
-
-        // Turn on labels at major tick mark.
-        eventTickerDelay.setMajorTickSpacing(10);
-        eventTickerDelay.setMinorTickSpacing(1);
-        eventTickerDelay.setPaintTicks(true);
-
-        eventTickerDelay.setPaintLabels(true);
-        // eventTickerDelay.setMaximumSize(new Dimension(400, 40));
-
-        eventTickerDelay.setToolTipText("Event Ticker movement delay (Lower is faster)");
-
-        interfacePanel.add(eventTickerLabel);
-        interfacePanel.add(eventTickerDelay);
-
-        setupInterfaceLayout();
-    }
-
-    /**
-     * Aligns components on the Client Options Panel
-     */
-    private void setupInterfaceLayout ()
-    {
-        SpringLayout interfaceLayout = new SpringLayout();
-        interfacePanel.setLayout(interfaceLayout);
-
-        // Used to make it more obvious what is going on -
-        // and perhaps more readable.
-        // 0 means THAT edge will be flush with the opposing components edge
-        // Yes, negative numbers will make it overlap
-        final int TOP_SPACING = 6;
-        final int TOP_ALIGNED = 0;
-        final int LEFT_ALIGNED = 0;
-        final int LEFT_SPACING = 6;
-
-        // Components are aligned off the top label
-
-        interfaceLayout.putConstraint(SpringLayout.WEST, showEventTicker, LEFT_SPACING * 2, SpringLayout.WEST,
-                interfacePanel);
-        interfaceLayout.putConstraint(SpringLayout.NORTH, showEventTicker, TOP_SPACING * 2, SpringLayout.NORTH,
-                interfacePanel);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, showUsersList, TOP_SPACING, SpringLayout.SOUTH,
-                showEventTicker);
-        interfaceLayout.putConstraint(SpringLayout.WEST, showUsersList, LEFT_ALIGNED, SpringLayout.WEST,
-                showEventTicker);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, enableClickableLinks, TOP_SPACING, SpringLayout.SOUTH,
-                showUsersList);
-
-        interfaceLayout.putConstraint(SpringLayout.WEST, enableClickableLinks, LEFT_ALIGNED, SpringLayout.WEST,
-                showUsersList);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, showJoinsQuitsEventTicker, TOP_SPACING, SpringLayout.SOUTH,
-                enableClickableLinks);
-        interfaceLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsEventTicker, LEFT_ALIGNED, SpringLayout.WEST,
-                enableClickableLinks);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, showJoinsQuitsMainWindow, TOP_SPACING, SpringLayout.SOUTH,
-                showJoinsQuitsEventTicker);
-        interfaceLayout.putConstraint(SpringLayout.WEST, showJoinsQuitsMainWindow, LEFT_ALIGNED, SpringLayout.WEST,
-                showJoinsQuitsEventTicker);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, logChannelText, TOP_SPACING, SpringLayout.SOUTH,
-                showJoinsQuitsMainWindow);
-        interfaceLayout.putConstraint(SpringLayout.WEST, logChannelText, LEFT_ALIGNED, SpringLayout.WEST,
-                showJoinsQuitsMainWindow);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, logServerActivity, TOP_SPACING, SpringLayout.SOUTH,
-                logChannelText);
-        interfaceLayout.putConstraint(SpringLayout.WEST, logServerActivity, LEFT_ALIGNED, SpringLayout.WEST,
-                logChannelText);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, logClientText, TOP_SPACING, SpringLayout.SOUTH,
-                logServerActivity);
-        interfaceLayout.putConstraint(SpringLayout.WEST, logClientText, LEFT_ALIGNED, SpringLayout.WEST,
-                logServerActivity);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, limitServerLines, TOP_SPACING, SpringLayout.SOUTH,
-                logClientText);
-        interfaceLayout.putConstraint(SpringLayout.WEST, limitServerLines, LEFT_ALIGNED, SpringLayout.WEST,
-                logClientText);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, limitServerLinesCount, TOP_ALIGNED, SpringLayout.NORTH,
-                limitServerLines);
-        interfaceLayout.putConstraint(SpringLayout.WEST, limitServerLinesCount, TOP_SPACING, SpringLayout.EAST,
-                limitServerLines);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, limitChannelLines, TOP_SPACING, SpringLayout.SOUTH,
-                limitServerLines);
-        interfaceLayout.putConstraint(SpringLayout.WEST, limitChannelLines, LEFT_ALIGNED, SpringLayout.WEST,
-                limitServerLines);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, limitChannelLinesCount, TOP_ALIGNED, SpringLayout.NORTH,
-                limitChannelLines);
-        interfaceLayout.putConstraint(SpringLayout.WEST, limitChannelLinesCount, LEFT_SPACING, SpringLayout.EAST,
-                limitChannelLines);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, enableTimeStamps, TOP_SPACING, SpringLayout.SOUTH,
-                limitChannelLines);
-        interfaceLayout.putConstraint(SpringLayout.WEST, enableTimeStamps, LEFT_ALIGNED, SpringLayout.WEST,
-                limitChannelLines);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, eventTickerLabel, TOP_SPACING, SpringLayout.SOUTH,
-                enableTimeStamps);
-        interfaceLayout.putConstraint(SpringLayout.WEST, eventTickerLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                enableTimeStamps);
-
-        interfaceLayout.putConstraint(SpringLayout.NORTH, eventTickerDelay, TOP_SPACING, SpringLayout.SOUTH,
-                eventTickerLabel);
-        interfaceLayout.putConstraint(SpringLayout.WEST, eventTickerDelay, LEFT_ALIGNED, SpringLayout.WEST,
-                eventTickerLabel);
     }
 
     /**
@@ -1442,7 +1112,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public void setClientSettings ()
     {
         URPreferencesUtil.putPref(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_FIRST_SERVER, servernameTextField.getText(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_FIRST_PORT, serverPortTextField.getText(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_AUTH_TYPE, authenticationTypeChoice.getSelectedItem().toString(), URProfilesUtil.getActiveProfilePath());
@@ -1456,36 +1125,22 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
 
         URPreferencesUtil.putPref(Constants.KEY_PASSWORD, rememberString, URProfilesUtil.getActiveProfilePath());
-
         URPreferencesUtil.putPref(Constants.KEY_USE_TLS, serverTLSCheckBox.isSelected(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_PROXY_HOST, proxyHostNameTextField.getText(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_PROXY_PORT, proxyPortTextField.getText(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_USE_PROXY, serverProxyCheckBox.isSelected(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_NICK_NAME, userNameTextField.getText(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_REAL_NAME, realNameTextField.getText(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_TIME_STAMPS, enableTimeStamps.isSelected(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_TIME_STAMP_FORMAT, timeStampField.getText(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_LAF_NAME, ((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_EVENT_TICKER_ACTIVE, showEventTicker.isSelected(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_USERS_LIST_ACTIVE, showUsersList.isSelected(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_CLICKABLE_LINKS_ENABLED, enableClickableLinks.isSelected(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_EVENT_TICKER_JOINS_QUITS, showJoinsQuitsEventTicker.isSelected(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_MAIN_WINDOW_JOINS_QUITS, showJoinsQuitsMainWindow.isSelected(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_LOG_CHANNEL_ACTIVITY, logChannelText.isSelected(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_LOG_SERVER_ACTIVITY, logServerActivity.isSelected(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_LIMIT_CHANNEL_LINES, limitChannelLines.isSelected(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_AUTO_CONNECT_FAVOURITES, autoConnectToFavourites.isSelected(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT, limitChannelLinesCount.getText(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_LIMIT_SERVER_LINES, limitServerLines.isSelected(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_LIMIT_SERVER_LINES_COUNT, limitServerLinesCount.getText(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_LOG_CLIENT_TEXT, logClientText.isSelected(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.saveStyle(defaultStyle, clientFontPanel.getStyle(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_EVENT_TICKER_DELAY, eventTickerDelay.getValue(), URProfilesUtil.getActiveProfilePath());
-
         URPreferencesUtil.putPref(Constants.KEY_WINDOW_X, (int) DriverGUI.frame.getBounds().getX(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_WINDOW_Y, (int) DriverGUI.frame.getBounds().getY(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_WINDOW_WIDTH, (int) DriverGUI.frame.getBounds().getWidth(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_WINDOW_HEIGHT, (int) DriverGUI.frame.getBounds().getHeight(), URProfilesUtil.getActiveProfilePath());
+
+        interfacePanel.putPreferences();
     }
 
     /**
@@ -1517,40 +1172,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         userNameTextField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_NICK_NAME, Constants.DEFAULT_NICK_NAME));
         realNameTextField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_REAL_NAME, Constants.DEFAULT_REAL_NAME));
 
-        showUsersList.setSelected(
-                URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_USERS_LIST_ACTIVE, Constants.DEFAULT_USERS_LIST_ACTIVE));
-
-        showEventTicker.setSelected(
-                URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_EVENT_TICKER_ACTIVE, Constants.DEFAULT_EVENT_TICKER_ACTIVE));
-
-        enableClickableLinks.setSelected(URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_CLICKABLE_LINKS_ENABLED,
-                Constants.DEFAULT_CLICKABLE_LINKS_ENABLED));
-
-        enableTimeStamps
-                .setSelected(URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_TIME_STAMPS, Constants.DEFAULT_TIME_STAMPS));
 
         lafOptions.setSelectedItem(getLAF(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_LAF_NAME, Constants.DEFAULT_LAF_NAME)));
 
         // setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
 
-        showJoinsQuitsEventTicker.setSelected(URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_EVENT_TICKER_JOINS_QUITS,
-                Constants.DEFAULT_EVENT_TICKER_JOINS_QUITS));
-        showJoinsQuitsMainWindow.setSelected(URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_MAIN_WINDOW_JOINS_QUITS,
-                Constants.DEFAULT_MAIN_WINDOW_JOINS_QUITS));
-        logChannelText.setSelected(
-                URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_LOG_CHANNEL_ACTIVITY, Constants.DEFAULT_LOG_CHANNEL_ACTIVITY));
-        logServerActivity.setSelected(
-                URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_LOG_SERVER_ACTIVITY, Constants.DEFAULT_LOG_SERVER_ACTIVITY));
-        limitChannelLines.setSelected(
-                URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_LIMIT_CHANNEL_LINES, Constants.DEFAULT_LIMIT_CHANNEL_LINES));
-        limitChannelLinesCount.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT,
-                Constants.DEFAULT_LIMIT_CHANNEL_LINES_COUNT));
-        limitServerLines.setSelected(
-                URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_LIMIT_SERVER_LINES, Constants.DEFAULT_LIMIT_SERVER_LINES));
-        limitServerLinesCount.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_LIMIT_SERVER_LINES_COUNT,
-                Constants.DEFAULT_LIMIT_SERVER_LINES_COUNT));
-        logClientText.setSelected(
-                URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_LOG_CLIENT_TEXT, Constants.DEFAULT_LOG_CLIENT_TEXT));
 
         clientFontPanel.loadStyle();
 
@@ -1563,8 +1189,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         updatePreviewTextArea();
 
-        eventTickerDelay.setValue(
-                URProfilesUtil.getActiveProfilePath().getInt(Constants.KEY_EVENT_TICKER_DELAY, Constants.DEFAULT_EVENT_TICKER_DELAY));
         autoConnectToFavourites.setSelected(URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES,
                 Constants.DEFAULT_AUTO_CONNECT_FAVOURITES));
 
@@ -1609,17 +1233,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public void removeClientSetting (String node, String key)
     {
         URProfilesUtil.getActiveProfilePath().node(node).remove(key);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#getEventTickerDelay()
-     */
-    @Override
-    public int getEventTickerDelay ()
-    {
-        return eventTickerDelay.getValue();
     }
 
     class UCAuthTypeComboBoxChangeHandler implements ActionListener
@@ -1711,8 +1324,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 IRCRoomBase tempTab = (IRCRoomBase) selectedComponent;
                 if (!(selectedComponent instanceof IRCServer))
                 {
-                    tempTab.toggleEventTicker(isShowingEventTicker());
-                    tempTab.toggleUsersList(isShowingUsersList());
+                    tempTab.toggleEventTicker(((InterfacePanel) interfacePanel).isShowingEventTicker());
+                    tempTab.toggleUsersList(((InterfacePanel) interfacePanel).isShowingUsersList());
                 }
 
                 tempTab.getUserTextBox().requestFocus();
@@ -1787,7 +1400,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         add(tabbedPane, BorderLayout.CENTER);
 
         setupConnectionPanel();
-        setupInterfacePanel();
         setupAppearancePanel();
 
         // this.setBackground(Color.gray);

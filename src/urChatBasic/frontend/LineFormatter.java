@@ -35,6 +35,7 @@ import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.YesNoDialog;
+import urChatBasic.frontend.panels.InterfacePanel;
 import urChatBasic.frontend.utils.URColour;
 
 public class LineFormatter
@@ -585,7 +586,7 @@ public class LineFormatter
                         } else
                         {
                             // it has a date but isn't a timestamp, so check date time is enabled and insert the timestamp string
-                            if (DriverGUI.gui.isTimeStampsEnabled())
+                            if (((InterfacePanel) DriverGUI.gui.interfacePanel).isTimeStampsEnabled())
                             {
                                 // this removes the date from what will become the next style on the line so that we don't insert the timestamp
                                 // multiple times
@@ -904,7 +905,7 @@ public class LineFormatter
 
             // doc.insertString(doc.getLength(), timeLine, timeStyle);
             // if(null != timeLine && !timeLine.isBlank())
-            if (DriverGUI.gui.isTimeStampsEnabled())
+            if (((InterfacePanel) DriverGUI.gui.interfacePanel).isTimeStampsEnabled())
             {
                 // add the date to the end of the string to preserve the timestamp of the line
                 // when updating styles

@@ -1,4 +1,4 @@
-package urChatBasic.frontend.components;
+package urChatBasic.frontend.panels;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -13,8 +13,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants.Placement;
-import urChatBasic.frontend.panels.UROptionsPanel;
-import urChatBasic.frontend.utils.Panels;
+import urChatBasic.frontend.components.ProfilePicker;
+import urChatBasic.frontend.components.URVersionLabel;
+import urChatBasic.frontend.utils.URPanels;
 
 public class MainOptionsPanel extends JPanel
 {
@@ -63,11 +64,11 @@ public class MainOptionsPanel extends JPanel
         extrasPanel.setBackground(Color.green);
         // Extras panel is below the options list, and just contains the profile switcher and the version
         // label
-        Panels.addToPanel(extrasPanel, urVersionLabel, null, Placement.BOTTOM, null);
+        URPanels.addToPanel(extrasPanel, urVersionLabel, null, Placement.BOTTOM, null, null);
 
         profilePicker = new ProfilePicker(URProfilesUtil.getActiveProfileName(), true);
 
-        Panels.addToPanel(extrasPanel, profilePicker, "Active Profile", Placement.TOP, null);
+        URPanels.addToPanel(extrasPanel, profilePicker, "Active Profile", Placement.TOP, null, null);
 
         // extrasPanel.add(urVersionLabel, BorderLayout.SOUTH);
     }

@@ -12,6 +12,7 @@ import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.LineFormatter.ClickableText;
 import urChatBasic.frontend.components.FontPanel;
 import urChatBasic.frontend.dialogs.FontDialog;
+import urChatBasic.frontend.panels.InterfacePanel;
 import urChatBasic.frontend.utils.URColour;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.UsersListModel;
@@ -48,6 +49,7 @@ public class IRCRoomBase extends JPanel
 
     // Icons
     public ImageIcon icon;
+    protected boolean tabIconShown = true;
 
     public JPopupMenu myMenu;
 
@@ -145,15 +147,25 @@ public class IRCRoomBase extends JPanel
     public void hideUsersList()
     {
         usersListShown = false;
-        // userScroller.setVisible(usersListShown);
         toggleUsersList(usersListShown);
     }
 
     public void showUsersList()
     {
         usersListShown = true;
-        // userScroller.setVisible(usersListShown);
         toggleUsersList(usersListShown);
+    }
+
+    public void hideTabIcon()
+    {
+        tabIconShown = false;
+        toggleTabIcon(usersListShown);
+    }
+
+    public void showTabIcon()
+    {
+        tabIconShown = true;
+        toggleTabIcon(usersListShown);
     }
 
     public IRCRoomBase(String roomName)
@@ -394,7 +406,7 @@ public class IRCRoomBase extends JPanel
             Element wordElement = doc.getCharacterElement(channelTextArea.viewToModel2D((e.getPoint())));
             AttributeSet wordAttributeSet = wordElement.getAttributes();
             ClickableText isClickableText = (ClickableText) wordAttributeSet.getAttribute("clickableText");
-            if (isClickableText != null && gui.isClickableLinksEnabled())
+            if (isClickableText != null && ((InterfacePanel) gui.interfacePanel).isClickableLinksEnabled())
             {
                 channelTextArea.setCursor(new Cursor(Cursor.HAND_CURSOR));
             } else
@@ -406,11 +418,11 @@ public class IRCRoomBase extends JPanel
 
     public void createEvent(String eventText)
     {
-        if (gui.isJoinsQuitsMainEnabled() && !(this instanceof IRCPrivate))
+        if (((InterfacePanel) gui.interfacePanel).isJoinsQuitsMainEnabled() && !(this instanceof IRCPrivate))
             printText(eventText, Constants.EVENT_USER);
 
-        eventTickerTimer.setDelay(gui.getEventTickerDelay());
-        if (gui.isJoinsQuitsTickerEnabled() && !(this instanceof IRCPrivate))
+        eventTickerTimer.setDelay(((InterfacePanel) gui.interfacePanel).getEventTickerDelay());
+        if (((InterfacePanel) gui.interfacePanel).isJoinsQuitsTickerEnabled() && !(this instanceof IRCPrivate))
         {
             JLabel tempLabel = new JLabel(eventText);
             int tempX;
@@ -513,10 +525,10 @@ public class IRCRoomBase extends JPanel
                         Document document = lineFormatter.getDocument();
                         Element root = lineFormatter.getDocument().getDefaultRootElement();
 
-                        int lineLimit = gui.getLimitChannelLinesCount();
+                        int lineLimit = ((InterfacePanel) gui.interfacePanel).getLimitChannelLinesCount();
 
                         if(IRCRoomBase.this instanceof IRCServer)
-                            lineLimit = gui.getLimitServerLinesCount();
+                            lineLimit = ((InterfacePanel) gui.interfacePanel).getLimitServerLinesCount();
 
                         if(null != messagePair && root.getElementCount() > lineLimit)
                         {
@@ -539,7 +551,7 @@ public class IRCRoomBase extends JPanel
                             return;
                         }
 
-                        if (gui.isChannelHistoryEnabled())
+                        if (((InterfacePanel) gui.interfacePanel).isChannelHistoryEnabled())
                         {
                             try
                             {
@@ -608,9 +620,9 @@ public class IRCRoomBase extends JPanel
      *
      * @param showIt
      */
-    public void toggleUsersList(Boolean showIt)
+    public void toggleUsersList (boolean showIt)
     {
-        if (usersListShown == showIt || usersListShown == null)
+        if (usersListShown == null || usersListShown == showIt)
         {
             // userScroller.setVisible(showIt);
             if (showIt)
@@ -621,15 +633,20 @@ public class IRCRoomBase extends JPanel
         }
     }
 
+    public void toggleTabIcon (boolean showIt)
+    {
+        tabIconShown = showIt;
+    }
+
     /**
      * First checks to make sure the user hasn't set it manually for this channel. eventTickerShown is
      * only set by the pop up menu, so unless you've changed it, it won't care about the global setting
      *
      * @param showIt
      */
-    public void toggleEventTicker(Boolean showIt)
+    public void toggleEventTicker (boolean showIt)
     {
-        if (eventTickerShown == showIt || eventTickerShown == null)
+        if (eventTickerShown == null || eventTickerShown == showIt)
         {
             tickerPanel.setVisible(showIt);
             if (tickerPanel.isVisible())
@@ -761,7 +778,7 @@ public class IRCRoomBase extends JPanel
 
     public void writeHistoryFile(String line) throws IOException
     {
-        if (gui.saveChannelHistory())
+        if (((InterfacePanel) gui.interfacePanel).saveChannelHistory())
         {
             if (historyFileName == null || historyFileName.isEmpty())
             {
@@ -989,7 +1006,7 @@ public class IRCRoomBase extends JPanel
             if (!getUserTextBox().getText().trim().isEmpty())
             {
                 sendClientText(clientTextBox.getText(), getName());
-                if (gui.isClientHistoryEnabled())
+                if (((InterfacePanel) gui.interfacePanel).isClientHistoryEnabled())
                     userHistory.add(clientTextBox.getText());
             }
             clientTextBox.setText("");
@@ -1252,12 +1269,12 @@ public class IRCRoomBase extends JPanel
     {
         public void mouseEntered(MouseEvent e)
         {
-            eventTickerTimer.setDelay(gui.getEventTickerDelay() * 10);
+            eventTickerTimer.setDelay(((InterfacePanel) gui.interfacePanel).getEventTickerDelay() * 10);
         }
 
         public void mouseExited(MouseEvent e)
         {
-            eventTickerTimer.setDelay(gui.getEventTickerDelay());
+            eventTickerTimer.setDelay(((InterfacePanel) gui.interfacePanel).getEventTickerDelay());
         }
     }
 

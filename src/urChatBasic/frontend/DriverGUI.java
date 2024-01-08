@@ -71,6 +71,7 @@ public class DriverGUI
     public static void startGUI()
     {
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
         frame.setContentPane(gui);
         frame.pack();
 

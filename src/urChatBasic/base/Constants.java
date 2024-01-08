@@ -27,7 +27,7 @@ import urChatBasic.frontend.utils.URColour;
  */
 public class Constants
 {
-    public static String UR_VERSION = "v0.5.0";
+    public static String UR_VERSION = "v0.6.0";
     public static String APP_NAME = "urChatClient" + UR_VERSION;
     public static String URL_SEPARATOR = "/";
     public static final URL RESOURCES_DIR = DriverGUI.class.getResource(URL_SEPARATOR + "images" + URL_SEPARATOR);
@@ -39,7 +39,9 @@ public class Constants
     public static Logger LOGGER = Logger.getGlobal();
     public static String LOGFILE_NAME = "Errors.log";
     private static final JLabel DEFAULT_LABEL = new JLabel();
+    // DEFAULT_FONT should be
     private static final Font DEFAULT_FONT = new Font(DEFAULT_LABEL.getFont().getFamily(), 0, DEFAULT_LABEL.getFont().getSize());
+
     /**
      * For use with the UIManager.
      */
@@ -198,6 +200,93 @@ public class Constants
         {
             this.keyStr = keyStr;
             this.defaultStr = defaultStr;
+        }
+    }
+
+    public enum ConfigKeys {
+        KEY_FIRST_CHANNEL(Constants.KEY_FIRST_CHANNEL, DEFAULT_FIRST_CHANNEL),
+        KEY_FIRST_SERVER(Constants.KEY_FIRST_SERVER, DEFAULT_FIRST_SERVER),
+        KEY_FIRST_PORT(Constants.KEY_FIRST_PORT, DEFAULT_FIRST_PORT),
+        KEY_AUTH_TYPE(Constants.KEY_AUTH_TYPE, DEFAULT_AUTH_TYPE),
+        KEY_PASSWORD_REMEMBER(Constants.KEY_PASSWORD_REMEMBER, DEFAULT_PASSWORD_REMEMBER),
+        KEY_PASSWORD(Constants.KEY_PASSWORD, DEFAULT_PASSWORD),
+        KEY_USE_TLS(Constants.KEY_USE_TLS, DEFAULT_USE_TLS),
+        KEY_USE_PROXY(Constants.KEY_USE_PROXY, DEFAULT_USE_PROXY),
+        KEY_PROXY_HOST(Constants.KEY_PROXY_HOST, DEFAULT_PROXY_HOST),
+        KEY_PROXY_PORT(Constants.KEY_PROXY_PORT, DEFAULT_PROXY_PORT),
+        KEY_NICK_NAME(Constants.KEY_NICK_NAME, DEFAULT_NICK_NAME),
+        KEY_REAL_NAME(Constants.KEY_REAL_NAME, DEFAULT_REAL_NAME),
+        KEY_TIME_STAMPS(Constants.KEY_TIME_STAMPS, DEFAULT_TIME_STAMPS),
+        KEY_TIME_STAMP_FORMAT(Constants.KEY_TIME_STAMP_FORMAT, DEFAULT_TIME_STAMP_FORMAT),
+        KEY_NICK_FORMAT(Constants.KEY_NICK_FORMAT, DEFAULT_NICK_FORMAT),
+        KEY_LAF_NAME(Constants.KEY_LAF_NAME, DEFAULT_LAF_NAME),
+        KEY_EVENT_TICKER_ACTIVE(Constants.KEY_EVENT_TICKER_ACTIVE, DEFAULT_EVENT_TICKER_ACTIVE),
+        KEY_USERS_LIST_ACTIVE(Constants.KEY_USERS_LIST_ACTIVE, DEFAULT_USERS_LIST_ACTIVE),
+        KEY_CLICKABLE_LINKS_ENABLED(Constants.KEY_CLICKABLE_LINKS_ENABLED, DEFAULT_CLICKABLE_LINKS_ENABLED),
+        KEY_EVENT_TICKER_JOINS_QUITS(Constants.KEY_EVENT_TICKER_JOINS_QUITS, DEFAULT_EVENT_TICKER_JOINS_QUITS),
+        KEY_MAIN_WINDOW_JOINS_QUITS(Constants.KEY_MAIN_WINDOW_JOINS_QUITS, DEFAULT_MAIN_WINDOW_JOINS_QUITS),
+        KEY_LOG_CHANNEL_ACTIVITY(Constants.KEY_LOG_CHANNEL_ACTIVITY, DEFAULT_LOG_CHANNEL_ACTIVITY),
+        KEY_LOG_SERVER_ACTIVITY(Constants.KEY_LOG_SERVER_ACTIVITY, DEFAULT_LOG_SERVER_ACTIVITY),
+        KEY_LIMIT_CHANNEL_LINES(Constants.KEY_LIMIT_CHANNEL_LINES, DEFAULT_LIMIT_CHANNEL_LINES),
+        KEY_LIMIT_CHANNEL_LINES_COUNT(Constants.KEY_LIMIT_CHANNEL_LINES_COUNT, DEFAULT_LIMIT_CHANNEL_LINES_COUNT),
+        KEY_LIMIT_SERVER_LINES(Constants.KEY_LIMIT_SERVER_LINES, DEFAULT_LIMIT_SERVER_LINES),
+        KEY_LIMIT_SERVER_LINES_COUNT(Constants.KEY_LIMIT_SERVER_LINES_COUNT, DEFAULT_LIMIT_SERVER_LINES_COUNT),
+        KEY_AUTO_CONNECT_FAVOURITES(Constants.KEY_AUTO_CONNECT_FAVOURITES, DEFAULT_AUTO_CONNECT_FAVOURITES),
+        KEY_LOG_CLIENT_TEXT(Constants.KEY_LOG_CLIENT_TEXT, DEFAULT_LOG_CLIENT_TEXT),
+        KEY_FONT_FAMILY(Constants.KEY_FONT_FAMILY, DEFAULT_STYLE.getFamily()),
+        KEY_FONT_BOLD(Constants.KEY_FONT_BOLD, DEFAULT_STYLE.isBold()),
+        KEY_FONT_ITALIC(Constants.KEY_FONT_ITALIC, DEFAULT_STYLE.isItalic()),
+        KEY_FONT_UNDERLINE(Constants.KEY_FONT_UNDERLINE, DEFAULT_STYLE.isUnderline()),
+        KEY_FONT_SIZE(Constants.KEY_FONT_SIZE, DEFAULT_STYLE.getSize()),
+        KEY_FONT_FOREGROUND(Constants.KEY_FONT_FOREGROUND, DEFAULT_FONT_FOREGROUND),
+        KEY_FONT_BACKGROUND(Constants.KEY_FONT_BACKGROUND, DEFAULT_FONT_BACKGROUND),
+        KEY_WINDOW_X(Constants.KEY_WINDOW_X, DEFAULT_WINDOW_X),
+        KEY_WINDOW_Y(Constants.KEY_WINDOW_Y, DEFAULT_WINDOW_Y),
+        KEY_WINDOW_WIDTH(Constants.KEY_WINDOW_WIDTH, DEFAULT_WINDOW_WIDTH),
+        KEY_WINDOW_HEIGHT(Constants.KEY_WINDOW_HEIGHT, DEFAULT_WINDOW_HEIGHT),
+        KEY_DEFAULT_PROFILE_NAME(Constants.KEY_DEFAULT_PROFILE_NAME, DEFAULT_PROFILE_NAME),
+        KEY_EVENT_TICKER_DELAY(Constants.KEY_EVENT_TICKER_DELAY, DEFAULT_EVENT_TICKER_DELAY);
+
+        private final String keyName;
+        private final Object defaultValue; // Assuming all default values are of Object type
+
+        ConfigKeys (String keyName, Object defaultValue)
+        {
+            this.keyName = keyName;
+            this.defaultValue = defaultValue;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return keyName;
+        }
+
+        public String getKeyName ()
+        {
+            return keyName;
+        }
+
+        public Object getDefaultValue ()
+        {
+            return defaultValue;
+        }
+
+        /**
+         * Get default value based on the key string
+         * @param keyName
+         * @return
+         */
+        public static Object getDefault (String keyName)
+        {
+            for (ConfigKeys key : values())
+            {
+                if (key.getKeyName().equals(keyName))
+                {
+                    return key.getDefaultValue();
+                }
+            }
+            return null; // Or handle default behavior if the key doesn't exist
         }
     }
 

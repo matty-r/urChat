@@ -6,10 +6,6 @@ import urChatBasic.base.capabilities.CapTypeBase;
 public interface UserGUIBase
 {
 
-    public abstract int getLimitServerLinesCount();
-
-    public abstract int getLimitChannelLinesCount();
-
     /**
      * Sets the tab to the index number
      *
@@ -31,10 +27,6 @@ public interface UserGUIBase
      * @return int
      */
     public abstract int getTabIndex(String tabName);
-
-    public abstract Boolean saveChannelHistory();
-
-    public abstract Boolean saveServerHistory();
 
     /**
      * Return the appropriate created server
@@ -66,77 +58,7 @@ public interface UserGUIBase
      */
     public abstract Boolean isCreatedServersEmpty();
 
-    /**
-     * Show event ticker?
-     *
-     * @return Boolean
-     */
-    public abstract Boolean isShowingEventTicker();
-
-    /**
-     * Show users list?
-     *
-     * @return Boolean
-     */
-    public abstract Boolean isShowingUsersList();
-
-    /**
-     * Show users list?
-     *
-     * @return Boolean
-     */
-    public abstract Boolean isClickableLinksEnabled();
-
     public abstract CapTypeBase authenticationType();
-
-    /**
-     * Show joins/quits in the event ticker?
-     *
-     * @return Boolean
-     */
-    public abstract Boolean isJoinsQuitsTickerEnabled();
-
-    /**
-     * Show joins/quits in the main window?
-     *
-     * @return Boolean
-     */
-    public abstract Boolean isJoinsQuitsMainEnabled();
-
-    /**
-     * Save channel chat history?
-     *
-     * @return Boolean
-     */
-    public abstract Boolean isChannelHistoryEnabled();
-
-    /**
-     * Limit the number of lines in the server activity window
-     *
-     * @return Boolean
-     */
-    public abstract Boolean isLimitedServerActivity();
-
-    /**
-     * Limit the number of lines in the channel history
-     *
-     * @return Boolean
-     */
-    public abstract Boolean isLimitedChannelActivity();
-
-    /**
-     * Add timestamp to chat text?
-     *
-     * @return Boolean
-     */
-    public abstract Boolean isTimeStampsEnabled();
-
-    /**
-     * Save text that I type, this allows using the up and down arrows to repeat text.
-     *
-     * @return
-     */
-    public abstract Boolean isClientHistoryEnabled();
 
     /**
      * Adds the favourite as an element to the favourites list - also adds the item to the
@@ -175,8 +97,6 @@ public interface UserGUIBase
     public abstract void quitServer(IRCServerBase server);
 
     public abstract void removeClientSetting(String node, String key);
-
-    public abstract int getEventTickerDelay();
 
     public abstract void setClientSettings();
 

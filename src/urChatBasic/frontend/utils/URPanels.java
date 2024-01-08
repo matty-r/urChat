@@ -1,19 +1,31 @@
 package urChatBasic.frontend.utils;
 
 import java.awt.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
+import urChatBasic.backend.utils.URPreferencesUtil;
+import urChatBasic.backend.utils.URProfilesUtil;
+import urChatBasic.base.Constants;
 import urChatBasic.base.Constants.Placement;
 import urChatBasic.base.Constants.Size;
 
-public class Panels
+public class URPanels
 {
+    private static Map<String, Map<Integer, String>> keyComponentAssociations = new HashMap<>();
 
     public static void addToPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
-            Size targetSize)
+            Size targetSize, String preferenceKey)
     {
+
         Class<? extends LayoutManager> layoutClass = targetPanel.getLayout().getClass();
 
         if (layoutClass == BorderLayout.class)
@@ -25,6 +37,82 @@ public class Panels
                 targetPanel.setLayout(new SpringLayout());
 
             addToSpringPanel(targetPanel, newComponent, label, alignment, targetSize);
+        }
+
+        if(keyComponentAssociations.get(targetPanel.toString()) == null)
+            keyComponentAssociations.put(targetPanel.toString(), new HashMap<>());
+
+        keyComponentAssociations.get(targetPanel.toString()).put(newComponent.hashCode(), preferenceKey);
+    }
+
+
+    /**
+     * Sets values on the interface components based on their associated Key and it's Default value. For the currently active Profile.
+     * @param targetPanel
+     */
+    public static void getPreferences (JPanel targetPanel)
+    {
+        Preferences settingsPath = URProfilesUtil.getActiveProfilePath();
+
+        Map<Integer, String> panelSettings = keyComponentAssociations.get(targetPanel.toString());
+        Map<Integer, Component> panelComponents = Arrays.stream(targetPanel.getComponents())
+                .collect(Collectors.toMap(Component::hashCode, component -> component, (v1, v2)-> v2));
+
+        for (Integer componentHashcode : panelSettings.keySet())
+        {
+            String componentKeyString = panelSettings.get(componentHashcode);
+
+            // No association, skip.
+            if(componentKeyString == null)
+                continue;
+
+            Component targetComponent = panelComponents.get(componentHashcode);
+
+            if(targetComponent instanceof JCheckBox)
+            {
+                ((JCheckBox) targetComponent).setSelected((boolean) URPreferencesUtil.getPref(componentKeyString, Constants.ConfigKeys.getDefault(componentKeyString), settingsPath));
+            } else if(targetComponent instanceof JTextField)
+            {
+                ((JTextField) targetComponent).setText((String) URPreferencesUtil.getPref(componentKeyString, Constants.ConfigKeys.getDefault(componentKeyString), settingsPath));
+            } else if(targetComponent instanceof JSlider)
+            {
+                ((JSlider) targetComponent).setValue((Integer) URPreferencesUtil.getPref(componentKeyString, Constants.ConfigKeys.getDefault(componentKeyString), settingsPath));
+            }
+        }
+    }
+
+    /**
+     * Saves the preferences to the settingsPath of the currently active profile.
+     * @param targetPanel
+     */
+    public static void putPreferences (JPanel targetPanel)
+    {
+        Preferences settingsPath = URProfilesUtil.getActiveProfilePath();
+
+        Map<Integer, String> panelSettings = keyComponentAssociations.get(targetPanel.toString());
+        Map<Integer, Component> panelComponents = Arrays.stream(targetPanel.getComponents())
+                .collect(Collectors.toMap(Component::hashCode, component -> component, (v1, v2)-> v2));
+
+        for (Integer componentHashcode : panelSettings.keySet())
+        {
+            String componentKeyString = panelSettings.get(componentHashcode);
+
+            // No association, skip.
+            if(componentKeyString == null)
+                continue;
+
+            Component targetComponent = panelComponents.get(componentHashcode);
+
+            if(targetComponent instanceof JCheckBox)
+            {
+                URPreferencesUtil.putPref(componentKeyString, ((JCheckBox) targetComponent).isSelected(), settingsPath);
+            } else if(targetComponent instanceof JTextField)
+            {
+                URPreferencesUtil.putPref(componentKeyString, ((JTextField) targetComponent).getText(), settingsPath);
+            } else if(targetComponent instanceof JSlider)
+            {
+                URPreferencesUtil.putPref(componentKeyString, ((JSlider) targetComponent).getValue(), settingsPath);
+            }
         }
     }
 
@@ -40,7 +128,7 @@ public class Panels
         // Only add it now if the label would be "next" in the components list
         if (null != label && !label.isBlank() && alignment == Placement.DEFAULT || alignment == Placement.BOTTOM)
         {
-            Panels.addToPanel(targetPanel, new JLabel(label + ":"), null, alignment, targetSize);
+            URPanels.addToPanel(targetPanel, new JLabel(label + ":"), null, alignment, targetSize, null);
             // There is a label, so we want the added component to be aligned with the label
             topSpacing = 0;
             labelAdded = true;
@@ -110,7 +198,7 @@ public class Panels
             // component
             if (null != label && !label.isBlank() && !labelAdded)
             {
-                Panels.addToPanel(targetPanel, new JLabel(label + ":"), null, Placement.TOP, targetSize);
+                URPanels.addToPanel(targetPanel, new JLabel(label + ":"), null, Placement.TOP, targetSize, null);
                 targetPanel.setComponentZOrder(newComponent, targetPanel.getComponentZOrder(newComponent) + 1);
             }
 
@@ -142,8 +230,8 @@ public class Panels
         if (null != label && !label.isBlank())
         {
             JPanel newPanelWithLabel = new JPanel(new BorderLayout());
-            Panels.addToPanel(newPanelWithLabel, new JLabel(label + ":"), null, Placement.TOP, targetSize);
-            Panels.addToPanel(newPanelWithLabel, newComponent, null, Placement.BOTTOM, targetSize);
+            URPanels.addToPanel(newPanelWithLabel, new JLabel(label + ":"), null, Placement.TOP, targetSize, null);
+            URPanels.addToPanel(newPanelWithLabel, newComponent, null, Placement.BOTTOM, targetSize, null);
             newComponent = newPanelWithLabel;
         }
 
