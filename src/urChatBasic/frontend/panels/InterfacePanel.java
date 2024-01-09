@@ -1,17 +1,10 @@
 package urChatBasic.frontend.panels;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
-import javax.swing.SpringLayout;
-import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
-import urChatBasic.base.Constants.EventType;
 import urChatBasic.base.Constants.Placement;
 import urChatBasic.frontend.utils.URPanels;
 
@@ -83,10 +76,6 @@ public class InterfacePanel extends UROptionsPanel {
 
         // interfacePanel.add(eventTickerLabel);
         URPanels.addToPanel(this, eventTickerDelay, "Event Ticker Delay", Placement.DEFAULT, null, Constants.KEY_EVENT_TICKER_DELAY);
-
-        URProfilesUtil.addListener(EventType.CHANGE, e -> {
-            URPanels.getPreferences(this);
-        });
     }
 
     public int getLimitServerLinesCount ()

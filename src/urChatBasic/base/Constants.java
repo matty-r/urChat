@@ -1,5 +1,6 @@
 package urChatBasic.base;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.io.File;
@@ -12,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JLabel;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
 import urChatBasic.backend.Connection;
@@ -175,6 +177,28 @@ public class Constants
         public Dimension getDimension ()
         {
             return sizeDimension;
+        }
+
+        public void setComponentSize (Component component)
+        {
+            switch (this) {
+                case LARGE:
+                    if(component instanceof JTextField)
+                        ((JTextField)component).setColumns(12);
+                    break;
+                case MEDIUM:
+                    if(component instanceof JTextField)
+                        ((JTextField)component).setColumns(8);
+                    break;
+                case SMALL:
+                    if(component instanceof JTextField)
+                        ((JTextField)component).setColumns(4);
+                    break;
+                case CUSTOM:
+                    component.setPreferredSize(getDimension());
+                default:
+                    break;
+            }
         }
     }
 

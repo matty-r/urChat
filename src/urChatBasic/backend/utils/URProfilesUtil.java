@@ -277,6 +277,7 @@ public class URProfilesUtil
 
         try
         {
+            // If it exists, increment the number and give the profile a new name
             while(Constants.BASE_PREFS.nodeExists(newProfileName))
             {
                 newProfileNumber++;
