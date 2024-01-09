@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
@@ -22,9 +23,15 @@ public class URPanels
 {
     private static Map<String, Map<Integer, String>> keyComponentAssociations = new HashMap<>();
 
-    public static void addToPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
+    /**
+     * Used to keep track of newly created labels against components
+     */
+    private static Map<String, Map<Integer, Integer>> componentLabelAssociations = new HashMap<>();
+
+    public static Component addToPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
             Size targetSize, String preferenceKey)
     {
+        // TODO: add a visibility listener somehow for when a component is hidden, it's associated label is also hidden
 
         Class<? extends LayoutManager> layoutClass = targetPanel.getLayout().getClass();
 
@@ -42,7 +49,12 @@ public class URPanels
         if(keyComponentAssociations.get(targetPanel.toString()) == null)
             keyComponentAssociations.put(targetPanel.toString(), new HashMap<>());
 
+        if(componentLabelAssociations.get(targetPanel.toString()) == null)
+            componentLabelAssociations.put(targetPanel.toString(), new HashMap<>());
+
         keyComponentAssociations.get(targetPanel.toString()).put(newComponent.hashCode(), preferenceKey);
+
+        return newComponent;
     }
 
 
@@ -58,9 +70,11 @@ public class URPanels
         Map<Integer, Component> panelComponents = Arrays.stream(targetPanel.getComponents())
                 .collect(Collectors.toMap(Component::hashCode, component -> component, (v1, v2)-> v2));
 
+        if(panelSettings != null)
         for (Integer componentHashcode : panelSettings.keySet())
         {
             String componentKeyString = panelSettings.get(componentHashcode);
+
 
             // No association, skip.
             if(componentKeyString == null)
@@ -71,7 +85,7 @@ public class URPanels
             if(targetComponent instanceof JCheckBox)
             {
                 ((JCheckBox) targetComponent).setSelected((boolean) URPreferencesUtil.getPref(componentKeyString, Constants.ConfigKeys.getDefault(componentKeyString), settingsPath));
-            } else if(targetComponent instanceof JTextField)
+            } else if(targetComponent instanceof JTextField || targetComponent instanceof JPasswordField)
             {
                 ((JTextField) targetComponent).setText((String) URPreferencesUtil.getPref(componentKeyString, Constants.ConfigKeys.getDefault(componentKeyString), settingsPath));
             } else if(targetComponent instanceof JSlider)
@@ -112,11 +126,16 @@ public class URPanels
             } else if(targetComponent instanceof JSlider)
             {
                 URPreferencesUtil.putPref(componentKeyString, ((JSlider) targetComponent).getValue(), settingsPath);
+            } else if(targetComponent instanceof JPasswordField)
+            {
+                String passwordString = "";
+                passwordString = new String(((JPasswordField) targetComponent).getPassword());
+                URPreferencesUtil.putPref(componentKeyString, passwordString, settingsPath);
             }
         }
     }
 
-    private static void addToSpringPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
+    private static void addToSpringPanel (JPanel targetPanel, Component newComponent, String label, Placement placement,
             Size targetSize)
     {
         boolean labelAdded = false;
@@ -126,9 +145,13 @@ public class URPanels
         final int LEFT_ALIGNED = 0;
 
         // Only add it now if the label would be "next" in the components list
-        if (null != label && !label.isBlank() && alignment == Placement.DEFAULT || alignment == Placement.BOTTOM)
+        if (null != label && !label.isBlank() && placement == Placement.DEFAULT)
         {
-            URPanels.addToPanel(targetPanel, new JLabel(label + ":"), null, alignment, targetSize, null);
+            // Add the label, alignment should be the same,
+            JLabel newLabel = (JLabel) URPanels.addToPanel(targetPanel, new JLabel(label + ":"), null, Placement.DEFAULT, null, null);
+
+            componentLabelAssociations.get(targetPanel.toString()).put(newComponent.hashCode(), newLabel.hashCode());
+
             // There is a label, so we want the added component to be aligned with the label
             topSpacing = 0;
             labelAdded = true;
@@ -161,7 +184,7 @@ public class URPanels
             String previousLeftAlign = SpringLayout.WEST;
 
             // Set constraints for newComponent
-            switch (alignment)
+            switch (placement)
             {
                 case RIGHT:
                     // attach the new component inline and to the right of the previous
@@ -194,20 +217,27 @@ public class URPanels
             layout.putConstraint(newComponentLeftAlign, newComponent, LEFT_ALIGNED, previousLeftAlign,
                     previousLeftComponent);
 
+            JLabel newLabel = null;
             // Add the label above the newComponent, then reorder the newComponent to be the next logical
             // component
-            if (null != label && !label.isBlank() && !labelAdded)
+            if (label != null && !label.isBlank() && !labelAdded)
             {
-                URPanels.addToPanel(targetPanel, new JLabel(label + ":"), null, Placement.TOP, targetSize, null);
+                newLabel = (JLabel) URPanels.addToPanel(targetPanel, new JLabel(label + ":"), null, Placement.TOP, targetSize, null);
                 targetPanel.setComponentZOrder(newComponent, targetPanel.getComponentZOrder(newComponent) + 1);
+
+                componentLabelAssociations.get(targetPanel.toString()).put(newComponent.hashCode(), newLabel.hashCode());
             }
+
+            // components = targetPanel.getComponents();
 
             if (null != targetSize)
             {
-                if(newComponent instanceof JTextField)
-                    ((JTextField) newComponent).setColumns(12);
-                else if(targetSize == Size.CUSTOM)
-                    newComponent.setPreferredSize(targetSize.getDimension());
+                targetSize.setComponentSize(newComponent);
+            }
+            else if(newComponent instanceof JCheckBox && placement == Placement.RIGHT)
+            {
+                layout.putConstraint(SpringLayout.EAST, newComponent, 0, SpringLayout.EAST, newLabel);
+                layout.putConstraint(SpringLayout.SOUTH, newComponent, 0, SpringLayout.SOUTH, previousLeftComponent);
             }
 
         } else
@@ -219,23 +249,26 @@ public class URPanels
             layout.putConstraint(SpringLayout.NORTH, newComponent, topSpacing * 2, SpringLayout.NORTH, targetPanel);
             layout.putConstraint(SpringLayout.WEST, newComponent, leftSpacing * 2, SpringLayout.WEST, targetPanel);
 
-            if (null != targetSize && newComponent instanceof JTextField)
-                ((JTextField) newComponent).setColumns(12);
+            if (null != targetSize)
+                targetSize.setComponentSize(newComponent);
         }
     }
 
-    private static void addToBorderPanel (JPanel targetPanel, Component newComponent, String label, Placement alignment,
+    private static void addToBorderPanel (JPanel targetPanel, Component newComponent, String label, Placement placement,
             Size targetSize)
     {
         if (null != label && !label.isBlank())
         {
             JPanel newPanelWithLabel = new JPanel(new BorderLayout());
-            URPanels.addToPanel(newPanelWithLabel, new JLabel(label + ":"), null, Placement.TOP, targetSize, null);
+            JLabel newLabel = (JLabel) URPanels.addToPanel(newPanelWithLabel, new JLabel(label + ":"), null, Placement.TOP, targetSize, null);
+
+            componentLabelAssociations.get(targetPanel.toString()).put(newComponent.hashCode(), newLabel.hashCode());
+
             URPanels.addToPanel(newPanelWithLabel, newComponent, null, Placement.BOTTOM, targetSize, null);
             newComponent = newPanelWithLabel;
         }
 
-        switch (alignment)
+        switch (placement)
         {
             case BOTTOM:
                 targetPanel.add(newComponent, BorderLayout.SOUTH);
@@ -248,12 +281,48 @@ public class URPanels
                 break;
         }
 
-        if (null != targetSize && newComponent instanceof JTextField)
-            ((JTextField) newComponent).setColumns(12);
+        if (null != targetSize)
+            targetSize.setComponentSize(newComponent);
 
         // layout.putConstraint(newComponentTopAlign, newComponent, topSpacing, previousTopAlign,
         // previousTopComponent);
         // layout.putConstraint(newComponentLeftAlign, newComponent, LEFT_ALIGNED, previousLeftAlign,
         // previousLeftComponent);
+    }
+
+    public static JLabel getLabelForComponent (JPanel targetPanel, Component targetComponent)
+    {
+        Component[] components = targetPanel.getComponents();
+
+
+        // First check the component-label associations.
+        if(componentLabelAssociations.get(targetPanel.toString()) != null)
+        {
+            if(componentLabelAssociations.get(targetPanel.toString()).get(targetComponent.hashCode()) != null)
+            {
+                int labelHashCode = componentLabelAssociations.get(targetPanel.toString()).get(targetComponent.hashCode());
+
+                for (Component component : components) {
+                    if(component.hashCode() == labelHashCode && component instanceof JLabel)
+                        return (JLabel) component;
+                }
+            }
+        }
+
+
+        // otherwise, just iterate over the components and find the closest Jlabel
+        int componentIndex = -1;
+
+        for (int i = 0; i < components.length; i++) {
+            if(components[i] == targetComponent)
+                componentIndex = i;
+        }
+
+        for (int x = componentIndex; x <= 0; x--) {
+            if(components[x] instanceof JLabel)
+                return (JLabel) components[x];
+        }
+
+        return null;
     }
 }
