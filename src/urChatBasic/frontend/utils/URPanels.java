@@ -21,6 +21,9 @@ import urChatBasic.base.Constants.Size;
 
 public class URPanels
 {
+    /**
+     * Used to keep track of keys associated with specific components
+     */
     private static Map<String, Map<Integer, String>> keyComponentAssociations = new HashMap<>();
 
     /**
@@ -46,17 +49,28 @@ public class URPanels
             addToSpringPanel(targetPanel, newComponent, label, alignment, targetSize);
         }
 
-        if(keyComponentAssociations.get(targetPanel.toString()) == null)
-            keyComponentAssociations.put(targetPanel.toString(), new HashMap<>());
-
-        if(componentLabelAssociations.get(targetPanel.toString()) == null)
-            componentLabelAssociations.put(targetPanel.toString(), new HashMap<>());
-
-        keyComponentAssociations.get(targetPanel.toString()).put(newComponent.hashCode(), preferenceKey);
+        addKeyAssociation(targetPanel, newComponent, preferenceKey);
 
         return newComponent;
     }
 
+    public static void addKeyAssociation (JPanel targetPanel, Component targetComponent, String preferenceKey)
+    {
+        if(keyComponentAssociations.get(targetPanel.toString()) == null)
+            keyComponentAssociations.put(targetPanel.toString(), new HashMap<>());
+
+        if(preferenceKey != null && !preferenceKey.isBlank())
+            keyComponentAssociations.get(targetPanel.toString()).put(targetComponent.hashCode(), preferenceKey);
+    }
+
+    public static void addLabelAssociation (JPanel targetPanel, Component targetComponent, JLabel targetLabel)
+    {
+        if(componentLabelAssociations.get(targetPanel.toString()) == null)
+            componentLabelAssociations.put(targetPanel.toString(), new HashMap<>());
+
+        if(targetComponent != null && targetLabel != null)
+            componentLabelAssociations.get(targetPanel.toString()).put(targetComponent.hashCode(), targetLabel.hashCode());
+    }
 
     /**
      * Sets values on the interface components based on their associated Key and it's Default value. For the currently active Profile.
@@ -150,7 +164,7 @@ public class URPanels
             // Add the label, alignment should be the same,
             JLabel newLabel = (JLabel) URPanels.addToPanel(targetPanel, new JLabel(label + ":"), null, Placement.DEFAULT, null, null);
 
-            componentLabelAssociations.get(targetPanel.toString()).put(newComponent.hashCode(), newLabel.hashCode());
+            addLabelAssociation(targetPanel, newComponent, newLabel);
 
             // There is a label, so we want the added component to be aligned with the label
             topSpacing = 0;
@@ -225,7 +239,7 @@ public class URPanels
                 newLabel = (JLabel) URPanels.addToPanel(targetPanel, new JLabel(label + ":"), null, Placement.TOP, targetSize, null);
                 targetPanel.setComponentZOrder(newComponent, targetPanel.getComponentZOrder(newComponent) + 1);
 
-                componentLabelAssociations.get(targetPanel.toString()).put(newComponent.hashCode(), newLabel.hashCode());
+                addLabelAssociation(targetPanel, newComponent, newLabel);
             }
 
             // components = targetPanel.getComponents();
@@ -262,7 +276,7 @@ public class URPanels
             JPanel newPanelWithLabel = new JPanel(new BorderLayout());
             JLabel newLabel = (JLabel) URPanels.addToPanel(newPanelWithLabel, new JLabel(label + ":"), null, Placement.TOP, targetSize, null);
 
-            componentLabelAssociations.get(targetPanel.toString()).put(newComponent.hashCode(), newLabel.hashCode());
+            addLabelAssociation(targetPanel, newComponent, newLabel);
 
             URPanels.addToPanel(newPanelWithLabel, newComponent, null, Placement.BOTTOM, targetSize, null);
             newComponent = newPanelWithLabel;
