@@ -254,7 +254,7 @@ public class Connection implements ConnectionBase
             }
             if (clientText.toLowerCase().startsWith("/join"))
             {
-                outText = "JOIN " + clientText.replace("/join ", "") + "\r\n";
+                outText = "JOIN " + clientText.replace("/join ", "").toLowerCase() + "\r\n";
             } else if (clientText.toLowerCase().startsWith("/nick"))
             {
                 outText = "NICK " + clientText.replace("/nick ", "") + "\r\n";

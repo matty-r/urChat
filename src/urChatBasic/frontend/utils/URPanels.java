@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -105,6 +106,9 @@ public class URPanels
             } else if(targetComponent instanceof JSlider)
             {
                 ((JSlider) targetComponent).setValue((Integer) URPreferencesUtil.getPref(componentKeyString, Constants.ConfigKeys.getDefault(componentKeyString), settingsPath));
+            } else if(targetComponent instanceof JComboBox)
+            {
+                ((JComboBox<?>) targetComponent).setSelectedItem((String) URPreferencesUtil.getPref(componentKeyString, Constants.ConfigKeys.getDefault(componentKeyString), settingsPath));
             }
         }
     }
