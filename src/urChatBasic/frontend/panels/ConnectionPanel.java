@@ -1,30 +1,28 @@
 package urChatBasic.frontend.panels;
 
 import java.awt.Dimension;
-import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
+import javax.swing.SwingUtilities;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.base.Constants.EventType;
@@ -32,11 +30,9 @@ import urChatBasic.base.Constants.Placement;
 import urChatBasic.base.Constants.Size;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
-import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCServer;
-import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.components.UCAuthTypeComboBox;
 import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.dialogs.MessageDialog;
@@ -95,6 +91,9 @@ public class ConnectionPanel extends UROptionsPanel {
     {
         URPanels.addToPanel(this, userNameTextField, "Nick", Placement.DEFAULT, Size.LARGE, Constants.KEY_NICK_NAME);
         URPanels.addToPanel(this, realNameTextField, "Real Name", Placement.DEFAULT, Size.LARGE, Constants.KEY_REAL_NAME);
+
+        authenticationTypeChoice.addActionListener(new UCAuthTypeComboBoxChangeHandler());
+
         URPanels.addToPanel(this, authenticationTypeChoice, "Authentication Type", Placement.DEFAULT, null, Constants.KEY_AUTH_TYPE);
         URPanels.addToPanel(this, passwordTextField, "Password", Placement.DEFAULT, Size.LARGE, Constants.KEY_PASSWORD);
         URPanels.addToPanel(this, rememberPassCheckBox, "Remember", Placement.RIGHT, null, Constants.KEY_PASSWORD_REMEMBER);
@@ -128,10 +127,14 @@ public class ConnectionPanel extends UROptionsPanel {
         connectionLayout.putConstraint(SpringLayout.WEST, connectButton, LEFT_ALIGNED, SpringLayout.WEST,
                 firstChannelTextField);
 
+
+        // Aligns the autoConnectToFavourites checkbox to the label of userNameTextField
         connectionLayout.putConstraint(SpringLayout.NORTH, autoConnectToFavourites, TOP_ALIGNED, SpringLayout.NORTH,
                 URPanels.getLabelForComponent(this,userNameTextField));
         connectionLayout.putConstraint(SpringLayout.WEST, autoConnectToFavourites, LEFT_SPACING, SpringLayout.EAST,
                 serverProxyCheckBox);
+
+        URPanels.addKeyAssociation(this, autoConnectToFavourites, Constants.KEY_AUTO_CONNECT_FAVOURITES);
 
         // Puts the Favourites box inline with the autoConnectToFavourites check box and the connect button
         connectionLayout.putConstraint(SpringLayout.NORTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
@@ -142,6 +145,10 @@ public class ConnectionPanel extends UROptionsPanel {
                 autoConnectToFavourites);
         connectionLayout.putConstraint(SpringLayout.SOUTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
                 connectButton);
+
+        URProfilesUtil.addListener(EventType.CHANGE, e -> {
+            loadFavouritesList();
+        });
     }
 
     public void addFavourite (String favServer, String favChannel)
@@ -165,6 +172,27 @@ public class ConnectionPanel extends UROptionsPanel {
         }
 
         return false;
+    }
+
+    public void loadFavouritesList ()
+    {
+        try
+        {
+            favouritesListModel.removeAllElements();
+            for (String serverNode : URProfilesUtil.getActiveFavouritesPath().childrenNames())
+            {
+                for (String channelNode : URProfilesUtil.getActiveFavouritesPath().node(serverNode).childrenNames())
+                {
+                    if (URProfilesUtil.getActiveFavouritesPath().node(serverNode).node(channelNode).keys().length > 0)
+                    {
+                        favouritesListModel.addElement(new FavouritesItem(serverNode, channelNode));
+                    }
+                }
+            }
+        } catch (BackingStoreException e)
+        {
+            Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+        }
     }
 
     /**
@@ -201,6 +229,11 @@ public class ConnectionPanel extends UROptionsPanel {
         public String toString ()
         {
             return favServer + ":" + favChannel;
+        }
+
+        public String getChannelName ()
+        {
+            return favChannel;
         }
 
         public void createPopUp ()
@@ -331,8 +364,10 @@ public class ConnectionPanel extends UROptionsPanel {
             }
         }
 
+        // Show the popup menu, update it's styling first.
         private void doPop (MouseEvent e)
         {
+            SwingUtilities.updateComponentTreeUI(favouritesList.getSelectedValue().myMenu);
             favouritesList.getSelectedValue().myMenu.show(e.getComponent(), e.getX(), e.getY());
         }
     }
@@ -344,21 +379,22 @@ public class ConnectionPanel extends UROptionsPanel {
         {
             authenticationTypeChoice.runChangeListener();
 
-            if (authenticationType().equals(CapabilityTypes.NONE.getType()))
+            if (authenticationTypeChoice.getSelectedItem().equals(CapabilityTypes.NONE.getType()))
             {
                 passwordTextField.setVisible(false);
                 rememberPassCheckBox.setVisible(false);
+
+                URPanels.getLabelForComponent(ConnectionPanel.this, passwordTextField).setVisible(false);
+                URPanels.getLabelForComponent(ConnectionPanel.this, rememberPassCheckBox).setVisible(false);
             } else
             {
                 passwordTextField.setVisible(true);
                 rememberPassCheckBox.setVisible(true);
+
+                URPanels.getLabelForComponent(ConnectionPanel.this, passwordTextField).setVisible(true);
+                URPanels.getLabelForComponent(ConnectionPanel.this, rememberPassCheckBox).setVisible(true);
             }
         }
-    }
-
-    public CapTypeBase authenticationType ()
-    {
-        return (CapTypeBase) authenticationTypeChoice.getSelectedItem();
     }
 
     // TODO: This should be a backend thing
@@ -394,15 +430,16 @@ public class ConnectionPanel extends UROptionsPanel {
         public void actionPerformed (ActionEvent arg0)
         {
             if (passwordTextField.getPassword().length > 0
-                    || authenticationType().equals(CapabilityTypes.NONE.getType()))
+                    || authenticationTypeChoice.getSelectedItem().equals(CapabilityTypes.NONE.getType()))
             {
                 // DriverGUI.gui.addToCreatedServers(servernameTextField.getText().trim());
 
                 IRCServerBase newServer = new IRCServer(servernameTextField.getText().trim(), userNameTextField.getText().trim(),
                     realNameTextField.getText().trim(), new String(passwordTextField.getPassword()),
                     serverPortTextField.getText().trim(), serverTLSCheckBox.isSelected(),
-                    proxyHostNameTextField.getText(), proxyPortTextField.getText(), serverProxyCheckBox.isSelected());
+                    proxyHostNameTextField.getText(), proxyPortTextField.getText(), serverProxyCheckBox.isSelected(), authenticationTypeChoice.getSelectedItem());
 
+                // TODO: Revisit when considering adding support for multiple servers
                 // if (autoConnectToFavourites.isSelected())
                 // {
                 //     FavouritesItem castItem;
@@ -412,10 +449,18 @@ public class ConnectionPanel extends UROptionsPanel {
                 //         DriverGUI.gui.addToCreatedServers(castItem.favServer);
                 //     }
                 // }
-                    newServer.connect();
+
+                String[] favouriteChannels = new String[0];
+                if(autoConnectToFavourites.isSelected())
+                    favouriteChannels = Collections.list(favouritesListModel.elements())
+                        .stream()
+                        .map(FavouritesItem::getChannelName)
+                        .collect(Collectors.toList()).toArray(new String[0]);
+
+                newServer.connect(favouriteChannels);
 
                 // profilePicker.setEnabled(false);
-            } else if (!authenticationType().equals(CapabilityTypes.NONE.getType()))
+            } else if (!authenticationTypeChoice.getSelectedItem().equals(CapabilityTypes.NONE.getType()))
             {
                 MessageDialog dialog = new MessageDialog(
                         "Password field is empty and is required for your chosen authentication method.", "Warning",

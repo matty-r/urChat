@@ -1,5 +1,6 @@
 package urChatBasic.base;
 
+import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.IRCChannel;
 import urChatBasic.frontend.IRCPrivate;
@@ -18,7 +19,11 @@ public interface IRCServerBase
 
     public abstract String getPassword ();
 
-    public abstract void connect ();
+    public abstract CapTypeBase getAuthentication ();
+
+    public abstract void connect (String[] autoConnectChannels);
+
+    public abstract void reconnectChannels ();
 
     public abstract void disconnect ();
 

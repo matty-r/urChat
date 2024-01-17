@@ -1,8 +1,5 @@
 package urChatBasic.base;
 
-import java.util.prefs.Preferences;
-import urChatBasic.base.capabilities.CapTypeBase;
-
 public interface UserGUIBase
 {
 
@@ -44,13 +41,6 @@ public interface UserGUIBase
     public abstract void setupServerTab(IRCServerBase server);
 
     /**
-     * Creates a new server based on name
-     *
-     * @param serverName
-     */
-    public abstract void addToCreatedServers(String serverName);
-
-    /**
      * Check to see if there are any Servers at all.
      *
      * @param channelName
@@ -58,36 +48,39 @@ public interface UserGUIBase
      */
     public abstract Boolean isCreatedServersEmpty();
 
-    public abstract CapTypeBase authenticationType();
 
-    /**
-     * Adds the favourite as an element to the favourites list - also adds the item to the
-     * clientSettings.
-     *
-     * @param server
-     * @param channel
-     */
-    public abstract void addFavourite(String server, String channel);
+    // TODO: Favourites handling should be done elsewhere.
+    // /**
+    //  * Adds the favourite as an element to the favourites list - also adds the item to the
+    //  * clientSettings.
+    //  *
+    //  * @param server
+    //  * @param channel
+    //  */
+    // public abstract void addFavourite(String server, String channel);
 
-    /**
-     * Used to check if the channel is already a favourite from an IRCChannel
-     *
-     * @param channel
-     * @return
-     */
-    public abstract Boolean isFavourite(IRCRoomBase channel);
+    // /**
+    //  * Used to check if the channel is already a favourite from an IRCChannel
+    //  *
+    //  * @param channel
+    //  * @return
+    //  */
+    // public abstract Boolean isFavourite(IRCRoomBase channel);
 
     // public abstract void removeFavourite(String server, String channel);
 
+    // /**
+    //  * Used to connect to all the favourites. This gets run from Connection once the socket has
+    //  * successfully connected to the initial server.
+    //  *
+    //  * @param IRCServer
+    //  */
+    // public abstract void connectFavourites(IRCServerBase server);
+
+    // public abstract void removeFavourite(String favServer, String favChannel);
+
     public abstract void sendGlobalMessage(String message, String sender);
 
-    /**
-     * Used to connect to all the favourites. This gets run from Connection once the socket has
-     * successfully connected to the initial server.
-     *
-     * @param IRCServer
-     */
-    public abstract void connectFavourites(IRCServerBase server);
 
     /**
      * Loops through all servers and disconnects and deletes the tab
@@ -102,6 +95,5 @@ public interface UserGUIBase
 
     public abstract void run();
 
-    public abstract void removeFavourite(String favServer, String favChannel);
 
 }

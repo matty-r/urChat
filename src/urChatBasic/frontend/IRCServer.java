@@ -51,6 +51,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     private String proxyHost;
     private String proxyPort;
     private Boolean useSOCKS;
+    private CapTypeBase authentication;
 
     // Created channels/tabs
     public List<IRCRoomBase> createdRooms = new ArrayList<IRCRoomBase>();
@@ -59,8 +60,8 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     private ArrayList<CapabilityTypes> capabilities = new ArrayList<CapabilityTypes>();
 
 
-    public IRCServer(String serverName, String nick, String login, String password, String portNumber, Boolean isTLS, String proxyHost,
-            String proxyPort, Boolean useSOCKS)
+    public IRCServer (String serverName, String nick, String login, String password, String portNumber, Boolean isTLS, String proxyHost, String proxyPort,
+            Boolean useSOCKS, CapTypeBase authentication)
     {
         super(serverName);
         setServer(this);
@@ -79,11 +80,12 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         this.password = password;
         this.login = login;
         this.nick = nick;
+        this.authentication = authentication;
 
         URL imgPath = null;
         try
         {
-            imgPath =  new URL(Constants.RESOURCES_DIR + "Server.png");
+            imgPath = new URL(Constants.RESOURCES_DIR + "Server.png");
             icon = new ImageIcon(imgPath);
         } catch (IOException e)
         {
@@ -92,41 +94,52 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     }
 
     @Override
-    public void saslRequestAuthentication()
+    public void saslRequestAuthentication ()
     {
         sendClientText("CAP REQ sasl", getName());
     }
 
     @Override
-    public void nickservRequestAuthentication()
+    public void nickservRequestAuthentication ()
     {
-        if(!getPassword().isEmpty())
+        if (!getPassword().isEmpty())
         {
-            sendClientText("/msg nickserv identify "+getNick()+" "+getPassword(), getName());
-        } else {
-            sendClientText("/msg nickserv ACC",getName());
+            sendClientText("/msg nickserv identify " + getNick() + " " + getPassword(), getName());
+        } else
+        {
+            sendClientText("/msg nickserv ACC", getName());
         }
 
     }
 
     @Override
-    public void saslCompleteAuthentication()
+    public void saslCompleteAuthentication ()
     {
         sendClientText("CAP END", getName());
-        gui.connectFavourites(this);
+        // TODO: gui.connectFavourites(this);
+        reconnectChannels();
     }
 
     @Override
-    public void saslDoAuthentication()
+    public void saslDoAuthentication ()
     {
         sendClientText("AUTHENTICATE PLAIN", getName());
     }
 
+    public void reconnectChannels ()
+    {
+        for (IRCRoomBase channel : createdRooms)
+        {
+            quitRoom(channel);
+            channel.rejoin();
+        }
+    }
+
     @Override
-    public void saslSendAuthentication()
+    public void saslSendAuthentication ()
     {
         String escapedDelim = Character.toString(0x0);
-        String saslString = escapedDelim+getNick()+escapedDelim+getPassword();
+        String saslString = escapedDelim + getNick() + escapedDelim + getPassword();
         try
         {
             saslString = Base64.getEncoder().encodeToString(saslString.getBytes(StandardCharsets.UTF_8.toString()));
@@ -135,28 +148,33 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        sendClientText("AUTHENTICATE "+saslString, getName());
+        sendClientText("AUTHENTICATE " + saslString, getName());
     }
 
     @Override
     public void setCapabilities (String capabilityMessage)
     {
-        // example message: account-notify away-notify chghost extended-join multi-prefix sasl=PLAIN,ECDSA-NIST256P-CHALLENGE,EXTERNAL tls account-tag cap-notify echo-message server-time solanum.chat/identify-msg solanum.chat/oper solanum.chat/realhost
+        // example message: account-notify away-notify chghost extended-join multi-prefix sasl=PLAIN,ECDSA-NIST256P-CHALLENGE,EXTERNAL tls account-tag
+        // cap-notify echo-message server-time solanum.chat/identify-msg solanum.chat/oper solanum.chat/realhost
         String[] components = capabilityMessage.split(" ");
 
-        for (String component : components) {
-            for (CapabilityTypes capability : CapabilityTypes.values()) {
-                if(capability.getType().matches(component))
+        for (String component : components)
+        {
+            for (CapabilityTypes capability : CapabilityTypes.values())
+            {
+                if (capability.getType().matches(component))
                 {
                     capabilities.add(capability);
-                } else if(component.startsWith(capability.name().toLowerCase() + "="))
+                } else if (component.startsWith(capability.name().toLowerCase() + "="))
                 {
                     capabilities.add(capability);
                     String[] subComponents = component.replace(capability.name().toLowerCase() + "=", "").split(",");
 
-                    for (String subComponent : subComponents) {
-                        for (CapTypeBase subType : capability.getType().availableSubTypes()) {
-                            if(subType.matches(subComponent))
+                    for (String subComponent : subComponents)
+                    {
+                        for (CapTypeBase subType : capability.getType().availableSubTypes())
+                        {
+                            if (subType.matches(subComponent))
                                 capability.getType().addSubtype(subType);
                         }
                     }
@@ -168,8 +186,9 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     @Override
     public boolean hasCapability (CapabilityTypes capability)
     {
-        for (CapabilityTypes capabilityType : capabilities) {
-            if(capabilityType.equals(capability))
+        for (CapabilityTypes capabilityType : capabilities)
+        {
+            if (capabilityType.equals(capability))
             {
                 return true;
             }
@@ -184,32 +203,38 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#getNick()
      */
     @Override
-    public String getNick()
+    public String getNick ()
     {
         return nick;
     }
 
     @Override
-    public void setNick(String newNick)
+    public void setNick (String newNick)
     {
         nick = newNick;
     }
 
 
     @Override
-    public String getLogin()
+    public String getLogin ()
     {
         return login;
     }
 
     @Override
-    public String getPassword()
+    public String getPassword ()
     {
         return password;
     }
 
     @Override
-    public boolean isConnected()
+    public CapTypeBase getAuthentication ()
+    {
+        return authentication;
+    }
+
+    @Override
+    public boolean isConnected ()
     {
         return hasConnection() && serverConnection.isConnected();
     }
@@ -221,19 +246,19 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     }
 
     @Override
-    public String getPort()
+    public String getPort ()
     {
         return this.port;
     }
 
     @Override
-    public Boolean usingSOCKS()
+    public Boolean usingSOCKS ()
     {
         return useSOCKS;
     }
 
     @Override
-    public Boolean usingTLS()
+    public Boolean usingTLS ()
     {
         return isTLS;
     }
@@ -254,7 +279,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * Server doesn't need the User List, so don't set it up.
      */
     @Override
-    protected void setupMainPanel()
+    protected void setupMainPanel ()
     {
         mainPanel.setLayout(new BorderLayout());
         setupMainTextArea();
@@ -276,7 +301,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         JMenuItem quitItem;
         JMenuItem chooseFont;
 
-        public ServerPopUp()
+        public ServerPopUp ()
         {
             nameItem = new JMenuItem(IRCServer.this.getName());
             add(nameItem);
@@ -301,7 +326,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     private class QuitItem implements ActionListener
     {
         @Override
-        public void actionPerformed(ActionEvent arg0)
+        public void actionPerformed (ActionEvent arg0)
         {
             if (IRCServer.this.isConnected())
             {
@@ -320,7 +345,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     {
 
         @Override
-        public void actionPerformed(ActionEvent arg0)
+        public void actionPerformed (ActionEvent arg0)
         {
             fontDialog.setVisible(true);
         }
@@ -330,16 +355,22 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     /*
      * (non-Javadoc)
      *
-     * @see urChatBasic.backend.IRCServerBase#serverConnect(java.lang.String, java.lang.String)
-     * serverConnect(nick, login, portNumber, isTLS, proxyHost, proxyPort, useSOCKS,
-     * Constants.BACKEND_CLASS);
+     * @see urChatBasic.backend.IRCServerBase#serverConnect(java.lang.String, java.lang.String) serverConnect(nick, login, portNumber, isTLS, proxyHost,
+     * proxyPort, useSOCKS, Constants.BACKEND_CLASS);
      */
     @Override
-    public void connect()
+    public void connect (String[] autoConnectChannels)
     {
         try
         {
             serverConnection = new Connection(this);
+
+            for (String autoChannel : autoConnectChannels)
+            {
+                IRCRoomBase newChannel = new IRCRoomBase(this, autoChannel);
+                createdRooms.add(newChannel);
+            }
+
         } catch (Exception e)
         {
             Constants.LOGGER.log(Level.SEVERE, "Failed to create backend! " + e.getLocalizedMessage());
@@ -349,7 +380,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     }
 
     @Override
-    public void disconnect()
+    public void disconnect ()
     {
         serverConnection.disconnect();
         quitRooms();
@@ -361,7 +392,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#toString()
      */
     @Override
-    public String toString()
+    public String toString ()
     {
         return this.name;
     }
@@ -373,7 +404,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#setName(java.lang.String)
      */
     @Override
-    public void setName(String serverName)
+    public void setName (String serverName)
     {
         this.name = serverName;
     }
@@ -384,7 +415,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#getName()
      */
     @Override
-    public String getName()
+    public String getName ()
     {
         return this.name;
     }
@@ -395,7 +426,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.base.IRCServerBase#getIRCUser(java.lang.String)
      */
     @Override
-    public IRCUser getIRCUser(String userName)
+    public IRCUser getIRCUser (String userName)
     {
         for (IRCRoomBase tempChannel : createdRooms)
             if (tempChannel.getCreatedUser(userName) != null)
@@ -410,11 +441,11 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#getCreatedPrivateRoom(java.lang.String)
      */
     @Override
-    public IRCPrivate getCreatedPrivateRoom(String privateRoom)
+    public IRCPrivate getCreatedPrivateRoom (String privateRoom)
     {
         IRCRoomBase tempRoom = getCreatedRoom(privateRoom, true);
 
-        if(tempRoom != null)
+        if (tempRoom != null)
         {
             return (IRCPrivate) tempRoom;
         }
@@ -422,17 +453,17 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         return null;
     }
 
-        /*
+    /*
      * (non-Javadoc)
      *
      * @see urChatBasic.backend.IRCServerBase#getCreatedPrivateRoom(java.lang.String)
      */
     @Override
-    public IRCChannel getCreatedChannel(String channelName)
+    public IRCChannel getCreatedChannel (String channelName)
     {
         IRCRoomBase tempRoom = getCreatedRoom(channelName, false);
 
-        if(tempRoom != null && tempRoom instanceof IRCChannel)
+        if (tempRoom != null && tempRoom instanceof IRCChannel)
         {
             return (IRCChannel) tempRoom;
         }
@@ -441,7 +472,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     }
 
     @Override
-    public void quitRooms()
+    public void quitRooms ()
     {
         URProfilesUtil.removeListener(EventType.CHANGE, changeListener);
 
@@ -455,31 +486,31 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     }
 
     @Override
-    public void quitRoom(IRCRoomBase ircRoom)
+    public void quitRoom (IRCRoomBase ircRoom)
     {
         ircRoom.quitRoom();
         createdRooms.remove(ircRoom);
 
-        boolean tabExists = Arrays.stream(gui.tabbedPane.getComponents()).anyMatch(room -> room.equals(gui.previousSelectedTab));
+        boolean tabExists = Arrays.stream(gui.tabbedPane.getComponents()).anyMatch(room -> room.equals(ircRoom));
 
-        if(tabExists)
+        if (tabExists && gui.tabbedPane.getSelectedComponent().equals(ircRoom))
             gui.tabbedPane.setSelectedComponent(gui.previousSelectedTab);
 
         gui.tabbedPane.remove(ircRoom);
     }
 
     @Override
-    public IRCRoomBase getCreatedRoom(String roomName, boolean asPrivate)
+    public IRCRoomBase getCreatedRoom (String roomName, boolean asPrivate)
     {
+        IRCRoomBase returnChannel = null;
+
         for (IRCRoomBase tempChannel : createdRooms)
             if (tempChannel.getName().equals(roomName))
             {
-                if(asPrivate && tempChannel instanceof IRCPrivate)
-                    return tempChannel;
-                else if(!asPrivate)
-                    return tempChannel;
+                if (asPrivate && tempChannel instanceof IRCPrivate || !asPrivate)
+                    returnChannel = tempChannel;
             }
-        return null;
+        return returnChannel;
     }
 
     /*
@@ -488,7 +519,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#addToCreatedChannels(java.lang.String)
      */
     @Override
-    public void addToCreatedRooms(String roomName, boolean asPrivate)
+    public void addToCreatedRooms (String roomName, boolean asPrivate)
     {
         if (getCreatedRoom(roomName, asPrivate) == null)
         {
@@ -496,23 +527,26 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             createdRooms.add(tempChannel);
 
             gui.tabbedPane.insertTab(roomName, tempChannel.icon, tempChannel, null, gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1);
-            //gui.tabbedPane.addTab(roomName, tempChannel.icon, tempChannel);
+            // gui.tabbedPane.addTab(roomName, tempChannel.icon, tempChannel);
             Component currentTab = gui.tabbedPane.getSelectedComponent();
-            if(currentTab instanceof IRCRoomBase)
+            if (currentTab instanceof IRCRoomBase)
             {
-                if(!((IRCRoomBase) currentTab).userIsTyping())
+                if (!((IRCRoomBase) currentTab).userIsTyping())
                 {
                     gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempChannel));
                     tempChannel.getUserTextBox().requestFocus();
-                } else {
+                } else
+                {
                     tempChannel.callForAttention();
                 }
-            } else if(currentTab instanceof IRCServer) {
-                if(clientTextBox.getText().isEmpty())
+            } else if (currentTab instanceof IRCServer)
+            {
+                if (clientTextBox.getText().isEmpty())
                 {
                     gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempChannel));
                     tempChannel.getUserTextBox().requestFocus();
-                } else {
+                } else
+                {
                     tempChannel.callForAttention();
                 }
             }
@@ -525,7 +559,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#addToPrivateRooms(urChatBasic.frontend.IRCUser)
      */
     @Override
-    public IRCPrivate addToPrivateRooms(IRCUser fromUser)
+    public IRCPrivate addToPrivateRooms (IRCUser fromUser)
     {
         IRCPrivate privateRoom = getCreatedPrivateRoom(fromUser.getName());
         if (privateRoom == null)
@@ -544,11 +578,10 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     /*
      * (non-Javadoc)
      *
-     * @see urChatBasic.backend.IRCServerBase#printChannelText(java.lang.String, java.lang.String,
-     * java.lang.String)
+     * @see urChatBasic.backend.IRCServerBase#printChannelText(java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
-    public void printChannelText(String channelName, String line, String fromUser)
+    public void printChannelText (String channelName, String line, String fromUser)
     {
 
         IRCRoomBase tempChannel = getCreatedRoom(channelName, false);
@@ -565,11 +598,10 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     /*
      * (non-Javadoc)
      *
-     * @see urChatBasic.backend.IRCServerBase#printPrivateText(java.lang.String, java.lang.String,
-     * java.lang.String)
+     * @see urChatBasic.backend.IRCServerBase#printPrivateText(java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
-    public void printPrivateText(String userName, String line, String fromUser)
+    public void printPrivateText (String userName, String line, String fromUser)
     {
         // private messages aren't linked to a channel, so create it - also
         // if they aren't muted
@@ -593,7 +625,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#printServerText(java.lang.String)
      */
     @Override
-    public void printServerText(String line)
+    public void printServerText (String line)
     {
         printText(line, Constants.EVENT_USER);
     }
@@ -604,7 +636,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#printEventTicker(java.lang.String, java.lang.String)
      */
     @Override
-    public void printEventTicker(String channelName, String eventText)
+    public void printEventTicker (String channelName, String eventText)
     {
         getCreatedChannel(channelName).createEvent(eventText);
     }
@@ -617,7 +649,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#addToUsersList(java.lang.String, java.lang.String[])
      */
     @Override
-    public void addToUsersList(final String channelName, final String[] users)
+    public void addToUsersList (final String channelName, final String[] users)
     {
         if (!channelName.matches("Server"))
         {
@@ -634,9 +666,9 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#addToUsersList(java.lang.String, java.lang.String)
      */
     @Override
-    public void addToUsersList(final String channelName, final String user)
+    public void addToUsersList (final String channelName, final String user)
     {
-        addToUsersList(channelName, new String[]{user});
+        addToUsersList(channelName, new String[] {user});
     }
 
 
@@ -646,7 +678,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#removeFromUsersList(java.lang.String, java.lang.String)
      */
     @Override
-    public void removeFromUsersList(final String channelName, final String user)
+    public void removeFromUsersList (final String channelName, final String user)
     {
         String thisUser = user;
         if (user.startsWith(":"))
@@ -675,7 +707,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#setChannelTopic(java.lang.String, java.lang.String)
      */
     @Override
-    public void setChannelTopic(String channelName, String channelTopic)
+    public void setChannelTopic (String channelName, String channelTopic)
     {
         getCreatedChannel(channelName).setChannelTopic(channelTopic);
     }
@@ -686,7 +718,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#sendClientText(java.lang.String, java.lang.String)
      */
     @Override
-    public void sendClientText(String line, String source)
+    public void sendClientText (String line, String source)
     {
         try
         {
@@ -706,11 +738,11 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
      * @see urChatBasic.backend.IRCServerBase#renameUser(java.lang.String, java.lang.String)
      */
     @Override
-    public void renameUser(final String oldUserName, final String newUserName)
+    public void renameUser (final String oldUserName, final String newUserName)
     {
         SwingUtilities.invokeLater(new Runnable()
         {
-            public void run()
+            public void run ()
             {
                 for (IRCRoomBase tempChannel : createdRooms)
                 {

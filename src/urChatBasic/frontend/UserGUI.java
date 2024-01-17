@@ -2,7 +2,6 @@ package urChatBasic.frontend;
 
 import java.awt.*;
 import java.util.logging.Level;
-import java.util.prefs.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -26,9 +25,9 @@ import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.FontDialog;
-import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.frontend.panels.MainOptionsPanel;
 import urChatBasic.frontend.panels.ProfilePanel;
+import urChatBasic.frontend.panels.ConnectionPanel;
 import urChatBasic.frontend.panels.InterfacePanel;
 import urChatBasic.frontend.panels.UROptionsPanel;
 import urChatBasic.frontend.utils.URPanels;
@@ -36,8 +35,6 @@ import urChatBasic.base.UserGUIBase;
 import urChatBasic.base.Constants.EventType;
 import urChatBasic.base.Constants.Placement;
 import urChatBasic.base.Constants.Size;
-import urChatBasic.base.capabilities.CapTypeBase;
-import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.frontend.LineFormatter.ClickableText;
 import urChatBasic.frontend.components.*;
 
@@ -60,7 +57,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     // Options Panel
     private JPanel optionsMainPanel = new MainOptionsPanel();
     // Server Options Panel
-    private final UROptionsPanel connectionPanel = new UROptionsPanel("Connection", (MainOptionsPanel) optionsMainPanel, Optional.of(0));
+    private final UROptionsPanel connectionPanel = new ConnectionPanel((MainOptionsPanel) optionsMainPanel, Optional.of(0));
 
     public final UROptionsPanel interfacePanel = new InterfacePanel((MainOptionsPanel) optionsMainPanel, Optional.of(1));
 
@@ -88,48 +85,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private final JLabel styleLabel = new JLabel("Mouse over text to view style, right-click to edit.");
     public LineFormatter previewLineFormatter;
 
-    // Identification
-    private final JLabel userNameLabel = new JLabel("Nick:");
-    private final JTextField userNameTextField = new JTextField("", 12);
-    private final JLabel realNameLabel = new JLabel("Real name:");
-    private final JTextField realNameTextField = new JTextField("");
 
-    // Authentication
-    private final JLabel authenticationTypeLabel = new JLabel("Authentication Type:");
-    private final UCAuthTypeComboBox authenticationTypeChoice = new UCAuthTypeComboBox();
-    private final JLabel passwordLabel = new JLabel("Password:");
-    private final JPasswordField passwordTextField = new JPasswordField("");
-    private final JLabel rememberPassLabel = new JLabel("Remember:");
-    private final JCheckBox rememberPassCheckBox = new JCheckBox();
-
-    // Connection
-    private final JLabel serverNameLabel = new JLabel("Server:");
-    private final JTextField servernameTextField = new JTextField("", 8);
-    private final JLabel serverPortLabel = new JLabel("Port:");
-    private final JTextField serverPortTextField = new JTextField("", 4);
-    private final JLabel serverUseTLSLabel = new JLabel("TLS:");
-    private final JCheckBox serverTLSCheckBox = new JCheckBox();
-    private final JButton connectButton = new JButton("Connect");
-
-    // Proxy
-    private final JLabel proxyHostLabel = new JLabel("Proxy Host:");
-    private final JTextField proxyHostNameTextField = new JTextField("");
-    private final JLabel proxyPortLabel = new JLabel("Port:", 4);
-    private final JTextField proxyPortTextField = new JTextField("");
-    private final JLabel serverUseProxyLabel = new JLabel("Use SOCKS:");
-    private final JCheckBox serverProxyCheckBox = new JCheckBox();
-
-    private final JLabel firstChannelLabel = new JLabel("Channel:");
-    private final JTextField firstChannelTextField = new JTextField("");
-
-    // Favourites Panel
-    private final JCheckBox autoConnectToFavourites = new JCheckBox("Automatically join favourite channels");
-    private final DefaultListModel<FavouritesItem> favouritesListModel = new DefaultListModel<FavouritesItem>();
-    private final JList<FavouritesItem> favouritesList = new JList<FavouritesItem>(favouritesListModel);
-    private final JScrollPane favouritesScroller = new JScrollPane(favouritesList);
 
     // Created Servers/Tabs
-    private final List<IRCServerBase> createdServers = new ArrayList<IRCServerBase>();
+    public final List<IRCServerBase> createdServers = new ArrayList<IRCServerBase>();
 
     /*
      * (non-Javadoc)
@@ -207,6 +166,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return profilePanel;
     }
 
+    public UROptionsPanel getConnectionPanel ()
+    {
+        return interfacePanel;
+    }
+
     // /**
     //  * Sets the current active profile - if the newProfileName doesn't exist it will be created.
     //  * @param newProfileName
@@ -231,21 +195,22 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     //     getClientSettings(false);
     // }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#addToCreatedServers(java.lang.String)
-     */
-    @Override
-    public void addToCreatedServers (String serverName)
+    // TODO: Is this needed any more or should we be adding IRCServer only?
+    // @Override
+    // public void addToCreatedServers (String serverName)
+    // {
+    //     if (getCreatedServer(serverName) == null)
+    //     {
+    //         createdServers.add(new IRCServer(serverName.trim(), userNameTextField.getText().trim(),
+    //                 realNameTextField.getText().trim(), new String(passwordTextField.getPassword()),
+    //                 serverPortTextField.getText().trim(), serverTLSCheckBox.isSelected(),
+    //                 proxyHostNameTextField.getText(), proxyPortTextField.getText(), serverProxyCheckBox.isSelected()));
+    //     }
+    // }
+
+    public void addToCreatedServers (IRCServerBase newServer)
     {
-        if (getCreatedServer(serverName) == null)
-        {
-            createdServers.add(new IRCServer(serverName.trim(), userNameTextField.getText().trim(),
-                    realNameTextField.getText().trim(), new String(passwordTextField.getPassword()),
-                    serverPortTextField.getText().trim(), serverTLSCheckBox.isSelected(),
-                    proxyHostNameTextField.getText(), proxyPortTextField.getText(), serverProxyCheckBox.isSelected()));
-        }
+        createdServers.add(newServer);
     }
 
     /*
@@ -258,262 +223,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         return createdServers.isEmpty();
     }
-
-    @Override
-    public CapTypeBase authenticationType ()
-    {
-        return (CapTypeBase) authenticationTypeChoice.getSelectedItem();
-    }
-
-    /**
-     * Add the components to the Server Options Panel.
-     */
-    private void setupConnectionPanel ()
-    {
-        // connectionPanel.setLayout(new BoxLayout(connectionPanel, BoxLayout.PAGE_AXIS));
-        setupConnectionLayout();
-
-        // User stuff
-        connectionPanel.add(userNameLabel);
-        connectionPanel.add(userNameTextField);
-        // userNameTextField.setPreferredSize(new Dimension(100, 24));
-        // userNameTextField.setMinimumSize(new Dimension(100, 0));
-
-        connectionPanel.add(realNameLabel);
-        connectionPanel.add(realNameTextField);
-        // realNameTextField.setMinimumSize(new Dimension(100, 0));
-
-        connectionPanel.add(authenticationTypeLabel);
-        connectionPanel.add(authenticationTypeChoice);
-        authenticationTypeChoice.addActionListener(new UCAuthTypeComboBoxChangeHandler());
-        // authenticationTypeChoice.setPreferredSize(new Dimension(200, 20));
-
-        connectionPanel.add(passwordLabel);
-        connectionPanel.add(passwordTextField);
-        passwordTextField.setEchoChar('*');
-
-        connectionPanel.add(rememberPassLabel);
-        connectionPanel.add(rememberPassCheckBox);
-        // passwordTextField.setPreferredSize(new Dimension(200, 20));
-
-        // Server Stuff
-        connectionPanel.add(serverNameLabel);
-        connectionPanel.add(servernameTextField);
-        // servernameTextField.setPreferredSize(new Dimension(100, 20));
-
-        connectionPanel.add(serverPortLabel);
-        connectionPanel.add(serverPortTextField);
-        // serverPortTextField.setPreferredSize(new Dimension(50, 20));
-
-        connectionPanel.add(serverUseTLSLabel);
-        connectionPanel.add(serverTLSCheckBox);
-        // serverTLSCheckBox.setPreferredSize(new Dimension(50, 20));
-
-        // Proxy Stuff
-        connectionPanel.add(proxyHostLabel);
-        connectionPanel.add(proxyHostNameTextField);
-        // proxyHostNameTextField.setPreferredSize(new Dimension(100, 20));
-
-        connectionPanel.add(proxyPortLabel);
-        connectionPanel.add(proxyPortTextField);
-        // proxyPortTextField.setPreferredSize(new Dimension(50, 20));
-
-        connectionPanel.add(serverUseProxyLabel);
-        connectionPanel.add(serverProxyCheckBox);
-        // serverProxyCheckBox.setPreferredSize(new Dimension(50, 20));
-
-        // Channel Stuff
-        connectionPanel.add(firstChannelLabel);
-        connectionPanel.add(firstChannelTextField);
-        // firstChannelTextField.setPreferredSize(new Dimension(100, 20));
-
-        connectionPanel.add(connectButton);
-        connectButton.addActionListener(new ConnectPressed());
-        connectionPanel.add(autoConnectToFavourites);
-
-        favouritesScroller.setPreferredSize(new Dimension(200, 100));
-        favouritesList.addMouseListener(new FavouritesPopClickListener());
-        connectionPanel.add(favouritesScroller);
-    }
-
-    /**
-     * Aligns components on the Server Options Panel
-     */
-    private void setupConnectionLayout ()
-    {
-        SpringLayout connectionLayout = new SpringLayout();
-        connectionPanel.setLayout(connectionLayout);
-
-        // Used to make it more obvious what is going on -
-        // and perhaps more readable.
-        // 0 means THAT edge will be flush with the opposing components edge
-        // Yes, negative numbers will make it overlap
-        final int TOP_SPACING = 6;
-        final int TOP_ALIGNED = 0;
-        final int LEFT_ALIGNED = 0;
-        final int RIGHT_ALIGNED = 0;
-        final int LEFT_SPACING = 6;
-
-        // Components are aligned off the top label
-        // User stuff
-        connectionLayout.putConstraint(SpringLayout.NORTH, userNameLabel, TOP_SPACING * 2, SpringLayout.NORTH,
-                connectionPanel);
-        connectionLayout.putConstraint(SpringLayout.WEST, userNameLabel, LEFT_SPACING * 2, SpringLayout.WEST,
-                connectionPanel);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, userNameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
-                userNameLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, userNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
-                userNameLabel);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, realNameLabel, TOP_SPACING, SpringLayout.SOUTH,
-                userNameTextField);
-        connectionLayout.putConstraint(SpringLayout.WEST, realNameLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                userNameTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, realNameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
-                realNameLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, realNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
-                realNameLabel);
-        connectionLayout.putConstraint(SpringLayout.EAST, realNameTextField, RIGHT_ALIGNED, SpringLayout.EAST,
-                userNameTextField);
-
-        // Authentication Stuff
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, authenticationTypeLabel, TOP_SPACING, SpringLayout.SOUTH,
-                realNameTextField);
-        connectionLayout.putConstraint(SpringLayout.WEST, authenticationTypeLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                realNameTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, authenticationTypeChoice, TOP_ALIGNED, SpringLayout.SOUTH,
-                authenticationTypeLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, authenticationTypeChoice, LEFT_ALIGNED, SpringLayout.WEST,
-                authenticationTypeLabel);
-        connectionLayout.putConstraint(SpringLayout.EAST, authenticationTypeChoice, RIGHT_ALIGNED, SpringLayout.EAST,
-                realNameTextField);
-
-        // Password
-        connectionLayout.putConstraint(SpringLayout.NORTH, passwordLabel, TOP_SPACING, SpringLayout.SOUTH,
-                authenticationTypeChoice);
-        connectionLayout.putConstraint(SpringLayout.WEST, passwordLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                authenticationTypeChoice);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, passwordTextField, TOP_ALIGNED, SpringLayout.SOUTH,
-                passwordLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, passwordTextField, LEFT_ALIGNED, SpringLayout.WEST,
-                passwordLabel);
-        connectionLayout.putConstraint(SpringLayout.EAST, passwordTextField, RIGHT_ALIGNED, SpringLayout.EAST,
-                authenticationTypeChoice);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, rememberPassLabel, TOP_ALIGNED, SpringLayout.NORTH,
-                passwordLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, rememberPassLabel, LEFT_ALIGNED, SpringLayout.EAST,
-                passwordTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, rememberPassCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
-                rememberPassLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, rememberPassCheckBox, LEFT_ALIGNED, SpringLayout.EAST,
-                passwordTextField);
-
-
-        // Server stuff
-        connectionLayout.putConstraint(SpringLayout.NORTH, serverNameLabel, TOP_SPACING, SpringLayout.SOUTH,
-                passwordTextField);
-        connectionLayout.putConstraint(SpringLayout.WEST, serverNameLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                passwordTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, servernameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
-                serverNameLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, servernameTextField, LEFT_ALIGNED, SpringLayout.WEST,
-                serverNameLabel);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, serverPortLabel, TOP_ALIGNED, SpringLayout.NORTH,
-                serverNameLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, serverPortLabel, LEFT_ALIGNED, SpringLayout.EAST,
-                servernameTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, serverPortTextField, TOP_ALIGNED, SpringLayout.SOUTH,
-                serverPortLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, serverPortTextField, LEFT_ALIGNED, SpringLayout.WEST,
-                serverPortLabel);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, serverUseTLSLabel, TOP_ALIGNED, SpringLayout.NORTH,
-                serverPortLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, serverUseTLSLabel, LEFT_ALIGNED, SpringLayout.EAST,
-                serverPortTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, serverTLSCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
-                serverUseTLSLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, serverTLSCheckBox, LEFT_ALIGNED, SpringLayout.WEST,
-                serverUseTLSLabel);
-
-        // Proxy stuff
-        connectionLayout.putConstraint(SpringLayout.NORTH, proxyHostLabel, TOP_SPACING, SpringLayout.SOUTH,
-                servernameTextField);
-        connectionLayout.putConstraint(SpringLayout.WEST, proxyHostLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                servernameTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, proxyHostNameTextField, TOP_ALIGNED, SpringLayout.SOUTH,
-                proxyHostLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, proxyHostNameTextField, LEFT_ALIGNED, SpringLayout.WEST,
-                proxyHostLabel);
-        connectionLayout.putConstraint(SpringLayout.EAST, proxyHostNameTextField, RIGHT_ALIGNED, SpringLayout.EAST,
-                servernameTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, proxyPortLabel, TOP_ALIGNED, SpringLayout.NORTH,
-                proxyHostLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, proxyPortLabel, LEFT_ALIGNED, SpringLayout.EAST,
-                proxyHostNameTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, proxyPortTextField, TOP_ALIGNED, SpringLayout.SOUTH,
-                proxyPortLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, proxyPortTextField, LEFT_ALIGNED, SpringLayout.WEST,
-                proxyPortLabel);
-        connectionLayout.putConstraint(SpringLayout.EAST, proxyPortTextField, RIGHT_ALIGNED, SpringLayout.EAST,
-                serverPortTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, serverUseProxyLabel, TOP_ALIGNED, SpringLayout.NORTH,
-                proxyPortLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, serverUseProxyLabel, LEFT_ALIGNED, SpringLayout.EAST,
-                proxyPortTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, serverProxyCheckBox, TOP_ALIGNED, SpringLayout.SOUTH,
-                serverUseProxyLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, serverProxyCheckBox, LEFT_ALIGNED, SpringLayout.WEST,
-                serverUseProxyLabel);
-
-        // Channel Stuff
-        connectionLayout.putConstraint(SpringLayout.NORTH, firstChannelLabel, TOP_SPACING, SpringLayout.SOUTH,
-                proxyHostNameTextField);
-        connectionLayout.putConstraint(SpringLayout.WEST, firstChannelLabel, LEFT_ALIGNED, SpringLayout.WEST,
-                proxyHostNameTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, firstChannelTextField, TOP_ALIGNED, SpringLayout.SOUTH,
-                firstChannelLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, firstChannelTextField, LEFT_ALIGNED, SpringLayout.WEST,
-                firstChannelLabel);
-        connectionLayout.putConstraint(SpringLayout.EAST, firstChannelTextField, RIGHT_ALIGNED, SpringLayout.EAST,
-                proxyHostNameTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, connectButton, TOP_SPACING * TOP_SPACING, SpringLayout.SOUTH,
-                firstChannelTextField);
-        connectionLayout.putConstraint(SpringLayout.WEST, connectButton, LEFT_ALIGNED, SpringLayout.WEST,
-                firstChannelTextField);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, autoConnectToFavourites, TOP_ALIGNED, SpringLayout.NORTH,
-                userNameLabel);
-        connectionLayout.putConstraint(SpringLayout.WEST, autoConnectToFavourites, LEFT_SPACING, SpringLayout.EAST,
-                serverUseProxyLabel);
-
-        connectionLayout.putConstraint(SpringLayout.NORTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
-                autoConnectToFavourites);
-        connectionLayout.putConstraint(SpringLayout.WEST, favouritesScroller, LEFT_ALIGNED, SpringLayout.WEST,
-                autoConnectToFavourites);
-        connectionLayout.putConstraint(SpringLayout.EAST, favouritesScroller, LEFT_ALIGNED, SpringLayout.EAST,
-                autoConnectToFavourites);
-        connectionLayout.putConstraint(SpringLayout.SOUTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
-                connectButton);
-    }
+    
 
     private void setupAppearancePanel ()
     {
@@ -590,8 +300,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         updatePreviewTextArea();
 
         URPanels.addToPanel(appearancePanel, clientFontPanel, "Profile Font", Placement.DEFAULT, null, null);
-        URPanels.addToPanel(appearancePanel, timeStampField, "Timestamp Format", Placement.DEFAULT, Size.MEDIUM, null);
-        URPanels.addToPanel(appearancePanel, nickFormatField, "Nick Format", Placement.RIGHT, Size.MEDIUM, null);
+        URPanels.addToPanel(appearancePanel, timeStampField, "Timestamp", Placement.DEFAULT, Size.MEDIUM, null);
+        URPanels.addToPanel(appearancePanel, nickFormatField, "Nick", Placement.RIGHT, Size.MEDIUM, null);
 
         URPanels.addToPanel(appearancePanel, previewTextScroll, "Font Preview", Placement.DEFAULT, null, null);
         URPanels.addToPanel(appearancePanel, styleLabel, "Preview Style", Placement.DEFAULT, null, null);
@@ -730,281 +440,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     }
 
     /**
-     * Create an element in the favourites list. Contains a constructor plus a pop up menu for the
-     * element.
-     *
-     * @author Matt
-     * @param String server
-     * @param String channel
-     */
-    // TODO update javadoc
-    class FavouritesItem
-    {
-        String favServer;
-        String favChannel;
-        Preferences settingsPath;
-        FavouritesPopUp myMenu;
-        FontDialog favFontDialog;
-
-        public FavouritesItem (String favServer, String favChannel)
-        {
-            this.favServer = favServer;
-            this.favChannel = favChannel;
-            settingsPath = URProfilesUtil.getActiveFavouritesPath().node(favServer).node(favChannel);
-
-            URProfilesUtil.addListener(EventType.CHANGE, e -> {
-                settingsPath = URProfilesUtil.getActiveFavouritesPath().node(favServer).node(favChannel);
-            });
-
-            createPopUp();
-        }
-
-        @Override
-        public String toString ()
-        {
-            return favServer + ":" + favChannel;
-        }
-
-        public void createPopUp ()
-        {
-            myMenu = new FavouritesPopUp();
-        }
-
-        protected class SaveChannelFontListener implements ActionListener
-        {
-            @Override
-            public void actionPerformed (ActionEvent arg0)
-            {
-                for (int index = 0; index < tabbedPane.getTabCount(); index++)
-                {
-                    Component tab = tabbedPane.getComponentAt(index);
-
-                    if (tab instanceof IRCRoomBase)
-                    {
-                        IRCRoomBase tabRoom = (IRCRoomBase) tab;
-                        if (tabRoom.getServer().getName().equals(favServer) && tabRoom.getName().equals(favChannel))
-                        {
-                            tabRoom.getFontPanel().setFont(favFontDialog.getFontPanel().getStyle(), true);
-                            tabRoom.setFont(favFontDialog.getFontPanel().getFont());
-                        }
-                    }
-                }
-            }
-        }
-
-        private class FavouritesPopUp extends JPopupMenu
-        {
-            /**
-             *
-             */
-            private final long serialVersionUID = -3599612559330380653L;
-            JMenuItem nameItem;
-            JMenuItem removeItem;
-            JMenuItem fontItem;
-
-            public FavouritesPopUp ()
-            {
-                nameItem = new JMenuItem(FavouritesItem.this.toString());
-                add(nameItem);
-                this.addSeparator();
-                //
-                fontItem = new JMenuItem("Channel Font");
-                fontItem.addActionListener(new ShowFontDialog());
-                add(fontItem);
-                // nameItem.setEnabled(false);
-                removeItem = new JMenuItem("Delete");
-                removeItem.addActionListener(new RemoveFavourite());
-                add(removeItem);
-            }
-
-        }
-
-        private class ShowFontDialog implements ActionListener
-        {
-            @Override
-            public void actionPerformed (ActionEvent arg0)
-            {
-                if(favFontDialog == null)
-                {
-                    favFontDialog = new FontDialog(favChannel, UserGUI.this.getStyle(), settingsPath);
-                    favFontDialog.addSaveListener(new SaveChannelFontListener());
-                }
-
-                if (favouritesList.getSelectedIndex() > -1)
-                {
-                    FavouritesItem tempItem = favouritesListModel.elementAt(favouritesList.getSelectedIndex());
-                    tempItem.favFontDialog.getFontPanel().loadStyle();
-                    tempItem.favFontDialog.setVisible(true);
-                }
-            }
-        }
-
-        private class RemoveFavourite implements ActionListener
-        {
-            @Override
-            public void actionPerformed (ActionEvent arg0)
-            {
-                if (favouritesList.getSelectedIndex() > -1)
-                {
-                    FavouritesItem tempItem = favouritesListModel.elementAt(favouritesList.getSelectedIndex());
-                    removeFavourite(tempItem.favServer, tempItem.favChannel);
-                    Preferences channelNode = URProfilesUtil.getActiveFavouritesPath().node(tempItem.favServer).node(tempItem.favChannel);
-                    try
-                    {
-                        String[] channelKeys = channelNode.keys();
-                        if (channelKeys.length > 0)
-                        {
-                            int keyLength = channelKeys.length;
-
-                            do
-                            {
-                                channelNode.remove(channelKeys[keyLength - 1]);
-                                keyLength = channelNode.keys().length;
-                            } while (keyLength > 0);
-                        }
-                    } catch (BackingStoreException e)
-                    {
-                        Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
-                    }
-                }
-            }
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#addFavourite(java.lang.String, java.lang.String)
-     */
-    @Override
-    public void addFavourite (String favServer, String favChannel)
-    {
-        favouritesListModel.addElement(new FavouritesItem(favServer, favChannel));
-
-        URProfilesUtil.getActiveFavouritesPath().node(favServer).node(favChannel).put("PORT", getCreatedServer(favServer).getPort());
-    }
-
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#isFavourite(urChatBasic.frontend.IRCChannel)
-     */
-    @Override
-    public Boolean isFavourite (IRCRoomBase channel)
-    {
-        FavouritesItem castItem;
-
-        for (Object tempItem : favouritesListModel.toArray())
-        {
-            castItem = (FavouritesItem) tempItem;
-            if (castItem.favChannel.equals(channel.getName()) && castItem.favServer.equals(channel.getServer()))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#removeFavourite(java.lang.String, java.lang.String)
-     */
-    @Override
-    public void removeFavourite (String favServer, String favChannel)
-    {
-        FavouritesItem castItem;
-
-        for (Object tempItem : favouritesListModel.toArray())
-        {
-            castItem = (FavouritesItem) tempItem;
-            if (castItem.favChannel.equals(favChannel) && castItem.favServer.equals(favServer))
-            {
-                favouritesListModel.removeElement(castItem);
-                break;
-            }
-        }
-    }
-
-
-    class FavouritesPopClickListener extends MouseAdapter
-    {
-        public void mousePressed (MouseEvent e)
-        {
-            if (e.isPopupTrigger())
-            {
-                int row = favouritesList.locationToIndex(e.getPoint());
-                if (row > -1)
-                {
-                    favouritesList.setSelectedIndex(row);
-                    doPop(e);
-                }
-            }
-        }
-
-        public void mouseReleased (MouseEvent e)
-        {
-            if (e.isPopupTrigger())
-            {
-                int row = favouritesList.locationToIndex(e.getPoint());
-                if (row > -1)
-                {
-                    favouritesList.setSelectedIndex(row);
-                    doPop(e);
-                }
-            }
-        }
-
-        private void doPop (MouseEvent e)
-        {
-            favouritesList.getSelectedValue().myMenu.show(e.getComponent(), e.getX(), e.getY());
-        }
-    }
-    /**
-     * Used to initiate server connection
-     *
-     * @author Matt
-     *
-     */
-    private class ConnectPressed implements ActionListener
-    {
-        @Override
-        public void actionPerformed (ActionEvent arg0)
-        {
-            if (passwordTextField.getPassword().length > 0
-                    || authenticationType().equals(CapabilityTypes.NONE.getType()))
-            {
-                addToCreatedServers(servernameTextField.getText().trim());
-
-                if (autoConnectToFavourites.isSelected())
-                {
-                    FavouritesItem castItem;
-                    for (Object tempItem : favouritesListModel.toArray())
-                    {
-                        castItem = (FavouritesItem) tempItem;
-                        addToCreatedServers(castItem.favServer);
-                    }
-                }
-
-                for (IRCServerBase server : createdServers)
-                {
-                    server.connect();
-                }
-
-                // profilePicker.setEnabled(false);
-            } else if (!authenticationType().equals(CapabilityTypes.NONE.getType()))
-            {
-                MessageDialog dialog = new MessageDialog(
-                        "Password field is empty and is required for your chosen authentication method.", "Warning",
-                        JOptionPane.WARNING_MESSAGE);
-                dialog.setVisible(true);
-            }
-        }
-    }
-
-    /**
      * (non-Javadoc)
      *
      * Connection was a success, setup the server tab
@@ -1039,31 +474,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         for (IRCServerBase tempServer : createdServers)
             tempServer.sendClientText(message, sender);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see urChatBasic.frontend.UserGUIBase#connectFavourites(urChatBasic.base.IRCServerBase)
-     */
-    @Override
-    public void connectFavourites (IRCServerBase server)
-    {
-        if (servernameTextField.getText().trim().equals(server.getName()))
-            server.sendClientText("/join " + firstChannelTextField.getText().trim(),
-                    servernameTextField.getText().trim());
-
-        if (autoConnectToFavourites.isSelected())
-        {
-            FavouritesItem castItem;
-            for (Object tempItem : favouritesListModel.toArray())
-            {
-                castItem = (FavouritesItem) tempItem;
-                if (castItem.favServer.equals(server.getName()))
-                    if (server.getCreatedChannel(castItem.favChannel) == null)
-                        server.sendClientText("/join " + castItem.favChannel, castItem.favServer);
-            }
-        }
     }
 
     /*
@@ -1111,29 +521,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     public void setClientSettings ()
     {
-        URPreferencesUtil.putPref(Constants.KEY_FIRST_CHANNEL, firstChannelTextField.getText(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_FIRST_SERVER, servernameTextField.getText(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_FIRST_PORT, serverPortTextField.getText(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_AUTH_TYPE, authenticationTypeChoice.getSelectedItem().toString(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_PASSWORD_REMEMBER, rememberPassCheckBox.isSelected(), URProfilesUtil.getActiveProfilePath());
-
-        String rememberString = "";
-
-        if (rememberPassCheckBox.isSelected())
-        {
-            rememberString = new String(passwordTextField.getPassword());
-        }
-
-        URPreferencesUtil.putPref(Constants.KEY_PASSWORD, rememberString, URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_USE_TLS, serverTLSCheckBox.isSelected(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_PROXY_HOST, proxyHostNameTextField.getText(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_PROXY_PORT, proxyPortTextField.getText(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_USE_PROXY, serverProxyCheckBox.isSelected(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_NICK_NAME, userNameTextField.getText(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_REAL_NAME, realNameTextField.getText(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_TIME_STAMP_FORMAT, timeStampField.getText(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_LAF_NAME, ((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_AUTO_CONNECT_FAVOURITES, autoConnectToFavourites.isSelected(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.saveStyle(defaultStyle, clientFontPanel.getStyle(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_WINDOW_X, (int) DriverGUI.frame.getBounds().getX(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_WINDOW_Y, (int) DriverGUI.frame.getBounds().getY(), URProfilesUtil.getActiveProfilePath());
@@ -1148,35 +537,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     public void getClientSettings (boolean loadWindowSettings)
     {
-        firstChannelTextField
-                .setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_FIRST_CHANNEL, Constants.DEFAULT_FIRST_CHANNEL));
-        servernameTextField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_FIRST_SERVER, Constants.DEFAULT_FIRST_SERVER));
-        serverPortTextField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_FIRST_PORT, Constants.DEFAULT_FIRST_PORT));
-        serverTLSCheckBox.setSelected(URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_USE_TLS, Constants.DEFAULT_USE_TLS));
-
-        authenticationTypeChoice.setSelectedItem(CapabilityTypes.getCapType(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_AUTH_TYPE, Constants.DEFAULT_AUTH_TYPE)));
-
-        rememberPassCheckBox.setSelected(
-                URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_PASSWORD_REMEMBER, Constants.DEFAULT_PASSWORD_REMEMBER));
-
-        if (rememberPassCheckBox.isSelected())
-        {
-            passwordTextField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_PASSWORD, Constants.DEFAULT_PASSWORD));
-        }
-
-        proxyHostNameTextField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_PROXY_HOST, Constants.DEFAULT_PROXY_HOST));
-        proxyPortTextField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_PROXY_PORT, Constants.DEFAULT_PROXY_PORT));
-        serverProxyCheckBox
-                .setSelected(URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_USE_PROXY, Constants.DEFAULT_USE_PROXY));
-
-        userNameTextField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_NICK_NAME, Constants.DEFAULT_NICK_NAME));
-        realNameTextField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_REAL_NAME, Constants.DEFAULT_REAL_NAME));
-
-
         lafOptions.setSelectedItem(getLAF(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_LAF_NAME, Constants.DEFAULT_LAF_NAME)));
-
-        // setNewLAF(((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName());
-
 
         clientFontPanel.loadStyle();
 
@@ -1188,9 +549,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
 
         updatePreviewTextArea();
-
-        autoConnectToFavourites.setSelected(URProfilesUtil.getActiveProfilePath().getBoolean(Constants.KEY_AUTO_CONNECT_FAVOURITES,
-                Constants.DEFAULT_AUTO_CONNECT_FAVOURITES));
 
         if (loadWindowSettings && DriverGUI.frame != null)
         {
@@ -1204,24 +562,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                             URProfilesUtil.getActiveProfilePath().getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT)));
         }
 
-        // TODO Add Port number to favourites.
-        try
-        {
-            favouritesListModel.removeAllElements();
-            for (String serverNode : URProfilesUtil.getActiveFavouritesPath().childrenNames())
-            {
-                for (String channelNode : URProfilesUtil.getActiveFavouritesPath().node(serverNode).childrenNames())
-                {
-                    if (URProfilesUtil.getActiveFavouritesPath().node(serverNode).node(channelNode).keys().length > 0)
-                    {
-                        favouritesListModel.addElement(new FavouritesItem(serverNode, channelNode));
-                    }
-                }
-            }
-        } catch (BackingStoreException e)
-        {
-            Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
-        }
     }
 
     /*
@@ -1233,30 +573,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public void removeClientSetting (String node, String key)
     {
         URProfilesUtil.getActiveProfilePath().node(node).remove(key);
-    }
-
-    class UCAuthTypeComboBoxChangeHandler implements ActionListener
-    {
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            authenticationTypeChoice.runChangeListener();
-
-            if (authenticationType().equals(CapabilityTypes.NONE.getType()))
-            {
-                passwordLabel.setVisible(false);
-                passwordTextField.setVisible(false);
-                rememberPassCheckBox.setVisible(false);
-                rememberPassLabel.setVisible(false);
-            } else
-            {
-                passwordLabel.setText(authenticationTypeChoice.getPasswordFieldName());
-                passwordLabel.setVisible(true);
-                passwordTextField.setVisible(true);
-                rememberPassCheckBox.setVisible(true);
-                rememberPassLabel.setVisible(true);
-            }
-        }
     }
 
     class ChangeLAFListener implements ActionListener
@@ -1296,9 +612,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
                     if (selectedComponent instanceof IRCPrivate)
                     {
-                        IRCServerBase tempServer =
-                                getCreatedServer(((IRCRoomBase) selectedComponent).getServer().getName());
-                        tempServer.quitRoom((IRCRoomBase) selectedComponent);
+                        ((IRCRoomBase) selectedComponent).getServer().quitRoom((IRCRoomBase) selectedComponent);
                     } else
                     {
                         ((IRCRoomBase) selectedComponent).myMenu.show(tabbedPane, e.getX(), e.getY());
@@ -1369,15 +683,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 }
             }
 
-            for (int index = 0; index < favouritesList.getModel().getSize(); index++)
-            {
-                FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
-                if(favouriteItem.favFontDialog != null)
-                {
-                    favouriteItem.favFontDialog.getFontPanel().setDefaultStyle(getStyle());
-                    favouriteItem.favFontDialog.getFontPanel().loadStyle();
-                }
-            }
+            // TODO: Favourites handling to be done elsewhere
+            // for (int index = 0; index < favouritesList.getModel().getSize(); index++)
+            // {
+            //     FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
+            //     if(favouriteItem.favFontDialog != null)
+            //     {
+            //         favouriteItem.favFontDialog.getFontPanel().setDefaultStyle(getStyle());
+            //         favouriteItem.favFontDialog.getFontPanel().loadStyle();
+            //     }
+            // }
 
             // defaultStyle = clientFontPanel.getStyle();
             previewLineFormatter.updateStyles(getStyle());
@@ -1399,7 +714,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
 
-        setupConnectionPanel();
         setupAppearancePanel();
 
         // this.setBackground(Color.gray);
@@ -1559,12 +873,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                         SwingUtilities.updateComponentTreeUI(roomTab.myMenu);
                         SwingUtilities.updateComponentTreeUI(roomTab.getFontPanel());
                     }
-                }
-
-                for (int index = 0; index < favouritesList.getModel().getSize(); index++)
-                {
-                    FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
-                    SwingUtilities.updateComponentTreeUI(favouriteItem.myMenu);
                 }
 
                 // update the styles in the preview text area

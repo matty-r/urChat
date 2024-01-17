@@ -672,7 +672,7 @@ public class MessageHandler
                     serverBase.setCapabilities(myMessage.body);
                     if (serverBase.hasCapability(CapabilityTypes.SASL)) {
                         // Did the client have a sasl type selected?
-                        if (gui.authenticationType().equals(SaslCapSubTypes.PLAIN)) {
+                        if (serverBase.getAuthentication().equals(SaslCapSubTypes.PLAIN)) {
                             serverBase.saslRequestAuthentication();
                             break;
                         }
@@ -680,7 +680,7 @@ public class MessageHandler
 
                     // end capability message
                     serverBase.saslCompleteAuthentication();
-                    if (gui.authenticationType().equals(CapabilityTypes.NICKSERV.getType())) {
+                    if (serverBase.getAuthentication().equals(CapabilityTypes.NICKSERV.getType())) {
                         serverBase.nickservRequestAuthentication();
                     }
                 }
@@ -713,7 +713,7 @@ public class MessageHandler
             if (myMessage.nick != null && myMessage.nick.equalsIgnoreCase("NickServ"))
             {
                 printPrivateText(myMessage.nick, myMessage.body, myMessage.nick);
-                gui.connectFavourites(myMessage.messageHandler.serverBase);
+                serverBase.reconnectChannels();
             } else
             {
                 IRCRoomBase messageChannel = myMessage.messageHandler.serverBase.getCreatedChannel(myMessage.getChannel());

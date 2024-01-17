@@ -247,6 +247,11 @@ public class IRCRoomBase extends JPanel
 
     }
 
+    public void rejoin ()
+    {
+        server.sendClientText("/join " + getName(), server.getName());
+    }
+
     public void setSettingsPath (Preferences settingsPath)
     {
         roomPrefs = settingsPath;
@@ -905,13 +910,14 @@ public class IRCRoomBase extends JPanel
         @Override
         public void show(Component arg0, int arg1, int arg2)
         {
-            if (gui.isFavourite(IRCRoomBase.this))
-            {
-                ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Remove as Favourite");
-            } else
-            {
-                ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Add as Favourite");
-            }
+            // TODO: Favourites handling to be done elsewhere
+            // if (gui.isFavourite(IRCRoomBase.this))
+            // {
+            //     ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Remove as Favourite");
+            // } else
+            // {
+            //     ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Add as Favourite");
+            // }
 
             super.show(arg0, arg1, arg2);
         }
@@ -923,16 +929,17 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            if (null != getServer())
-            {
-                if (!gui.isFavourite(IRCRoomBase.this))
-                {
-                    gui.addFavourite(getServer().getName(), getName());
-                } else
-                {
-                    gui.removeFavourite(getServer().getName(), getName());
-                }
-            }
+            // TODO: Favourites handling to be done elsewhere
+            // if (null != getServer())
+            // {
+            //     if (!gui.isFavourite(IRCRoomBase.this))
+            //     {
+            //         gui.addFavourite(getServer().getName(), getName());
+            //     } else
+            //     {
+            //         gui.removeFavourite(getServer().getName(), getName());
+            //     }
+            // }
         }
     }
 
