@@ -1,27 +1,32 @@
 package urChatBasic.frontend.panels;
 
 import java.util.Optional;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import urChatBasic.base.Constants;
+import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.Constants.Placement;
+import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.utils.URPanels;
 
-public class InterfacePanel extends UROptionsPanel {
+public class InterfacePanel extends UROptionsPanel
+{
     public static final String PANEL_DISPLAY_NAME = "Interface";
 
-    public JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
-    public JCheckBox showUsersList = new JCheckBox("Show Users List");
-    public JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
-    public JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
-    public JCheckBox showJoinsQuitsMainWindow = new JCheckBox("Show Joins/Quits in the Chat Window");
-    public JCheckBox logChannelText = new JCheckBox("Save and log all channel text");
-    public JCheckBox logServerActivity = new JCheckBox("Save and log all Server activity");
-    public JCheckBox logClientText = new JCheckBox("Log client text (Allows up or down history)");
-    public JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
+    private final JCheckBox showTabIcons = new JCheckBox("Show Tab icons");
+    private final JCheckBox showEventTicker = new JCheckBox("Show Event Ticker");
+    private final JCheckBox showUsersList = new JCheckBox("Show Users List");
+    private final JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
+    private final JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
+    private final JCheckBox showJoinsQuitsMainWindow = new JCheckBox("Show Joins/Quits in the Chat Window");
+    private final JCheckBox logChannelText = new JCheckBox("Save and log all channel text");
+    private final JCheckBox logServerActivity = new JCheckBox("Save and log all Server activity");
+    private final JCheckBox logClientText = new JCheckBox("Log client text (Allows up or down history)");
+    private final JCheckBox limitServerLines = new JCheckBox("Limit the number of lines in Server activity");
     private final JCheckBox limitChannelLines = new JCheckBox("Limit the number of lines in channel text");
-    public JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
+    private final JCheckBox enableTimeStamps = new JCheckBox("Time Stamp chat messages");
 
     public JTextField limitServerLinesCount = new JTextField();
     public JTextField limitChannelLinesCount = new JTextField();
@@ -30,8 +35,7 @@ public class InterfacePanel extends UROptionsPanel {
     public final int TICKER_DELAY_MAX = 30;
     public final int TICKER_DELAY_INIT = 20;
     public final int DEFAULT_LINES_LIMIT = Integer.parseInt(Constants.DEFAULT_LIMIT_CHANNEL_LINES_COUNT);
-    public JSlider eventTickerDelay =
-            new JSlider(JSlider.HORIZONTAL, TICKER_DELAY_MIN, TICKER_DELAY_MAX, TICKER_DELAY_INIT);
+    public JSlider eventTickerDelay = new JSlider(JSlider.HORIZONTAL, TICKER_DELAY_MIN, TICKER_DELAY_MAX, TICKER_DELAY_INIT);
 
     public InterfacePanel (MainOptionsPanel optionsPanel)
     {
@@ -46,11 +50,12 @@ public class InterfacePanel extends UROptionsPanel {
     }
 
     /**
-     * Adds all the components to the panel, with the related preference Keys for that component.
-     * i.e showEventTicker is set via the KEY_EVENT_TICKER_ACTIVE key ('show event ticker')
+     * Adds all the components to the panel, with the related preference Keys for that component. i.e showEventTicker is set via the KEY_EVENT_TICKER_ACTIVE key
+     * ('show event ticker')
      */
     private void setupInterfacePanel ()
     {
+        URPanels.addToPanel(this, showTabIcons, null, Placement.DEFAULT, null, Constants.KEY_SHOW_TAB_ICON);
         URPanels.addToPanel(this, showEventTicker, null, Placement.DEFAULT, null, Constants.KEY_EVENT_TICKER_ACTIVE);
         URPanels.addToPanel(this, enableClickableLinks, null, Placement.DEFAULT, null, Constants.KEY_CLICKABLE_LINKS_ENABLED);
         URPanels.addToPanel(this, showJoinsQuitsEventTicker, null, Placement.DEFAULT, null, Constants.KEY_EVENT_TICKER_JOINS_QUITS);
@@ -76,6 +81,21 @@ public class InterfacePanel extends UROptionsPanel {
 
         // interfacePanel.add(eventTickerLabel);
         URPanels.addToPanel(this, eventTickerDelay, "Event Ticker Delay", Placement.DEFAULT, null, Constants.KEY_EVENT_TICKER_DELAY);
+
+        showTabIcons.addActionListener(e -> {
+            for (int i = 0; i < DriverGUI.gui.tabbedPane.getTabCount(); i++)
+            {
+                ImageIcon setIcon = null;
+
+                if (DriverGUI.gui.tabbedPane.getComponentAt(i) instanceof IRCRoomBase)
+                {
+                    IRCRoomBase room = (IRCRoomBase) DriverGUI.gui.tabbedPane.getComponentAt(i);
+                    setIcon = room.icon;
+                    DriverGUI.gui.tabbedPane.setIconAt(i, showTabIcons.isSelected() ? setIcon : null);
+                }
+
+            }
+        });
     }
 
     public int getLimitServerLinesCount ()
@@ -147,7 +167,7 @@ public class InterfacePanel extends UROptionsPanel {
         return logServerActivity.isSelected();
     }
 
-        /*
+    /*
      * (non-Javadoc)
      *
      * @see urChatBasic.frontend.UserGUIBase#isShowingEventTicker()

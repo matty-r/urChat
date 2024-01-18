@@ -132,6 +132,20 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return -1;
     }
 
+    public int getTabIndex (IRCRoomBase targetTab)
+    {
+        for (int i = 0; i < DriverGUI.gui.tabbedPane.getTabCount(); i++)
+        {
+            Component currentTab = DriverGUI.gui.tabbedPane.getComponentAt(i);
+            if (currentTab instanceof IRCRoomBase && currentTab.equals(targetTab))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -223,7 +237,6 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     {
         return createdServers.isEmpty();
     }
-    
 
     private void setupAppearancePanel ()
     {
@@ -455,7 +468,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             {
                 if (server instanceof IRCServer)
                 {
-                    tabbedPane.addTab(server.getName(), ((IRCServer) server).icon, ((IRCServer) server));
+                    boolean iconsShown = (boolean) URPanels.getKeyComponentValue(Constants.KEY_SHOW_TAB_ICON);
+
+                    tabbedPane.addTab(server.getName(), iconsShown ? ((IRCRoomBase) server).icon : null, ((IRCServer) server));
                     setCurrentTab(server.getName());
                     // ((IRCServer) server).getUserTextBox().requestFocus();
                 }

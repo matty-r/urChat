@@ -30,6 +30,7 @@ import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.Constants.EventType;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.frontend.utils.URPanels;
 
 public class IRCServer extends IRCRoomBase implements IRCServerBase
 {
@@ -526,7 +527,9 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             IRCRoomBase tempChannel = asPrivate ? new IRCPrivate(this, getIRCUser(roomName)) : new IRCChannel(this, roomName);
             createdRooms.add(tempChannel);
 
-            gui.tabbedPane.insertTab(roomName, tempChannel.icon, tempChannel, null, gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1);
+            boolean iconsShown = (boolean) URPanels.getKeyComponentValue(Constants.KEY_SHOW_TAB_ICON);
+
+            gui.tabbedPane.insertTab(roomName, iconsShown ? tempChannel.icon : null, tempChannel, null, gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1);
             // gui.tabbedPane.addTab(roomName, tempChannel.icon, tempChannel);
             Component currentTab = gui.tabbedPane.getSelectedComponent();
             if (currentTab instanceof IRCRoomBase)

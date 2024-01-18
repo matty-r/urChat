@@ -49,7 +49,6 @@ public class IRCRoomBase extends JPanel
 
     // Icons
     public ImageIcon icon;
-    protected boolean tabIconShown = true;
 
     public JPopupMenu myMenu;
 
@@ -154,18 +153,6 @@ public class IRCRoomBase extends JPanel
     {
         usersListShown = true;
         toggleUsersList(usersListShown);
-    }
-
-    public void hideTabIcon()
-    {
-        tabIconShown = false;
-        toggleTabIcon(usersListShown);
-    }
-
-    public void showTabIcon()
-    {
-        tabIconShown = true;
-        toggleTabIcon(usersListShown);
     }
 
     public IRCRoomBase(String roomName)
@@ -636,11 +623,6 @@ public class IRCRoomBase extends JPanel
             else
                 mainResizer.setDividerLocation(gui.getWidth());
         }
-    }
-
-    public void toggleTabIcon (boolean showIt)
-    {
-        tabIconShown = showIt;
     }
 
     /**

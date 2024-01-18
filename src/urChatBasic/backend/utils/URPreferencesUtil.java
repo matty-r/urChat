@@ -2,7 +2,6 @@ package urChatBasic.backend.utils;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.List;
 import java.awt.font.TextAttribute;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +15,6 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import urChatBasic.base.Constants;
-import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.utils.URColour;
 
 public class URPreferencesUtil {

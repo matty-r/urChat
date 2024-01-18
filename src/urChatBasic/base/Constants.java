@@ -78,6 +78,7 @@ public class Constants
     public static final String KEY_TIME_STAMP_FORMAT = "timestamp format";
     public static final String KEY_NICK_FORMAT = "nick format";
     public static final String KEY_LAF_NAME = "laf name";
+    public static final String KEY_SHOW_TAB_ICON = "show tab icon";
     public static final String KEY_EVENT_TICKER_ACTIVE = "show event ticker";
     public static final String KEY_USERS_LIST_ACTIVE = "show users list";
     public static final String KEY_CLICKABLE_LINKS_ENABLED = "clickable links";
@@ -123,6 +124,7 @@ public class Constants
     public static final String DEFAULT_TIME_STAMP_FORMAT = "[HHmm]";
     public static final String DEFAULT_NICK_FORMAT = "<nick>";
     public static final String DEFAULT_LAF_NAME = UIManager.getSystemLookAndFeelClassName();
+    public static final Boolean DEFAULT_SHOW_TAB_ICON = true;
     public static final Boolean DEFAULT_EVENT_TICKER_ACTIVE = true;
     public static final Boolean DEFAULT_CLICKABLE_LINKS_ENABLED = true;
     public static final Boolean DEFAULT_USERS_LIST_ACTIVE = true;
@@ -240,6 +242,7 @@ public class Constants
         KEY_PROXY_PORT(Constants.KEY_PROXY_PORT, DEFAULT_PROXY_PORT),
         KEY_NICK_NAME(Constants.KEY_NICK_NAME, DEFAULT_NICK_NAME),
         KEY_REAL_NAME(Constants.KEY_REAL_NAME, DEFAULT_REAL_NAME),
+        KEY_SHOW_TAB_ICON(Constants.KEY_SHOW_TAB_ICON, DEFAULT_SHOW_TAB_ICON),
         KEY_TIME_STAMPS(Constants.KEY_TIME_STAMPS, DEFAULT_TIME_STAMPS),
         KEY_TIME_STAMP_FORMAT(Constants.KEY_TIME_STAMP_FORMAT, DEFAULT_TIME_STAMP_FORMAT),
         KEY_NICK_FORMAT(Constants.KEY_NICK_FORMAT, DEFAULT_NICK_FORMAT),

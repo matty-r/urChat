@@ -4,6 +4,7 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import javax.swing.JCheckBox;
@@ -24,8 +25,9 @@ public class URPanels
 {
     /**
      * Used to keep track of keys associated with specific components
+     * JPanel, Component Hash Code, preferenceKey
      */
-    private static Map<String, Map<Integer, String>> keyComponentAssociations = new HashMap<>();
+    private static Map<JPanel, Map<Integer, String>> keyComponentAssociations = new HashMap<>();
 
     /**
      * Used to keep track of newly created labels against components
@@ -57,11 +59,11 @@ public class URPanels
 
     public static void addKeyAssociation (JPanel targetPanel, Component targetComponent, String preferenceKey)
     {
-        if(keyComponentAssociations.get(targetPanel.toString()) == null)
-            keyComponentAssociations.put(targetPanel.toString(), new HashMap<>());
+        if(keyComponentAssociations.get(targetPanel) == null)
+            keyComponentAssociations.put(targetPanel, new HashMap<>());
 
         if(preferenceKey != null && !preferenceKey.isBlank())
-            keyComponentAssociations.get(targetPanel.toString()).put(targetComponent.hashCode(), preferenceKey);
+            keyComponentAssociations.get(targetPanel).put(targetComponent.hashCode(), preferenceKey);
     }
 
     public static void addLabelAssociation (JPanel targetPanel, Component targetComponent, JLabel targetLabel)
@@ -74,6 +76,45 @@ public class URPanels
     }
 
     /**
+     * Get component that is associated with a preference key.
+     * @param preferenceKey
+     * @return
+     */
+    public static Object getKeyComponentValue (String preferenceKey)
+    {
+        for (JPanel jPanel : keyComponentAssociations.keySet())
+        {
+            for (Entry<Integer, String> keyComponents : keyComponentAssociations.get(jPanel).entrySet())
+            {
+                if (keyComponents.getValue().equals(preferenceKey))
+                {
+                    for (Component panelComponent : jPanel.getComponents())
+                    {
+                        if (panelComponent.hashCode() == keyComponents.getKey())
+                        {
+                            if (panelComponent instanceof JCheckBox)
+                            {
+                                return ((JCheckBox) panelComponent).isSelected();
+                            } else if (panelComponent instanceof JTextField || panelComponent instanceof JPasswordField)
+                            {
+                                return ((JTextField) panelComponent).getText();
+                            } else if (panelComponent instanceof JSlider)
+                            {
+                                return ((JSlider) panelComponent).getValue();
+                            } else if (panelComponent instanceof JComboBox)
+                            {
+                                return ((JComboBox<?>) panelComponent).getSelectedItem();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Sets values on the interface components based on their associated Key and it's Default value. For the currently active Profile.
      * @param targetPanel
      */
@@ -81,7 +122,7 @@ public class URPanels
     {
         Preferences settingsPath = URProfilesUtil.getActiveProfilePath();
 
-        Map<Integer, String> panelSettings = keyComponentAssociations.get(targetPanel.toString());
+        Map<Integer, String> panelSettings = keyComponentAssociations.get(targetPanel);
         Map<Integer, Component> panelComponents = Arrays.stream(targetPanel.getComponents())
                 .collect(Collectors.toMap(Component::hashCode, component -> component, (v1, v2)-> v2));
 
@@ -121,7 +162,7 @@ public class URPanels
     {
         Preferences settingsPath = URProfilesUtil.getActiveProfilePath();
 
-        Map<Integer, String> panelSettings = keyComponentAssociations.get(targetPanel.toString());
+        Map<Integer, String> panelSettings = keyComponentAssociations.get(targetPanel);
         Map<Integer, Component> panelComponents = Arrays.stream(targetPanel.getComponents())
                 .collect(Collectors.toMap(Component::hashCode, component -> component, (v1, v2)-> v2));
 
