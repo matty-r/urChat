@@ -31,9 +31,11 @@ import urChatBasic.base.Constants.Size;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.base.proxy.ProxyTypes;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCServer;
-import urChatBasic.frontend.components.UCAuthTypeComboBox;
+import urChatBasic.frontend.components.URAuthTypeComboBox;
+import urChatBasic.frontend.components.URProxyTypeComboBox;
 import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.frontend.utils.URPanels;
@@ -46,7 +48,7 @@ public class ConnectionPanel extends UROptionsPanel {
     private final JTextField realNameTextField = new JTextField("");
 
     // Authentication
-    private final UCAuthTypeComboBox authenticationTypeChoice = new UCAuthTypeComboBox();
+    private final URAuthTypeComboBox authenticationTypeChoice = new URAuthTypeComboBox();
     private final JPasswordField passwordTextField = new JPasswordField("");
     private final JCheckBox rememberPassCheckBox = new JCheckBox();
 
@@ -59,7 +61,7 @@ public class ConnectionPanel extends UROptionsPanel {
     // Proxy
     private final JTextField proxyHostNameTextField = new JTextField("");
     private final JTextField proxyPortTextField = new JTextField("");
-    private final JCheckBox serverProxyCheckBox = new JCheckBox();
+    private final URProxyTypeComboBox proxyTypeChoice = new URProxyTypeComboBox();
 
     private final JTextField firstChannelTextField = new JTextField("");
 
@@ -102,7 +104,7 @@ public class ConnectionPanel extends UROptionsPanel {
         URPanels.addToPanel(this, serverTLSCheckBox, "TLS", Placement.RIGHT, null, Constants.KEY_USE_TLS);
         URPanels.addToPanel(this, proxyHostNameTextField, "Proxy Host", Placement.DEFAULT, Size.MEDIUM, Constants.KEY_PROXY_HOST);
         URPanels.addToPanel(this, proxyPortTextField, "Port", Placement.RIGHT, Size.SMALL, Constants.KEY_PROXY_PORT);
-        URPanels.addToPanel(this, serverProxyCheckBox, "Use SOCKS", Placement.RIGHT, null, Constants.KEY_USE_PROXY);
+        URPanels.addToPanel(this, proxyTypeChoice, "Proxy Type", Placement.RIGHT, null, Constants.KEY_PROXY_TYPE);
         URPanels.addToPanel(this, firstChannelTextField, "Channel", Placement.DEFAULT, Size.MEDIUM, Constants.KEY_FIRST_CHANNEL);
 
         add(connectButton);
@@ -132,7 +134,7 @@ public class ConnectionPanel extends UROptionsPanel {
         connectionLayout.putConstraint(SpringLayout.NORTH, autoConnectToFavourites, TOP_ALIGNED, SpringLayout.NORTH,
                 URPanels.getLabelForComponent(this,userNameTextField));
         connectionLayout.putConstraint(SpringLayout.WEST, autoConnectToFavourites, LEFT_SPACING, SpringLayout.EAST,
-                serverProxyCheckBox);
+                proxyTypeChoice);
 
         URPanels.addKeyAssociation(this, autoConnectToFavourites, Constants.KEY_AUTO_CONNECT_FAVOURITES);
 
@@ -429,15 +431,27 @@ public class ConnectionPanel extends UROptionsPanel {
         @Override
         public void actionPerformed (ActionEvent arg0)
         {
-            if (passwordTextField.getPassword().length > 0
-                    || authenticationTypeChoice.getSelectedItem().equals(CapabilityTypes.NONE.getType()))
+            if (!authenticationTypeChoice.getSelectedItem().equals(CapabilityTypes.NONE.getType()) && passwordTextField.getPassword().length == 0 )
+            {
+                MessageDialog dialog = new MessageDialog(
+                        "Password field is empty and is required for your chosen authentication method.", "Warning",
+                        JOptionPane.WARNING_MESSAGE);
+                dialog.setVisible(true);
+            } else if (!proxyTypeChoice.getSelectedItem().equals(ProxyTypes.NONE.getType()) && (proxyHostNameTextField.getText().isBlank() ||
+                proxyPortTextField.getText().isBlank()) )
+            {
+                MessageDialog dialog = new MessageDialog(
+                    "Hostname or Port field is empty which is required for your chosen Proxy method.", "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+                dialog.setVisible(true);
+            } else
             {
                 // DriverGUI.gui.addToCreatedServers(servernameTextField.getText().trim());
 
                 IRCServerBase newServer = new IRCServer(servernameTextField.getText().trim(), userNameTextField.getText().trim(),
                     realNameTextField.getText().trim(), new String(passwordTextField.getPassword()),
                     serverPortTextField.getText().trim(), serverTLSCheckBox.isSelected(),
-                    proxyHostNameTextField.getText(), proxyPortTextField.getText(), serverProxyCheckBox.isSelected(), authenticationTypeChoice.getSelectedItem());
+                    proxyHostNameTextField.getText(), proxyPortTextField.getText(), proxyTypeChoice.getSelectedItem(), authenticationTypeChoice.getSelectedItem());
 
                 // TODO: Revisit when considering adding support for multiple servers
                 // if (autoConnectToFavourites.isSelected())
@@ -460,12 +474,6 @@ public class ConnectionPanel extends UROptionsPanel {
                 newServer.connect(favouriteChannels);
 
                 // profilePicker.setEnabled(false);
-            } else if (!authenticationTypeChoice.getSelectedItem().equals(CapabilityTypes.NONE.getType()))
-            {
-                MessageDialog dialog = new MessageDialog(
-                        "Password field is empty and is required for your chosen authentication method.", "Warning",
-                        JOptionPane.WARNING_MESSAGE);
-                dialog.setVisible(true);
             }
         }
     }

@@ -307,7 +307,7 @@ public class URProfilesUtil
         profileNode.putBoolean(Constants.KEY_USE_TLS, Constants.DEFAULT_USE_TLS);
         profileNode.put(Constants.KEY_PROXY_HOST, Constants.DEFAULT_PROXY_HOST);
         profileNode.put(Constants.KEY_PROXY_PORT, Constants.DEFAULT_PROXY_PORT);
-        profileNode.putBoolean(Constants.KEY_USE_PROXY, Constants.DEFAULT_USE_PROXY);
+        profileNode.put(Constants.KEY_PROXY_TYPE, Constants.DEFAULT_PROXY_TYPE);
         profileNode.put(Constants.KEY_NICK_NAME, Constants.DEFAULT_NICK_NAME);
         profileNode.put(Constants.KEY_REAL_NAME, Constants.DEFAULT_REAL_NAME);
         profileNode.putBoolean(Constants.KEY_TIME_STAMPS, Constants.DEFAULT_TIME_STAMPS);

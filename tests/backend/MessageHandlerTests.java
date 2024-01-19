@@ -20,6 +20,7 @@ import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.base.proxy.ProxyTypes;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCPrivate;
 import urChatBasic.frontend.IRCServer;
@@ -47,7 +48,7 @@ public class MessageHandlerTests
         testDriver = new TestDriverGUI();
         testGUI = DriverGUI.gui;
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy",
-                "1234", true, CapabilityTypes.NONE.getType());
+                "1234", ProxyTypes.NONE.getType(), CapabilityTypes.NONE.getType());
         testUser = new IRCUser(testServer, "testUser");
         testServer.addToPrivateRooms(testUser);
         testPrivChannel = testServer.getCreatedPrivateRoom(testUser.toString());

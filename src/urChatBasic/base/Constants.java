@@ -19,6 +19,7 @@ import javax.swing.text.StyleConstants;
 import urChatBasic.backend.Connection;
 import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.base.proxy.ProxyTypes;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.components.URVersionLabel;
 import urChatBasic.frontend.utils.URColour;
@@ -69,7 +70,7 @@ public class Constants
     public static final String KEY_PASSWORD_REMEMBER = "remember password";
     public static final String KEY_PASSWORD = "saved password";
     public static final String KEY_USE_TLS = "use tls";
-    public static final String KEY_USE_PROXY = "use proxy";
+    public static final String KEY_PROXY_TYPE = "proxy type";
     public static final String KEY_PROXY_HOST = "proxy host";
     public static final String KEY_PROXY_PORT = "proxy port";
     public static final String KEY_NICK_NAME = "nick name";
@@ -115,7 +116,7 @@ public class Constants
     public static final String DEFAULT_PASSWORD = "";
     public static final Boolean DEFAULT_PASSWORD_REMEMBER = false;
     public static final Boolean DEFAULT_USE_TLS = true;
-    public static final Boolean DEFAULT_USE_PROXY = false;
+    public static final String DEFAULT_PROXY_TYPE = ProxyTypes.NONE.toString();
     public static final String DEFAULT_PROXY_HOST = "";
     public static final String DEFAULT_PROXY_PORT = "";
     public static final String DEFAULT_NICK_NAME = "urChat"+new Random().nextInt(100, 999);
@@ -237,7 +238,7 @@ public class Constants
         KEY_PASSWORD_REMEMBER(Constants.KEY_PASSWORD_REMEMBER, DEFAULT_PASSWORD_REMEMBER),
         KEY_PASSWORD(Constants.KEY_PASSWORD, DEFAULT_PASSWORD),
         KEY_USE_TLS(Constants.KEY_USE_TLS, DEFAULT_USE_TLS),
-        KEY_USE_PROXY(Constants.KEY_USE_PROXY, DEFAULT_USE_PROXY),
+        KEY_PROXY_TYPE(Constants.KEY_PROXY_TYPE, DEFAULT_PROXY_TYPE),
         KEY_PROXY_HOST(Constants.KEY_PROXY_HOST, DEFAULT_PROXY_HOST),
         KEY_PROXY_PORT(Constants.KEY_PROXY_PORT, DEFAULT_PROXY_PORT),
         KEY_NICK_NAME(Constants.KEY_NICK_NAME, DEFAULT_NICK_NAME),

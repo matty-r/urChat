@@ -253,7 +253,9 @@ public class URPreferencesUtil {
             } else if (value instanceof Boolean) {
                 path.putBoolean(name, (boolean) value);
             } else {
-                Constants.LOGGER.log(Level.WARNING,"Unsupported data type for preference: " + value.getClass().getSimpleName());
+                path.put(name, (String) value.toString());
+
+                Constants.LOGGER.log(Level.INFO, "[" + value.getClass().getSimpleName() + "] is an unsupported data type for Preferences. Setting as String.");
             }
         }
     }

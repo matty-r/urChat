@@ -544,7 +544,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         URPreferencesUtil.putPref(Constants.KEY_WINDOW_WIDTH, (int) DriverGUI.frame.getBounds().getWidth(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_WINDOW_HEIGHT, (int) DriverGUI.frame.getBounds().getHeight(), URProfilesUtil.getActiveProfilePath());
 
+        connectionPanel.putPreferences();
         interfacePanel.putPreferences();
+        appearancePanel.putPreferences();
     }
 
     /**

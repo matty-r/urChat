@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -16,6 +15,7 @@ import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
+import urChatBasic.base.proxy.ProxyTypes;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import java.awt.event.ActionEvent;
@@ -86,24 +86,20 @@ public class Connection implements ConnectionBase
         localMessage("Attempting to connect to " + server);
 
         // Determine the socket type to be used
-        InetSocketAddress address = new InetSocketAddress(server.getName(), Integer.parseInt(getServer().getPort()));
+        InetSocketAddress endPointAddress = new InetSocketAddress(server.getName(), Integer.parseInt(getServer().getPort()));
 
-        if (getServer().usingSOCKS())
+        if (!getServer().usingProxy().equals(ProxyTypes.NONE.getType()))
         {
-            Proxy proxy = new Proxy(Proxy.Type.SOCKS,
-                    new InetSocketAddress(getServer().getProxyHost(), Integer.parseInt(getServer().getProxyPort())));
-            Socket proxySocket = new Socket(proxy);
+            getServer().usingProxy().createProxy(getServer().getProxyHost(), Integer.parseInt(getServer().getProxyPort()));
+            Socket proxySocket = getServer().usingProxy().connectThroughProxy(endPointAddress);
 
             if (getServer().usingTLS())
             {
-                proxySocket.connect(address, 5000);
-
                 SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-                mySocket = sslsocketfactory.createSocket(proxySocket, address.getHostName(), address.getPort(), true);
+                mySocket = sslsocketfactory.createSocket(proxySocket, endPointAddress.getHostName(), endPointAddress.getPort(), true);
                 mySocket.setKeepAlive(true);
             } else
             {
-                proxySocket.connect(address, 5000);
                 mySocket = proxySocket;
             }
         } else
@@ -116,7 +112,7 @@ public class Connection implements ConnectionBase
             {
                 mySocket = new Socket();
             }
-            mySocket.connect(address, 500);
+            mySocket.connect(endPointAddress, 500);
         }
 
         writer = new BufferedWriter(new OutputStreamWriter(mySocket.getOutputStream()));

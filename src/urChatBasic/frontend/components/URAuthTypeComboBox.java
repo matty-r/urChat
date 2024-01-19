@@ -7,11 +7,11 @@ import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.base.capabilities.NickServType;
 import urChatBasic.base.capabilities.SaslCapSubTypes;
 
-public class UCAuthTypeComboBox extends JComboBox<CapTypeBase>
+public class URAuthTypeComboBox extends JComboBox<CapTypeBase>
 {
     private String passwordFieldName = "Password";
 
-    public UCAuthTypeComboBox ()
+    public URAuthTypeComboBox ()
     {
         initialize();
     }

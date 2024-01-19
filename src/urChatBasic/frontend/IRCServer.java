@@ -30,6 +30,7 @@ import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.Constants.EventType;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.base.proxy.ProxyTypeBase;
 import urChatBasic.frontend.utils.URPanels;
 
 public class IRCServer extends IRCRoomBase implements IRCServerBase
@@ -51,7 +52,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     private Boolean isTLS;
     private String proxyHost;
     private String proxyPort;
-    private Boolean useSOCKS;
+    private ProxyTypeBase proxyType;
     private CapTypeBase authentication;
 
     // Created channels/tabs
@@ -62,7 +63,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
 
 
     public IRCServer (String serverName, String nick, String login, String password, String portNumber, Boolean isTLS, String proxyHost, String proxyPort,
-            Boolean useSOCKS, CapTypeBase authentication)
+            ProxyTypeBase proxyType, CapTypeBase authentication)
     {
         super(serverName);
         setServer(this);
@@ -76,7 +77,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
 
         this.proxyHost = proxyHost;
         this.proxyPort = proxyPort;
-        this.useSOCKS = useSOCKS;
+        this.proxyType = proxyType;
         this.name = serverName;
         this.password = password;
         this.login = login;
@@ -253,9 +254,9 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     }
 
     @Override
-    public Boolean usingSOCKS ()
+    public ProxyTypeBase usingProxy ()
     {
-        return useSOCKS;
+        return proxyType;
     }
 
     @Override

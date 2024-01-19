@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import javax.swing.JCheckBox;
@@ -150,6 +151,8 @@ public class URPanels
             } else if(targetComponent instanceof JComboBox)
             {
                 ((JComboBox<?>) targetComponent).setSelectedItem((String) URPreferencesUtil.getPref(componentKeyString, Constants.ConfigKeys.getDefault(componentKeyString), settingsPath));
+            } else {
+                Constants.LOGGER.log(Level.WARNING, "Getting values for component type [" + targetComponent.getClass().toString() + "] has not been configured!");
             }
         }
     }
@@ -190,6 +193,10 @@ public class URPanels
                 String passwordString = "";
                 passwordString = new String(((JPasswordField) targetComponent).getPassword());
                 URPreferencesUtil.putPref(componentKeyString, passwordString, settingsPath);
+            } else if(targetComponent instanceof JComboBox) {
+                URPreferencesUtil.putPref(componentKeyString, ((JComboBox<?>) targetComponent).getSelectedItem(), settingsPath);
+            } else {
+                Constants.LOGGER.log(Level.WARNING, "Saving values for component type [" + targetComponent.getClass().toString() + "] has not been configured!");
             }
         }
     }
