@@ -1050,7 +1050,7 @@ public class IRCRoomBase extends JPanel
         }
     }
 
-    public void quitRoom()
+    public void closeRoom()
     {
         URProfilesUtil.removeListener(EventType.CHANGE, changeListener);
         eventTickerTimer.stop();

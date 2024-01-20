@@ -38,11 +38,13 @@ public class Connection implements ConnectionBase
 
     private MessageHandler messageHandler;
 
-    // Connection keep alive stuff
     // Starts the timer with an start delay
-    private Timer keepAliveTimer = new Timer((int) Duration.ofSeconds(30).toMillis(), new PingKeepalive());
+    private final int INITIAL_PING_RATE_MS = (int) Duration.ofSeconds(30).toMillis();
     // Rate in which to send a PING to the server
     private final int PING_RATE_MS = (int) Duration.ofMinutes(5).toMillis();
+    // Connection keep alive stuff
+    private Timer keepAliveTimer = new Timer(INITIAL_PING_RATE_MS, new PingKeepalive());
+
     private boolean pingReceived = true;
     private final int MAX_RESPONSE_FAILURES = 2;
     private int currentFailures = 0;
@@ -143,8 +145,9 @@ public class Connection implements ConnectionBase
         localMessage("Connecting with nick " + getServer().getNick());
         writer.flush();
 
+        keepAliveTimer.setInitialDelay(INITIAL_PING_RATE_MS);
         keepAliveTimer.setDelay(PING_RATE_MS);
-        keepAliveTimer.start();
+        keepAliveTimer.restart();
 
         while ((line = reader.readLine()) != null && !shutdown)
         {
@@ -183,7 +186,13 @@ public class Connection implements ConnectionBase
                 {
                     try
                     {
-                        if (shutdown)
+                        if (shutdown && reconnect)
+                        {
+                            pingReceived = true;
+
+                            writer.write("PING " + new Date().toInstant().toEpochMilli() + "\r\n");
+                            writer.flush();
+                        } else if (shutdown)
                         {
                             keepAliveTimer.stop();
                         } else
@@ -223,7 +232,9 @@ public class Connection implements ConnectionBase
     {
         // Reset the fails
         currentFailures = 0;
+        reconnectAttempts = 0;
         pingReceived = true;
+        reconnect = false;
     }
 
     public MessageHandler getMessageHandler ()
@@ -279,7 +290,7 @@ public class Connection implements ConnectionBase
             } else if (clientText.toLowerCase().startsWith("/quit"))
             {
                 outText = "QUIT :" + clientText.replace("/quit ", "") + "\r\n";
-            } else if (clientText.toLowerCase().startsWith("/part"))
+            } else if (clientText.toLowerCase().startsWith("/part") || clientText.toLowerCase().startsWith("/leave"))
             {
                 outText = "PART " + fromChannel + " :" + clientText.replace("/part  ", "") + "\r\n";
             } else if (clientText.toLowerCase().startsWith("/me") || clientText.toLowerCase().startsWith("/action"))
@@ -411,5 +422,15 @@ public class Connection implements ConnectionBase
     public void disconnect ()
     {
         shutdown = true;
+    }
+
+    @Override
+    public void reconnect ()
+    {
+        reconnectAttempts = 0;
+        shutdown = true;
+        reconnect = true;
+        keepAliveTimer.setInitialDelay(100);
+        keepAliveTimer.restart();
     }
 }

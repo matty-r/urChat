@@ -300,6 +300,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
 
         JMenuItem nameItem;
         JMenuItem quitItem;
+        JMenuItem reconnectItem;
         JMenuItem chooseFont;
 
         public ServerPopUp ()
@@ -311,6 +312,11 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             quitItem = new JMenuItem("Quit");
             add(quitItem);
             quitItem.addActionListener(new QuitItem());
+
+            reconnectItem = new JMenuItem("Reconnect");
+            add(reconnectItem);
+            reconnectItem.addActionListener(new ReconnectServerItem());
+
             //
             chooseFont = new JMenuItem("Show Font Dialog");
             add(chooseFont);
@@ -339,6 +345,15 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
                 // We aren't connected, so just remove the GUI elements
                 gui.quitServer(IRCServer.this);
             }
+        }
+    }
+
+    private class ReconnectServerItem implements ActionListener
+    {
+        @Override
+        public void actionPerformed (ActionEvent arg0)
+        {
+            IRCServer.this.reconnect();
         }
     }
 
@@ -378,6 +393,11 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         }
 
         new Thread(serverConnection).start();
+    }
+
+    public void reconnect ()
+    {
+        serverConnection.reconnect();
     }
 
     @Override
@@ -489,7 +509,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     @Override
     public void quitRoom (IRCRoomBase ircRoom)
     {
-        ircRoom.quitRoom();
+        ircRoom.closeRoom();
         createdRooms.remove(ircRoom);
 
         boolean tabExists = Arrays.stream(gui.tabbedPane.getComponents()).anyMatch(room -> room.equals(ircRoom));

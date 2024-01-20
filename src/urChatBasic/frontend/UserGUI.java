@@ -225,6 +225,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     @Override
     public void addToCreatedServers (IRCServerBase newServer)
     {
+        if(getCreatedServer(newServer.getName()) != null)
+            createdServers.remove(newServer);
+
         createdServers.add(newServer);
     }
 
@@ -470,9 +473,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 if (server instanceof IRCServer)
                 {
                     boolean iconsShown = (boolean) URPanels.getKeyComponentValue(Constants.KEY_SHOW_TAB_ICON);
-
-                    tabbedPane.addTab(server.getName(), iconsShown ? ((IRCRoomBase) server).icon : null, ((IRCServer) server));
-                    setCurrentTab(server.getName());
+                    int currentServerIndex = DriverGUI.gui.getTabIndex((IRCRoomBase) server);
+                    if(currentServerIndex < 0)
+                    {
+                        tabbedPane.addTab(server.getName(), iconsShown ? ((IRCRoomBase) server).icon : null, ((IRCServer) server));
+                        setCurrentTab(server.getName());
+                    } 
                     // ((IRCServer) server).getUserTextBox().requestFocus();
                 }
             }

@@ -28,6 +28,8 @@ public interface IRCServerBase
 
     public abstract void disconnect ();
 
+    public abstract void reconnect ();
+
     public abstract boolean isConnected ();
 
     public abstract boolean hasConnection ();
