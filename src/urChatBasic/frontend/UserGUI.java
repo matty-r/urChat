@@ -222,6 +222,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     //     }
     // }
 
+    @Override
     public void addToCreatedServers (IRCServerBase newServer)
     {
         createdServers.add(newServer);

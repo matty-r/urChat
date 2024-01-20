@@ -120,6 +120,7 @@ public class Connection implements ConnectionBase
 
         // if we got this far, we established a connection to the server
         DriverGUI.gui.setupServerTab(server);
+        DriverGUI.gui.addToCreatedServers(getServer());
 
         localMessage("Initiating authentication...");
 

@@ -48,6 +48,7 @@ public interface UserGUIBase
      */
     public abstract Boolean isCreatedServersEmpty();
 
+    public abstract void addToCreatedServers(IRCServerBase ircServer);
 
     // TODO: Favourites handling should be done elsewhere.
     // /**

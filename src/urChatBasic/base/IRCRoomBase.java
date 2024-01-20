@@ -155,13 +155,13 @@ public class IRCRoomBase extends JPanel
         toggleUsersList(usersListShown);
     }
 
-    public IRCRoomBase(String roomName)
+    protected IRCRoomBase(String roomName)
     {
         this.roomName = roomName;
         initRoom();
     }
 
-    public IRCRoomBase(IRCServerBase server, String roomName)
+    protected IRCRoomBase(IRCServerBase server, String roomName)
     {
         this.roomName = roomName;
         setServer(server);

@@ -132,8 +132,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     {
         for (IRCRoomBase channel : createdRooms)
         {
-            quitRoom(channel);
-            channel.rejoin();
+            sendClientText("/join " + channel.getName(), getServer().getName());
         }
     }
 
@@ -369,7 +368,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
 
             for (String autoChannel : autoConnectChannels)
             {
-                IRCRoomBase newChannel = new IRCRoomBase(this, autoChannel);
+                IRCRoomBase newChannel = new IRCChannel(this, autoChannel);
                 createdRooms.add(newChannel);
             }
 
@@ -523,37 +522,53 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
     @Override
     public void addToCreatedRooms (String roomName, boolean asPrivate)
     {
+
         if (getCreatedRoom(roomName, asPrivate) == null)
         {
-            IRCRoomBase tempChannel = asPrivate ? new IRCPrivate(this, getIRCUser(roomName)) : new IRCChannel(this, roomName);
-            createdRooms.add(tempChannel);
+            createdRooms.add(asPrivate ? new IRCPrivate(this, getIRCUser(roomName)) : new IRCChannel(this, roomName));
+        }
 
+        if (getCreatedRoom(roomName, asPrivate) == null || DriverGUI.gui.getTabIndex(getCreatedRoom(roomName, asPrivate)) < 0)
+        {
             boolean iconsShown = (boolean) URPanels.getKeyComponentValue(Constants.KEY_SHOW_TAB_ICON);
 
-            gui.tabbedPane.insertTab(roomName, iconsShown ? tempChannel.icon : null, tempChannel, null, gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1);
-            // gui.tabbedPane.addTab(roomName, tempChannel.icon, tempChannel);
-            Component currentTab = gui.tabbedPane.getSelectedComponent();
-            if (currentTab instanceof IRCRoomBase)
-            {
-                if (!((IRCRoomBase) currentTab).userIsTyping())
-                {
-                    gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempChannel));
-                    tempChannel.getUserTextBox().requestFocus();
-                } else
-                {
-                    tempChannel.callForAttention();
+
+            SwingUtilities.invokeLater(
+                new Runnable() {
+
+                    @Override
+                    public void run ()
+                    {
+                        IRCRoomBase tempChannel = getCreatedRoom(roomName, asPrivate);
+                        int newIndex = gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1;
+                        gui.tabbedPane.insertTab(roomName, iconsShown ? tempChannel.icon : null, tempChannel, null, gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1);
+
+                        // gui.tabbedPane.addTab(roomName, tempChannel.icon, tempChannel);
+                        Component currentTab = gui.tabbedPane.getSelectedComponent();
+                        if (currentTab instanceof IRCRoomBase)
+                        {
+                            if (!((IRCRoomBase) currentTab).userIsTyping())
+                            {
+                                gui.tabbedPane.setSelectedIndex(newIndex);
+                                tempChannel.getUserTextBox().requestFocus();
+                            } else
+                            {
+                                tempChannel.callForAttention();
+                            }
+                        } else if (currentTab instanceof IRCServer)
+                        {
+                            if (clientTextBox.getText().isEmpty())
+                            {
+                                gui.tabbedPane.setSelectedIndex(newIndex);
+                                tempChannel.getUserTextBox().requestFocus();
+                            } else
+                            {
+                                tempChannel.callForAttention();
+                            }
+                        }
+                    }
                 }
-            } else if (currentTab instanceof IRCServer)
-            {
-                if (clientTextBox.getText().isEmpty())
-                {
-                    gui.tabbedPane.setSelectedIndex(gui.tabbedPane.indexOfComponent(tempChannel));
-                    tempChannel.getUserTextBox().requestFocus();
-                } else
-                {
-                    tempChannel.callForAttention();
-                }
-            }
+            );
         }
     }
 
