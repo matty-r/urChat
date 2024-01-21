@@ -5,7 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
@@ -464,14 +466,17 @@ public class ConnectionPanel extends UROptionsPanel {
                 //     }
                 // }
 
-                String[] favouriteChannels = new String[0];
+                List<String> favouriteChannels = new ArrayList<>();
                 if(autoConnectToFavourites.isSelected())
                     favouriteChannels = Collections.list(favouritesListModel.elements())
                         .stream()
                         .map(FavouritesItem::getChannelName)
-                        .collect(Collectors.toList()).toArray(new String[0]);
+                        .collect(Collectors.toList());
 
-                newServer.connect(favouriteChannels);
+                if(!firstChannelTextField.getText().isBlank())
+                    favouriteChannels.add(firstChannelTextField.getText());
+
+                newServer.connect(favouriteChannels.stream().toArray(size -> new String[size]));
 
                 // profilePicker.setEnabled(false);
             }
