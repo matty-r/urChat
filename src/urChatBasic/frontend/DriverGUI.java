@@ -6,8 +6,6 @@ import java.awt.event.WindowFocusListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
-import java.util.logging.Handler;
-import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -15,6 +13,7 @@ import urChatBasic.backend.LookAndFeelLoader;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.backend.utils.URUncaughtExceptionHandler;
 import urChatBasic.base.Constants;
+import static urChatBasic.base.Constants.LOGGER;
 
 public class DriverGUI
 {
@@ -28,15 +27,15 @@ public class DriverGUI
         Constants.init();
         try
         {
-            URL imgPath = new URL(Constants.RESOURCES_DIR + "urChat Icon.png");
+            URL imgPath = new URL(Constants.IMAGES_DIR + "urChat Icon.png");
 
             img = new ImageIcon(imgPath);
         } catch (Exception e)
         {
-            Constants.LOGGER.log(Level.INFO, "No Icon found.");
+            Constants.LOGGER.info( "No Icon found.");
         }
 
-        Constants.LOGGER.log(Level.INFO, "Starting up..");
+        Constants.LOGGER.info( "Starting up..");
 
         initLAFLoader();
         frame = new JFrame("urChat");
@@ -81,7 +80,7 @@ public class DriverGUI
 
         SwingUtilities.invokeLater(gui);
 
-        Constants.LOGGER.log(Level.INFO, "Started");
+        LOGGER.info( "Started");
 
         frame.setVisible(true);
 
@@ -116,8 +115,6 @@ public class DriverGUI
                 URProfilesUtil.cleanUpSettings();
                 if (!gui.isCreatedServersEmpty())
                     gui.sendGlobalMessage("/quit Goodbye cruel world", "Server");
-                for (Handler tempHandler : Constants.LOGGER.getHandlers())
-                    tempHandler.close();
             }
 
 

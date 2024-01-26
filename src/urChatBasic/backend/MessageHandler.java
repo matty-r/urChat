@@ -374,7 +374,7 @@ public class MessageHandler
                     this.body = withoutPrefixIdChannel;
             } catch (IndexOutOfBoundsException e)
             {
-                Constants.LOGGER.log(Level.SEVERE,
+                Constants.LOGGER.error(
                         "Failed to extract a message from received text. " + e.getLocalizedMessage());
             }
         }
@@ -827,7 +827,7 @@ public class MessageHandler
         public void messageExec(Message myMessage)
         {
             printServerText(myMessage.body);
-            Constants.LOGGER.log(Level.WARNING, "NOT HANDLED: " + myMessage.rawMessage);
+            Constants.LOGGER.error("NOT HANDLED: " + myMessage.rawMessage);
         }
     }
 

@@ -46,7 +46,7 @@ public class URVersionLabel extends JPanel
                 }
             } catch (IOException $ex)
             {
-                Constants.LOGGER.log(Level.INFO, "Unable to determine .git folder. Not setting version string.", $ex);
+                Constants.LOGGER.info( "Unable to determine .git folder. Not setting version string.", $ex);
             }
         }
     }

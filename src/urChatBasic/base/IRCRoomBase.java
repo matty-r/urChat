@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.Timer;
@@ -533,13 +532,13 @@ public class IRCRoomBase extends JPanel
                             }
                             catch(BadLocationException ble)
                             {
-                                Constants.LOGGER.log(Level.WARNING, ble.getLocalizedMessage());
+                                Constants.LOGGER.error(ble.getLocalizedMessage());
                             }
                         }
 
                         if (null == channelTextArea)
                         {
-                            Constants.LOGGER.log(Level.WARNING, "ChannelTextArea hasn't initialized or has disappeared.. not printing text.");
+                            Constants.LOGGER.error("ChannelTextArea hasn't initialized or has disappeared.. not printing text.");
                             return;
                         }
 
@@ -550,7 +549,7 @@ public class IRCRoomBase extends JPanel
                                 writeHistoryFile(line);
                             } catch (IOException e)
                             {
-                                Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+                                Constants.LOGGER.error(e.getLocalizedMessage());
                             }
                         }
 
@@ -567,7 +566,7 @@ public class IRCRoomBase extends JPanel
                                 // TODO: Re-add later?
                                 // addToUsersList(getName(), fromUser);
                                 // fromIRCUser = getCreatedUsers(fromUser);
-                                // Constants.LOGGER.log(Level.WARNING, "Message from a user that isn't in the user list!");
+                                // Constants.LOGGER.error("Message from a user that isn't in the user list!");
                                 fromIRCUser = server.getIRCUser(fromUser);
                                 addToUsersList(fromIRCUser);
                             }
@@ -597,7 +596,7 @@ public class IRCRoomBase extends JPanel
                         }
                     } catch (InterruptedException e)
                     {
-                        Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+                        Constants.LOGGER.error(e.getLocalizedMessage());
                     }
                 }
             }

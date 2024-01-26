@@ -6,16 +6,14 @@ import java.awt.Font;
 import java.io.File;
 import java.net.URL;
 import java.util.Random;
-// import java.util.logging.ConsoleHandler;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import urChatBasic.backend.Connection;
 import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.capabilities.CapabilityTypes;
@@ -33,13 +31,15 @@ public class Constants
     public static String UR_VERSION = "v0.6.0";
     public static String APP_NAME = "urChatClient" + UR_VERSION;
     public static String URL_SEPARATOR = "/";
-    public static final URL RESOURCES_DIR = DriverGUI.class.getResource(URL_SEPARATOR + "images" + URL_SEPARATOR);
+    public static final String RESOURCES_PATH = URL_SEPARATOR + "resources" + URL_SEPARATOR;
+    public static final URL RESOURCES_DIR = DriverGUI.class.getResource(RESOURCES_PATH);
+    public static final URL IMAGES_DIR = DriverGUI.class.getResource(RESOURCES_PATH + "images" + URL_SEPARATOR);
     public static final String THEMES_DIR = "themes" + URL_SEPARATOR;
     public static String DIRECTORY_LOGS = "Logs" + URL_SEPARATOR;
     public static Class BACKEND_CLASS;
     public static String BACKEND_CLASS_FULLNAME = "urChatBasic.backend.Connection";
-    private static Handler LOGGER_TO_FILE;
-    public static Logger LOGGER = Logger.getGlobal();
+    // private static Handler LOGGER_TO_FILE;
+    public static Logger LOGGER;
     public static String LOGFILE_NAME = "Errors.log";
     private static final JLabel DEFAULT_LABEL = new JLabel();
     // DEFAULT_FONT should be
@@ -337,8 +337,9 @@ public class Constants
             {
                 logFile.createNewFile();
             }
-            LOGGER_TO_FILE = new FileHandler(logFile.getAbsolutePath(), true);
-
+            // LOGGER_TO_FILE = new FileHandler(logFile.getAbsolutePath(), true);
+            Configurator.initialize(null, RESOURCES_DIR + "log4j2.xml");
+            LOGGER = LoggerFactory.getLogger("urchat");
             // Change what is logged out to console, and the file
             // TODO: Add a console view in a debug section under Appearance?
             // Handler systemOut = new ConsoleHandler();
@@ -346,10 +347,9 @@ public class Constants
             // LOGGER.addHandler(systemOut);
             // LOGGER.setLevel(Level.ALL);
 
-            LOGGER.addHandler(LOGGER_TO_FILE);
         } catch (Exception e)
         {
-            LOGGER.log(Level.WARNING, "Failed to create LOGGER_TO_FILE: " + e.getLocalizedMessage());
+            LOGGER.warn("Failed to create LOGGER_TO_FILE: " + e.getLocalizedMessage());
         }
         try
         {
@@ -357,7 +357,7 @@ public class Constants
             BACKEND_CLASS = Class.forName(BACKEND_CLASS_FULLNAME);
         } catch (Exception e)
         {
-            LOGGER.log(Level.WARNING, "BACKEND_CLASS failed to load! Defaulting to default implementation");
+            LOGGER.warn("BACKEND_CLASS failed to load! Defaulting to default implementation");
             BACKEND_CLASS = Connection.class;
         }
     }

@@ -152,7 +152,7 @@ public class URPanels
             {
                 ((JComboBox<?>) targetComponent).setSelectedItem((String) URPreferencesUtil.getPref(componentKeyString, Constants.ConfigKeys.getDefault(componentKeyString), settingsPath));
             } else {
-                Constants.LOGGER.log(Level.WARNING, "Getting values for component type [" + targetComponent.getClass().toString() + "] has not been configured!");
+                Constants.LOGGER.error("Getting values for component type [" + targetComponent.getClass().toString() + "] has not been configured!");
             }
         }
     }
@@ -196,7 +196,7 @@ public class URPanels
             } else if(targetComponent instanceof JComboBox) {
                 URPreferencesUtil.putPref(componentKeyString, ((JComboBox<?>) targetComponent).getSelectedItem(), settingsPath);
             } else {
-                Constants.LOGGER.log(Level.WARNING, "Saving values for component type [" + targetComponent.getClass().toString() + "] has not been configured!");
+                Constants.LOGGER.error("Saving values for component type [" + targetComponent.getClass().toString() + "] has not been configured!");
             }
         }
     }

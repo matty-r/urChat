@@ -143,7 +143,7 @@ public class ProfilePicker extends JPanel
 
             });
 
-            Constants.LOGGER.log(Level.WARNING, "Initial Profile: [" + initialProfile + "] doesn't exist.");
+            Constants.LOGGER.error("Initial Profile: [" + initialProfile + "] doesn't exist.");
         }
     }
 }

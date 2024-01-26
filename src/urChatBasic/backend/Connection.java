@@ -10,7 +10,6 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Date;
-import java.util.logging.Level;
 import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
@@ -171,7 +170,7 @@ public class Connection implements ConnectionBase
                 mySocket.close();
             } catch (IOException e)
             {
-                Constants.LOGGER.log(Level.SEVERE, "Error stopping connected.. " + e.getLocalizedMessage());
+                Constants.LOGGER.error( "Error stopping connected.. " + e.getLocalizedMessage());
             }
         }
     }
@@ -325,7 +324,7 @@ public class Connection implements ConnectionBase
                     writer.flush();
                 } catch (Exception e)
                 {
-                    Constants.LOGGER.log(Level.SEVERE, "Problem writing to socket: " + e.toString() + outText);
+                    Constants.LOGGER.error( "Problem writing to socket: " + e.toString() + outText);
                 }
 
                 try
@@ -336,15 +335,15 @@ public class Connection implements ConnectionBase
                     }
                 } catch (Exception e)
                 {
-                    Constants.LOGGER.log(Level.SEVERE,
+                    Constants.LOGGER.error(
                             "Problem writing out client message: " + e.toString() + clientMessage.getRawMessage());
                 }
 
-                Constants.LOGGER.log(Level.FINE, "Client Text:- " + fromChannel + " " + outText);
+                Constants.LOGGER.debug( "Client Text:- " + fromChannel + " " + outText.trim());
             } else
             {
 
-                Constants.LOGGER.log(Level.WARNING,
+                Constants.LOGGER.error(
                         "Not connected. Unable to send text:- " + fromChannel + " " + clientMessage.getRawMessage());
             }
         }
@@ -353,7 +352,7 @@ public class Connection implements ConnectionBase
     private void localMessage (String message)
     {
         server.printServerText(message);
-        Constants.LOGGER.log(Level.INFO, "Local Text:-" + message);
+        Constants.LOGGER.info( "Local Text:-" + message);
     }
 
     private void serverMessage (Message newMessage)
@@ -363,10 +362,10 @@ public class Connection implements ConnectionBase
             try
             {
                 messageHandler.parseMessage(newMessage);
-                Constants.LOGGER.log(Level.FINE, newMessage.toString());
+                Constants.LOGGER.debug( newMessage.toString());
             } catch (Exception e)
             {
-                Constants.LOGGER.log(Level.WARNING, e.toString() + newMessage);
+                Constants.LOGGER.error(e.toString() + newMessage);
             }
         }
     }
@@ -386,7 +385,7 @@ public class Connection implements ConnectionBase
                 startUp();
             } else
             {
-                Constants.LOGGER.log(Level.SEVERE, "Incomplete settings: (Port " + getServer().getPort() + ") (Server "
+                Constants.LOGGER.error( "Incomplete settings: (Port " + getServer().getPort() + ") (Server "
                         + getServer() + ") (Nick " + getServer().getNick() + ") ");
             }
 
@@ -400,18 +399,18 @@ public class Connection implements ConnectionBase
                 run();
             } else if (shutdown)
             {
-                Constants.LOGGER.log(Level.INFO, "Disconnected safely!");
+                Constants.LOGGER.info( "Disconnected safely!");
             } else
             {
                 shutdown = true;
                 reader.close();
                 writer.close();
                 mySocket.close();
-                Constants.LOGGER.log(Level.WARNING, "Disconnected unsafely!");
+                Constants.LOGGER.error("Disconnected unsafely!");
             }
         } catch (IOException e)
         {
-            Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());
+            Constants.LOGGER.error( "startUp() failed! " + e.getLocalizedMessage());
             MessageDialog dialog = new MessageDialog("startUp() failed! " + e.getLocalizedMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
             dialog.setVisible(true);

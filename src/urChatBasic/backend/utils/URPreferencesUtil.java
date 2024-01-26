@@ -138,13 +138,13 @@ public class URPreferencesUtil {
 
         } catch (Exception e)
         {
-            Constants.LOGGER.log(Level.WARNING, "Active Profile: ["+URProfilesUtil.getActiveProfileName()+"] Unable to load ["+loadedStyle.getAttribute("name")+"]"+ " attempted with path: " + stylePrefPath);
+            Constants.LOGGER.error("Active Profile: ["+URProfilesUtil.getActiveProfileName()+"] Unable to load ["+loadedStyle.getAttribute("name")+"]"+ " attempted with path: " + stylePrefPath);
             // TODO Auto-generated catch block
             // e.printStackTrace();
             return targetStyle;
         }
 
-        Constants.LOGGER.log(Level.FINE, "Load Style Path: " + stylePrefPath.toString());
+        Constants.LOGGER.debug( "Load Style Path: " + stylePrefPath.toString());
         Font loadedFont = loadStyleFont(loadedStyle.getFont(), stylePrefPath);
         Map<String, Color> loadedColours = loadStyleColours(loadedStyle, stylePrefPath);
 
@@ -160,7 +160,7 @@ public class URPreferencesUtil {
         Preferences settingsPath =  baseSettingsPath.node(targetStyle.getName());
         try
         {
-            Constants.LOGGER.log(Level.FINE, "Removing font keys: " + settingsPath.absolutePath());
+            Constants.LOGGER.debug( "Removing font keys: " + settingsPath.absolutePath());
             settingsPath.remove(Constants.KEY_FONT_BOLD);
             settingsPath.remove(Constants.KEY_FONT_ITALIC);
             settingsPath.remove(Constants.KEY_FONT_FAMILY);
@@ -178,7 +178,7 @@ public class URPreferencesUtil {
         Preferences settingsPath =  baseSettingsPath.node(targetStyle.getName());
         try
         {
-            Constants.LOGGER.log(Level.INFO, "Removing font colours: " + settingsPath.absolutePath());
+            Constants.LOGGER.info( "Removing font colours: " + settingsPath.absolutePath());
             settingsPath.remove(Constants.KEY_FONT_FOREGROUND);
             settingsPath.remove(Constants.KEY_FONT_BACKGROUND);
         } catch (Exception e)
@@ -191,7 +191,7 @@ public class URPreferencesUtil {
     public static void saveStyle(URStyle oldStyle, URStyle newStyle, Preferences baseSettingsPath)
     {
         Preferences stylePrefPath = baseSettingsPath.node(newStyle.getAttribute("name").toString());
-        Constants.LOGGER.log(Level.INFO, "Save Style Path: " + stylePrefPath.toString());
+        Constants.LOGGER.info( "Save Style Path: " + stylePrefPath.toString());
 
         URStyle diffStyle = oldStyle.clone();
 
@@ -255,7 +255,7 @@ public class URPreferencesUtil {
             } else {
                 path.put(name, (String) value.toString());
 
-                Constants.LOGGER.log(Level.INFO, "[" + value.getClass().getSimpleName() + "] is an unsupported data type for Preferences. Setting as String.");
+                Constants.LOGGER.info( "[" + value.getClass().getSimpleName() + "] is an unsupported data type for Preferences. Setting as String.");
             }
         }
     }

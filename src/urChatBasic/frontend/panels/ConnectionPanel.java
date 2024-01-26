@@ -195,7 +195,7 @@ public class ConnectionPanel extends UROptionsPanel {
             }
         } catch (BackingStoreException e)
         {
-            Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+            Constants.LOGGER.error(e.getLocalizedMessage());
         }
     }
 
@@ -317,7 +317,7 @@ public class ConnectionPanel extends UROptionsPanel {
                         }
                     } catch (BackingStoreException e)
                     {
-                        Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+                        Constants.LOGGER.error(e.getLocalizedMessage());
                     }
                 }
             }

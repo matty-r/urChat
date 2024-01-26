@@ -64,7 +64,7 @@ public class FontPanel extends JPanel
                 colourDialog = new ColourDialog(styleName, getDefaultStyle(), getSettingsPath());
 
                 colourDialog.getColourPanel().addSaveListener(e -> {
-                    Constants.LOGGER.log(Level.INFO, "Font Panel says: Save Colour pressed");
+                    Constants.LOGGER.info( "Font Panel says: Save Colour pressed");
                 });
 
                 // Forwards the save listeners to the colour panel save listeners

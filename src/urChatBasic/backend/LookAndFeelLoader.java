@@ -71,12 +71,12 @@ public class LookAndFeelLoader {
                                 try {
                                     UIManager.installLookAndFeel(classShortName, className);
                                 } catch (Exception installEx) {
-                                    Constants.LOGGER.log(Level.WARNING, installEx.getMessage());
+                                    Constants.LOGGER.error(installEx.getMessage());
                                 }
                             }
                         }
                     } catch (NoClassDefFoundError | Exception classEx) {
-                        Constants.LOGGER.log(Level.WARNING, classEx.getMessage());
+                        Constants.LOGGER.error(classEx.getMessage());
                     }
                 }
             }
@@ -84,6 +84,6 @@ public class LookAndFeelLoader {
             // Handle URL creation exception
             e.printStackTrace();
         }
-        Constants.LOGGER.log(Level.INFO, "Done loading JARs! ");
+        Constants.LOGGER.info( "Done loading JARs! ");
     }
 }

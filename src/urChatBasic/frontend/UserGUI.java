@@ -478,7 +478,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     {
                         tabbedPane.addTab(server.getName(), iconsShown ? ((IRCRoomBase) server).icon : null, ((IRCServer) server));
                         setCurrentTab(server.getName());
-                    } 
+                    }
                     // ((IRCServer) server).getUserTextBox().requestFocus();
                 }
             }
@@ -804,7 +804,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
         }
 
-        Constants.LOGGER.log(Level.SEVERE, "Unable to set LAF to " + lafClassName);
+        Constants.LOGGER.error( "Unable to set LAF to " + lafClassName);
 
         // Set to the System LAF if we've chosen an invalid/unavailable LAF theme
         return getLAF(UIManager.getSystemLookAndFeelClassName());
@@ -816,7 +816,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // String previousDefaultBackground = URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
         // Font previousDefaultFont = getFont();
 
-        Constants.LOGGER.log(Level.INFO, "Setting to LookAndFeel to " + newLAFname);
+        Constants.LOGGER.info( "Setting to LookAndFeel to " + newLAFname);
         boolean flatLafAvailable = false;
         try
         {
@@ -839,7 +839,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
         } catch (Exception e)
         {
-            Constants.LOGGER.log(Level.WARNING, "Failed to set Pluggable LAF! " + e.getLocalizedMessage());
+            Constants.LOGGER.error("Failed to set Pluggable LAF! " + e.getLocalizedMessage());
         } finally
         {
             if (!flatLafAvailable)
@@ -849,7 +849,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (Exception e)
                 {
-                    Constants.LOGGER.log(Level.WARNING, "Failed to setLookAndFeel! " + e.getLocalizedMessage());
+                    Constants.LOGGER.error("Failed to setLookAndFeel! " + e.getLocalizedMessage());
                 }
             }
         }

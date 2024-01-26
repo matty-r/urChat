@@ -87,11 +87,11 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         URL imgPath = null;
         try
         {
-            imgPath = new URL(Constants.RESOURCES_DIR + "Server.png");
+            imgPath = new URL(Constants.IMAGES_DIR + "Server.png");
             icon = new ImageIcon(imgPath);
         } catch (IOException e)
         {
-            Constants.LOGGER.log(Level.SEVERE, "COULD NOT LOAD Server.png " + e.getLocalizedMessage());
+            Constants.LOGGER.warn( "COULD NOT LOAD Server.png " + e.getLocalizedMessage());
         }
     }
 
@@ -337,7 +337,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
         {
             if (IRCServer.this.isConnected())
             {
-                Constants.LOGGER.log(Level.INFO, "send quit message");
+                Constants.LOGGER.info( "send quit message");
                 // Send the /quit message, which disconnects and remove the gui elements
                 sendClientText("/quit Goodbye cruel world", getName());
             } else
@@ -389,7 +389,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
 
         } catch (Exception e)
         {
-            Constants.LOGGER.log(Level.SEVERE, "Failed to create backend! " + e.getLocalizedMessage());
+            Constants.LOGGER.error( "Failed to create backend! " + e.getLocalizedMessage());
         }
 
         new Thread(serverConnection).start();
@@ -767,7 +767,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             }
         } catch (IOException e)
         {
-            Constants.LOGGER.log(Level.WARNING, "Couldn't send text! " + e.getLocalizedMessage());
+            Constants.LOGGER.error("Couldn't send text! " + e.getLocalizedMessage());
         }
     }
 

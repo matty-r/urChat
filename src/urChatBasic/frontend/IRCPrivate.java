@@ -27,11 +27,11 @@ public class IRCPrivate extends IRCRoomBase
         URL imgPath = null;
         try
         {
-            imgPath =  new URL(Constants.RESOURCES_DIR + "User.png");
+            imgPath =  new URL(Constants.IMAGES_DIR + "User.png");
             icon = new ImageIcon(imgPath);
         } catch (IOException e)
         {
-            Constants.LOGGER.log(Level.SEVERE, "COULD NOT LOAD Server.png " + e.getLocalizedMessage());
+            Constants.LOGGER.warn( "COULD NOT LOAD User.png " + e.getLocalizedMessage());
         }
     }
 
