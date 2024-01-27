@@ -1,5 +1,6 @@
 package urChatBasic.base;
 
+import urChatBasic.backend.logging.URLogger;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.Constants.EventType;
@@ -156,12 +157,14 @@ public class IRCRoomBase extends JPanel
 
     protected IRCRoomBase(String roomName)
     {
+        URLogger.addChannelMarker(roomName);
         this.roomName = roomName;
         initRoom();
     }
 
     protected IRCRoomBase(IRCServerBase server, String roomName)
     {
+        URLogger.addChannelMarker(roomName);
         this.roomName = roomName;
         setServer(server);
         initRoom();
@@ -576,6 +579,10 @@ public class IRCRoomBase extends JPanel
                         if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
                         {
                             lineFormatter.formattedDocument(new Date(), fromIRCUser, fromUser, line);
+
+
+
+                            URLogger.logChannelComms(getName(), (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
 
                             if (server.getNick() != null && line.indexOf(server.getNick()) > -1)
                             {

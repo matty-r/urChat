@@ -11,10 +11,9 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import urChatBasic.backend.Connection;
+import urChatBasic.backend.logging.URLogger;
 import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.base.proxy.ProxyTypes;
@@ -38,9 +37,8 @@ public class Constants
     public static String DIRECTORY_LOGS = "Logs" + URL_SEPARATOR;
     public static Class BACKEND_CLASS;
     public static String BACKEND_CLASS_FULLNAME = "urChatBasic.backend.Connection";
-    // private static Handler LOGGER_TO_FILE;
+
     public static Logger LOGGER;
-    public static String LOGFILE_NAME = "Errors.log";
     private static final JLabel DEFAULT_LABEL = new JLabel();
     // DEFAULT_FONT should be
     private static final Font DEFAULT_FONT = new Font(DEFAULT_LABEL.getFont().getFamily(), 0, DEFAULT_LABEL.getFont().getSize());
@@ -332,21 +330,9 @@ public class Constants
             {
                 logDir.mkdir();
             }
-            File logFile = new File(Constants.DIRECTORY_LOGS, LOGFILE_NAME);
-            if (!logFile.exists())
-            {
-                logFile.createNewFile();
-            }
-            // LOGGER_TO_FILE = new FileHandler(logFile.getAbsolutePath(), true);
-            Configurator.initialize(null, RESOURCES_DIR + "log4j2.xml");
-            LOGGER = LoggerFactory.getLogger("urchat");
-            // Change what is logged out to console, and the file
-            // TODO: Add a console view in a debug section under Appearance?
-            // Handler systemOut = new ConsoleHandler();
-            // systemOut.setLevel(Level.ALL);
-            // LOGGER.addHandler(systemOut);
-            // LOGGER.setLevel(Level.ALL);
 
+            // Init the LOGGER stuff
+            URLogger.init();
         } catch (Exception e)
         {
             LOGGER.warn("Failed to create LOGGER_TO_FILE: " + e.getLocalizedMessage());

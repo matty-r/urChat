@@ -1,11 +1,11 @@
 package urChatBasic.backend;
 
+import static urChatBasic.base.Constants.LOGGER;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import urChatBasic.base.*;
@@ -201,7 +201,7 @@ public class MessageHandler
         {
             rawMessage = fullMessage;
             messageHandler = MessageHandler.this;
-            // System.out.println(fullMessage);
+            LOGGER.debug(fullMessage);
             setPrefix();
 
             try{
