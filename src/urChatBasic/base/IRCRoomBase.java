@@ -545,17 +545,6 @@ public class IRCRoomBase extends JPanel
                             return;
                         }
 
-                        if (((InterfacePanel) gui.interfacePanel).isChannelHistoryEnabled())
-                        {
-                            try
-                            {
-                                writeHistoryFile(line);
-                            } catch (IOException e)
-                            {
-                                Constants.LOGGER.error(e.getLocalizedMessage());
-                            }
-                        }
-
                         // StyledDocument doc = channelTextArea.getStyledDocument();
                         IRCUser fromIRCUser = getCreatedUser(fromUser);
 
@@ -580,9 +569,15 @@ public class IRCRoomBase extends JPanel
                         {
                             lineFormatter.formattedDocument(new Date(), fromIRCUser, fromUser, line);
 
-
-
-                            URLogger.logChannelComms(getName(), (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                            if(IRCRoomBase.this instanceof IRCServerBase)
+                            {
+                                if (((InterfacePanel) gui.interfacePanel).saveServerHistory())
+                                    URLogger.logChannelComms(getName(), (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                            } else if(!(IRCRoomBase.this instanceof IRCServerBase))
+                            {
+                                if (((InterfacePanel) gui.interfacePanel).saveChannelHistory())
+                                    URLogger.logChannelComms(getName(), (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                            }
 
                             if (server.getNick() != null && line.indexOf(server.getNick()) > -1)
                             {
@@ -767,23 +762,6 @@ public class IRCRoomBase extends JPanel
     {
         this.channelTopic = channelTopic;
         this.createEvent(channelTopic);
-    }
-
-    public void writeHistoryFile(String line) throws IOException
-    {
-        if (((InterfacePanel) gui.interfacePanel).saveChannelHistory())
-        {
-            if (historyFileName == null || historyFileName.isEmpty())
-            {
-                historyFileName = historyDateFormat.format(todayDate) + " " + getName() + ".log";
-            }
-
-            FileWriter fw = new FileWriter(Constants.DIRECTORY_LOGS + historyFileName, true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            PrintWriter outFile = new PrintWriter(bw);
-            outFile.println(line);
-            outFile.close();
-        }
     }
 
     /** Rename user by removing old name and inserting new name. */

@@ -22,7 +22,7 @@ import urChatBasic.frontend.DriverGUI;
 
 public class URLogger
 {
-    private static final String LOG4J_CONFIG_FILE = Constants.RESOURCES_PATH +"log4j2.xml";
+    private static final String LOG4J_CONFIG_FILE = Constants.RESOURCES_PATH + "log4j2.xml";
 
     private static LoggerContext context;
     static Configuration currentConfig;
@@ -35,8 +35,7 @@ public class URLogger
         String configContent = loadConfigFile(LOG4J_CONFIG_FILE);
 
         // Create a ConfigurationSource from the configuration file content
-        ConfigurationSource source = new ConfigurationSource(
-                new ByteArrayInputStream(configContent.getBytes(StandardCharsets.UTF_8)));
+        ConfigurationSource source = new ConfigurationSource(new ByteArrayInputStream(configContent.getBytes(StandardCharsets.UTF_8)));
 
         // Initialize the logger context using the ConfigurationSource
         context = Configurator.initialize(null, source);
@@ -53,10 +52,13 @@ public class URLogger
         return MarkerFactory.getMarker(markerName);
     }
 
-    private static String loadConfigFile(String fileName) throws IOException {
+    private static String loadConfigFile (String fileName) throws IOException
+    {
         // Load the configuration file content from the classpath
-        try (InputStream inputStream = DriverGUI.class.getResourceAsStream(fileName)) {
-            if (inputStream == null) {
+        try (InputStream inputStream = DriverGUI.class.getResourceAsStream(fileName))
+        {
+            if (inputStream == null)
+            {
                 throw new IOException("Configuration file not found: " + fileName);
             }
             return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
@@ -64,14 +66,14 @@ public class URLogger
     }
 
     public static void logChannelComms (String channelName, String message)
-{
-
+    {
 
         LOGGER.info(getMarker(channelName), message);
     }
 
     /**
      * Copy the default FileAppender and create a new one for the new Marker
+     *
      * @param markerName
      */
     public static void addChannelMarker (String markerName)
@@ -86,11 +88,9 @@ public class URLogger
         FileAppender existingFileAppender = (FileAppender) rootLoggerConfig.getAppenders().get("BaseChannelAppender");
 
         // Create a new FileAppender using the existingFileAppender as a base
-        FileAppender.Builder<?> newAppenderBuilder =
-                FileAppender.newBuilder().setName(appenderName)
-                        .withFileName("Logs/"+loggerName+".log")
-                        // .withAppend(existingFileAppender.isAppend())
-                        .setLayout(existingFileAppender.getLayout());
+        FileAppender.Builder<?> newAppenderBuilder = FileAppender.newBuilder().setName(appenderName).withFileName("Logs/" + loggerName + ".log")
+                // .withAppend(existingFileAppender.isAppend())
+                .setLayout(existingFileAppender.getLayout());
 
         // Add MarkerFilter for the specified markerName
         MarkerFilter acceptNewMarker = MarkerFilter.createFilter(markerName, Result.ACCEPT, Result.DENY);
