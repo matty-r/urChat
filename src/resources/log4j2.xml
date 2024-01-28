@@ -5,12 +5,12 @@
             <NoMarkerFilter onMatch="ACCEPT" onMismatch="DENY"/>
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
         </Console>
-        <File name="FileAppender" fileName="Logs/urchat-${date:yyyyMMdd}.log" immediateFlush="false" append="true">
+        <File name="FileAppender" fileName="Logs/urchat-${date:yyyyMMdd}.log" immediateFlush="true" append="true">
             <NoMarkerFilter onMatch="ACCEPT" onMismatch="DENY"/>
-            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS}{UTC} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS}{UTC}UTC [%t] %-5level %logger{36} - %msg%n"/>
         </File>
         <File name="BaseChannelAppender" fileName="Logs/urchat-${date:yyyyMMdd}.log" immediateFlush="false" append="true">
-            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS}{UTC} %marker %msg%n"/>
+            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS}{UTC}UTC %marker %msg%n"/>
         </File>
     </Appenders>
     <Loggers>

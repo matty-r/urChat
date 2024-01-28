@@ -340,7 +340,7 @@ public class LineFormatter
                         Desktop.getDesktop().browse(new URL(textLink).toURI());
                 } catch (Exception e)
                 {
-                    e.printStackTrace();
+                    Constants.LOGGER.warn(e.getLocalizedMessage(), e);
                 }
             } else if (!textLink.isEmpty() && attributeSet.getAttribute("type").equals("channel"))
             {
@@ -361,7 +361,7 @@ public class LineFormatter
                     }
                 } catch (Exception e)
                 {
-                    e.printStackTrace();
+                    Constants.LOGGER.warn(e.getLocalizedMessage(), e);
                 }
             }
         }
@@ -526,9 +526,7 @@ public class LineFormatter
                         }
                     } catch (BadLocationException e)
                     {
-                        // TODO Auto-generated catch block
-
-                        e.printStackTrace();
+                        Constants.LOGGER.warn(e.getLocalizedMessage(), e);
                     } finally {
                         updateStylesInProgress.set(false);
                     }

@@ -11,7 +11,6 @@ import java.awt.event.ItemListener;
 import java.awt.font.TextAttribute;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.event.EventListenerList;

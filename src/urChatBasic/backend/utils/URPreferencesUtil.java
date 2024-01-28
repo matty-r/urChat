@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.UIManager;
@@ -47,8 +46,7 @@ public class URPreferencesUtil {
                 return defaultFont;
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
             return defaultFont;
         }
 
@@ -87,8 +85,7 @@ public class URPreferencesUtil {
                 return colourMap;
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
             return colourMap;
         }
 
@@ -139,8 +136,6 @@ public class URPreferencesUtil {
         } catch (Exception e)
         {
             Constants.LOGGER.error("Active Profile: ["+URProfilesUtil.getActiveProfileName()+"] Unable to load ["+loadedStyle.getAttribute("name")+"]"+ " attempted with path: " + stylePrefPath);
-            // TODO Auto-generated catch block
-            // e.printStackTrace();
             return targetStyle;
         }
 
@@ -168,8 +163,7 @@ public class URPreferencesUtil {
             settingsPath.remove(Constants.KEY_FONT_UNDERLINE);
         } catch (Exception e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 
@@ -183,8 +177,7 @@ public class URPreferencesUtil {
             settingsPath.remove(Constants.KEY_FONT_BACKGROUND);
         } catch (Exception e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 
@@ -219,8 +212,7 @@ public class URPreferencesUtil {
                     }
                 } catch (BackingStoreException e)
                 {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    Constants.LOGGER.warn(e.getLocalizedMessage(), e);
                 }
             }
         }
@@ -311,8 +303,7 @@ public class URPreferencesUtil {
             }
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         return prefPaths;

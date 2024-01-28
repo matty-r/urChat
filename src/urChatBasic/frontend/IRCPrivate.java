@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;

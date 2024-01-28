@@ -113,8 +113,7 @@ public class ProfileTests
                 }
             } catch (BackingStoreException e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Constants.LOGGER.warn(e.getLocalizedMessage(), e);
             }
         }
 

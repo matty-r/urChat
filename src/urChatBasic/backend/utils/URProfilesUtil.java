@@ -50,8 +50,7 @@ public class URProfilesUtil
             }
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         // Use a Set, then convert to Array to drop any duplicates
@@ -210,8 +209,7 @@ public class URProfilesUtil
             }
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         final Preferences clonedPathRoot = originalPathRoot.parent().node(clonedProfileName);
@@ -235,8 +233,7 @@ public class URProfilesUtil
                 }
             } catch (BackingStoreException e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Constants.LOGGER.warn(e.getLocalizedMessage(), e);
             }
         }
 
@@ -255,8 +252,7 @@ public class URProfilesUtil
             }
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         setDefaultProfile(Constants.DEFAULT_PROFILE_NAME);
@@ -285,8 +281,7 @@ public class URProfilesUtil
             }
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         Constants.LOGGER.info( "Creating new profile [" + newProfileName + "]");

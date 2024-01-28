@@ -9,7 +9,6 @@ import java.util.Enumeration;
 
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Level;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import urChatBasic.base.Constants;
@@ -61,10 +60,10 @@ public class LookAndFeelLoader {
                             String classShortName = className.replaceAll(".*/([^/]+)", "$1");
 
                             className = className.replace('/', '.');
-                            Class c = cl.loadClass(className);
+                            Class<?> c = cl.loadClass(className);
 
                             // We only want LAF classes
-                            Class parentClass = LookAndFeel.class;
+                            Class<?> parentClass = LookAndFeel.class;
 
                             // Class is a LookAndFeel
                             if (parentClass.isAssignableFrom(c)) {
@@ -82,7 +81,7 @@ public class LookAndFeelLoader {
             }
         } catch (Exception e) {
             // Handle URL creation exception
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
         Constants.LOGGER.info( "Done loading JARs! ");
     }

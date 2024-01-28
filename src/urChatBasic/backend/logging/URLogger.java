@@ -89,7 +89,6 @@ public class URLogger
 
         // Create a new FileAppender using the existingFileAppender as a base
         FileAppender.Builder<?> newAppenderBuilder = FileAppender.newBuilder().setName(appenderName).withFileName("Logs/" + loggerName + ".log")
-                // .withAppend(existingFileAppender.isAppend())
                 .setLayout(existingFileAppender.getLayout());
 
         // Add MarkerFilter for the specified markerName

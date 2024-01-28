@@ -142,8 +142,7 @@ public class MessageHandlerTests
 
         } catch (IOException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         Reporter.log("This test won't run unless the dependant method is included in the test and passed.");
@@ -158,8 +157,7 @@ public class MessageHandlerTests
             testConnection.sendClientText(rawMessage, "otheruser");
         } catch (IOException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 
@@ -173,8 +171,7 @@ public class MessageHandlerTests
             testConnection.sendClientText(rawMessage, "otheruser");
         } catch (IOException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 

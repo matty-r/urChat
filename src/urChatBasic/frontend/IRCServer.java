@@ -146,8 +146,7 @@ public class IRCServer extends IRCRoomBase implements IRCServerBase
             saslString = Base64.getEncoder().encodeToString(saslString.getBytes(StandardCharsets.UTF_8.toString()));
         } catch (UnsupportedEncodingException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
         sendClientText("AUTHENTICATE " + saslString, getName());
     }

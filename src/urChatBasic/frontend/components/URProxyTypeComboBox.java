@@ -24,7 +24,7 @@ public class URProxyTypeComboBox extends JComboBox<ProxyTypeBase>
 
     public void runChangeListener ()
     {
-        ProxyTypeBase selectedAuthType = getSelectedItem();
+        // ProxyTypeBase selectedAuthType = getSelectedItem();
 
         // do nothing
     }

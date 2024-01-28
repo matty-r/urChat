@@ -653,7 +653,6 @@ public class MessageHandler
             long timeToResponse = Duration.between(pingTime, new Date().toInstant()).toMillis();
 
             printServerText("Took "+timeToResponse+"ms to respond.");
-
             serverBase.setPingReceived();
         }
     }

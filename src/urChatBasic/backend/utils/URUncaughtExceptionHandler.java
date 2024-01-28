@@ -6,6 +6,6 @@ public class URUncaughtExceptionHandler implements Thread.UncaughtExceptionHandl
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        Constants.LOGGER.error( "Uncaught exception in thread: " + t.getName(), e);
+        Constants.LOGGER.error( "Uncaught exception: " + e.getLocalizedMessage(), e);
     }
 }

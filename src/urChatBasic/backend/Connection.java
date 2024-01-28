@@ -133,8 +133,7 @@ public class Connection implements ConnectionBase
             Thread.sleep(500);
         } catch (InterruptedException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         // Initiate connection to the server.
@@ -218,8 +217,7 @@ public class Connection implements ConnectionBase
                         }
                     } catch (IOException e)
                     {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        Constants.LOGGER.warn(e.getLocalizedMessage(), e);
                     }
                 }
             });

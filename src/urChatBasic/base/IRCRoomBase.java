@@ -20,7 +20,6 @@ import urChatBasic.frontend.UsersListModel;
 import java.awt.event.*;
 import java.awt.*;
 import java.io.*;
-import java.text.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -74,11 +73,6 @@ public class IRCRoomBase extends JPanel
 
     // TODO: Rename to sentHistory
     private List<String> userHistory = new ArrayList<String>();
-
-    // TODO: This is logging stuff, should not be handled here
-    private DateFormat historyDateFormat = new SimpleDateFormat("ddMMyyyy");
-    private String historyFileName;
-    private Date todayDate = new Date();
 
     private String channelTopic;
 
@@ -485,7 +479,7 @@ public class IRCRoomBase extends JPanel
                 handleMessageQueue();
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 

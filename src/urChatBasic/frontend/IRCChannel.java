@@ -2,7 +2,6 @@ package urChatBasic.frontend;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
