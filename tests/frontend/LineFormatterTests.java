@@ -6,6 +6,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -76,7 +78,29 @@ public class LineFormatterTests
         assertEquals("<someuser> Welcome to somechannel!", testPubChannel.getLineFormatter().getLineAtPosition(9).split("] ")[1].trim());
         testPubChannel.getChannelTextPane().setCaretPosition(9);
         // Right click on someuser
-        Rectangle2D coords = testPubChannel.getChannelTextPane().modelToView2D(testPubChannel.getChannelTextPane().getCaretPosition());
+        final Rectangle2D[] coords = new Rectangle2D[1];
+        AtomicBoolean canContinue = new AtomicBoolean(false);
+
+        SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+                try
+                {
+                    coords[0] = testPubChannel.getChannelTextPane().modelToView2D(testPubChannel.getChannelTextPane().getCaretPosition());
+                    canContinue.set(true);
+                } catch (BadLocationException e)
+                {
+                    fail();
+                }
+			}
+		});
+
+
+        while(!canContinue.get())
+        {
+            TimeUnit.SECONDS.sleep(1);
+        }
 
         // Right-Click mouse event at the x-y coords of the caret in the text pane
         MouseEvent event = new MouseEvent(
@@ -84,8 +108,8 @@ public class LineFormatterTests
             MouseEvent.BUTTON3,
             System.currentTimeMillis(),
             MouseEvent.BUTTON3_DOWN_MASK,
-            (int) coords.getX(),
-            (int) coords.getY(),
+            (int) coords[0].getX(),
+            (int) coords[0].getY(),
             1,
             false
         );
