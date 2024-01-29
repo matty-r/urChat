@@ -38,11 +38,9 @@ public class URLogger
         ConfigurationSource source = new ConfigurationSource(new ByteArrayInputStream(configContent.getBytes(StandardCharsets.UTF_8)));
 
         // Initialize the logger context using the ConfigurationSource
-        context = Configurator.initialize(null, source);
-
+        context = Configurator.initialize(Thread.currentThread().getContextClassLoader(), source);
 
         currentConfig = context.getConfiguration();
-
 
         LOGGER = LoggerFactory.getLogger("urchat");
     }
@@ -83,13 +81,21 @@ public class URLogger
 
         // Get the root LoggerConfig
         Configuration rootLoggerConfig = currentConfig;
-        Logger rootLogger = currentConfig.getLoggerContext().getRootLogger();
+        Logger rootLogger;
+
+        if (currentConfig.getLoggerContext() != null)
+        {
+            rootLogger = currentConfig.getLoggerContext().getRootLogger();
+        } else
+        {
+            return;
+        }
 
         FileAppender existingFileAppender = (FileAppender) rootLoggerConfig.getAppenders().get("BaseChannelAppender");
 
         // Create a new FileAppender using the existingFileAppender as a base
-        FileAppender.Builder<?> newAppenderBuilder = FileAppender.newBuilder().setName(appenderName).withFileName("Logs/" + loggerName + ".log")
-                .setLayout(existingFileAppender.getLayout());
+        FileAppender.Builder<?> newAppenderBuilder =
+                FileAppender.newBuilder().setName(appenderName).withFileName("Logs/" + loggerName + ".log").setLayout(existingFileAppender.getLayout());
 
         // Add MarkerFilter for the specified markerName
         MarkerFilter acceptNewMarker = MarkerFilter.createFilter(markerName, Result.ACCEPT, Result.DENY);

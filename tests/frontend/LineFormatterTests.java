@@ -29,7 +29,7 @@ public class LineFormatterTests
     IRCServer testServer;
     TestDriverGUI testDriver;
     UserGUI testGUI;
-    IRCRoomBase testPrivChannel;
+    // IRCRoomBase testPrivChannel;
     final String PUB_CHANNEL_NAME = "#someChannel";
     IRCRoomBase testPubChannel;
     IRCUser testUser;
@@ -52,10 +52,7 @@ public class LineFormatterTests
     @AfterClass(alwaysRun = true)
     public void tearDown () throws Exception
     {
-        // Reporter.log("Deleting testing profile.", true);
         testServer.quitRooms();
-        // URProfilesUtil.getActiveProfilePath().sync();
-        // URProfilesUtil.getActiveProfilePath().sync();
         URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
         TestDriverGUI.closeWindow();
     }
@@ -74,7 +71,7 @@ public class LineFormatterTests
             TimeUnit.SECONDS.sleep(1);
         }
 
-        testGUI.tabbedPane.setSelectedComponent(testPubChannel);
+        testGUI.tabbedPane.setSelectedIndex(1);
 
         assertEquals("<someuser> Welcome to somechannel!", testPubChannel.getLineFormatter().getLineAtPosition(9).split("] ")[1].trim());
         testPubChannel.getChannelTextPane().setCaretPosition(9);
