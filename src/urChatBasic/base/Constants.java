@@ -163,6 +163,18 @@ public class Constants
     public static final int MAIN_WIDTH = 500;
     public static final int MAIN_HEIGHT = 400;
 
+    static {
+        // Init the LOGGER stuff
+        try
+        {
+            URLogger.init();
+        } catch (Exception e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     public enum Size
     {
         LARGE, MEDIUM, SMALL, CUSTOM, NONE;
@@ -323,20 +335,6 @@ public class Constants
     {
         URVersionLabel.setVersion();
 
-        try
-        {
-            File logDir = new File(DIRECTORY_LOGS);
-            if (!logDir.exists())
-            {
-                logDir.mkdir();
-            }
-
-            // Init the LOGGER stuff
-            URLogger.init();
-        } catch (Exception e)
-        {
-            LOGGER.warn("Failed to create LOGGER_TO_FILE: " + e.getLocalizedMessage());
-        }
         try
         {
             new Object().getClass();

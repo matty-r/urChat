@@ -46,6 +46,9 @@ public class IRCRoomBase extends JPanel
 
     protected FontDialog fontDialog;
 
+    // Logging Stuff
+    private String markerName;
+
     // Icons
     public ImageIcon icon;
 
@@ -151,14 +154,12 @@ public class IRCRoomBase extends JPanel
 
     protected IRCRoomBase(String roomName)
     {
-        URLogger.addChannelMarker(roomName);
         this.roomName = roomName;
         initRoom();
     }
 
     protected IRCRoomBase(IRCServerBase server, String roomName)
     {
-        URLogger.addChannelMarker(roomName);
         this.roomName = roomName;
         setServer(server);
         initRoom();
@@ -176,6 +177,7 @@ public class IRCRoomBase extends JPanel
         if (getServer() != null)
         {
             String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
+            markerName = getServer().getName() != null ? getServer().getName() + "-" + roomName : roomName;
 
             if(nodeName.equals(roomName))
                 setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName));
@@ -187,11 +189,15 @@ public class IRCRoomBase extends JPanel
             lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , getServer(), roomPrefs);
         } else
         {
+            markerName = roomName;
             setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(roomName));
             fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, null, roomPrefs);
         }
+
+        // Add Logging Marker
+        URLogger.addChannelMarker(markerName);
 
         URProfilesUtil.addListener(EventType.CHANGE, changeListener);
 
@@ -452,6 +458,11 @@ public class IRCRoomBase extends JPanel
         myActions.callForAttention();
     }
 
+    public String getMarker ()
+    {
+        return markerName;
+    }
+
     class MessagePair {
         private String line;
         private String fromUser;
@@ -566,11 +577,11 @@ public class IRCRoomBase extends JPanel
                             if(IRCRoomBase.this instanceof IRCServerBase)
                             {
                                 if (((InterfacePanel) gui.interfacePanel).saveServerHistory())
-                                    URLogger.logChannelComms(getName(), (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                                    URLogger.logChannelComms(IRCRoomBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
                             } else if(!(IRCRoomBase.this instanceof IRCServerBase))
                             {
                                 if (((InterfacePanel) gui.interfacePanel).saveChannelHistory())
-                                    URLogger.logChannelComms(getName(), (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                                    URLogger.logChannelComms(IRCRoomBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
                             }
 
                             if (server.getNick() != null && line.indexOf(server.getNick()) > -1)

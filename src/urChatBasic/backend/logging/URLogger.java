@@ -1,23 +1,22 @@
 package urChatBasic.backend.logging;
 
 import static urChatBasic.base.Constants.LOGGER;
-import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.lang.reflect.Field;
+import java.net.URISyntaxException;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.Filter.Result;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.ConfigurationSource;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.filter.MarkerFilter;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import urChatBasic.base.Constants;
+import urChatBasic.base.IRCRoomBase;
 import urChatBasic.frontend.DriverGUI;
 
 public class URLogger
@@ -27,22 +26,42 @@ public class URLogger
     private static LoggerContext context;
     static Configuration currentConfig;
 
-    // final static String commsMarker = "Comms Marker";
-
-    public static void init () throws IOException
+    public static void init () throws IOException, URISyntaxException
     {
-        // Load the log4j2.xml configuration file content
-        String configContent = loadConfigFile(LOG4J_CONFIG_FILE);
+        File logDir = new File(Constants.DIRECTORY_LOGS);
+        if (!logDir.exists())
+        {
+            logDir.mkdir();
+        }
 
-        // Create a ConfigurationSource from the configuration file content
-        ConfigurationSource source = new ConfigurationSource(new ByteArrayInputStream(configContent.getBytes(StandardCharsets.UTF_8)));
+        System.setProperty("log4j2.configurationFile", DriverGUI.class.getResource(LOG4J_CONFIG_FILE).toURI().toString());
+        // System.setProperty("log4j2.debug", "true");
+
+        LOGGER = LoggerFactory.getLogger(URLogger.class);
+
+        Logger testLog = getLogger(LOGGER.getName(), Logger.class);
 
         // Initialize the logger context using the ConfigurationSource
-        context = Configurator.initialize(Thread.currentThread().getContextClassLoader(), source);
-
+        context = testLog.getContext();
         currentConfig = context.getConfiguration();
+    }
 
-        LOGGER = LoggerFactory.getLogger("urchat");
+    public static <T> T getLogger(final String loggerName, final Class<T> loggerClass) {
+        final org.slf4j.Logger logger = LoggerFactory.getLogger(loggerName);
+        try {
+            final Class<? extends org.slf4j.Logger> loggerIntrospected = logger.getClass();
+            final Field fields[] = loggerIntrospected.getDeclaredFields();
+            for (int i = 0; i < fields.length; i++) {
+                final String fieldName = fields[i].getName();
+                if (fieldName.equals("logger")) {
+                    fields[i].setAccessible(true);
+                    return loggerClass.cast(fields[i].get(logger));
+                }
+            }
+        } catch (final Exception e) {
+            logger.error(e.getMessage());
+        }
+        return null;
     }
 
     public static Marker getMarker (String markerName)
@@ -50,23 +69,25 @@ public class URLogger
         return MarkerFactory.getMarker(markerName);
     }
 
-    private static String loadConfigFile (String fileName) throws IOException
-    {
-        // Load the configuration file content from the classpath
-        try (InputStream inputStream = DriverGUI.class.getResourceAsStream(fileName))
-        {
-            if (inputStream == null)
-            {
-                throw new IOException("Configuration file not found: " + fileName);
-            }
-            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-        }
-    }
+    // private static String loadConfigFile (String fileName) throws IOException
+    // {
+    //     // Load the configuration file content from the classpath
+    //     try (InputStream inputStream = DriverGUI.class.getResourceAsStream(fileName))
+    //     {
+    //         if (inputStream == null)
+    //         {
+    //             throw new IOException("Configuration file not found: " + fileName);
+    //         }
 
-    public static void logChannelComms (String channelName, String message)
+    //         String configFileString = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+    //         return configFileString;
+    //     }
+    // }
+
+    public static void logChannelComms (IRCRoomBase ircChannel, String message)
     {
 
-        LOGGER.info(getMarker(channelName), message);
+        LOGGER.info(getMarker(ircChannel.getMarker()), message);
     }
 
     /**
