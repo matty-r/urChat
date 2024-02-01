@@ -8,14 +8,15 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
 import urChatBasic.base.*;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.base.capabilities.SaslCapSubTypes;
 import urChatBasic.frontend.DriverGUI;
+import urChatBasic.frontend.dialogs.MessageDialog;
 
 /**
- * This class will Handle the message it has received and assign an approriate class that will parse
- * the string and then
+ * This class will Handle the message it has received and assign an approriate class that will parse the string and then
  *
  * @author Matt
  *
@@ -35,7 +36,7 @@ public class MessageHandler
      * @param server
      * @param messageID
      */
-    public MessageHandler(IRCServerBase server)
+    public MessageHandler (IRCServerBase server)
     {
         this.serverBase = server;
 
@@ -45,12 +46,12 @@ public class MessageHandler
             addSingles();
     }
 
-    public void parseMessage(Message receivedMessage)
+    public void parseMessage (Message receivedMessage)
     {
         receivedMessage.exec();
     }
 
-    private Boolean isBetween(String line, char start, String middle, char end)
+    private Boolean isBetween (String line, char start, String middle, char end)
     {
         int startIndex = line.indexOf(start);
         int middleIndex = line.indexOf(middle);
@@ -69,14 +70,14 @@ public class MessageHandler
         private MessageBase handlerType;
         private MessageIdType type = MessageIdType.NUMBER_ID;
 
-        public IDRange(int min, int max, MessageBase handlerType)
+        public IDRange (int min, int max, MessageBase handlerType)
         {
             this.min = min;
             this.max = max;
             this.handlerType = handlerType;
         }
 
-        public boolean inRange(int checkNumber)
+        public boolean inRange (int checkNumber)
         {
             return checkNumber >= this.min && checkNumber <= this.max;
         }
@@ -89,28 +90,28 @@ public class MessageHandler
         private MessageBase handlerType;
         private MessageIdType type;
 
-        public IDSingle(int id, MessageBase handlerType)
+        public IDSingle (int id, MessageBase handlerType)
         {
             this.idArray = new int[] {id};
             this.handlerType = handlerType;
             type = MessageIdType.NUMBER_ID;
         }
 
-        public IDSingle(int[] id, MessageBase handlerType)
+        public IDSingle (int[] id, MessageBase handlerType)
         {
             this.idArray = id;
             this.handlerType = handlerType;
             type = MessageIdType.NUMBER_ID;
         }
 
-        public IDSingle(String id, MessageBase handlerType)
+        public IDSingle (String id, MessageBase handlerType)
         {
             this.id = id;
             this.handlerType = handlerType;
             type = MessageIdType.STRING_ID;
         }
 
-        public boolean isEqual(String testId)
+        public boolean isEqual (String testId)
         {
             try
             {
@@ -123,7 +124,7 @@ public class MessageHandler
             return false;
         }
 
-        public boolean isEqual(int testId)
+        public boolean isEqual (int testId)
         {
             for (int x : idArray)
                 if (x == testId)
@@ -135,7 +136,7 @@ public class MessageHandler
         }
     }
 
-    private void addRanges()
+    private void addRanges ()
     {
         rangeIDs.add(new IDRange(1, 4, new UserRegistrationMessage()));
         rangeIDs.add(new IDRange(332, 333, new ChannelTopicMessage()));
@@ -145,7 +146,7 @@ public class MessageHandler
         rangeIDs.add(new IDRange(471, 477, new JoinFailureMessage()));
     }
 
-    private void addSingles()
+    private void addSingles ()
     {
         singleIDs.add(new IDSingle((new int[] {5, 328}), new NoticeMessage()));
         singleIDs.add(new IDSingle(353, new UsersListMessage()));
@@ -167,8 +168,8 @@ public class MessageHandler
         singleIDs.add(new IDSingle("PART", new PartMessage()));
         singleIDs.add(new IDSingle("KICK", new KickMessage()));
         singleIDs.add(new IDSingle("JOIN", new JoinMessage()));
-        singleIDs.add(new IDSingle(":Closing", new DisconnectMessage()));
-        singleIDs.add(new IDSingle("ERROR", new DisconnectMessage()));
+        // singleIDs.add(new IDSingle(":Closing", new DisconnectMessage()));
+        singleIDs.add(new IDSingle("ERROR", new DisconnectErrorMessage()));
         singleIDs.add(new IDSingle("QUIT", new DisconnectMessage()));
         singleIDs.add(new IDSingle("NICK", new RenameUserMessage()));
         singleIDs.add(new IDSingle("PONG", new PongMessage()));
@@ -192,25 +193,27 @@ public class MessageHandler
         MessageIdType type;
         private String rawMessage = "";
         String nick = "";
-        String subType  = "";
+        String subType = "";
         MessageBase messageBase;
         MessageBase subTypeBase;
         MessageHandler messageHandler;
 
-        public Message(String fullMessage)
+        public Message (String fullMessage)
         {
             rawMessage = fullMessage;
             messageHandler = MessageHandler.this;
             LOGGER.debug(fullMessage);
             setPrefix();
 
-            try{
+            try
+            {
                 setIdCommand();
                 setChannel();
                 setMessageBody();
                 setNick();
                 setSubType();
-            } catch (Exception e) {
+            } catch (Exception e)
+            {
                 this.channel = "";
             }
 
@@ -223,7 +226,7 @@ public class MessageHandler
                 this.type = MessageIdType.STRING_ID;
 
                 // requires special handling
-                if(channel.isEmpty() && nick.isEmpty() && subType.isEmpty())
+                if (channel.isEmpty() && nick.isEmpty() && subType.isEmpty())
                 {
                     idCommand = prefix;
                 }
@@ -233,104 +236,109 @@ public class MessageHandler
         }
 
         // Run the subType if it is set
-        public void exec()
+        public void exec ()
         {
-            if(getSubTypeBase() != null)
+            if (getSubTypeBase() != null)
             {
                 getSubTypeBase().messageExec(this);
-            } else {
+            } else
+            {
                 getMessageBase().messageExec(this);
             }
         }
 
-        public String toPrettyString()
+        public String toPrettyString ()
         {
             String prettyString = String.format("""
-            Body: %s
-            channel: %s
-            idCommand: %s
-            prefix: %s
-            subType: %s
-            messageBase: %s
-            """,
-            body,
-            channel,
-            idCommand,
-            prefix,
-            subType,
-            messageBase.getClass().toGenericString()
-            );
+                    Body: %s
+                    channel: %s
+                    idCommand: %s
+                    prefix: %s
+                    subType: %s
+                    messageBase: %s
+                    """, body, channel, idCommand, prefix, subType, messageBase.getClass().toGenericString());
 
             return prettyString;
         }
 
-        public String toString()
+        public String toString ()
         {
             return rawMessage;
         }
 
-        public String getPrefix() {
+        public String getPrefix ()
+        {
             return prefix;
         }
 
-        public String getIdCommand() {
+        public String getIdCommand ()
+        {
             return idCommand;
         }
 
-        public int getIdCommandNumber() {
+        public int getIdCommandNumber ()
+        {
             return idCommandNumber;
         }
 
-        public String getChannel() {
+        public String getChannel ()
+        {
             return channel;
         }
 
-        public String getBody() {
+        public String getBody ()
+        {
             return body;
         }
 
-        public MessageIdType getType() {
+        public MessageIdType getType ()
+        {
             return type;
         }
 
-        public String getRawMessage() {
+        public String getRawMessage ()
+        {
             return rawMessage;
         }
 
-        public String getNick() {
+        public String getNick ()
+        {
             return nick;
         }
 
-        public String getSubType() {
+        public String getSubType ()
+        {
             return subType;
         }
 
-        public MessageBase getMessageBase() {
+        public MessageBase getMessageBase ()
+        {
             return messageBase;
         }
 
-        public MessageBase getSubTypeBase() {
+        public MessageBase getSubTypeBase ()
+        {
             return subTypeBase;
         }
 
-        private void setPrefix()
+        private void setPrefix ()
         {
             prefix = rawMessage.split(" ")[0];
         }
 
-        private void setNick()
+        private void setNick ()
         {
             if (isBetween(rawMessage, ':', "!", '@'))
                 this.nick = rawMessage.substring(1, rawMessage.indexOf("!")).trim();
         }
 
-        private void setChannel()
+        private void setChannel ()
         {
             String withoutPrefix = rawMessage.replace(prefix, "").trim();
             // int messageBegin = posnOfOccurrence(withoutPrefix, Constants.SPACES_AHEAD_DELIMITER, 1);
             int messageBegin = withoutPrefix.indexOf(Constants.SPACES_AHEAD_DELIMITER);
 
-            if(messageBegin < 0)
+            if (messageBegin < 0)
             {
                 messageBegin = withoutPrefix.length();
             }
@@ -344,25 +352,27 @@ public class MessageHandler
                 Pattern pattern = Pattern.compile(regex);
                 Matcher matcher = pattern.matcher(withoutPrefix);
 
-                if(matcher.find())
+                if (matcher.find())
                 {
                     this.channel = matcher.group(1);
-                } else {
+                } else
+                {
                     regex = "\\!(#?\\w+)\\@";
                     pattern = Pattern.compile(regex);
                     matcher = pattern.matcher(prefix);
 
-                    if(matcher.find())
+                    if (matcher.find())
                     {
-                        this.channel = "#"+matcher.group(1);
-                    } else {
+                        this.channel = "#" + matcher.group(1);
+                    } else
+                    {
                         this.channel = withoutPrefix.split(" ")[1];
                     }
                 }
             }
         }
 
-        private void setMessageBody()
+        private void setMessageBody ()
         {
             try
             {
@@ -374,50 +384,56 @@ public class MessageHandler
                     this.body = withoutPrefixIdChannel;
             } catch (IndexOutOfBoundsException e)
             {
-                Constants.LOGGER.error(
-                        "Failed to extract a message from received text. " + e.getLocalizedMessage());
+                Constants.LOGGER.error("Failed to extract a message from received text. " + e.getLocalizedMessage());
             }
         }
 
         // TODO: This should be improved. Flatten all the IDs into a single list - support for testing against
         // this.subType (only under MessageIdType.STRING_ID) as well as this.idCommand
-        private void setBases() {
+        private void setBases ()
+        {
             boolean messageBaseSet = false;
             MessageBase newBase = new MessageHandler.DefaultMesssage();
 
-            for (IDSingle testSingle : singleIDs) {
-                if (testSingle.type.equals(MessageIdType.NUMBER_ID) && testSingle.isEqual(idCommandNumber)) {
+            for (IDSingle testSingle : singleIDs)
+            {
+                if (testSingle.type.equals(MessageIdType.NUMBER_ID) && testSingle.isEqual(idCommandNumber))
+                {
                     newBase = testSingle.handlerType;
                     messageBaseSet = true;
                 }
 
-                if(testSingle.type.equals(MessageIdType.STRING_ID))
+                if (testSingle.type.equals(MessageIdType.STRING_ID))
                 {
-                    if (testSingle.isEqual(idCommand)) {
+                    if (testSingle.isEqual(idCommand))
+                    {
                         newBase = testSingle.handlerType;
                         messageBaseSet = true;
                     }
 
-                    if(testSingle.isEqual(subType))
+                    if (testSingle.isEqual(subType))
                     {
                         subTypeBase = testSingle.handlerType;
                     }
                 }
 
-                if(messageBaseSet && subType.isEmpty())
+                if (messageBaseSet && subType.isEmpty())
                 {
                     break;
                 }
             }
 
-            if (!messageBaseSet) {
-                for (IDRange testRange : rangeIDs) {
-                    if (testRange.type.equals(MessageIdType.NUMBER_ID) && testRange.inRange(idCommandNumber)) {
+            if (!messageBaseSet)
+            {
+                for (IDRange testRange : rangeIDs)
+                {
+                    if (testRange.type.equals(MessageIdType.NUMBER_ID) && testRange.inRange(idCommandNumber))
+                    {
                         newBase = testRange.handlerType;
                         messageBaseSet = true;
                     }
 
-                    if(messageBaseSet && subType.isEmpty())
+                    if (messageBaseSet && subType.isEmpty())
                     {
                         break;
                     }
@@ -429,14 +445,15 @@ public class MessageHandler
 
 
 
-        private void setIdCommand()
+        private void setIdCommand ()
         {
 
-                if(prefix.indexOf(':') >= 0)
-                {
-                    idCommand = rawMessage.split(" ")[1];}
-                else
-                {    idCommand = rawMessage.split(" ")[0];
+            if (prefix.indexOf(':') >= 0)
+            {
+                idCommand = rawMessage.split(" ")[1];
+            } else
+            {
+                idCommand = rawMessage.split(" ")[0];
             }
         }
 
@@ -447,14 +464,15 @@ public class MessageHandler
             if (rawBody.contains(":"))
                 rawBody = rawBody.substring(rawBody.indexOf(":") + 1);
 
-            if(rawBody.charAt(0) == Constants.CTCP_DELIMITER)
+            if (rawBody.charAt(0) == Constants.CTCP_DELIMITER)
             {
                 subType = rawBody.split(" ")[0].trim();
-            } else {
+            } else
+            {
                 subType = this.rawMessage.replaceFirst(Pattern.quote(this.prefix), "");
                 subType = subType.replaceFirst(Pattern.quote(this.idCommand), "");
                 subType = subType.replaceFirst(Pattern.quote(this.channel), "");
-                subType = subType.replaceFirst(Pattern.quote(this.body),"");
+                subType = subType.replaceFirst(Pattern.quote(this.body), "");
                 subType = subType.trim();
                 subType = subType.split(" ")[0];
             }
@@ -465,7 +483,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             printServerText(myMessage.body);
         }
@@ -476,7 +494,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             printServerText(myMessage.body);
         }
@@ -486,7 +504,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             printServerText(myMessage.body);
         }
@@ -496,7 +514,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             myMessage.messageHandler.serverBase.printChannelText(myMessage.channel, myMessage.body, Constants.EVENT_USER);
         }
@@ -506,7 +524,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             if (myMessage.nick.equals(myMessage.messageHandler.serverBase.getNick()))
             {
@@ -522,7 +540,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             myMessage.messageHandler.serverBase.setChannelTopic(myMessage.channel, myMessage.body);
         }
@@ -532,7 +550,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             myMessage.messageHandler.serverBase.addToUsersList(myMessage.channel, myMessage.body.split(" "));
         }
@@ -542,7 +560,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             if (!myMessage.nick.equals(myMessage.messageHandler.serverBase.getNick()))
                 myMessage.messageHandler.serverBase.renameUser(myMessage.nick, myMessage.body);
@@ -553,7 +571,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             printServerText(myMessage.body);
             serverBase.callForAttention();
@@ -566,7 +584,7 @@ public class MessageHandler
 
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             // printServerText(myMessage.body);
             if (myMessage.channel.equals(myMessage.messageHandler.serverBase.getNick()))
@@ -582,7 +600,7 @@ public class MessageHandler
 
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             printPrivateText(myMessage.rawMessage.split(" ")[3], myMessage.body, myMessage.rawMessage.split(" ")[3]);
         }
@@ -594,7 +612,7 @@ public class MessageHandler
 
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             // TODO
         }
@@ -605,7 +623,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             // TODO Auto-generated method stub
         }
@@ -614,7 +632,7 @@ public class MessageHandler
     public class SASLAuthenticateFailedMessage implements MessageBase
     {
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             printServerText(myMessage.body);
         }
@@ -623,7 +641,7 @@ public class MessageHandler
     public class SASLAuthenticateSuccessMessage implements MessageBase
     {
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             printServerText(myMessage.body);
             serverBase.saslCompleteAuthentication();
@@ -633,9 +651,9 @@ public class MessageHandler
     public class SASLAuthenticateMessage implements MessageBase
     {
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
-            if(myMessage.rawMessage.equals("AUTHENTICATE +"))
+            if (myMessage.rawMessage.equals("AUTHENTICATE +"))
             {
                 printServerText(myMessage.rawMessage);
                 serverBase.saslSendAuthentication();
@@ -646,13 +664,13 @@ public class MessageHandler
     public class PongMessage implements MessageBase
     {
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             Instant pingTime = Instant.ofEpochMilli(Long.parseLong(myMessage.getBody()));
 
             long timeToResponse = Duration.between(pingTime, new Date().toInstant()).toMillis();
 
-            printServerText("Took "+timeToResponse+"ms to respond.");
+            printServerText("Took " + timeToResponse + "ms to respond.");
             serverBase.setPingReceived();
         }
     }
@@ -661,17 +679,21 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             // CAP ACK or CAP LS?
-            switch (myMessage.subType) {
-                case "LS" -> {
+            switch (myMessage.subType)
+            {
+                case "LS" ->
+                {
                     printServerText(myMessage.body);
 
                     serverBase.setCapabilities(myMessage.body);
-                    if (serverBase.hasCapability(CapabilityTypes.SASL)) {
+                    if (serverBase.hasCapability(CapabilityTypes.SASL))
+                    {
                         // Did the client have a sasl type selected?
-                        if (serverBase.getAuthentication().equals(SaslCapSubTypes.PLAIN)) {
+                        if (serverBase.getAuthentication().equals(SaslCapSubTypes.PLAIN))
+                        {
                             serverBase.saslRequestAuthentication();
                             break;
                         }
@@ -679,11 +701,13 @@ public class MessageHandler
 
                     // end capability message
                     serverBase.saslCompleteAuthentication();
-                    if (serverBase.getAuthentication().equals(CapabilityTypes.NICKSERV.getType())) {
+                    if (serverBase.getAuthentication().equals(CapabilityTypes.NICKSERV.getType()))
+                    {
                         serverBase.nickservRequestAuthentication();
                     }
                 }
-                case "ACK" -> {
+                case "ACK" ->
+                {
                     printServerText("Begin SASL Authentication");
                     serverBase.saslDoAuthentication();
                 }
@@ -697,7 +721,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             printServerText(myMessage.body);
         }
@@ -707,7 +731,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             if (myMessage.nick != null && myMessage.nick.equalsIgnoreCase("NickServ"))
             {
@@ -716,10 +740,11 @@ public class MessageHandler
             } else
             {
                 IRCRoomBase messageChannel = myMessage.messageHandler.serverBase.getCreatedChannel(myMessage.getChannel());
-                if(messageChannel != null)
+                if (messageChannel != null)
                 {
                     messageChannel.printText(myMessage.getBody(), Constants.EVENT_USER);
-                } else {
+                } else
+                {
                     printServerText(myMessage.body);
                 }
             }
@@ -730,13 +755,13 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             // Transform the body slightly to make it more unique?
             myMessage.body = myMessage.body.replaceFirst("ACTION", ">");
 
             // only call the primary message base if this was set as the subtype
-            if(myMessage.getSubTypeBase().getClass().equals(this.getClass()))
+            if (myMessage.getSubTypeBase().getClass().equals(this.getClass()))
                 myMessage.getMessageBase().messageExec(myMessage);
         }
     }
@@ -745,7 +770,7 @@ public class MessageHandler
     {
 
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             if (!myMessage.getSubType().equals(serverBase.getNick()) && !myMessage.getChannel().equals(serverBase.getNick()))
             {
@@ -761,7 +786,7 @@ public class MessageHandler
     public class PartMessage implements MessageBase
     {
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             if (!(myMessage.nick.equals(myMessage.messageHandler.serverBase.getNick())))
             {
@@ -781,16 +806,28 @@ public class MessageHandler
     public class KickMessage implements MessageBase
     {
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             myMessage.messageHandler.serverBase.removeFromUsersList(myMessage.channel, myMessage.body);
+        }
+    }
+
+    public class DisconnectErrorMessage implements MessageBase
+    {
+        @Override
+        public void messageExec (Message myMessage)
+        {
+            Constants.LOGGER.error(myMessage.getBody());
+            MessageDialog dialog = new MessageDialog("startUp() failed! " + myMessage.getBody(), "Error", JOptionPane.ERROR_MESSAGE);
+            dialog.setVisible(true);
+            // new DisconnectMessage().messageExec(myMessage);
         }
     }
 
     public class DisconnectMessage implements MessageBase
     {
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             if (myMessage.messageHandler.serverBase.getNick().equals(myMessage.nick) || myMessage.nick.isBlank())
             {
@@ -805,7 +842,7 @@ public class MessageHandler
     public class NoSuchChannelMessage implements MessageBase
     {
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             printServerText(myMessage.body);
         }
@@ -814,7 +851,7 @@ public class MessageHandler
     public class NotEnoughParametersMesssage implements MessageBase
     {
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             printServerText(myMessage.body);
         }
@@ -823,19 +860,19 @@ public class MessageHandler
     public class DefaultMesssage implements MessageBase
     {
         @Override
-        public void messageExec(Message myMessage)
+        public void messageExec (Message myMessage)
         {
             printServerText(myMessage.body);
             Constants.LOGGER.error("NOT HANDLED: " + myMessage.rawMessage);
         }
     }
 
-    private void printPrivateText(String userName, String line, String fromUser)
+    private void printPrivateText (String userName, String line, String fromUser)
     {
         serverBase.printPrivateText(userName, line, fromUser);
     }
 
-    private void printServerText(String message)
+    private void printServerText (String message)
     {
         serverBase.printServerText(message);
     }
