@@ -218,7 +218,7 @@ public class MessageHandlerTests
         String rawMessage = "ERROR :\"Goodbye cruel world\"";
         Message testMessage = testHandler.new Message(rawMessage);
 
-        assertEquals(MessageHandler.DisconnectMessage.class, testMessage.getMessageBase().getClass());
+        assertEquals(MessageHandler.DisconnectErrorMessage.class, testMessage.getMessageBase().getClass());
     }
 
     @Test(groups = {"Test #005"})
