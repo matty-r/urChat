@@ -1,6 +1,8 @@
 package urChatBasic.base;
 
+import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.base.proxy.ProxyTypeBase;
 import urChatBasic.frontend.IRCChannel;
 import urChatBasic.frontend.IRCPrivate;
 import urChatBasic.frontend.IRCUser;
@@ -18,9 +20,15 @@ public interface IRCServerBase
 
     public abstract String getPassword ();
 
-    public abstract void connect ();
+    public abstract CapTypeBase getAuthentication ();
+
+    public abstract void connect (String[] autoConnectChannels);
+
+    public abstract void reconnectChannels ();
 
     public abstract void disconnect ();
+
+    public abstract void reconnect ();
 
     public abstract boolean isConnected ();
 
@@ -38,7 +46,7 @@ public interface IRCServerBase
 
     public abstract Boolean usingTLS ();
 
-    public abstract Boolean usingSOCKS ();
+    public abstract ProxyTypeBase usingProxy ();
 
     /**
      * Get the IRCUser object from the userName - if the IRCUser isn't found, then create it.

@@ -1,4 +1,4 @@
-package urChatBasic.frontend.components;
+package urChatBasic.frontend.panels;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,8 +26,7 @@ import urChatBasic.base.Constants.Size;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.frontend.dialogs.YesNoDialog;
-import urChatBasic.frontend.panels.UROptionsPanel;
-import urChatBasic.frontend.utils.Panels;
+import urChatBasic.frontend.utils.URPanels;
 
 public class ProfilePanel extends UROptionsPanel
 {
@@ -56,11 +55,11 @@ public class ProfilePanel extends UROptionsPanel
             loadProfiles();
         });
 
-        Panels.addToPanel(this, profileScroller, "Available Profiles", Placement.DEFAULT, Size.CUSTOM.customSize(200, 200));
-        Panels.addToPanel(this, cloneProfile, null, Placement.DEFAULT, null);
-        Panels.addToPanel(this, createProfile, null, Placement.RIGHT, null);
+        URPanels.addToPanel(this, profileScroller, "Available Profiles", Placement.DEFAULT, Size.CUSTOM.customSize(200, 200), null);
+        URPanels.addToPanel(this, cloneProfile, null, Placement.DEFAULT, null, null);
+        URPanels.addToPanel(this, createProfile, null, Placement.RIGHT, null, null);
 
-        Panels.addToPanel(this, profileName, "Selected Profile", Placement.DEFAULT, Size.SMALL);
+        URPanels.addToPanel(this, profileName, "Selected Profile", Placement.DEFAULT, Size.SMALL, null);
 
         setAsDefault.addActionListener(new ActionListener()
         {
@@ -76,7 +75,7 @@ public class ProfilePanel extends UROptionsPanel
         listSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         listSelectionModel.addListSelectionListener(new ProfilesListSelectionHandler());
 
-        Panels.addToPanel(this, setAsDefault, "Set as default", Placement.DEFAULT, null);
+        URPanels.addToPanel(this, setAsDefault, "Set as default", Placement.DEFAULT, null, null);
 
         // Add KeyListener to the table for key events
         profilesTable.addKeyListener(new KeyAdapter()

@@ -6,16 +6,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Date;
-import java.util.logging.Level;
 import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.base.ConnectionBase;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
+import urChatBasic.base.proxy.ProxyTypes;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import java.awt.event.ActionEvent;
@@ -38,11 +37,13 @@ public class Connection implements ConnectionBase
 
     private MessageHandler messageHandler;
 
-    // Connection keep alive stuff
     // Starts the timer with an start delay
-    private Timer keepAliveTimer = new Timer((int) Duration.ofSeconds(30).toMillis(), new PingKeepalive());
+    private final int INITIAL_PING_RATE_MS = (int) Duration.ofSeconds(30).toMillis();
     // Rate in which to send a PING to the server
     private final int PING_RATE_MS = (int) Duration.ofMinutes(5).toMillis();
+    // Connection keep alive stuff
+    private Timer keepAliveTimer = new Timer(INITIAL_PING_RATE_MS, new PingKeepalive());
+
     private boolean pingReceived = true;
     private final int MAX_RESPONSE_FAILURES = 2;
     private int currentFailures = 0;
@@ -86,24 +87,20 @@ public class Connection implements ConnectionBase
         localMessage("Attempting to connect to " + server);
 
         // Determine the socket type to be used
-        InetSocketAddress address = new InetSocketAddress(server.getName(), Integer.parseInt(getServer().getPort()));
+        InetSocketAddress endPointAddress = new InetSocketAddress(server.getName(), Integer.parseInt(getServer().getPort()));
 
-        if (getServer().usingSOCKS())
+        if (!getServer().usingProxy().equals(ProxyTypes.NONE.getType()))
         {
-            Proxy proxy = new Proxy(Proxy.Type.SOCKS,
-                    new InetSocketAddress(getServer().getProxyHost(), Integer.parseInt(getServer().getProxyPort())));
-            Socket proxySocket = new Socket(proxy);
+            getServer().usingProxy().createProxy(getServer().getProxyHost(), Integer.parseInt(getServer().getProxyPort()));
+            Socket proxySocket = getServer().usingProxy().connectThroughProxy(endPointAddress);
 
             if (getServer().usingTLS())
             {
-                proxySocket.connect(address, 5000);
-
                 SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-                mySocket = sslsocketfactory.createSocket(proxySocket, address.getHostName(), address.getPort(), true);
+                mySocket = sslsocketfactory.createSocket(proxySocket, endPointAddress.getHostName(), endPointAddress.getPort(), true);
                 mySocket.setKeepAlive(true);
             } else
             {
-                proxySocket.connect(address, 5000);
                 mySocket = proxySocket;
             }
         } else
@@ -116,7 +113,7 @@ public class Connection implements ConnectionBase
             {
                 mySocket = new Socket();
             }
-            mySocket.connect(address, 500);
+            mySocket.connect(endPointAddress, 500);
         }
 
         writer = new BufferedWriter(new OutputStreamWriter(mySocket.getOutputStream()));
@@ -124,6 +121,7 @@ public class Connection implements ConnectionBase
 
         // if we got this far, we established a connection to the server
         DriverGUI.gui.setupServerTab(server);
+        DriverGUI.gui.addToCreatedServers(getServer());
 
         localMessage("Initiating authentication...");
 
@@ -135,8 +133,7 @@ public class Connection implements ConnectionBase
             Thread.sleep(500);
         } catch (InterruptedException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         // Initiate connection to the server.
@@ -146,8 +143,9 @@ public class Connection implements ConnectionBase
         localMessage("Connecting with nick " + getServer().getNick());
         writer.flush();
 
+        keepAliveTimer.setInitialDelay(INITIAL_PING_RATE_MS);
         keepAliveTimer.setDelay(PING_RATE_MS);
-        keepAliveTimer.start();
+        keepAliveTimer.restart();
 
         while ((line = reader.readLine()) != null && !shutdown)
         {
@@ -171,7 +169,7 @@ public class Connection implements ConnectionBase
                 mySocket.close();
             } catch (IOException e)
             {
-                Constants.LOGGER.log(Level.SEVERE, "Error stopping connected.. " + e.getLocalizedMessage());
+                Constants.LOGGER.error( "Error stopping connected.. " + e.getLocalizedMessage());
             }
         }
     }
@@ -186,7 +184,13 @@ public class Connection implements ConnectionBase
                 {
                     try
                     {
-                        if (shutdown)
+                        if (shutdown && reconnect)
+                        {
+                            pingReceived = true;
+
+                            writer.write("PING " + new Date().toInstant().toEpochMilli() + "\r\n");
+                            writer.flush();
+                        } else if (shutdown)
                         {
                             keepAliveTimer.stop();
                         } else
@@ -213,8 +217,7 @@ public class Connection implements ConnectionBase
                         }
                     } catch (IOException e)
                     {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        Constants.LOGGER.warn(e.getLocalizedMessage(), e);
                     }
                 }
             });
@@ -226,7 +229,9 @@ public class Connection implements ConnectionBase
     {
         // Reset the fails
         currentFailures = 0;
+        reconnectAttempts = 0;
         pingReceived = true;
+        reconnect = false;
     }
 
     public MessageHandler getMessageHandler ()
@@ -254,7 +259,7 @@ public class Connection implements ConnectionBase
             }
             if (clientText.toLowerCase().startsWith("/join"))
             {
-                outText = "JOIN " + clientText.replace("/join ", "") + "\r\n";
+                outText = "JOIN " + clientText.replace("/join ", "").toLowerCase() + "\r\n";
             } else if (clientText.toLowerCase().startsWith("/nick"))
             {
                 outText = "NICK " + clientText.replace("/nick ", "") + "\r\n";
@@ -282,7 +287,7 @@ public class Connection implements ConnectionBase
             } else if (clientText.toLowerCase().startsWith("/quit"))
             {
                 outText = "QUIT :" + clientText.replace("/quit ", "") + "\r\n";
-            } else if (clientText.toLowerCase().startsWith("/part"))
+            } else if (clientText.toLowerCase().startsWith("/part") || clientText.toLowerCase().startsWith("/leave"))
             {
                 outText = "PART " + fromChannel + " :" + clientText.replace("/part  ", "") + "\r\n";
             } else if (clientText.toLowerCase().startsWith("/me") || clientText.toLowerCase().startsWith("/action"))
@@ -317,7 +322,7 @@ public class Connection implements ConnectionBase
                     writer.flush();
                 } catch (Exception e)
                 {
-                    Constants.LOGGER.log(Level.SEVERE, "Problem writing to socket: " + e.toString() + outText);
+                    Constants.LOGGER.error( "Problem writing to socket: " + e.toString() + outText);
                 }
 
                 try
@@ -328,15 +333,15 @@ public class Connection implements ConnectionBase
                     }
                 } catch (Exception e)
                 {
-                    Constants.LOGGER.log(Level.SEVERE,
+                    Constants.LOGGER.error(
                             "Problem writing out client message: " + e.toString() + clientMessage.getRawMessage());
                 }
 
-                Constants.LOGGER.log(Level.FINE, "Client Text:- " + fromChannel + " " + outText);
+                Constants.LOGGER.debug( "Client Text:- " + fromChannel + " " + outText.trim());
             } else
             {
 
-                Constants.LOGGER.log(Level.WARNING,
+                Constants.LOGGER.error(
                         "Not connected. Unable to send text:- " + fromChannel + " " + clientMessage.getRawMessage());
             }
         }
@@ -345,7 +350,7 @@ public class Connection implements ConnectionBase
     private void localMessage (String message)
     {
         server.printServerText(message);
-        Constants.LOGGER.log(Level.INFO, "Local Text:-" + message);
+        Constants.LOGGER.info( "Local Text:-" + message);
     }
 
     private void serverMessage (Message newMessage)
@@ -355,10 +360,10 @@ public class Connection implements ConnectionBase
             try
             {
                 messageHandler.parseMessage(newMessage);
-                Constants.LOGGER.log(Level.FINE, newMessage.toString());
+                Constants.LOGGER.debug( newMessage.toString());
             } catch (Exception e)
             {
-                Constants.LOGGER.log(Level.WARNING, e.toString() + newMessage);
+                Constants.LOGGER.error(e.toString() + newMessage);
             }
         }
     }
@@ -378,7 +383,7 @@ public class Connection implements ConnectionBase
                 startUp();
             } else
             {
-                Constants.LOGGER.log(Level.SEVERE, "Incomplete settings: (Port " + getServer().getPort() + ") (Server "
+                Constants.LOGGER.error( "Incomplete settings: (Port " + getServer().getPort() + ") (Server "
                         + getServer() + ") (Nick " + getServer().getNick() + ") ");
             }
 
@@ -392,18 +397,18 @@ public class Connection implements ConnectionBase
                 run();
             } else if (shutdown)
             {
-                Constants.LOGGER.log(Level.INFO, "Disconnected safely!");
+                Constants.LOGGER.info( "Disconnected safely!");
             } else
             {
                 shutdown = true;
                 reader.close();
                 writer.close();
                 mySocket.close();
-                Constants.LOGGER.log(Level.WARNING, "Disconnected unsafely!");
+                Constants.LOGGER.error("Disconnected unsafely!");
             }
         } catch (IOException e)
         {
-            Constants.LOGGER.log(Level.SEVERE, "startUp() failed! " + e.getLocalizedMessage());
+            Constants.LOGGER.error( "startUp() failed! " + e.getLocalizedMessage());
             MessageDialog dialog = new MessageDialog("startUp() failed! " + e.getLocalizedMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
             dialog.setVisible(true);
@@ -414,5 +419,15 @@ public class Connection implements ConnectionBase
     public void disconnect ()
     {
         shutdown = true;
+    }
+
+    @Override
+    public void reconnect ()
+    {
+        reconnectAttempts = 0;
+        shutdown = true;
+        reconnect = true;
+        keepAliveTimer.setInitialDelay(100);
+        keepAliveTimer.restart();
     }
 }

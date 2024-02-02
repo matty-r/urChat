@@ -35,6 +35,7 @@ import urChatBasic.backend.utils.URStyle;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.YesNoDialog;
+import urChatBasic.frontend.panels.InterfacePanel;
 import urChatBasic.frontend.utils.URColour;
 
 public class LineFormatter
@@ -83,7 +84,7 @@ public class LineFormatter
         initStyles(baseStyle);
     }
 
-    public void setFont(Font newFont)
+    public void setFont (Font newFont)
     {
         targetStyle.setFont(newFont);
         if (doc.getLength() > 0)
@@ -339,7 +340,7 @@ public class LineFormatter
                         Desktop.getDesktop().browse(new URL(textLink).toURI());
                 } catch (Exception e)
                 {
-                    e.printStackTrace();
+                    Constants.LOGGER.warn(e.getLocalizedMessage(), e);
                 }
             } else if (!textLink.isEmpty() && attributeSet.getAttribute("type").equals("channel"))
             {
@@ -360,7 +361,7 @@ public class LineFormatter
                     }
                 } catch (Exception e)
                 {
-                    e.printStackTrace();
+                    Constants.LOGGER.warn(e.getLocalizedMessage(), e);
                 }
             }
         }
@@ -427,14 +428,14 @@ public class LineFormatter
             }
         }
 
-        Constants.LOGGER.log(Level.FINE, "Setting character attributes at: " + startPosition + " length: " + length);
+        Constants.LOGGER.debug( "Setting character attributes at: " + startPosition + " length: " + length);
         doc.setCharacterAttributes(startPosition, length, matchingStyle, true);
     }
 
     // Inserts the string at the position
     private synchronized void insertString(String insertedString, URStyle style, int position)
     {
-        Constants.LOGGER.log(Level.FINE, "Inserting a string: " + insertedString + " at position: " + position);
+        Constants.LOGGER.debug( "Inserting a string: [" + insertedString.trim() + "] at position: " + position);
         // Append the date to the first entry on this line, and don't append it elsewhere
         if(timeLine.isPresent() && insertedString.length() > 0)
         {
@@ -446,7 +447,7 @@ public class LineFormatter
             doc.insertString(position, insertedString, style);
         } catch (BadLocationException ble)
         {
-            Constants.LOGGER.log(Level.WARNING, ble.getLocalizedMessage());
+            Constants.LOGGER.error(ble.getLocalizedMessage());
         }
 
         setDocAttributes(position, insertedString.length(), style);
@@ -517,17 +518,15 @@ public class LineFormatter
                     {
                         if(!updateStylesInProgress.get())
                         {
-                            Constants.LOGGER.log(Level.INFO, "Updating styles.");
+                            Constants.LOGGER.info( "Updating styles for " + settingsPath.name());
                             updateStylesTime.set(Instant.now().getEpochSecond());
                             updateDocStyles(0);
                         } else {
-                            Constants.LOGGER.log(Level.INFO, "Update already in progress.");
+                            Constants.LOGGER.info( "Update already in progress.");
                         }
                     } catch (BadLocationException e)
                     {
-                        // TODO Auto-generated catch block
-
-                        e.printStackTrace();
+                        Constants.LOGGER.warn(e.getLocalizedMessage(), e);
                     } finally {
                         updateStylesInProgress.set(false);
                     }
@@ -549,13 +548,13 @@ public class LineFormatter
         // looping all lines in the doc
         while (lineIndex < lineCount)
         {
-            Constants.LOGGER.log(Level.FINE, "Updating line "+lineIndex);
+            Constants.LOGGER.debug( "Updating line "+lineIndex);
             Element lineElement = root.getElement(lineIndex);
 
             // looping all the styles used in this line
             while (currentPosition < lineElement.getEndOffset())
             {
-                Constants.LOGGER.log(Level.FINE, "Working at: " + currentPosition + " to: " + lineElement.getEndOffset());
+                Constants.LOGGER.debug( "Working at: " + currentPosition + " to: " + lineElement.getEndOffset());
                 URStyle currentStyle = getStyleAtPosition(currentPosition, null);
 
                 // Has style to update
@@ -585,7 +584,7 @@ public class LineFormatter
                         } else
                         {
                             // it has a date but isn't a timestamp, so check date time is enabled and insert the timestamp string
-                            if (DriverGUI.gui.isTimeStampsEnabled())
+                            if (((InterfacePanel) DriverGUI.gui.interfacePanel).isTimeStampsEnabled())
                             {
                                 // this removes the date from what will become the next style on the line so that we don't insert the timestamp
                                 // multiple times
@@ -670,7 +669,7 @@ public class LineFormatter
             lineIndex++;
         }
 
-        Constants.LOGGER.log(Level.INFO, "Took " + Duration.between(Instant.ofEpochSecond(updateStylesTime.get()), Instant.now()).toMillis() +  "ms to update styles.");
+        Constants.LOGGER.info( "Took " + Duration.between(Instant.ofEpochSecond(updateStylesTime.get()), Instant.now()).toMillis() +  "ms to update styles.");
         updateStylesTime.set(0);
     }
 
@@ -781,7 +780,7 @@ public class LineFormatter
         } catch (BadLocationException ble)
         {
             // TODO
-            Constants.LOGGER.log(Level.WARNING, ble.getLocalizedMessage());
+            Constants.LOGGER.error(ble.getLocalizedMessage());
         }
         AttributeSet textStyle = doc.getCharacterElement(position).getAttributes();
 
@@ -904,7 +903,7 @@ public class LineFormatter
 
             // doc.insertString(doc.getLength(), timeLine, timeStyle);
             // if(null != timeLine && !timeLine.isBlank())
-            if (DriverGUI.gui.isTimeStampsEnabled())
+            if (((InterfacePanel) DriverGUI.gui.interfacePanel).isTimeStampsEnabled())
             {
                 // add the date to the end of the string to preserve the timestamp of the line
                 // when updating styles
@@ -945,7 +944,7 @@ public class LineFormatter
             appendString(System.getProperty("line.separator"), linePositionStyle);
         } catch (BadLocationException e)
         {
-            Constants.LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
+            Constants.LOGGER.error( e.getLocalizedMessage());
         }
     }
 

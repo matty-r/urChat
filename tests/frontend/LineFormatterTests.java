@@ -6,6 +6,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -15,6 +17,8 @@ import urChatBasic.backend.MessageHandler;
 import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.base.proxy.ProxyTypes;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
@@ -27,7 +31,7 @@ public class LineFormatterTests
     IRCServer testServer;
     TestDriverGUI testDriver;
     UserGUI testGUI;
-    IRCRoomBase testPrivChannel;
+    // IRCRoomBase testPrivChannel;
     final String PUB_CHANNEL_NAME = "#someChannel";
     IRCRoomBase testPubChannel;
     IRCUser testUser;
@@ -39,7 +43,7 @@ public class LineFormatterTests
         testDriver = new TestDriverGUI();
         TestDriverGUI.startTestGUI(DriverGUI.gui);
         testGUI = DriverGUI.gui;
-        testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy", "1234", true);
+        testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy", "1234", ProxyTypes.NONE.getType(), CapabilityTypes.NONE.getType());
         testUser = new IRCUser(testServer, "testUser");
         testServer.addToCreatedRooms(PUB_CHANNEL_NAME, false);
         testPubChannel = testServer.getCreatedChannel(PUB_CHANNEL_NAME);
@@ -50,10 +54,7 @@ public class LineFormatterTests
     @AfterClass(alwaysRun = true)
     public void tearDown () throws Exception
     {
-        // Reporter.log("Deleting testing profile.", true);
         testServer.quitRooms();
-        // URProfilesUtil.getActiveProfilePath().sync();
-        // URProfilesUtil.getActiveProfilePath().sync();
         URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
         TestDriverGUI.closeWindow();
     }
@@ -72,12 +73,34 @@ public class LineFormatterTests
             TimeUnit.SECONDS.sleep(1);
         }
 
-        testGUI.tabbedPane.setSelectedComponent(testPubChannel);
+        testGUI.tabbedPane.setSelectedIndex(1);
 
         assertEquals("<someuser> Welcome to somechannel!", testPubChannel.getLineFormatter().getLineAtPosition(9).split("] ")[1].trim());
         testPubChannel.getChannelTextPane().setCaretPosition(9);
         // Right click on someuser
-        Rectangle2D coords = testPubChannel.getChannelTextPane().modelToView2D(testPubChannel.getChannelTextPane().getCaretPosition());
+        final Rectangle2D[] coords = new Rectangle2D[1];
+        AtomicBoolean canContinue = new AtomicBoolean(false);
+
+        SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+                try
+                {
+                    coords[0] = testPubChannel.getChannelTextPane().modelToView2D(testPubChannel.getChannelTextPane().getCaretPosition());
+                    canContinue.set(true);
+                } catch (BadLocationException e)
+                {
+                    fail();
+                }
+			}
+		});
+
+
+        while(!canContinue.get())
+        {
+            TimeUnit.SECONDS.sleep(1);
+        }
 
         // Right-Click mouse event at the x-y coords of the caret in the text pane
         MouseEvent event = new MouseEvent(
@@ -85,8 +108,8 @@ public class LineFormatterTests
             MouseEvent.BUTTON3,
             System.currentTimeMillis(),
             MouseEvent.BUTTON3_DOWN_MASK,
-            (int) coords.getX(),
-            (int) coords.getY(),
+            (int) coords[0].getX(),
+            (int) coords[0].getY(),
             1,
             false
         );

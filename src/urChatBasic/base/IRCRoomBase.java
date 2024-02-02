@@ -1,5 +1,6 @@
 package urChatBasic.base;
 
+import urChatBasic.backend.logging.URLogger;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.IRCRoomBase;
 import urChatBasic.base.Constants.EventType;
@@ -12,19 +13,18 @@ import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.LineFormatter.ClickableText;
 import urChatBasic.frontend.components.FontPanel;
 import urChatBasic.frontend.dialogs.FontDialog;
+import urChatBasic.frontend.panels.InterfacePanel;
 import urChatBasic.frontend.utils.URColour;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.UsersListModel;
 import java.awt.event.*;
 import java.awt.*;
 import java.io.*;
-import java.text.*;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.Timer;
@@ -45,6 +45,9 @@ public class IRCRoomBase extends JPanel
     protected UserGUI gui = DriverGUI.gui;
 
     protected FontDialog fontDialog;
+
+    // Logging Stuff
+    private String markerName;
 
     // Icons
     public ImageIcon icon;
@@ -73,11 +76,6 @@ public class IRCRoomBase extends JPanel
 
     // TODO: Rename to sentHistory
     private List<String> userHistory = new ArrayList<String>();
-
-    // TODO: This is logging stuff, should not be handled here
-    private DateFormat historyDateFormat = new SimpleDateFormat("ddMMyyyy");
-    private String historyFileName;
-    private Date todayDate = new Date();
 
     private String channelTopic;
 
@@ -145,24 +143,22 @@ public class IRCRoomBase extends JPanel
     public void hideUsersList()
     {
         usersListShown = false;
-        // userScroller.setVisible(usersListShown);
         toggleUsersList(usersListShown);
     }
 
     public void showUsersList()
     {
         usersListShown = true;
-        // userScroller.setVisible(usersListShown);
         toggleUsersList(usersListShown);
     }
 
-    public IRCRoomBase(String roomName)
+    protected IRCRoomBase(String roomName)
     {
         this.roomName = roomName;
         initRoom();
     }
 
-    public IRCRoomBase(IRCServerBase server, String roomName)
+    protected IRCRoomBase(IRCServerBase server, String roomName)
     {
         this.roomName = roomName;
         setServer(server);
@@ -181,6 +177,7 @@ public class IRCRoomBase extends JPanel
         if (getServer() != null)
         {
             String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
+            markerName = getServer().getName() != null ? getServer().getName() + "-" + roomName : roomName;
 
             if(nodeName.equals(roomName))
                 setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName));
@@ -192,11 +189,15 @@ public class IRCRoomBase extends JPanel
             lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , getServer(), roomPrefs);
         } else
         {
+            markerName = roomName;
             setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(roomName));
             fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
 
             lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, null, roomPrefs);
         }
+
+        // Add Logging Marker
+        URLogger.addChannelMarker(markerName);
 
         URProfilesUtil.addListener(EventType.CHANGE, changeListener);
 
@@ -233,6 +234,11 @@ public class IRCRoomBase extends JPanel
                 setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName).node(roomName));
         }
 
+    }
+
+    public void rejoin ()
+    {
+        server.sendClientText("/join " + getName(), server.getName());
     }
 
     public void setSettingsPath (Preferences settingsPath)
@@ -394,7 +400,7 @@ public class IRCRoomBase extends JPanel
             Element wordElement = doc.getCharacterElement(channelTextArea.viewToModel2D((e.getPoint())));
             AttributeSet wordAttributeSet = wordElement.getAttributes();
             ClickableText isClickableText = (ClickableText) wordAttributeSet.getAttribute("clickableText");
-            if (isClickableText != null && gui.isClickableLinksEnabled())
+            if (isClickableText != null && ((InterfacePanel) gui.interfacePanel).isClickableLinksEnabled())
             {
                 channelTextArea.setCursor(new Cursor(Cursor.HAND_CURSOR));
             } else
@@ -406,11 +412,11 @@ public class IRCRoomBase extends JPanel
 
     public void createEvent(String eventText)
     {
-        if (gui.isJoinsQuitsMainEnabled() && !(this instanceof IRCPrivate))
+        if (((InterfacePanel) gui.interfacePanel).isJoinsQuitsMainEnabled() && !(this instanceof IRCPrivate))
             printText(eventText, Constants.EVENT_USER);
 
-        eventTickerTimer.setDelay(gui.getEventTickerDelay());
-        if (gui.isJoinsQuitsTickerEnabled() && !(this instanceof IRCPrivate))
+        eventTickerTimer.setDelay(((InterfacePanel) gui.interfacePanel).getEventTickerDelay());
+        if (((InterfacePanel) gui.interfacePanel).isJoinsQuitsTickerEnabled() && !(this instanceof IRCPrivate))
         {
             JLabel tempLabel = new JLabel(eventText);
             int tempX;
@@ -452,6 +458,11 @@ public class IRCRoomBase extends JPanel
         myActions.callForAttention();
     }
 
+    public String getMarker ()
+    {
+        return markerName;
+    }
+
     class MessagePair {
         private String line;
         private String fromUser;
@@ -479,7 +490,7 @@ public class IRCRoomBase extends JPanel
                 handleMessageQueue();
 
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 
@@ -513,10 +524,10 @@ public class IRCRoomBase extends JPanel
                         Document document = lineFormatter.getDocument();
                         Element root = lineFormatter.getDocument().getDefaultRootElement();
 
-                        int lineLimit = gui.getLimitChannelLinesCount();
+                        int lineLimit = ((InterfacePanel) gui.interfacePanel).getLimitChannelLinesCount();
 
                         if(IRCRoomBase.this instanceof IRCServer)
-                            lineLimit = gui.getLimitServerLinesCount();
+                            lineLimit = ((InterfacePanel) gui.interfacePanel).getLimitServerLinesCount();
 
                         if(null != messagePair && root.getElementCount() > lineLimit)
                         {
@@ -529,25 +540,14 @@ public class IRCRoomBase extends JPanel
                             }
                             catch(BadLocationException ble)
                             {
-                                Constants.LOGGER.log(Level.WARNING, ble.getLocalizedMessage());
+                                Constants.LOGGER.error(ble.getLocalizedMessage());
                             }
                         }
 
                         if (null == channelTextArea)
                         {
-                            Constants.LOGGER.log(Level.WARNING, "ChannelTextArea hasn't initialized or has disappeared.. not printing text.");
+                            Constants.LOGGER.error("ChannelTextArea hasn't initialized or has disappeared.. not printing text.");
                             return;
-                        }
-
-                        if (gui.isChannelHistoryEnabled())
-                        {
-                            try
-                            {
-                                writeHistoryFile(line);
-                            } catch (IOException e)
-                            {
-                                Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
-                            }
                         }
 
                         // StyledDocument doc = channelTextArea.getStyledDocument();
@@ -563,7 +563,7 @@ public class IRCRoomBase extends JPanel
                                 // TODO: Re-add later?
                                 // addToUsersList(getName(), fromUser);
                                 // fromIRCUser = getCreatedUsers(fromUser);
-                                // Constants.LOGGER.log(Level.WARNING, "Message from a user that isn't in the user list!");
+                                // Constants.LOGGER.error("Message from a user that isn't in the user list!");
                                 fromIRCUser = server.getIRCUser(fromUser);
                                 addToUsersList(fromIRCUser);
                             }
@@ -573,6 +573,16 @@ public class IRCRoomBase extends JPanel
                         if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
                         {
                             lineFormatter.formattedDocument(new Date(), fromIRCUser, fromUser, line);
+
+                            if(IRCRoomBase.this instanceof IRCServerBase)
+                            {
+                                if (((InterfacePanel) gui.interfacePanel).saveServerHistory())
+                                    URLogger.logChannelComms(IRCRoomBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                            } else if(!(IRCRoomBase.this instanceof IRCServerBase))
+                            {
+                                if (((InterfacePanel) gui.interfacePanel).saveChannelHistory())
+                                    URLogger.logChannelComms(IRCRoomBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                            }
 
                             if (server.getNick() != null && line.indexOf(server.getNick()) > -1)
                             {
@@ -593,7 +603,7 @@ public class IRCRoomBase extends JPanel
                         }
                     } catch (InterruptedException e)
                     {
-                        Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+                        Constants.LOGGER.error(e.getLocalizedMessage());
                     }
                 }
             }
@@ -608,9 +618,9 @@ public class IRCRoomBase extends JPanel
      *
      * @param showIt
      */
-    public void toggleUsersList(Boolean showIt)
+    public void toggleUsersList (boolean showIt)
     {
-        if (usersListShown == showIt || usersListShown == null)
+        if (usersListShown == null || usersListShown == showIt)
         {
             // userScroller.setVisible(showIt);
             if (showIt)
@@ -627,9 +637,9 @@ public class IRCRoomBase extends JPanel
      *
      * @param showIt
      */
-    public void toggleEventTicker(Boolean showIt)
+    public void toggleEventTicker (boolean showIt)
     {
-        if (eventTickerShown == showIt || eventTickerShown == null)
+        if (eventTickerShown == null || eventTickerShown == showIt)
         {
             tickerPanel.setVisible(showIt);
             if (tickerPanel.isVisible())
@@ -759,23 +769,6 @@ public class IRCRoomBase extends JPanel
         this.createEvent(channelTopic);
     }
 
-    public void writeHistoryFile(String line) throws IOException
-    {
-        if (gui.saveChannelHistory())
-        {
-            if (historyFileName == null || historyFileName.isEmpty())
-            {
-                historyFileName = historyDateFormat.format(todayDate) + " " + getName() + ".log";
-            }
-
-            FileWriter fw = new FileWriter(Constants.DIRECTORY_LOGS + historyFileName, true);
-            BufferedWriter bw = new BufferedWriter(fw);
-            PrintWriter outFile = new PrintWriter(bw);
-            outFile.println(line);
-            outFile.close();
-        }
-    }
-
     /** Rename user by removing old name and inserting new name. */
     public void renameUser(final String oldUserName, final String newUserName)
     {
@@ -888,13 +881,14 @@ public class IRCRoomBase extends JPanel
         @Override
         public void show(Component arg0, int arg1, int arg2)
         {
-            if (gui.isFavourite(IRCRoomBase.this))
-            {
-                ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Remove as Favourite");
-            } else
-            {
-                ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Add as Favourite");
-            }
+            // TODO: Favourites handling to be done elsewhere
+            // if (gui.isFavourite(IRCRoomBase.this))
+            // {
+            //     ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Remove as Favourite");
+            // } else
+            // {
+            //     ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Add as Favourite");
+            // }
 
             super.show(arg0, arg1, arg2);
         }
@@ -906,16 +900,17 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            if (null != getServer())
-            {
-                if (!gui.isFavourite(IRCRoomBase.this))
-                {
-                    gui.addFavourite(getServer().getName(), getName());
-                } else
-                {
-                    gui.removeFavourite(getServer().getName(), getName());
-                }
-            }
+            // TODO: Favourites handling to be done elsewhere
+            // if (null != getServer())
+            // {
+            //     if (!gui.isFavourite(IRCRoomBase.this))
+            //     {
+            //         gui.addFavourite(getServer().getName(), getName());
+            //     } else
+            //     {
+            //         gui.removeFavourite(getServer().getName(), getName());
+            //     }
+            // }
         }
     }
 
@@ -989,7 +984,7 @@ public class IRCRoomBase extends JPanel
             if (!getUserTextBox().getText().trim().isEmpty())
             {
                 sendClientText(clientTextBox.getText(), getName());
-                if (gui.isClientHistoryEnabled())
+                if (((InterfacePanel) gui.interfacePanel).isClientHistoryEnabled())
                     userHistory.add(clientTextBox.getText());
             }
             clientTextBox.setText("");
@@ -1024,11 +1019,7 @@ public class IRCRoomBase extends JPanel
             {
                 public void run()
                 {
-
-                    // fontDialog.getFontPanel().setDefaultFont(f);
                     lineFormatter.setFont(fontDialog.getFontPanel().getFont());
-                    // TODO: Should this updateStyles if the font is changed?
-                    lineFormatter.updateStyles(fontDialog.getFontPanel().getStyle());
                 }
             });
         } else
@@ -1048,7 +1039,7 @@ public class IRCRoomBase extends JPanel
         }
     }
 
-    public void quitRoom()
+    public void closeRoom()
     {
         URProfilesUtil.removeListener(EventType.CHANGE, changeListener);
         eventTickerTimer.stop();
@@ -1256,12 +1247,12 @@ public class IRCRoomBase extends JPanel
     {
         public void mouseEntered(MouseEvent e)
         {
-            eventTickerTimer.setDelay(gui.getEventTickerDelay() * 10);
+            eventTickerTimer.setDelay(((InterfacePanel) gui.interfacePanel).getEventTickerDelay() * 10);
         }
 
         public void mouseExited(MouseEvent e)
         {
-            eventTickerTimer.setDelay(gui.getEventTickerDelay());
+            eventTickerTimer.setDelay(((InterfacePanel) gui.interfacePanel).getEventTickerDelay());
         }
     }
 

@@ -87,15 +87,13 @@ public class TestDriverGUI extends DriverGUI
 
         SwingUtilities.invokeLater(gui);
 
-        Constants.LOGGER.log(Level.INFO, "Started");
+        Constants.LOGGER.info( "Started");
 
         frame.setVisible(false);
     }
 
     public static void closeWindow()
     {
-        for (Handler tempHandler : Constants.LOGGER.getHandlers())
-            tempHandler.close();
         WindowEvent closingEvent = new WindowEvent(frame, WindowEvent.WINDOW_CLOSING);
         Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(closingEvent);
         // frame.dispose();

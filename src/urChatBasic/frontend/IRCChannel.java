@@ -2,7 +2,6 @@ package urChatBasic.frontend;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
@@ -27,11 +26,11 @@ public class IRCChannel extends IRCRoomBase
         URL imgPath = null;
         try
         {
-            imgPath =  new URL(Constants.RESOURCES_DIR + "Room.png");
+            imgPath =  new URL(Constants.IMAGES_DIR + "Room.png");
             icon = new ImageIcon(imgPath);
         } catch (IOException e)
         {
-            Constants.LOGGER.log(Level.SEVERE, "COULD NOT LOAD Server.png " + e.getLocalizedMessage());
+            Constants.LOGGER.warn( "COULD NOT LOAD Room.png " + e.getLocalizedMessage());
         }
     }
 }

@@ -11,7 +11,6 @@ import java.awt.event.ItemListener;
 import java.awt.font.TextAttribute;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
@@ -64,7 +63,7 @@ public class FontPanel extends JPanel
                 colourDialog = new ColourDialog(styleName, getDefaultStyle(), getSettingsPath());
 
                 colourDialog.getColourPanel().addSaveListener(e -> {
-                    Constants.LOGGER.log(Level.INFO, "Font Panel says: Save Colour pressed");
+                    Constants.LOGGER.info( "Font Panel says: Save Colour pressed");
                 });
 
                 // Forwards the save listeners to the colour panel save listeners

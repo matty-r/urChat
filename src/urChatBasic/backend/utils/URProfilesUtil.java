@@ -50,8 +50,7 @@ public class URProfilesUtil
             }
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         // Use a Set, then convert to Array to drop any duplicates
@@ -69,7 +68,7 @@ public class URProfilesUtil
 
             if(allProfiles.length > 1)
             {
-                Constants.LOGGER.log(Level.INFO, "Deleting profile [" + profileName + "].");
+                Constants.LOGGER.info( "Deleting profile [" + profileName + "].");
                 Constants.BASE_PREFS.node(profileName).removeNode();
                 fireListeners(EventType.DELETE);
             }
@@ -88,7 +87,7 @@ public class URProfilesUtil
 
         } catch (BackingStoreException e)
         {
-            Constants.LOGGER.log(Level.WARNING, "Problem deleting profile [" + profileName +"]." + e.getLocalizedMessage());
+            Constants.LOGGER.error("Problem deleting profile [" + profileName +"]." + e.getLocalizedMessage());
         }
     }
 
@@ -116,7 +115,7 @@ public class URProfilesUtil
             // UserGUI.fireProfileChangeListeners();
             fireListeners(EventType.CHANGE);
         } else {
-            Constants.LOGGER.log(Level.WARNING, "Profile ["+activeProfileName+"] doesn't exist.");
+            Constants.LOGGER.error("Profile ["+activeProfileName+"] doesn't exist.");
             // throw new ConfigurationException("Profile ["+activeProfileName+"] doesn't exist.");
         }
     }
@@ -158,10 +157,10 @@ public class URProfilesUtil
 
     public static void cleanUpSettings ()
     {
-        Constants.LOGGER.log(Level.INFO, "Cleaning up settings");
+        Constants.LOGGER.info( "Cleaning up settings");
         try
         {
-            Constants.LOGGER.log(Level.INFO, "Remove empty favourites");
+            Constants.LOGGER.info( "Remove empty favourites");
             ArrayList<Preferences> allNodes = URPreferencesUtil.getAllNodes(Constants.BASE_PREFS);
 
             List<Preferences> deletePreferences = new ArrayList<>();
@@ -183,7 +182,7 @@ public class URProfilesUtil
             }
         } catch (BackingStoreException e)
         {
-            Constants.LOGGER.log(Level.WARNING, e.getLocalizedMessage());
+            Constants.LOGGER.error(e.getLocalizedMessage());
         }
     }
 
@@ -210,8 +209,7 @@ public class URProfilesUtil
             }
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         final Preferences clonedPathRoot = originalPathRoot.parent().node(clonedProfileName);
@@ -235,8 +233,7 @@ public class URProfilesUtil
                 }
             } catch (BackingStoreException e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Constants.LOGGER.warn(e.getLocalizedMessage(), e);
             }
         }
 
@@ -255,8 +252,7 @@ public class URProfilesUtil
             }
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         setDefaultProfile(Constants.DEFAULT_PROFILE_NAME);
@@ -266,7 +262,7 @@ public class URProfilesUtil
 
     public static void setDefaultProfile (String profileName)
     {
-        Constants.LOGGER.log(Level.INFO, "Setting default profile [" + profileName + "]");
+        Constants.LOGGER.info( "Setting default profile [" + profileName + "]");
         BASE.put(Constants.KEY_DEFAULT_PROFILE_NAME, profileName);
     }
 
@@ -277,6 +273,7 @@ public class URProfilesUtil
 
         try
         {
+            // If it exists, increment the number and give the profile a new name
             while(Constants.BASE_PREFS.nodeExists(newProfileName))
             {
                 newProfileNumber++;
@@ -284,11 +281,10 @@ public class URProfilesUtil
             }
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
-        Constants.LOGGER.log(Level.INFO, "Creating new profile [" + newProfileName + "]");
+        Constants.LOGGER.info( "Creating new profile [" + newProfileName + "]");
         setDefaultSettings(newProfileName);
         fireListeners(EventType.CREATE);
     }
@@ -306,7 +302,7 @@ public class URProfilesUtil
         profileNode.putBoolean(Constants.KEY_USE_TLS, Constants.DEFAULT_USE_TLS);
         profileNode.put(Constants.KEY_PROXY_HOST, Constants.DEFAULT_PROXY_HOST);
         profileNode.put(Constants.KEY_PROXY_PORT, Constants.DEFAULT_PROXY_PORT);
-        profileNode.putBoolean(Constants.KEY_USE_PROXY, Constants.DEFAULT_USE_PROXY);
+        profileNode.put(Constants.KEY_PROXY_TYPE, Constants.DEFAULT_PROXY_TYPE);
         profileNode.put(Constants.KEY_NICK_NAME, Constants.DEFAULT_NICK_NAME);
         profileNode.put(Constants.KEY_REAL_NAME, Constants.DEFAULT_REAL_NAME);
         profileNode.putBoolean(Constants.KEY_TIME_STAMPS, Constants.DEFAULT_TIME_STAMPS);

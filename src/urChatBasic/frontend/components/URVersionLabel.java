@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 
 public class URVersionLabel extends JPanel
 {
@@ -46,7 +45,7 @@ public class URVersionLabel extends JPanel
                 }
             } catch (IOException $ex)
             {
-                Constants.LOGGER.log(Level.INFO, "Unable to determine .git folder. Not setting version string.", $ex);
+                Constants.LOGGER.info( "Unable to determine .git folder. Not setting version string.", $ex);
             }
         }
     }

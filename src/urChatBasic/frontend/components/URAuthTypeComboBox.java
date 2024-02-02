@@ -7,11 +7,11 @@ import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.base.capabilities.NickServType;
 import urChatBasic.base.capabilities.SaslCapSubTypes;
 
-public class UCAuthTypeComboBox extends JComboBox<CapTypeBase>
+public class URAuthTypeComboBox extends JComboBox<CapTypeBase>
 {
     private String passwordFieldName = "Password";
 
-    public UCAuthTypeComboBox ()
+    public URAuthTypeComboBox ()
     {
         initialize();
     }
@@ -38,7 +38,7 @@ public class UCAuthTypeComboBox extends JComboBox<CapTypeBase>
 
     public void runChangeListener ()
     {
-        CapTypeBase selectedAuthType = (CapTypeBase) getSelectedItem();
+        CapTypeBase selectedAuthType = getSelectedItem();
 
         // Set the password field name based on the selected authentication type
         if (selectedAuthType.equals(SaslCapSubTypes.PLAIN) || selectedAuthType.getClass().equals(NickServType.class))
@@ -48,5 +48,24 @@ public class UCAuthTypeComboBox extends JComboBox<CapTypeBase>
         {
             setPasswordFieldName("Path to certificate"); // No matching authentication type
         }
+    }
+
+    public CapTypeBase getSelectedItem ()
+    {
+        return (CapTypeBase) super.getSelectedItem();
+    }
+
+    @Override
+    public void setSelectedItem (Object newObject)
+    {
+        CapTypeBase newTypeBase = null;
+
+        if (newObject instanceof CapTypeBase)
+            newTypeBase = (CapTypeBase) newObject;
+        else
+            newTypeBase = CapabilityTypes.getCapType((String) newObject);
+
+
+        super.setSelectedItem(newTypeBase);
     }
 }

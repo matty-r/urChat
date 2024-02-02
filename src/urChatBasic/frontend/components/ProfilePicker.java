@@ -9,12 +9,10 @@ import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.base.Constants.EventType;
 import urChatBasic.frontend.DriverGUI;
-import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.logging.Level;
 
 public class ProfilePicker extends JPanel
 {
@@ -143,7 +141,7 @@ public class ProfilePicker extends JPanel
 
             });
 
-            Constants.LOGGER.log(Level.WARNING, "Initial Profile: [" + initialProfile + "] doesn't exist.");
+            Constants.LOGGER.error("Initial Profile: [" + initialProfile + "] doesn't exist.");
         }
     }
 }

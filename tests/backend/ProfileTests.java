@@ -51,7 +51,8 @@ public class ProfileTests
     @Test
     public void deleteTestProfileTest ()
     {
-        URProfilesUtil.createProfile(testDriver.getTestProfileName());
+        if(!URProfilesUtil.profileExists(testDriver.getTestProfileName()))
+            URProfilesUtil.createProfile(testDriver.getTestProfileName());
         URProfilesUtil.setActiveProfileName(testDriver.getTestProfileName());
         assertTrue(URProfilesUtil.getActiveProfileName().equals(testDriver.getTestProfileName()));
         // Delete the active profile
@@ -112,8 +113,7 @@ public class ProfileTests
                 }
             } catch (BackingStoreException e)
             {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Constants.LOGGER.warn(e.getLocalizedMessage(), e);
             }
         }
 

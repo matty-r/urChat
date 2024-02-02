@@ -6,7 +6,9 @@ import java.util.Optional;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.EventListenerList;
-import urChatBasic.frontend.components.MainOptionsPanel;
+import urChatBasic.backend.utils.URProfilesUtil;
+import urChatBasic.base.Constants.EventType;
+import urChatBasic.frontend.utils.URPanels;
 
 public class UROptionsPanel extends JPanel
 {
@@ -26,6 +28,10 @@ public class UROptionsPanel extends JPanel
         panelDisplayName = displayName;
         panelScroller = new JScrollPane(this);
         optionsPanel.addToOptions(displayName, this, preferredIndex);
+
+        URProfilesUtil.addListener(EventType.CHANGE, e -> {
+            URPanels.getPreferences(this);
+        });
     }
 
     @Override
@@ -47,6 +53,16 @@ public class UROptionsPanel extends JPanel
     public void addHideListener (ActionListener actionListener)
     {
         hideListenerList.add(ActionListener.class, actionListener);
+    }
+
+    public void getPreferences ()
+    {
+        URPanels.getPreferences(this);
+    }
+
+    public void putPreferences ()
+    {
+        URPanels.putPreferences(this);
     }
 
     /**

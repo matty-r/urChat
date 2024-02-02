@@ -7,7 +7,7 @@
 
   <groupId>com.mattyr</groupId>
   <artifactId>urchat</artifactId>
-  <version>0.5.1</version>
+  <version>0.6.0</version>
 
   <name>urchat</name>
   <url>https://github.com/matty-r/urChat</url>
@@ -41,6 +41,21 @@
       <version>4.13</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.22.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.22.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>2.22.1</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -49,9 +64,9 @@
     <resources>
       <resource>
         <directory>
-          src/images
+          src/resources
         </directory>
-        <targetPath>images/</targetPath>
+        <targetPath>resources/</targetPath>
       </resource>
     </resources>
     <testSourceDirectory>tests/</testSourceDirectory>
@@ -62,10 +77,10 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.11.0</version>
         </plugin>
-	<plugin>
-	  <artifactId>maven-jar-plugin</artifactId>
-	  <version>3.3.0</version>
-	</plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
@@ -103,15 +118,15 @@
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
-	<artifactId>jacoco-maven-plugin</artifactId>
-	<executions>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
           <execution>
             <id>default-prepare-agent</id>
             <goals>
               <goal>prepare-agent</goal>
             </goals>
-	  </execution>
-	</executions>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

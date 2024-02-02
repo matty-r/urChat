@@ -2,7 +2,6 @@ package urChatBasic.backend.utils;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.List;
 import java.awt.font.TextAttribute;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,12 +10,10 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import urChatBasic.base.Constants;
-import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.utils.URColour;
 
 public class URPreferencesUtil {
@@ -49,8 +46,7 @@ public class URPreferencesUtil {
                 return defaultFont;
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
             return defaultFont;
         }
 
@@ -89,8 +85,7 @@ public class URPreferencesUtil {
                 return colourMap;
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
             return colourMap;
         }
 
@@ -140,13 +135,11 @@ public class URPreferencesUtil {
 
         } catch (Exception e)
         {
-            Constants.LOGGER.log(Level.WARNING, "Active Profile: ["+URProfilesUtil.getActiveProfileName()+"] Unable to load ["+loadedStyle.getAttribute("name")+"]"+ " attempted with path: " + stylePrefPath);
-            // TODO Auto-generated catch block
-            // e.printStackTrace();
+            Constants.LOGGER.error("Active Profile: ["+URProfilesUtil.getActiveProfileName()+"] Unable to load ["+loadedStyle.getAttribute("name")+"]"+ " attempted with path: " + stylePrefPath);
             return targetStyle;
         }
 
-        Constants.LOGGER.log(Level.FINE, "Load Style Path: " + stylePrefPath.toString());
+        Constants.LOGGER.debug( "Load Style Path: " + stylePrefPath.toString());
         Font loadedFont = loadStyleFont(loadedStyle.getFont(), stylePrefPath);
         Map<String, Color> loadedColours = loadStyleColours(loadedStyle, stylePrefPath);
 
@@ -162,7 +155,7 @@ public class URPreferencesUtil {
         Preferences settingsPath =  baseSettingsPath.node(targetStyle.getName());
         try
         {
-            Constants.LOGGER.log(Level.FINE, "Removing font keys: " + settingsPath.absolutePath());
+            Constants.LOGGER.debug( "Removing font keys: " + settingsPath.absolutePath());
             settingsPath.remove(Constants.KEY_FONT_BOLD);
             settingsPath.remove(Constants.KEY_FONT_ITALIC);
             settingsPath.remove(Constants.KEY_FONT_FAMILY);
@@ -170,8 +163,7 @@ public class URPreferencesUtil {
             settingsPath.remove(Constants.KEY_FONT_UNDERLINE);
         } catch (Exception e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 
@@ -180,20 +172,19 @@ public class URPreferencesUtil {
         Preferences settingsPath =  baseSettingsPath.node(targetStyle.getName());
         try
         {
-            Constants.LOGGER.log(Level.INFO, "Removing font colours: " + settingsPath.absolutePath());
+            Constants.LOGGER.info( "Removing font colours: " + settingsPath.absolutePath());
             settingsPath.remove(Constants.KEY_FONT_FOREGROUND);
             settingsPath.remove(Constants.KEY_FONT_BACKGROUND);
         } catch (Exception e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 
     public static void saveStyle(URStyle oldStyle, URStyle newStyle, Preferences baseSettingsPath)
     {
         Preferences stylePrefPath = baseSettingsPath.node(newStyle.getAttribute("name").toString());
-        Constants.LOGGER.log(Level.INFO, "Save Style Path: " + stylePrefPath.toString());
+        Constants.LOGGER.info( "Save Style Path: " + stylePrefPath.toString());
 
         URStyle diffStyle = oldStyle.clone();
 
@@ -221,8 +212,7 @@ public class URPreferencesUtil {
                     }
                 } catch (BackingStoreException e)
                 {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    Constants.LOGGER.warn(e.getLocalizedMessage(), e);
                 }
             }
         }
@@ -255,7 +245,9 @@ public class URPreferencesUtil {
             } else if (value instanceof Boolean) {
                 path.putBoolean(name, (boolean) value);
             } else {
-                Constants.LOGGER.log(Level.WARNING,"Unsupported data type for preference: " + value.getClass().getSimpleName());
+                path.put(name, (String) value.toString());
+
+                Constants.LOGGER.info( "[" + value.getClass().getSimpleName() + "] is an unsupported data type for Preferences. Setting as String.");
             }
         }
     }
@@ -311,8 +303,7 @@ public class URPreferencesUtil {
             }
         } catch (BackingStoreException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         return prefPaths;

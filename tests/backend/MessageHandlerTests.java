@@ -19,11 +19,14 @@ import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
 import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.capabilities.CapabilityTypes;
+import urChatBasic.base.proxy.ProxyTypes;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCPrivate;
 import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.UserGUI;
+import urChatBasic.frontend.panels.InterfacePanel;
 import utils.TestDriverGUI;
 
 
@@ -45,7 +48,7 @@ public class MessageHandlerTests
         testDriver = new TestDriverGUI();
         testGUI = DriverGUI.gui;
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy",
-                "1234", true);
+                "1234", ProxyTypes.NONE.getType(), CapabilityTypes.NONE.getType());
         testUser = new IRCUser(testServer, "testUser");
         testServer.addToPrivateRooms(testUser);
         testPrivChannel = testServer.getCreatedPrivateRoom(testUser.toString());
@@ -139,8 +142,7 @@ public class MessageHandlerTests
 
         } catch (IOException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
 
         Reporter.log("This test won't run unless the dependant method is included in the test and passed.");
@@ -155,8 +157,7 @@ public class MessageHandlerTests
             testConnection.sendClientText(rawMessage, "otheruser");
         } catch (IOException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 
@@ -170,8 +171,7 @@ public class MessageHandlerTests
             testConnection.sendClientText(rawMessage, "otheruser");
         } catch (IOException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
         }
     }
 
@@ -218,15 +218,15 @@ public class MessageHandlerTests
         String rawMessage = "ERROR :\"Goodbye cruel world\"";
         Message testMessage = testHandler.new Message(rawMessage);
 
-        assertEquals(MessageHandler.DisconnectMessage.class, testMessage.getMessageBase().getClass());
+        assertEquals(MessageHandler.DisconnectErrorMessage.class, testMessage.getMessageBase().getClass());
     }
 
     @Test(groups = {"Test #005"})
     public void testChannelLineLimit() throws BadLocationException, InterruptedException
     {
-        testGUI.setLimitChannelLines(10);
-        testGUI.setJoinsQuitsMain(false);
-        int channelLinesLimit = testGUI.getLimitChannelLinesCount();
+        ((InterfacePanel) testGUI.interfacePanel).setLimitChannelLinesCount(10);
+        ((InterfacePanel) testGUI.interfacePanel).setJoinsQuitsMain(false);
+        int channelLinesLimit = ((InterfacePanel) testGUI.interfacePanel).getLimitChannelLinesCount();
 
         String channelMessage = ":" + testUser + "!~" + testUser + "@urchatclient PRIVMSG "+PUB_CHANNEL_NAME+" :line # ";
 
@@ -268,9 +268,9 @@ public class MessageHandlerTests
     @Test(groups = {"Test #005"}, description = "Test Description")
     public void testServerLineLimit() throws BadLocationException, InterruptedException
     {
-        testGUI.setLimitServerLines(10);
-        testGUI.setJoinsQuitsMain(false);
-        int serverLinesLimit = testGUI.getLimitServerLinesCount();
+        ((InterfacePanel) testGUI.interfacePanel).setLimitServerLinesCount(10);
+        ((InterfacePanel) testGUI.interfacePanel).setJoinsQuitsMain(false);
+        int serverLinesLimit = ((InterfacePanel) testGUI.interfacePanel).getLimitServerLinesCount();
 
         String serverMessage = ":" + testServer.getName() + " 001 " + testUser + " :line # ";
 
