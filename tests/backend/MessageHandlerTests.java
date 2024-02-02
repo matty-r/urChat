@@ -18,7 +18,7 @@ import urChatBasic.backend.MessageHandler;
 import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
-import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.IRCChannelBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.base.proxy.ProxyTypes;
 import urChatBasic.frontend.DriverGUI;
@@ -36,9 +36,9 @@ public class MessageHandlerTests
     IRCServer testServer;
     TestDriverGUI testDriver;
     UserGUI testGUI;
-    IRCRoomBase testPrivChannel;
+    IRCChannelBase testPrivChannel;
     final String PUB_CHANNEL_NAME = "#someChannel";
-    IRCRoomBase testPubChannel;
+    IRCChannelBase testPubChannel;
     IRCUser testUser;
     Connection testConnection;
 
@@ -50,9 +50,9 @@ public class MessageHandlerTests
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy",
                 "1234", ProxyTypes.NONE.getType(), CapabilityTypes.NONE.getType());
         testUser = new IRCUser(testServer, "testUser");
-        testServer.addToPrivateRooms(testUser);
-        testPrivChannel = testServer.getCreatedPrivateRoom(testUser.toString());
-        testServer.addToCreatedRooms(PUB_CHANNEL_NAME, false);
+        testServer.addToPrivateChannels(testUser);
+        testPrivChannel = testServer.getCreatedPrivateChannel(testUser.toString());
+        testServer.addToCreatedChannels(PUB_CHANNEL_NAME, false);
         testPubChannel = testServer.getCreatedChannel(PUB_CHANNEL_NAME);
         testConnection = new Connection(testServer);
         testHandler = testConnection.getMessageHandler();
@@ -62,7 +62,7 @@ public class MessageHandlerTests
     public void tearDown () throws Exception
     {
         // Reporter.log("Deleting testing profile.", true);
-        testServer.quitRooms();
+        testServer.quitChannels();
         // URProfilesUtil.getActiveProfilePath().sync();
         // URProfilesUtil.getActiveProfilePath().sync();
         URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
@@ -72,11 +72,11 @@ public class MessageHandlerTests
     @Test(groups = {"Test #001"})
     public void nickIsHighStyleTest() throws BadLocationException, InterruptedException
     {
-        // This should create a someuser private room
+        // This should create a someuser private channel
         String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG testUser :hello testUser!";
         Message testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
-        IRCPrivate someUserChannel = testServer.getCreatedPrivateRoom("someuser");
+        IRCPrivate someUserChannel = testServer.getCreatedPrivateChannel("someuser");
         String testLine = someUserChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser> hello testUser!"
 
         while (someUserChannel.messageQueueWorking())

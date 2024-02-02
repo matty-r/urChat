@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.net.URL;
 import javax.swing.ImageIcon;
 import urChatBasic.base.Constants;
-import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.IRCChannelBase;
 
-public class IRCPrivate extends IRCRoomBase
+public class IRCPrivate extends IRCChannelBase
 {
     /**
      *
