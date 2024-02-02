@@ -56,14 +56,9 @@ public interface IRCServerBase
      */
     public abstract IRCUser getIRCUser (String userName);
 
-    public abstract void quitRooms();
+    public abstract void quitChannels ();
 
-    public abstract void quitRoom (IRCRoomBase ircRoom);
-
-    /**
-     * Closes and removes all private rooms that have been created.
-     */
-
+    public abstract void quitChannel (IRCChannelBase ircChannel);
 
     /**
      * Return the appropriate created channel
@@ -80,30 +75,30 @@ public interface IRCServerBase
      * @param serverName
      * @return IRCServer
      */
-    public abstract IRCPrivate getCreatedPrivateRoom (String privateRoom);
+    public abstract IRCPrivate getCreatedPrivateChannel (String privateChannel);
 
     /**
      * Return the appropriate created channel
      *
-     * @param roomName
-     * @return IRCRoomBase
+     * @param channelName
+     * @return IRCChannelBase
      */
-    public abstract IRCRoomBase getCreatedRoom (String roomName, boolean asPrivate);
+    public abstract IRCChannelBase getCreatedChannel (String channelName, boolean asPrivate);
 
     /**
-     * Creates a new room based on name
+     * Creates a new Channel based on name
      *
-     * @param roomName
+     * @param channelName
      */
-    public abstract void addToCreatedRooms (String roomName, boolean asPrivate);
+    public abstract void addToCreatedChannels (String channelName, boolean asPrivate);
 
     /**
-     * Creates a new Private Room based on IRCUser
+     * Creates a new Private Channel based on IRCUser
      *
      * @param serverName
      * @return
      */
-    public abstract IRCPrivate addToPrivateRooms (IRCUser privateRoom);
+    public abstract IRCPrivate addToPrivateChannels (IRCUser privateChannel);
 
     /**
      * Used to negotiate a PLAIN SASL connection to the IRC Server.

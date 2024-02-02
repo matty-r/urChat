@@ -22,7 +22,7 @@ import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.backend.utils.URStyle;
 import urChatBasic.backend.utils.URUncaughtExceptionHandler;
 import urChatBasic.base.Constants;
-import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.IRCChannelBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.panels.MainOptionsPanel;
@@ -132,12 +132,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return -1;
     }
 
-    public int getTabIndex (IRCRoomBase targetTab)
+    public int getTabIndex (IRCChannelBase targetTab)
     {
         for (int i = 0; i < DriverGUI.gui.tabbedPane.getTabCount(); i++)
         {
             Component currentTab = DriverGUI.gui.tabbedPane.getComponentAt(i);
-            if (currentTab instanceof IRCRoomBase && currentTab.equals(targetTab))
+            if (currentTab instanceof IRCChannelBase && currentTab.equals(targetTab))
             {
                 return i;
             }
@@ -473,10 +473,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 if (server instanceof IRCServer)
                 {
                     boolean iconsShown = (boolean) URPanels.getKeyComponentValue(Constants.KEY_SHOW_TAB_ICON);
-                    int currentServerIndex = DriverGUI.gui.getTabIndex((IRCRoomBase) server);
+                    int currentServerIndex = DriverGUI.gui.getTabIndex((IRCChannelBase) server);
                     if(currentServerIndex < 0)
                     {
-                        tabbedPane.addTab(server.getName(), iconsShown ? ((IRCRoomBase) server).icon : null, ((IRCServer) server));
+                        tabbedPane.addTab(server.getName(), iconsShown ? ((IRCChannelBase) server).icon : null, ((IRCServer) server));
                         setCurrentTab(server.getName());
                     }
                     // ((IRCServer) server).getUserTextBox().requestFocus();
@@ -636,10 +636,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
                     if (selectedComponent instanceof IRCPrivate)
                     {
-                        ((IRCRoomBase) selectedComponent).getServer().quitRoom((IRCRoomBase) selectedComponent);
+                        ((IRCChannelBase) selectedComponent).getServer().quitChannel((IRCChannelBase) selectedComponent);
                     } else
                     {
-                        ((IRCRoomBase) selectedComponent).myMenu.show(tabbedPane, e.getX(), e.getY());
+                        ((IRCChannelBase) selectedComponent).myMenu.show(tabbedPane, e.getX(), e.getY());
                     }
                 }
             }
@@ -657,9 +657,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         if (index > -1)
         {
             Component selectedComponent = tabbedPane.getComponentAt(index);
-            if (selectedComponent instanceof IRCRoomBase)
+            if (selectedComponent instanceof IRCChannelBase)
             {
-                IRCRoomBase tempTab = (IRCRoomBase) selectedComponent;
+                IRCChannelBase tempTab = (IRCChannelBase) selectedComponent;
                 if (!(selectedComponent instanceof IRCServer))
                 {
                     tempTab.toggleEventTicker(((InterfacePanel) interfacePanel).isShowingEventTicker());
@@ -700,10 +700,10 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             {
                 Component tab = tabbedPane.getComponentAt(index);
 
-                if (tab instanceof IRCRoomBase)
+                if (tab instanceof IRCChannelBase)
                 {
                     tab.setFont(getStyle().getFont());
-                    ((IRCRoomBase) tab).getFontPanel().setDefaultStyle(getStyle());
+                    ((IRCChannelBase) tab).getFontPanel().setDefaultStyle(getStyle());
                 }
             }
 
@@ -758,9 +758,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             {
                 int index = tabbedPane.getSelectedIndex();
                 Component selectedComponent = tabbedPane.getComponentAt(index);
-                if (selectedComponent instanceof IRCRoomBase)
+                if (selectedComponent instanceof IRCChannelBase)
                 {
-                    IRCRoomBase tempTab = (IRCRoomBase) selectedComponent;
+                    IRCChannelBase tempTab = (IRCChannelBase) selectedComponent;
                     tempTab.disableFocus();
                 }
             }
@@ -886,16 +886,16 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 {
                     Component tab = tabbedPane.getComponentAt(index);
 
-                    if (tab instanceof IRCRoomBase)
+                    if (tab instanceof IRCChannelBase)
                     {
                         // tab.setFont(clientFontPanel.getFont());
-                        IRCRoomBase roomTab = IRCRoomBase.class.cast(tab);
-                        // roomTab.getFontPanel().setDefaultFont(clientFontPanel.getFont());
-                        roomTab.getFontPanel().setDefaultStyle(defaultStyle);
-                        // roomTab.resetLineFormatter();
-                        roomTab.getLineFormatter().updateStyles(getStyle());
-                        SwingUtilities.updateComponentTreeUI(roomTab.myMenu);
-                        SwingUtilities.updateComponentTreeUI(roomTab.getFontPanel());
+                        IRCChannelBase channelTab = IRCChannelBase.class.cast(tab);
+                        // channelTab.getFontPanel().setDefaultFont(clientFontPanel.getFont());
+                        channelTab.getFontPanel().setDefaultStyle(defaultStyle);
+                        // channelTab.resetLineFormatter();
+                        channelTab.getLineFormatter().updateStyles(getStyle());
+                        SwingUtilities.updateComponentTreeUI(channelTab.myMenu);
+                        SwingUtilities.updateComponentTreeUI(channelTab.getFontPanel());
                     }
                 }
 
