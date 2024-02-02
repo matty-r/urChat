@@ -13,7 +13,7 @@ import javax.swing.SwingUtilities;
 import org.testng.Reporter;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.Constants;
-import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.IRCChannelBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCServer;
@@ -59,14 +59,14 @@ public class TestDriverGUI extends DriverGUI
             }
 
             for (IRCServerBase server : gui.getCreatedServers()) {
-                for (IRCRoomBase room : ((IRCServer) server).createdRooms) {
-                    if(room.messageQueueInProgress)
+                for (IRCChannelBase channel : ((IRCServer) server).createdChannels) {
+                    if(channel.messageQueueInProgress)
                     {
                         Reporter.log("Message Queue in Progress.. waiting", true);
                         wait = true;
                         break;
                     }
-                    if(room.getLineFormatter().updateStylesInProgress.get())
+                    if(channel.getLineFormatter().updateStylesInProgress.get())
                     {
                         Reporter.log("Update styles in Progress.. waiting", true);
                         wait = true;

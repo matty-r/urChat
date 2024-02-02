@@ -30,7 +30,7 @@ import urChatBasic.base.Constants;
 import urChatBasic.base.Constants.EventType;
 import urChatBasic.base.Constants.Placement;
 import urChatBasic.base.Constants.Size;
-import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.IRCChannelBase;
 import urChatBasic.base.IRCServerBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.base.proxy.ProxyTypes;
@@ -162,7 +162,7 @@ public class ConnectionPanel extends UROptionsPanel {
         URProfilesUtil.getActiveFavouritesPath().node(favServer).node(favChannel).put("PORT", DriverGUI.gui.getCreatedServer(favServer).getPort());
     }
 
-    public Boolean isFavourite (IRCRoomBase channel)
+    public Boolean isFavourite (IRCChannelBase channel)
     {
         FavouritesItem castItem;
 

@@ -38,12 +38,18 @@ public class DriverGUI
         Constants.LOGGER.info( "Starting up..");
 
         initLAFLoader();
-        frame = new JFrame("urChat");
 
-        // This will load the default profile
-        gui = createGUI(Optional.empty());
+        // Fixes #92
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                frame = new JFrame("urChat");
 
-        startGUI();
+                // This will load the default profile
+                gui = createGUI(Optional.empty());
+
+                startGUI();
+            }
+        });
     }
 
     public static void initLAFLoader() throws IOException

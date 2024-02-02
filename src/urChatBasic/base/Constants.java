@@ -156,7 +156,7 @@ public class Constants
     public static final String URL_REGEX = "((http:\\/\\/|https:\\/\\/)(www.)?(([a-zA-Z0-9-]){2,}\\.){1,4}([a-zA-Z]){2,6}(\\/([a-zA-Z-_\\/\\.0-9#:?=&;,]*)?)?)";
     public static final String CHANNEL_REGEX = "(?:^|\s)(#([^\s,]+)(?!,))(?:$|\s)";
     // Used to identify a message to be printed from the Event ticker
-    // like a "user joins room" type message
+    // like a "user joins channel" type message
     public static final String EVENT_USER = "****";
 
     // Main text area

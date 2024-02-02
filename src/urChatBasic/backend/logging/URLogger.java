@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import urChatBasic.base.Constants;
-import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.IRCChannelBase;
 import urChatBasic.frontend.DriverGUI;
 
 public class URLogger
@@ -84,7 +84,7 @@ public class URLogger
     //     }
     // }
 
-    public static void logChannelComms (IRCRoomBase ircChannel, String message)
+    public static void logChannelComms (IRCChannelBase ircChannel, String message)
     {
 
         LOGGER.info(getMarker(ircChannel.getMarker()), message);

@@ -16,7 +16,7 @@ import urChatBasic.backend.Connection;
 import urChatBasic.backend.MessageHandler;
 import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.backend.utils.URProfilesUtil;
-import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.IRCChannelBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.base.proxy.ProxyTypes;
 import urChatBasic.frontend.DriverGUI;
@@ -31,9 +31,9 @@ public class LineFormatterTests
     IRCServer testServer;
     TestDriverGUI testDriver;
     UserGUI testGUI;
-    // IRCRoomBase testPrivChannel;
+    // IRCChannelBase testPrivChannel;
     final String PUB_CHANNEL_NAME = "#someChannel";
-    IRCRoomBase testPubChannel;
+    IRCChannelBase testPubChannel;
     IRCUser testUser;
     Connection testConnection;
 
@@ -45,7 +45,7 @@ public class LineFormatterTests
         testGUI = DriverGUI.gui;
         testServer = new IRCServer("testServer", "testUser", "testUser", "testPassword", "1337", true, "testProxy", "1234", ProxyTypes.NONE.getType(), CapabilityTypes.NONE.getType());
         testUser = new IRCUser(testServer, "testUser");
-        testServer.addToCreatedRooms(PUB_CHANNEL_NAME, false);
+        testServer.addToCreatedChannels(PUB_CHANNEL_NAME, false);
         testPubChannel = testServer.getCreatedChannel(PUB_CHANNEL_NAME);
         testConnection = new Connection(testServer);
         testHandler = testConnection.getMessageHandler();
@@ -54,7 +54,7 @@ public class LineFormatterTests
     @AfterClass(alwaysRun = true)
     public void tearDown () throws Exception
     {
-        testServer.quitRooms();
+        testServer.quitChannels();
         URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
         TestDriverGUI.closeWindow();
     }
@@ -116,7 +116,7 @@ public class LineFormatterTests
 
         // Here we expect it to throw an exception because the TestGUI isn't visible
         for (MouseListener listener : testPubChannel.getChannelTextPane().getMouseListeners()) {
-            if(listener instanceof IRCRoomBase.ChannelClickListener)
+            if(listener instanceof IRCChannelBase.ChannelClickListener)
             {
                 listener.mouseClicked(event);
                 break;

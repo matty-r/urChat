@@ -13,13 +13,13 @@ import static org.testng.AssertJUnit.*;
 public class UserGUITests {
     Preferences baseTestPreference;
     Preferences serverTestPreference;
-    Preferences roomTestPreference;
+    Preferences channelTestPreference;
 
     @BeforeClass
     public void setUp() throws Exception {
         baseTestPreference = Constants.BASE_PREFS.parent().node("testing");
         serverTestPreference = baseTestPreference.node("servername");
-        roomTestPreference = serverTestPreference.node("#channel");
+        channelTestPreference = serverTestPreference.node("#channel");
     }
 
     @AfterClass
@@ -35,13 +35,13 @@ public class UserGUITests {
 
     @Test
     public void nodeIsEmpty() throws BackingStoreException {
-        assertEquals(0, roomTestPreference.keys().length + roomTestPreference.childrenNames().length);
+        assertEquals(0, channelTestPreference.keys().length + channelTestPreference.childrenNames().length);
     }
 
     @Test
     public void nodeNotEmpty() throws BackingStoreException {
-        roomTestPreference.put("key","value");
-        assertNotEquals(0, roomTestPreference.keys().length + roomTestPreference.childrenNames().length);
+        channelTestPreference.put("key","value");
+        assertNotEquals(0, channelTestPreference.keys().length + channelTestPreference.childrenNames().length);
     }
 
 }
