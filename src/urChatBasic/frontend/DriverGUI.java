@@ -39,6 +39,7 @@ public class DriverGUI
 
         initLAFLoader();
 
+        // Fixes #92
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 frame = new JFrame("urChat");
