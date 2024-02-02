@@ -7,7 +7,7 @@ import java.awt.event.ActionListener;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import urChatBasic.base.IRCActionsBase;
-import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.IRCChannelBase;
 
 public class IRCActions implements IRCActionsBase {
 
@@ -16,16 +16,16 @@ public class IRCActions implements IRCActionsBase {
     private Timer wantsAttentionTimer = new Timer(0, new FlashTab());
     private Color originalColour;
     protected UserGUI gui = DriverGUI.gui;
-    protected IRCRoomBase ircRoom;
+    protected IRCChannelBase ircChannel;
 
-    public IRCActions(IRCRoomBase ircRoom)
+    public IRCActions(IRCChannelBase ircChannel)
     {
-        this.ircRoom = ircRoom;
-        // originalColour = ircRoom.getBackground();
+        this.ircChannel = ircChannel;
+        // originalColour = ircChannel.getBackground();
 
         for(int i = 0; i < gui.tabbedPane.getTabCount(); i++)
         {
-            if(gui.tabbedPane.getComponentAt(i) == ircRoom)
+            if(gui.tabbedPane.getComponentAt(i) == ircChannel)
             {
                 originalColour = gui.tabbedPane.getBackgroundAt(i);
                 break;
@@ -38,11 +38,11 @@ public class IRCActions implements IRCActionsBase {
         public void actionPerformed(ActionEvent event)
         {
             Component selectedComponent = gui.tabbedPane.getSelectedComponent();
-            int tabIndex = gui.tabbedPane.indexOfComponent(ircRoom);
+            int tabIndex = gui.tabbedPane.indexOfComponent(ircChannel);
 
-            if (tabIndex >= 0 && wantsAttention && selectedComponent != ircRoom)
+            if (tabIndex >= 0 && wantsAttention && selectedComponent != ircChannel)
             {
-                ircRoom.getUserTextBox().requestFocus();
+                ircChannel.getUserTextBox().requestFocus();
 
                 if (gui.tabbedPane.getBackgroundAt(tabIndex) == UIManager.getColor("CheckBoxMenuItem.selectionBackground"))
                 {

@@ -2,7 +2,7 @@ package urChatBasic.base;
 
 import urChatBasic.backend.logging.URLogger;
 import urChatBasic.backend.utils.URProfilesUtil;
-import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.IRCChannelBase;
 import urChatBasic.base.Constants.EventType;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.IRCActions;
@@ -31,13 +31,13 @@ import javax.swing.Timer;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.*;
 
-public class IRCRoomBase extends JPanel
+public class IRCChannelBase extends JPanel
 {
-    // Room information
-    private String roomName;
+    // Channel information
+    private String channelName;
 
     // Preferences
-    private Preferences roomPrefs;
+    private Preferences channelPrefs;
 
     // IRCServer information (Owner of channel)
     protected IRCServerBase server;
@@ -124,13 +124,13 @@ public class IRCRoomBase extends JPanel
     @Override
     public String getName()
     {
-        return this.roomName;
+        return this.channelName;
     }
 
     @Override
     public void setName(String newName)
     {
-        roomName = newName;
+        channelName = newName;
     }
 
     public void hideEventTicker()
@@ -152,17 +152,17 @@ public class IRCRoomBase extends JPanel
         toggleUsersList(usersListShown);
     }
 
-    protected IRCRoomBase(String roomName)
+    protected IRCChannelBase(String channelName)
     {
-        this.roomName = roomName;
-        initRoom();
+        this.channelName = channelName;
+        initChannel();
     }
 
-    protected IRCRoomBase(IRCServerBase server, String roomName)
+    protected IRCChannelBase(IRCServerBase server, String channelName)
     {
-        this.roomName = roomName;
+        this.channelName = channelName;
         setServer(server);
-        initRoom();
+        initChannel();
     }
 
     public void setServer(IRCServerBase server)
@@ -170,30 +170,30 @@ public class IRCRoomBase extends JPanel
         this.server = server;
     }
 
-    private void initRoom()
+    private void initChannel()
     {
         channelTextArea.setEditable(false);
 
         if (getServer() != null)
         {
-            String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
-            markerName = getServer().getName() != null ? getServer().getName() + "-" + roomName : roomName;
+            String nodeName = getServer().getName() != null ? getServer().getName() : channelName;
+            markerName = getServer().getName() != null ? getServer().getName() + "-" + channelName : channelName;
 
-            if(nodeName.equals(roomName))
+            if(nodeName.equals(channelName))
                 setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName));
             else
-                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName).node(roomName));
+                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName).node(channelName));
 
-            fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
+            fontDialog = new FontDialog(channelName, gui.getStyle(), channelPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , getServer(), roomPrefs);
+            lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , getServer(), channelPrefs);
         } else
         {
-            markerName = roomName;
-            setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(roomName));
-            fontDialog = new FontDialog(roomName, gui.getStyle(), roomPrefs);
+            markerName = channelName;
+            setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(channelName));
+            fontDialog = new FontDialog(channelName, gui.getStyle(), channelPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, null, roomPrefs);
+            lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, null, channelPrefs);
         }
 
         // Add Logging Marker
@@ -208,7 +208,7 @@ public class IRCRoomBase extends JPanel
         setPreferredSize(new Dimension(Constants.MAIN_WIDTH, Constants.MAIN_HEIGHT));
         setupMainPanel();
 
-        setName(roomName);
+        setName(channelName);
         this.setLayout(new BorderLayout());
         this.add(mainPanel, BorderLayout.CENTER);
 
@@ -226,12 +226,12 @@ public class IRCRoomBase extends JPanel
         @Override
         public void actionPerformed (ActionEvent arg0)
         {
-            String nodeName = getServer().getName() != null ? getServer().getName() : roomName;
+            String nodeName = getServer().getName() != null ? getServer().getName() : channelName;
 
-            if(nodeName.equals(roomName))
+            if(nodeName.equals(channelName))
                 setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName));
             else
-                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName).node(roomName));
+                setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(nodeName).node(channelName));
         }
 
     }
@@ -243,7 +243,7 @@ public class IRCRoomBase extends JPanel
 
     public void setSettingsPath (Preferences settingsPath)
     {
-        roomPrefs = settingsPath;
+        channelPrefs = settingsPath;
         if(getFontPanel() != null)
         {
             getFontPanel().setSettingsPath(settingsPath);
@@ -253,7 +253,7 @@ public class IRCRoomBase extends JPanel
 
     public Preferences getSettingsPath ()
     {
-        return roomPrefs;
+        return channelPrefs;
     }
 
     public void createChannelPopUp()
@@ -292,11 +292,6 @@ public class IRCRoomBase extends JPanel
     {
         return fontDialog != null && fontDialog.getFontPanel() != null ? fontDialog.getFontPanel() : null;
     }
-
-    // public void resetLineFormatter()
-    // {
-    //     lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, getServer(), roomPrefs);
-    // }
 
     protected void setupMainTextArea()
     {
@@ -526,7 +521,7 @@ public class IRCRoomBase extends JPanel
 
                         int lineLimit = ((InterfacePanel) gui.interfacePanel).getLimitChannelLinesCount();
 
-                        if(IRCRoomBase.this instanceof IRCServer)
+                        if(IRCChannelBase.this instanceof IRCServer)
                             lineLimit = ((InterfacePanel) gui.interfacePanel).getLimitServerLinesCount();
 
                         if(null != messagePair && root.getElementCount() > lineLimit)
@@ -574,14 +569,14 @@ public class IRCRoomBase extends JPanel
                         {
                             lineFormatter.formattedDocument(new Date(), fromIRCUser, fromUser, line);
 
-                            if(IRCRoomBase.this instanceof IRCServerBase)
+                            if(IRCChannelBase.this instanceof IRCServerBase)
                             {
                                 if (((InterfacePanel) gui.interfacePanel).saveServerHistory())
-                                    URLogger.logChannelComms(IRCRoomBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
-                            } else if(!(IRCRoomBase.this instanceof IRCServerBase))
+                                    URLogger.logChannelComms(IRCChannelBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                            } else if(!(IRCChannelBase.this instanceof IRCServerBase))
                             {
                                 if (((InterfacePanel) gui.interfacePanel).saveChannelHistory())
-                                    URLogger.logChannelComms(IRCRoomBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                                    URLogger.logChannelComms(IRCChannelBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
                             }
 
                             if (server.getNick() != null && line.indexOf(server.getNick()) > -1)
@@ -590,7 +585,7 @@ public class IRCRoomBase extends JPanel
                             }
 
                             // Always alert on IRCPrivate messages
-                            if (IRCRoomBase.this instanceof IRCPrivate)
+                            if (IRCChannelBase.this instanceof IRCPrivate)
                             {
                                 callForAttention();
                             }
@@ -652,7 +647,7 @@ public class IRCRoomBase extends JPanel
     /**
      * Return the appropriate created IRC User
      *
-     * @param roomName
+     * @param channelName
      * @return IRCChannel
      */
     public IRCUser getCreatedUser(String userName) {
@@ -719,7 +714,7 @@ public class IRCRoomBase extends JPanel
         addToUsersList(new String[]{user});
     }
 
-    public String getChannelTopic(String roomName)
+    public String getChannelTopic(String channelName)
     {
         return getChannelTopic();
     }
@@ -853,7 +848,7 @@ public class IRCRoomBase extends JPanel
 
         public ChannelPopUp()
         {
-            nameItem = new JMenuItem(IRCRoomBase.this.getName());
+            nameItem = new JMenuItem(IRCChannelBase.this.getName());
             add(nameItem);
             addSeparator();
             //
@@ -882,12 +877,12 @@ public class IRCRoomBase extends JPanel
         public void show(Component arg0, int arg1, int arg2)
         {
             // TODO: Favourites handling to be done elsewhere
-            // if (gui.isFavourite(IRCRoomBase.this))
+            // if (gui.isFavourite(IRCChannelBase.this))
             // {
-            //     ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Remove as Favourite");
+            //     ((ChannelPopUp) IRCChannelBase.this.myMenu).addAsFavouriteItem.setText("Remove as Favourite");
             // } else
             // {
-            //     ((ChannelPopUp) IRCRoomBase.this.myMenu).addAsFavouriteItem.setText("Add as Favourite");
+            //     ((ChannelPopUp) IRCChannelBase.this.myMenu).addAsFavouriteItem.setText("Add as Favourite");
             // }
 
             super.show(arg0, arg1, arg2);
@@ -903,7 +898,7 @@ public class IRCRoomBase extends JPanel
             // TODO: Favourites handling to be done elsewhere
             // if (null != getServer())
             // {
-            //     if (!gui.isFavourite(IRCRoomBase.this))
+            //     if (!gui.isFavourite(IRCChannelBase.this))
             //     {
             //         gui.addFavourite(getServer().getName(), getName());
             //     } else
@@ -1039,7 +1034,7 @@ public class IRCRoomBase extends JPanel
         }
     }
 
-    public void closeRoom()
+    public void closeChannel ()
     {
         URProfilesUtil.removeListener(EventType.CHANGE, changeListener);
         eventTickerTimer.stop();
@@ -1205,7 +1200,7 @@ public class IRCRoomBase extends JPanel
             {
                 public void run()
                 {
-                    if (IRCRoomBase.this.tickerPanel.isVisible())
+                    if (IRCChannelBase.this.tickerPanel.isVisible())
                     {
                         Iterator<JLabel> labelIterator = eventLabels.iterator();
                         while (labelIterator.hasNext())

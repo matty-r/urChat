@@ -6,7 +6,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 import urChatBasic.base.Constants;
-import urChatBasic.base.IRCRoomBase;
+import urChatBasic.base.IRCChannelBase;
 import urChatBasic.base.Constants.Placement;
 import urChatBasic.frontend.DriverGUI;
 import urChatBasic.frontend.utils.URPanels;
@@ -87,10 +87,10 @@ public class InterfacePanel extends UROptionsPanel
             {
                 ImageIcon setIcon = null;
 
-                if (DriverGUI.gui.tabbedPane.getComponentAt(i) instanceof IRCRoomBase)
+                if (DriverGUI.gui.tabbedPane.getComponentAt(i) instanceof IRCChannelBase)
                 {
-                    IRCRoomBase room = (IRCRoomBase) DriverGUI.gui.tabbedPane.getComponentAt(i);
-                    setIcon = room.icon;
+                    IRCChannelBase channel = (IRCChannelBase) DriverGUI.gui.tabbedPane.getComponentAt(i);
+                    setIcon = channel.icon;
                     DriverGUI.gui.tabbedPane.setIconAt(i, showTabIcons.isSelected() ? setIcon : null);
                 }
 

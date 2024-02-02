@@ -528,7 +528,7 @@ public class MessageHandler
         {
             if (myMessage.nick.equals(myMessage.messageHandler.serverBase.getNick()))
             {
-                myMessage.messageHandler.serverBase.addToCreatedRooms(myMessage.channel, false);
+                myMessage.messageHandler.serverBase.addToCreatedChannels(myMessage.channel, false);
                 myMessage.messageHandler.serverBase.printEventTicker(myMessage.channel, "You have joined " + myMessage.channel);
             } else
                 myMessage.messageHandler.serverBase.addToUsersList(myMessage.channel, myMessage.nick);
@@ -739,7 +739,7 @@ public class MessageHandler
                 serverBase.reconnectChannels();
             } else
             {
-                IRCRoomBase messageChannel = myMessage.messageHandler.serverBase.getCreatedChannel(myMessage.getChannel());
+                IRCChannelBase messageChannel = myMessage.messageHandler.serverBase.getCreatedChannel(myMessage.getChannel());
                 if (messageChannel != null)
                 {
                     messageChannel.printText(myMessage.getBody(), Constants.EVENT_USER);
