@@ -817,10 +817,15 @@ public class MessageHandler
         @Override
         public void messageExec (Message myMessage)
         {
-            Constants.LOGGER.error(myMessage.getBody());
-            MessageDialog dialog = new MessageDialog("startUp() failed! " + myMessage.getBody(), "Error", JOptionPane.ERROR_MESSAGE);
-            dialog.setVisible(true);
-            // new DisconnectMessage().messageExec(myMessage);
+            // Are we just quitting, then don't show an error message.
+            if(myMessage.getBody().contains("Goodbye cruel world"))
+            {
+                gui.quitServer(myMessage.messageHandler.serverBase);
+            } else {
+                Constants.LOGGER.error(myMessage.getBody());
+                MessageDialog dialog = new MessageDialog("startUp() failed! " + myMessage.getBody(), "Error", JOptionPane.ERROR_MESSAGE);
+                dialog.setVisible(true);
+            }
         }
     }
 
