@@ -225,15 +225,16 @@ public class FontPanel extends JPanel
      */
     public void setFont (final URStyle newStyle, Boolean saveToSettings)
     {
-        Font newFont = newStyle.getFont();
+        URStyle tempStyle = newStyle.clone();
+        Font newFont = tempStyle.getFont();
 
         if (!getFont().equals(newFont) || saveToSettings)
         {
-            newStyle.isBold().ifPresent(bold -> MAKE_BOLD.setSelected(bold));
-            newStyle.isItalic().ifPresent(italic -> MAKE_ITALIC.setSelected(italic));
-            newStyle.isUnderline().ifPresent(underline -> MAKE_UNDERLINE.setSelected(underline));
-            newStyle.getFamily().ifPresent(family -> FONT_COMBO_BOX.setSelectedItem(family));
-            newStyle.getSize().ifPresent(size -> SIZES_COMBO_BOX.setSelectedItem(size));
+            tempStyle.isBold().ifPresent(bold -> MAKE_BOLD.setSelected(bold));
+            tempStyle.isItalic().ifPresent(italic -> MAKE_ITALIC.setSelected(italic));
+            tempStyle.isUnderline().ifPresent(underline -> MAKE_UNDERLINE.setSelected(underline));
+            tempStyle.getFamily().ifPresent(family -> FONT_COMBO_BOX.setSelectedItem(family));
+            tempStyle.getSize().ifPresent(size -> SIZES_COMBO_BOX.setSelectedItem(size));
 
             targetStyle.setFont(newFont);
 

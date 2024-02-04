@@ -1,7 +1,6 @@
 package urChatBasic.frontend;
 
 import java.awt.*;
-import java.util.logging.Level;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -183,6 +182,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public UROptionsPanel getConnectionPanel ()
     {
         return interfacePanel;
+    }
+
+
+    public UROptionsPanel getAppearancePanel ()
+    {
+        return appearancePanel;
     }
 
     // /**
@@ -777,6 +782,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 TabbedPanel_stateChanged(null);
             }
         });
+    }
+
+    public FontPanel getFontPanel ()
+    {
+        return clientFontPanel;
     }
 
     /**

@@ -783,7 +783,7 @@ public class LineFormatter
             Constants.LOGGER.error(ble.getLocalizedMessage());
         }
         AttributeSet textStyle = doc.getCharacterElement(position).getAttributes();
-
+        
         return new URStyle(new SimpleAttributeSet(textStyle));
     }
 
