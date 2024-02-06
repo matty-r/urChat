@@ -62,7 +62,7 @@ public class FontPanel extends JPanel
             {
                 colourDialog = new ColourDialog(styleName, getDefaultStyle(), getSettingsPath());
 
-                colourDialog.getColourPanel().addSaveListener(e -> {
+                getColourPanel().addSaveListener(e -> {
                     Constants.LOGGER.info( "Font Panel says: Save Colour pressed");
                 });
 
@@ -73,7 +73,7 @@ public class FontPanel extends JPanel
                 {
                     if (listeners[i] == ActionListener.class)
                     {
-                        colourDialog.getColourPanel().addSaveListener((ActionListener) listenerList.getListeners(ActionListener.class)[i]);
+                        getColourPanel().addSaveListener((ActionListener) listenerList.getListeners(ActionListener.class)[i]);
                     }
                 }
 
@@ -88,7 +88,7 @@ public class FontPanel extends JPanel
             setFont(targetStyle, true);
 
             // now fire the rest of the save listeners
-            fireSaveListeners();
+            fireFontSaveListeners();
         });
 
         FONT_COMBO_BOX.addItemListener(new FontSelectionChange());
@@ -154,6 +154,11 @@ public class FontPanel extends JPanel
         add(MAKE_UNDERLINE, c);
     }
 
+    public ColourPanel getColourPanel ()
+    {
+        return colourDialog.getColourPanel();
+    }
+
     public JButton getSaveButton ()
     {
         return SAVE_BUTTON;
@@ -168,9 +173,9 @@ public class FontPanel extends JPanel
     {
         // defaultFont = f;
         defaultStyle = f.clone();
-        colourDialog.getColourPanel().setDefaultStyle(defaultStyle);
+        getColourPanel().setDefaultStyle(defaultStyle);
         loadStyle();
-        fireSaveListeners();
+        fireFontSaveListeners();
     }
 
     private URStyle getDefaultStyle ()
@@ -212,7 +217,7 @@ public class FontPanel extends JPanel
     public void setStyle (final URStyle newStyle)
     {
         targetStyle = newStyle.clone();
-        colourDialog.getColourPanel().setStyle(targetStyle);
+        getColourPanel().setStyle(targetStyle);
         setFont(targetStyle, false);
     }
 
@@ -240,7 +245,7 @@ public class FontPanel extends JPanel
 
             if (saveToSettings)
             {
-                URStyle colourPanelStyle = colourDialog.getColourPanel().getStyle();
+                URStyle colourPanelStyle = getColourPanel().getStyle();
                 colourPanelStyle.getForeground().ifPresent(fg -> targetStyle.setForeground(fg));
                 colourPanelStyle.getBackground().ifPresent(bg -> targetStyle.setBackground(bg));
                 URPreferencesUtil.saveStyle(defaultStyle, targetStyle, settingsPath);
@@ -271,12 +276,12 @@ public class FontPanel extends JPanel
         targetStyle.setFont(getFont());
     }
 
-    public void addSaveListener (ActionListener actionListener)
+    public void addFontSaveListener (ActionListener actionListener)
     {
         listenerList.add(ActionListener.class, actionListener);
     }
 
-    protected void fireSaveListeners ()
+    protected void fireFontSaveListeners ()
     {
         Object[] listeners = this.listenerList.getListenerList();
 
@@ -336,7 +341,7 @@ public class FontPanel extends JPanel
         this.settingsPath = settingsPath;
         loadStyle();
 
-        colourDialog.getColourPanel().setSettingsPath(settingsPath);
+        getColourPanel().setSettingsPath(settingsPath);
     }
 
     public Preferences getSettingsPath ()

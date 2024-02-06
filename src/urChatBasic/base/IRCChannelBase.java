@@ -215,7 +215,7 @@ public class IRCChannelBase extends JPanel
         // this.myMenu = new ChannelPopUp();
         createChannelPopUp();
         fontDialog.setVisible(false);
-        fontDialog.addSaveListener(new SaveFontListener());
+        fontDialog.addFontSaveListener(new SaveFontListener());
 
         myActions = new IRCActions(this);
     }
@@ -1014,7 +1014,8 @@ public class IRCChannelBase extends JPanel
             {
                 public void run()
                 {
-                    lineFormatter.setFont(fontDialog.getFontPanel().getFont());
+                    // lineFormatter.setFont(fontDialog.getFontPanel().getFont());
+                    lineFormatter.setStyle(fontDialog.getFontPanel().getStyle());
                 }
             });
         } else

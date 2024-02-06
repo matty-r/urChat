@@ -52,10 +52,10 @@ public class FontDialog extends DialogBase
         super.setVisible(b);
     }
 
-    public void addSaveListener(ActionListener newActionListener)
+    public void addFontSaveListener(ActionListener newActionListener)
     {
         // fontPanel.getSaveButton().addActionListener(newActionListener);
-        fontPanel.addSaveListener(newActionListener);
+        fontPanel.addFontSaveListener(newActionListener);
     }
 
     public void addResetListener(ActionListener newActionListener)

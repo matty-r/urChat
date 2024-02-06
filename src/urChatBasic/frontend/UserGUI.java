@@ -271,7 +271,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         });
 
         // clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
-        clientFontPanel.addSaveListener(new SaveFontListener());
+        clientFontPanel.addFontSaveListener(new SaveFontListener());
         // clientFontPanel.getResetButton().addActionListener(new ResetFontListener());
 
         previewTextScroll.setPreferredSize(new Dimension(700, 150));
@@ -382,7 +382,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 FontDialog styleFontDialog =
                         new FontDialog(styleName, previewLineFormatter.getStyleDefault(styleName), URProfilesUtil.getActiveProfilePath());
 
-                styleFontDialog.addSaveListener(new SaveFontListener());
+                styleFontDialog.addFontSaveListener(new SaveFontListener());
                 styleFontDialog.setVisible(true);
             } else if (SwingUtilities.isLeftMouseButton(mouseEvent) && null != isClickableText)
             {
