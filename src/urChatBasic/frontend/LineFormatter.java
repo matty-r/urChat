@@ -84,6 +84,13 @@ public class LineFormatter
         initStyles(baseStyle);
     }
 
+    public void setStyle (URStyle newStyle)
+    {
+        targetStyle = newStyle.clone();
+        if (doc.getLength() > 0)
+            updateStyles(targetStyle);
+    }
+
     public void setFont (Font newFont)
     {
         targetStyle.setFont(newFont);
@@ -156,6 +163,7 @@ public class LineFormatter
         StyleConstants.setItalic(tempStyle, targetStyle.getFont().isItalic());
 
         StyleConstants.setForeground(tempStyle, myForeground);
+        StyleConstants.setBackground(tempStyle, myBackground);
 
         if (load)
             tempStyle.load(settingsPath);
@@ -783,7 +791,6 @@ public class LineFormatter
             Constants.LOGGER.error(ble.getLocalizedMessage());
         }
         AttributeSet textStyle = doc.getCharacterElement(position).getAttributes();
-
         return new URStyle(new SimpleAttributeSet(textStyle));
     }
 

@@ -36,7 +36,7 @@ public class URStyle extends SimpleAttributeSet
      *
      * @param defaultFont
      */
-    public URStyle(String name, Font defaultFont)
+    public URStyle (String name, Font defaultFont)
     {
         super();
         this.addAttribute("name", name);
@@ -50,7 +50,7 @@ public class URStyle extends SimpleAttributeSet
      *
      * @param defaultFont
      */
-    public URStyle(String name, Font defaultFont, Color defaultForeground, Color defaultBackground)
+    public URStyle (String name, Font defaultFont, Color defaultForeground, Color defaultBackground)
     {
         super();
         this.addAttribute("name", name);
@@ -59,17 +59,22 @@ public class URStyle extends SimpleAttributeSet
         setBackground(defaultBackground);
     }
 
-    public URStyle(SimpleAttributeSet fromAttributeSet)
+    public URStyle (SimpleAttributeSet fromAttributeSet)
     {
         super(fromAttributeSet);
     }
 
-    public String getName()
+    public String getName ()
     {
         return getAttribute("name").toString();
     }
 
-    public Font getFont()
+    public void setName (String newName)
+    {
+        addAttribute("name", newName);
+    }
+
+    public Font getFont ()
     {
         // int savedFontBoldItalic = 0;
 
@@ -84,8 +89,7 @@ public class URStyle extends SimpleAttributeSet
         fontMap.put(TextAttribute.POSTURE, StyleConstants.isItalic(this) ? TextAttribute.POSTURE_OBLIQUE : TextAttribute.POSTURE_REGULAR);
         fontMap.put(TextAttribute.UNDERLINE, StyleConstants.isUnderline(this) ? TextAttribute.UNDERLINE_ON : -1);
 
-        Font styleFont = new Font(StyleConstants.getFontFamily(this), Font.PLAIN, StyleConstants.getFontSize(this))
-                .deriveFont(fontMap);
+        Font styleFont = new Font(StyleConstants.getFontFamily(this), Font.PLAIN, StyleConstants.getFontSize(this)).deriveFont(fontMap);
 
         return styleFont;
         // Font styleFont = new Font(StyleConstants.getFontFamily(this), savedFontBoldItalic,
@@ -94,7 +98,7 @@ public class URStyle extends SimpleAttributeSet
         // return styleFont;
     }
 
-    public void setFont(Font newFont)
+    public void setFont (Font newFont)
     {
         StyleConstants.setFontFamily(this, newFont.getFamily());
         StyleConstants.setBold(this, newFont.isBold());
@@ -103,23 +107,23 @@ public class URStyle extends SimpleAttributeSet
         StyleConstants.setUnderline(this, isUnderline(newFont));
     }
 
-    public Optional<Color> getForeground()
+    public Optional<Color> getForeground ()
     {
-        if(getAttribute(StyleConstants.Foreground) != null)
+        if (getAttribute(StyleConstants.Foreground) != null)
             return Optional.of(StyleConstants.getForeground(this));
         else
             return Optional.empty();
     }
 
-    public Optional<Color> getBackground()
+    public Optional<Color> getBackground ()
     {
-        if(getAttribute(StyleConstants.Background) != null)
+        if (getAttribute(StyleConstants.Background) != null)
             return Optional.of(StyleConstants.getBackground(this));
         else
             return Optional.empty();
     }
 
-    public Optional<Boolean> isBold()
+    public Optional<Boolean> isBold ()
     {
         if (getAttribute(StyleConstants.Bold) != null)
             return Optional.of(StyleConstants.isBold(this));
@@ -127,7 +131,7 @@ public class URStyle extends SimpleAttributeSet
             return Optional.empty();
     }
 
-    public Optional<Boolean> isItalic()
+    public Optional<Boolean> isItalic ()
     {
         if (getAttribute(StyleConstants.Italic) != null)
             return Optional.of(StyleConstants.isItalic(this));
@@ -135,7 +139,7 @@ public class URStyle extends SimpleAttributeSet
             return Optional.empty();
     }
 
-    public Optional<String> getFamily()
+    public Optional<String> getFamily ()
     {
         if (getAttribute(StyleConstants.FontFamily) != null)
             return Optional.of(StyleConstants.getFontFamily(this));
@@ -143,7 +147,7 @@ public class URStyle extends SimpleAttributeSet
             return Optional.empty();
     }
 
-    public Optional<Integer> getSize()
+    public Optional<Integer> getSize ()
     {
         if (getAttribute(StyleConstants.FontSize) != null)
             return Optional.of(StyleConstants.getFontSize(this));
@@ -151,16 +155,16 @@ public class URStyle extends SimpleAttributeSet
             return Optional.empty();
     }
 
-    public Optional<Boolean> isUnderline()
+    public Optional<Boolean> isUnderline ()
     {
-    if (getAttribute(StyleConstants.Underline) != null)
+        if (getAttribute(StyleConstants.Underline) != null)
             return Optional.of(StyleConstants.isUnderline(this));
         else
             return Optional.empty();
     }
 
     // https://docs.oracle.com/javase/6/docs/api/java/awt/font/TextAttribute.html#UNDERLINE
-    public static boolean isUnderline(Font targetFont)
+    public static boolean isUnderline (Font targetFont)
     {
         if (targetFont != null && targetFont.getAttributes().get(TextAttribute.UNDERLINE) != null)
             return (int) targetFont.getAttributes().get(TextAttribute.UNDERLINE) == TextAttribute.UNDERLINE_ON;
@@ -168,19 +172,20 @@ public class URStyle extends SimpleAttributeSet
         return false;
     }
 
-    public void setForeground(Color newColour)
+    public void setForeground (Color newColour)
     {
         StyleConstants.setForeground(this, newColour);
     }
 
-    public void setBackground(Color newColour)
+    public void setBackground (Color newColour)
     {
         StyleConstants.setBackground(this, newColour);
     }
 
-    public void load(Preferences prefPath)
+    public void load (Preferences prefPath)
     {
-        try {
+        try
+        {
             URStyle loadedStyle = URPreferencesUtil.loadStyle(this, prefPath);
             setFont(loadedStyle.getFont());
             loadedStyle.getForeground().ifPresent(fg -> setForeground(fg));
@@ -191,24 +196,24 @@ public class URStyle extends SimpleAttributeSet
         }
     }
 
-    public static String getKeymap(Object attributeObject)
+    public static String getKeymap (Object attributeObject)
     {
         return getKeymap(attributeObject.toString());
     }
 
-    public static String getKeymap(String attributeName)
+    public static String getKeymap (String attributeName)
     {
         return ATTRIBUTE_KEYMAP.get(attributeName);
     }
 
-    public boolean equals(URStyle otherStyle)
+    public boolean equals (URStyle otherStyle)
     {
         return getFont().equals(otherStyle.getFont()) && getForeground().equals(otherStyle.getForeground())
                 && getBackground().equals(otherStyle.getBackground());
     }
 
     @Override
-    public URStyle clone()
+    public URStyle clone ()
     {
         return (URStyle) super.clone();
     }

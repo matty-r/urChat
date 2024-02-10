@@ -65,7 +65,7 @@ public class MessageHandlerTests
         testServer.quitChannels();
         // URProfilesUtil.getActiveProfilePath().sync();
         // URProfilesUtil.getActiveProfilePath().sync();
-        URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
+        URProfilesUtil.deleteProfile(testDriver.getTestProfileName(), false);
         TestDriverGUI.closeWindow();
     }
 

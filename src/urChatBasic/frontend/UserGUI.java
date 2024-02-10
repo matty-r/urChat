@@ -1,7 +1,6 @@
 package urChatBasic.frontend;
 
 import java.awt.*;
-import java.util.logging.Level;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -185,6 +184,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         return interfacePanel;
     }
 
+
+    public UROptionsPanel getAppearancePanel ()
+    {
+        return appearancePanel;
+    }
+
     // /**
     //  * Sets the current active profile - if the newProfileName doesn't exist it will be created.
     //  * @param newProfileName
@@ -266,7 +271,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         });
 
         // clientFontPanel.getSaveButton().addActionListener(new SaveFontListener());
-        clientFontPanel.addSaveListener(new SaveFontListener());
+        clientFontPanel.addFontSaveListener(new SaveFontListener());
         // clientFontPanel.getResetButton().addActionListener(new ResetFontListener());
 
         previewTextScroll.setPreferredSize(new Dimension(700, 150));
@@ -377,7 +382,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 FontDialog styleFontDialog =
                         new FontDialog(styleName, previewLineFormatter.getStyleDefault(styleName), URProfilesUtil.getActiveProfilePath());
 
-                styleFontDialog.addSaveListener(new SaveFontListener());
+                styleFontDialog.addFontSaveListener(new SaveFontListener());
                 styleFontDialog.setVisible(true);
             } else if (SwingUtilities.isLeftMouseButton(mouseEvent) && null != isClickableText)
             {
@@ -779,6 +784,11 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         });
     }
 
+    public FontPanel getFontPanel ()
+    {
+        return clientFontPanel;
+    }
+
     /**
      * Returns the clientFontPanel style, otherwise creates the new default style.
      *
@@ -839,7 +849,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
         } catch (Exception e)
         {
-            Constants.LOGGER.error("Failed to set Pluggable LAF! " + e.getLocalizedMessage());
+            Constants.LOGGER.error("Failed to set Pluggable LAF! ", e);
         } finally
         {
             if (!flatLafAvailable)
@@ -849,7 +859,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (Exception e)
                 {
-                    Constants.LOGGER.error("Failed to setLookAndFeel! " + e.getLocalizedMessage());
+                    Constants.LOGGER.error("Failed to setLookAndFeel! ", e);
                 }
             }
         }
@@ -868,10 +878,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         clientFontPanel.setDefaultStyle(defaultStyle);
 
-        SwingUtilities.updateComponentTreeUI(DriverGUI.frame);
+        if(DriverGUI.frame.isVisible())
+            SwingUtilities.updateComponentTreeUI(DriverGUI.frame);
+
         updateExtras();
+
         // DriverGUI.frame.dispose();
-        DriverGUI.frame.validate();
+        if(DriverGUI.frame.isVisible())
+            DriverGUI.frame.validate();
     }
 
     // Update the fonts and popup menus - these aren't under the component tree
