@@ -59,21 +59,16 @@ public class URProfilesUtil
         return profileNames;
     }
 
-
     public static void deleteProfile (String profileName)
+    {
+        deleteProfile(profileName, true);
+    }
+
+    public static void deleteProfile (String profileName, boolean fireListeners)
     {
         try
         {
             String[] allProfiles = getProfiles();
-
-            if(allProfiles.length > 1)
-            {
-                Constants.LOGGER.info( "Deleting profile [" + profileName + "].");
-                Constants.BASE_PREFS.node(profileName).removeNode();
-                fireListeners(EventType.DELETE);
-            }
-            else
-                throw new BackingStoreException("Unable to delete the last profile.");
 
             if(profileName.equals(getActiveProfileName()))
             {
@@ -84,6 +79,16 @@ public class URProfilesUtil
                     setActiveProfileName(allProfiles[0]);
                 }
             }
+
+            if(allProfiles.length > 1)
+            {
+                Constants.LOGGER.info( "Deleting profile [" + profileName + "].");
+                Constants.BASE_PREFS.node(profileName).removeNode();
+                if(fireListeners)
+                    fireListeners(EventType.DELETE);
+            }
+            else
+                throw new BackingStoreException("Unable to delete the last profile.");
 
         } catch (BackingStoreException e)
         {
@@ -96,7 +101,7 @@ public class URProfilesUtil
      */
     public static void deleteProfile ()
     {
-        deleteProfile(getActiveProfileName());
+        deleteProfile(getActiveProfileName(), true);
     }
 
     public static String getActiveProfileName ()

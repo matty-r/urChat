@@ -849,7 +849,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
         } catch (Exception e)
         {
-            Constants.LOGGER.error("Failed to set Pluggable LAF! " + e.getLocalizedMessage());
+            Constants.LOGGER.error("Failed to set Pluggable LAF! ", e);
         } finally
         {
             if (!flatLafAvailable)
@@ -859,7 +859,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (Exception e)
                 {
-                    Constants.LOGGER.error("Failed to setLookAndFeel! " + e.getLocalizedMessage());
+                    Constants.LOGGER.error("Failed to setLookAndFeel! ", e);
                 }
             }
         }
@@ -878,10 +878,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         clientFontPanel.setDefaultStyle(defaultStyle);
 
-        SwingUtilities.updateComponentTreeUI(DriverGUI.frame);
+        if(DriverGUI.frame.isVisible())
+            SwingUtilities.updateComponentTreeUI(DriverGUI.frame);
+
         updateExtras();
+
         // DriverGUI.frame.dispose();
-        DriverGUI.frame.validate();
+        if(DriverGUI.frame.isVisible())
+            DriverGUI.frame.validate();
     }
 
     // Update the fonts and popup menus - these aren't under the component tree

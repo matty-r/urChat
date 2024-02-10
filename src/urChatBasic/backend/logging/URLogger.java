@@ -34,10 +34,15 @@ public class URLogger
             logDir.mkdir();
         }
 
-        System.setProperty("log4j2.configurationFile", DriverGUI.class.getResource(LOG4J_CONFIG_FILE).toURI().toString());
-        // System.setProperty("log4j2.debug", "true");
+        File logConfigFile = new File(DriverGUI.class.getResource(LOG4J_CONFIG_FILE).toURI());
 
-        LOGGER = LoggerFactory.getLogger(URLogger.class);
+        if(!logConfigFile.exists())
+            throw new IOException("LOG FILE NOT FOUND");
+
+        // System.setProperty("log4j2.debug", "true");
+        System.setProperty("log4j2.configurationFile", logConfigFile.toString());
+
+        LOGGER = LoggerFactory.getLogger("urchat");
 
         Logger testLog = getLogger(LOGGER.getName(), Logger.class);
 

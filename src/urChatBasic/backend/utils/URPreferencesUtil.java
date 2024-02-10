@@ -135,7 +135,7 @@ public class URPreferencesUtil {
 
         } catch (Exception e)
         {
-            Constants.LOGGER.error("Active Profile: ["+URProfilesUtil.getActiveProfileName()+"] Unable to load ["+loadedStyle.getAttribute("name")+"]"+ " attempted with path: " + stylePrefPath);
+            Constants.LOGGER.error("Active Profile: ["+URProfilesUtil.getActiveProfileName()+"] Unable to load ["+loadedStyle.getAttribute("name")+"]"+ " attempted with path: " + stylePrefPath, e);
             return targetStyle;
         }
 
