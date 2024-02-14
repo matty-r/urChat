@@ -1,4 +1,4 @@
-package utils;
+package urChatBasic.backend.utils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.testng.annotations.Test;
 
 public class LogPatternParser
 {
@@ -17,21 +16,25 @@ public class LogPatternParser
     // Define enum for log patterns
     public enum LogPattern
     {
-        DATE("%d", "(?<DATE>.*UTC)", Date.class),
-        SERVER("%marker", "(?<SERVER>^[A-Za-z0-9.-]+)-", String.class),
-        CHANNEL("%marker", "(?<CHANNEL>^#.*?)\\s", String.class), // Named group for channel, excluding the trailing whitespace
-        USER("%msg|%message", "(?<USER>^.*?):", String.class),
-        MESSAGE("%msg|%message", "(?<MESSAGE>.*)", String.class);
+        DATE("%d", "(?<DATE>.*UTC?)", Date.class, "UTC "),
+        SERVER("%marker", "\\s(?<SERVER>[A-Za-z0-9.-]+)-", String.class, "-"),
+        CHANNEL("%marker", "(?<CHANNEL>#.*?)\\s", String.class, " "), // Named group for channel, excluding the trailing whitespace
+        USER("%msg", "(?<USER>.*?):", String.class, ": "),
+        MESSAGE("%msg", "\\s(?<MESSAGE>.*)$", String.class, "");
 
         private final String pattern;
         private final String regex;
+        private final String appendString;
         private final Class<?> patternClass;
+        public final static String PATTERN_LAYOUT = "%d{yyy-MM-dd HH:mm:ss.SSS}{UTC}UTC %marker %msg%n";
+        public final static String DATE_LAYOUT = "yyyy-MM-dd HH:mm:ss.SSS";
 
-        LogPattern (String pattern, String regex, Class<?> patternClass)
+        LogPattern (String pattern, String regex, Class<?> patternClass, String appendString)
         {
             this.pattern = pattern;
             this.regex = regex;
             this.patternClass = patternClass;
+            this.appendString = appendString;
         }
 
         public String getPattern ()
@@ -54,19 +57,25 @@ public class LogPatternParser
             return this.toString();
         }
 
-        public String getPatternLayout ()
+        public String getAppendString ()
         {
-            return "%d{yyy-MM-dd HH:mm:ss.SSS}{UTC}UTC %marker %msg%n";
+            return appendString;
         }
     }
 
-    public static Date parseDate (String dateString) {
-
+    public static Date parseDate (String dateString)
+    {
+        dateString = dateString.trim();
         // Step 1: Define the DateTimeFormatter with the pattern
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-
+        TemporalAccessor temporalAccessor = null;
+        try{
         // Step 2: Parse the string into a TemporalAccessor object using the formatter
-        TemporalAccessor temporalAccessor = formatter.parse(dateString.replace("UTC", ""));
+            temporalAccessor = formatter.parse(dateString.replace("UTC", ""));
+        } catch (Exception exc)
+        {
+            System.out.println(exc);
+        }
 
         // Step 3: Convert the TemporalAccessor to a LocalDateTime object
         LocalDateTime localDateTime = LocalDateTime.from(temporalAccessor);
@@ -82,6 +91,21 @@ public class LogPatternParser
 
 
         return date;
+    }
+
+    // Method to format Date object to string in UTC
+    public static String formatDateToString(Date date) {
+        // Define the DateTimeFormatter with the pattern
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+
+        // Convert the Date object to LocalDateTime
+        LocalDateTime localDateTime = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        // Convert the LocalDateTime to UTC time zone
+        LocalDateTime localDateTimeInUtc = localDateTime.atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toLocalDateTime();
+
+        // Format the LocalDateTime to string
+        return formatter.format(localDateTimeInUtc);
     }
 
     // Parse log line using specified pattern
@@ -118,26 +142,23 @@ public class LogPatternParser
         System.out.println("Done");
     }
 
-    public static void parseLogLineFull (String logLine) {
+    public static Map<String, Object> parseLogLineFull (String logLine) {
         Map<String, Object> parsedValues = new HashMap<>();
 
         StringBuilder combinedRegexBuilder = new StringBuilder();
-        for (LogPattern pattern : LogPattern.values()) {
-            if (combinedRegexBuilder.length() > 0) {
-                combinedRegexBuilder.append("|");
-            }
-            combinedRegexBuilder.append("(").append(pattern.getRegex()).append(")");
-        }
+        combinedRegexBuilder.append(LogPattern.DATE.getRegex());
+        combinedRegexBuilder.append(LogPattern.SERVER.getRegex());
+        combinedRegexBuilder.append(LogPattern.CHANNEL.getRegex());
+        combinedRegexBuilder.append(LogPattern.USER.getRegex());
+        combinedRegexBuilder.append(LogPattern.MESSAGE.getRegex());
         String combinedRegex = combinedRegexBuilder.toString();
 
         Pattern regexPattern = Pattern.compile(combinedRegex);
         Matcher matcher = regexPattern.matcher(logLine);
         while (matcher.find()) {
             for (LogPattern pattern : LogPattern.values()) {
-                if (matcher.group(pattern.getPattern()) != null) {
-                    String fullMatch = matcher.group(0);
+                if (matcher.group(pattern.toString()) != null) {
                     String match = matcher.group(pattern.getMatchGroup());
-                    System.out.println(pattern.name() + " group: " + match);
                     switch (pattern.getPatternClass().getSimpleName()) {
                         case "Date":
                             parsedValues.put(pattern.toString(), parseDate(match));
@@ -146,20 +167,10 @@ public class LogPatternParser
                             parsedValues.put(pattern.toString(), match);
                             break;
                     }
-                    logLine = logLine.replaceFirst(fullMatch, "").trim();
-                    break; // Break to the outer loop to handle the next log line part
                 }
             }
         }
 
-        System.out.println("Done");
-    }
-
-    @Test
-    public void testParsing ()
-    {
-        String logLine = "2024-02-13 19:27:31.414UTC irc.libera.chat-#java matty_r: morning:asdjnwk 123AD?asd,123uADAjkalas[];'das[]";
-        // parseLogLine(logLine);
-        parseLogLineFull(logLine);
+        return parsedValues;
     }
 }
