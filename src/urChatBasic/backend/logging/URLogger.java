@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
+import java.util.Map;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -88,6 +89,30 @@ public class URLogger
     //         return configFileString;
     //     }
     // }
+
+     /**
+     * Get the path for the logfile associated with the given markerName.
+     *
+     * @param markerName The markerName associated with the logfile.
+     * @return The path for the associated logfile, or null if not found.
+     */
+    public static FileAppender getLogFilePath(String markerName) {
+        // Get the root LoggerConfig
+        Configuration rootLoggerConfig = currentConfig;
+        if (rootLoggerConfig != null) {
+            // Find the appender associated with the given markerName
+            Map<String, Appender> appenders = rootLoggerConfig.getAppenders();
+            String appenderName = markerName + "Appender";
+            Appender appender = appenders.get(appenderName);
+            if (appender instanceof FileAppender) {
+                // If the appender is a FileAppender, return its file name
+                FileAppender fileAppender = (FileAppender) appender;
+                return fileAppender;
+            }
+        }
+        // Return null if the logfile for the given markerName is not found
+        return null;
+    }
 
     public static void logChannelComms (IRCChannelBase ircChannel, String message)
     {

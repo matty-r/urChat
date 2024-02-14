@@ -13,6 +13,7 @@ import urChatBasic.frontend.LineFormatter;
 import urChatBasic.frontend.LineFormatter.ClickableText;
 import urChatBasic.frontend.components.FontPanel;
 import urChatBasic.frontend.dialogs.FontDialog;
+import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.frontend.panels.InterfacePanel;
 import urChatBasic.frontend.utils.URColour;
 import urChatBasic.frontend.UserGUI;
@@ -841,6 +842,7 @@ public class IRCChannelBase extends JPanel
         private static final long serialVersionUID = 640768684923757684L;
         JMenuItem nameItem;
         JMenuItem quitItem;
+        JMenuItem loadChannelHistory;
         JMenuItem hideUsersItem;
         JMenuItem hideTickerItem;
         public JMenuItem addAsFavouriteItem;
@@ -855,6 +857,10 @@ public class IRCChannelBase extends JPanel
             quitItem = new JMenuItem("Quit");
             add(quitItem);
             quitItem.addActionListener(new QuitItem());
+            //
+            loadChannelHistory = new JMenuItem("Show Log Path");
+            add(loadChannelHistory);
+            loadChannelHistory.addActionListener(new LoadChannelHistory());
             //
             hideUsersItem = new JMenuItem("Toggle Users List");
             add(hideUsersItem);
@@ -906,6 +912,15 @@ public class IRCChannelBase extends JPanel
             //         gui.removeFavourite(getServer().getName(), getName());
             //     }
             // }
+        }
+    }
+
+    private class LoadChannelHistory implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent arg0)
+        {
+            
         }
     }
 
