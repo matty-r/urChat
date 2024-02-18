@@ -352,14 +352,14 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             IRCUser tempUser = new IRCUser(null, "matty_r");
             IRCUser tempUser2 = new IRCUser(null, System.getProperty("user.name"));
             previewLineFormatter.setNick(System.getProperty("user.name"));
-            previewLineFormatter.formattedDocument(new Date(), null, Constants.EVENT_USER,
+            previewLineFormatter.appendMessage(Optional.empty(), null, Constants.EVENT_USER,
                     "urChat has loaded - this is an Event");
-            previewLineFormatter.formattedDocument(new Date(), tempUser, "matty_r", "Normal line. Hello, world!");
-            previewLineFormatter.formattedDocument(new Date(), tempUser, "matty_r",
+            previewLineFormatter.appendMessage(Optional.empty(), tempUser, "matty_r", "Normal line. Hello, world!");
+            previewLineFormatter.appendMessage(Optional.empty(), tempUser, "matty_r",
                     "This is what it looks like when your nick is mentioned, " + System.getProperty("user.name") + "!");
-            previewLineFormatter.formattedDocument(new Date(), tempUser2, System.getProperty("user.name"),
+            previewLineFormatter.appendMessage(Optional.empty(), tempUser2, System.getProperty("user.name"),
                     "Go to https://github.com/matty-r/urChat");
-            previewLineFormatter.formattedDocument(new Date(), tempUser2, System.getProperty("user.name"),
+            previewLineFormatter.appendMessage(Optional.empty(), tempUser2, System.getProperty("user.name"),
                     "Join #urchat on irc.libera.chat");
         } else
         {
@@ -694,7 +694,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    protected class SaveFontListener implements ActionListener
+    public class SaveFontListener implements ActionListener
     {
         @Override
         public void actionPerformed (ActionEvent arg0)

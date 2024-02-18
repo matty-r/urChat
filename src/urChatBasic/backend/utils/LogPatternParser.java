@@ -143,6 +143,7 @@ public class LogPatternParser
     }
 
     public static Map<String, Object> parseLogLineFull (String logLine) {
+        logLine = logLine.trim();
         Map<String, Object> parsedValues = new HashMap<>();
 
         StringBuilder combinedRegexBuilder = new StringBuilder();

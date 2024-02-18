@@ -7,7 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 import org.testng.annotations.Test;
 import urChatBasic.backend.utils.LogPatternParser;
+import urChatBasic.backend.utils.LogPatternParser.LogPattern;
 import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.fail;
 import static urChatBasic.backend.utils.LogPatternParser.LogPattern;
 
 public class LogParsingTests {
@@ -20,11 +22,13 @@ public class LogParsingTests {
         testParsing("2024-01-31 20:49:43.003UTC irc.libera.chat-#linux ****: You have joined #linux");
         testParsing("2024-02-11 02:17:40.207UTC irc.libera.chat-#linux ****: Welcome to #linux! Help & support for any Linux distribution or related topic -- Rules/Info: https://linux.chat -- Forum: https://linux.forum -- Pastebin: https://paste.linux.chat/ -- @linux.social on Mastodon: https://linux.social -- Need an op? !ops <reason> or join #linux-ops");
         testParsing("2024-01-31 20:58:55.016UTC irc.libera.chat-#linux user: 😢😢😢😢😢😢😢😢😢😢😢");
+        testParsing("2024-01-01 03:58:55.016UTC irc.libera.chat-#linux another user: HAPPY NEW YEAR, for me");
+        testParsing("2024-01-28 10:19:43.380UTC irc.libera.chat-#urchat ****: You have joined #urchat");
     }
 
     @Test
     public void testLogLines() {
-        String logFilePath = "/home/matt/urChat/Logs/irc.libera.chat-#linux.log";
+        String logFilePath = "Logs/irc.libera.chat-#urchat.log";
         String line = "";
 
         try (BufferedReader br = new BufferedReader(new FileReader(logFilePath))) {
@@ -32,8 +36,7 @@ public class LogParsingTests {
                 testParsing(line);
             }
         } catch (Exception e) {
-            System.out.println(line);
-            e.printStackTrace();
+            fail("Error parsing line ["+ line +"] " + e.getLocalizedMessage());
         }
     }
 

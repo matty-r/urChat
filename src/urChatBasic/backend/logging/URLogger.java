@@ -96,7 +96,7 @@ public class URLogger
      * @param markerName The markerName associated with the logfile.
      * @return The path for the associated logfile, or null if not found.
      */
-    public static FileAppender getLogFilePath(String markerName) {
+    public static String getLogFilePath(String markerName) {
         // Get the root LoggerConfig
         Configuration rootLoggerConfig = currentConfig;
         if (rootLoggerConfig != null) {
@@ -107,7 +107,7 @@ public class URLogger
             if (appender instanceof FileAppender) {
                 // If the appender is a FileAppender, return its file name
                 FileAppender fileAppender = (FileAppender) appender;
-                return fileAppender;
+                return fileAppender.getFileName();
             }
         }
         // Return null if the logfile for the given markerName is not found

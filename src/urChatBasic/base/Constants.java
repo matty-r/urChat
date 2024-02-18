@@ -152,6 +152,8 @@ public class Constants
     public static final char SPACES_AHEAD_DELIMITER = ':';
     public static final int MESSAGE_LIMIT = 510;
     public static final String END_MESSAGE = "\r\n";
+    public static final int MAXIMUM_QUEUE_SIZE = 100;
+
     // We 'must' match against http(s) in order to define the correct protocol to be used
     public static final String URL_REGEX = "((http:\\/\\/|https:\\/\\/)(www.)?(([a-zA-Z0-9-]){2,}\\.){1,4}([a-zA-Z]){2,6}(\\/([a-zA-Z-_\\/\\.0-9#:?=&;,]*)?)?)";
     public static final String CHANNEL_REGEX = "(?:^|\s)(#([^\s,]+)(?!,))(?:$|\s)";
