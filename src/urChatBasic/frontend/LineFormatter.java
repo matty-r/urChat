@@ -84,6 +84,13 @@ public class LineFormatter
         initStyles(baseStyle);
     }
 
+    public void setStyle (URStyle newStyle)
+    {
+        targetStyle = newStyle.clone();
+        if (doc.getLength() > 0)
+            updateStyles(targetStyle);
+    }
+
     public void setFont (Font newFont)
     {
         targetStyle.setFont(newFont);
@@ -156,6 +163,7 @@ public class LineFormatter
         StyleConstants.setItalic(tempStyle, targetStyle.getFont().isItalic());
 
         StyleConstants.setForeground(tempStyle, myForeground);
+        StyleConstants.setBackground(tempStyle, myBackground);
 
         if (load)
             tempStyle.load(settingsPath);
@@ -453,14 +461,26 @@ public class LineFormatter
         setDocAttributes(position, insertedString.length(), style);
     }
 
-    // Adds the string (with all needed attributes) to the end of the document
-    private void appendString(String insertedString, URStyle style)
+    /**
+     * Adds the string (with all needed attributes) to the document either at the end, or the docPosition.
+     * @param insertedString
+     * @param style
+     * @param docPosition
+     * @return doc position after inserted string
+     * @throws BadLocationException
+     */
+    private int addString(String insertedString, URStyle style, Optional<Integer> docPosition)
             throws BadLocationException
     {
         int position = doc.getLength();
 
+        if(docPosition.isPresent())
+            position = docPosition.get();
+
         if((myServer == null || !myServer.hasConnection()) || myServer.isConnected())
             insertString(insertedString, style, position);
+
+        return position + insertedString.length();
     }
 
     public URStyle getStyleDefault(String styleName)
@@ -746,6 +766,12 @@ public class LineFormatter
         return lineText;
     }
 
+    public int getLineCount ()
+    {
+        Element root = doc.getDefaultRootElement();
+        return root.getElementCount();
+    }
+
     private int getLinePosition(String targetLine) throws BadLocationException
     {
         Element root = doc.getDefaultRootElement();
@@ -783,11 +809,10 @@ public class LineFormatter
             Constants.LOGGER.error(ble.getLocalizedMessage());
         }
         AttributeSet textStyle = doc.getCharacterElement(position).getAttributes();
-
         return new URStyle(new SimpleAttributeSet(textStyle));
     }
 
-    private void parseClickableText(IRCUser fromUser, String line, URStyle defaultStyle)
+    private int parseClickableText(IRCUser fromUser, String line, URStyle defaultStyle, int position)
             throws BadLocationException
     {
         HashMap<String, URStyle> regexStrings = new HashMap<>();
@@ -842,14 +867,16 @@ public class LineFormatter
             int nextLineLength = Integer.parseInt(nextLine.getAttribute("styleLength").toString());
 
             // Append the string that comes before the next clickable text
-            appendString(remainingLine.substring(0, nextLineStart - offset), defaultStyle);
+            position = addString(remainingLine.substring(0, nextLineStart - offset), defaultStyle, Optional.of(position));
 
-            appendString(nextLine.getAttribute("clickableText").toString(), nextLine);
+            position = addString(nextLine.getAttribute("clickableText").toString(), nextLine, Optional.of(position));
 
             remainingLine = remainingLine.substring((nextLineStart + nextLineLength) - offset);
         }
 
-        appendString(remainingLine, defaultStyle);
+        position = addString(remainingLine, defaultStyle, Optional.of(position));
+
+        return position;
     }
 
     /**
@@ -859,10 +886,17 @@ public class LineFormatter
      * @param fromString
      * @param line
      */
-    public void formattedDocument(Date lineDate, IRCUser fromUser, String fromString, String line)
+    public void appendMessage(Optional<Date> lineDate, IRCUser fromUser, String fromString, String line)
     {
+        int insertPosition = doc.getLength();
+
+        if(lineDate.isEmpty())
+            lineDate = Optional.of(new Date());
+        else
+            insertPosition = 0;
+
         // build the timeLine string
-        timeLine = Optional.of(lineDate);
+        timeLine = lineDate;
         String[] nickParts;
 
         final URStyle nickPositionStyle;
@@ -907,12 +941,12 @@ public class LineFormatter
             {
                 // add the date to the end of the string to preserve the timestamp of the line
                 // when updating styles
-                appendString(DriverGUI.gui.getTimeStampString(timeLine.get()) + " ", dateStyle(timePositionStyle, lineDate, false));
+                insertPosition = addString(DriverGUI.gui.getTimeStampString(timeLine.get()) + " ", dateStyle(timePositionStyle, lineDate.get(), false), Optional.of(insertPosition));
             }
 
             linePositionStyle.addAttribute("type", "nickPart0");
             linePositionStyle.addAttribute("nickParts", nickParts);
-            appendString(nickParts[0], linePositionStyle);
+            insertPosition = addString(nickParts[0], linePositionStyle, Optional.of(insertPosition));
 
             if (fromUser != null)
             {
@@ -922,16 +956,16 @@ public class LineFormatter
                         new ClickableText(fromUser.toString(), nickPositionStyle, fromUser));
 
                 clickableNameStyle.addAttribute("nickParts", nickParts);
-                appendString(nickParts[1], clickableNameStyle);
+                insertPosition = addString(nickParts[1], clickableNameStyle, Optional.of(insertPosition));
             } else
             {
                 nickPositionStyle.addAttribute("type", "nick");
                 nickPositionStyle.addAttribute("nickParts", nickParts);
-                appendString(nickParts[1], nickPositionStyle);
+                insertPosition = addString(nickParts[1], nickPositionStyle, Optional.of(insertPosition));
             }
 
             linePositionStyle.addAttribute("type", "nickPart2");
-            appendString(nickParts[2], linePositionStyle);
+            insertPosition = addString(nickParts[2], linePositionStyle, Optional.of(insertPosition));
 
             linePositionStyle.removeAttribute("type");
             linePositionStyle.removeAttribute("nickParts");
@@ -940,8 +974,8 @@ public class LineFormatter
             // appendString(doc, " "+line, lineStyle);
 
             // parse the outputted line for clickable text
-            parseClickableText(fromUser, " " + line, linePositionStyle);
-            appendString(System.getProperty("line.separator"), linePositionStyle);
+            insertPosition = parseClickableText(fromUser, " " + line, linePositionStyle, insertPosition);
+            insertPosition = addString(System.getProperty("line.separator"), linePositionStyle, Optional.of(insertPosition));
         } catch (BadLocationException e)
         {
             Constants.LOGGER.error( e.getLocalizedMessage());

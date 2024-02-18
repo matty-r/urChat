@@ -24,6 +24,7 @@ import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.UserGUI;
 import utils.TestDriverGUI;
+import static org.testng.Reporter.log;
 
 public class LineFormatterTests
 {
@@ -54,8 +55,11 @@ public class LineFormatterTests
     @AfterClass(alwaysRun = true)
     public void tearDown () throws Exception
     {
+        log("Quit channels", true);
         testServer.quitChannels();
-        URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
+        log("Delete test profile", true);
+        URProfilesUtil.deleteProfile(testDriver.getTestProfileName(), false);
+        log("Close test window", true);
         TestDriverGUI.closeWindow();
     }
 

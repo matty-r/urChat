@@ -33,7 +33,7 @@ public class LAFTests
     public void tearDown () throws Exception
     {
         Reporter.log("Deleting testing profile.", true);
-        URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
+        URProfilesUtil.deleteProfile(testDriver.getTestProfileName(), false);
         TestDriverGUI.closeWindow();
     }
 
