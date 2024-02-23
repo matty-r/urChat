@@ -520,7 +520,8 @@ public class IRCChannelBase extends JPanel
 
     public boolean messageQueueWorking()
     {
-        return (!messageQueue.isEmpty() || messageQueueInProgress);
+
+        return (messageQueue.remainingCapacity() == 0);
     }
 
     public void handleMessageQueue ()
@@ -546,26 +547,14 @@ public class IRCChannelBase extends JPanel
                         String line = message.getLine();
                         String fromUser = message.getUser();
 
-                        Document document = lineFormatter.getDocument();
-                        Element root = lineFormatter.getDocument().getDefaultRootElement();
-
                         int lineLimit = ((InterfacePanel) gui.interfacePanel).getLimitChannelLinesCount();
 
                         if (IRCChannelBase.this instanceof IRCServer)
                             lineLimit = ((InterfacePanel) gui.interfacePanel).getLimitServerLinesCount();
 
-                        if (null != message && root.getElementCount() > lineLimit)
+                        if (null != message && getLineFormatter().getLineCount() > lineLimit)
                         {
-                            Element firstLine = root.getElement(0);
-                            int endIndex = firstLine.getEndOffset();
-
-                            try
-                            {
-                                document.remove(0, endIndex);
-                            } catch (BadLocationException ble)
-                            {
-                                Constants.LOGGER.error(ble.getLocalizedMessage());
-                            }
+                            getLineFormatter().removeFirstLine();
                         }
 
                         if (null == channelTextArea)

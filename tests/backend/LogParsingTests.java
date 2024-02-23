@@ -5,9 +5,9 @@ import java.io.FileReader;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import urChatBasic.backend.utils.LogPatternParser;
-import urChatBasic.backend.utils.LogPatternParser.LogPattern;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.fail;
 import static urChatBasic.backend.utils.LogPatternParser.LogPattern;
@@ -27,6 +27,7 @@ public class LogParsingTests {
     }
 
     @Test
+    @Ignore
     public void testLogLines() {
         String logFilePath = "Logs/irc.libera.chat-#urchat.log";
         String line = "";

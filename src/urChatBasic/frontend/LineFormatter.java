@@ -720,6 +720,19 @@ public class LineFormatter
         return finalLine;
     }
 
+    public void removeFirstLine ()
+    {
+        Element firstLine = doc.getDefaultRootElement().getElement(0);
+        int endIndex = firstLine.getEndOffset();
+        try {
+            doc.remove(0, endIndex);
+        } catch (BadLocationException ble)
+        {
+            // TODO:
+            ble.printStackTrace();
+        }
+    }
+
     public String getLatestLine() throws BadLocationException
     {
         Element root = doc.getDefaultRootElement();
