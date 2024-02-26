@@ -60,7 +60,7 @@ public class TestDriverGUI extends DriverGUI
                 // frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.setContentPane(gui);
                 frame.pack();
-                frame.setVisible(true);
+                frame.setVisible(false);
             }
         });
     }
@@ -74,7 +74,7 @@ public class TestDriverGUI extends DriverGUI
             wait = false;
             TimeUnit.SECONDS.sleep(1);
 
-            if (gui.previewLineFormatter.updateStylesInProgress.get())
+            if (gui.previewLineFormatter != null && gui.previewLineFormatter.updateStylesInProgress.get())
             {
                 log("Update styles in Progress.. waiting", true);
                 wait = true;
@@ -144,7 +144,8 @@ public class TestDriverGUI extends DriverGUI
                 int loadCount = 0;
                 while ((line = br.readLine()) != null && loadCount < maxCount) {
                     loadingLogsInProgress = true;
-                    while(channel.messageQueueWorking())
+                    // Only wait if the queue is full
+                    while(channel.messageQueueFull())
                     {
                         System.out.println("Sleeping log loading thread.");
                         Thread.sleep(10);

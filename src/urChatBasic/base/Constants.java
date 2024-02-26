@@ -83,6 +83,7 @@ public class Constants
     public static final String KEY_CLICKABLE_LINKS_ENABLED = "clickable links";
     public static final String KEY_EVENT_TICKER_JOINS_QUITS = "show events in ticker";
     public static final String KEY_MAIN_WINDOW_JOINS_QUITS = "show events in main window";
+    public static final String KEY_LOAD_CHANNEL_LOGS_ON_JOIN = "load channel logs on join";
     public static final String KEY_LOG_CHANNEL_ACTIVITY = "log channel history";
     public static final String KEY_LOG_SERVER_ACTIVITY = "log server activity";
     public static final String KEY_LIMIT_CHANNEL_LINES = "limit number of channel lines";
@@ -129,6 +130,7 @@ public class Constants
     public static final Boolean DEFAULT_USERS_LIST_ACTIVE = true;
     public static final Boolean DEFAULT_EVENT_TICKER_JOINS_QUITS = true;
     public static final Boolean DEFAULT_MAIN_WINDOW_JOINS_QUITS = true;
+    public static final Boolean DEFAULT_LOAD_CHANNEL_LOGS_ON_JOIN = true;
     public static final Boolean DEFAULT_LOG_CHANNEL_ACTIVITY = true;
     public static final Boolean DEFAULT_LOG_SERVER_ACTIVITY = true;
     public static final Boolean DEFAULT_AUTO_CONNECT_FAVOURITES = false;
@@ -265,6 +267,7 @@ public class Constants
         KEY_CLICKABLE_LINKS_ENABLED(Constants.KEY_CLICKABLE_LINKS_ENABLED, DEFAULT_CLICKABLE_LINKS_ENABLED),
         KEY_EVENT_TICKER_JOINS_QUITS(Constants.KEY_EVENT_TICKER_JOINS_QUITS, DEFAULT_EVENT_TICKER_JOINS_QUITS),
         KEY_MAIN_WINDOW_JOINS_QUITS(Constants.KEY_MAIN_WINDOW_JOINS_QUITS, DEFAULT_MAIN_WINDOW_JOINS_QUITS),
+        KEY_LOAD_CHANNEL_LOGS_ON_JOIN(Constants.KEY_LOAD_CHANNEL_LOGS_ON_JOIN, DEFAULT_LOAD_CHANNEL_LOGS_ON_JOIN),
         KEY_LOG_CHANNEL_ACTIVITY(Constants.KEY_LOG_CHANNEL_ACTIVITY, DEFAULT_LOG_CHANNEL_ACTIVITY),
         KEY_LOG_SERVER_ACTIVITY(Constants.KEY_LOG_SERVER_ACTIVITY, DEFAULT_LOG_SERVER_ACTIVITY),
         KEY_LIMIT_CHANNEL_LINES(Constants.KEY_LIMIT_CHANNEL_LINES, DEFAULT_LIMIT_CHANNEL_LINES),

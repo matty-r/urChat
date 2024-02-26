@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,23 +41,25 @@ import urChatBasic.frontend.utils.URColour;
 public class LineFormatter
 {
     private String myNick;
-    private URStyle targetStyle;
     private Color myForeground;
     private Color myBackground;
     private IRCServerBase myServer;
     private Preferences settingsPath;
-    private URStyle urlStyle;
-    private URStyle channelStyle;
-    private URStyle timeStyle;
-    private URStyle lineStyle;
-    private URStyle nickStyle;
-    private URStyle highStyle;
-    private URStyle mediumStyle;
-    private URStyle lowStyle;
+    // TODO: This should be an enum with all the styles
+    private URStyle targetStyle;
+    // private URStyle urlStyle;
+    // private URStyle channelStyle;
+    // private URStyle timeStyle;
+    // private URStyle lineStyle;
+    // private URStyle nickStyle;
+    // private URStyle highStyle;
+    // private URStyle mediumStyle;
+    // private URStyle lowStyle;
     private JTextPane docOwner;
     public StyledDocument doc;
-    public URStyle myStyle;
+    // public URStyle myStyle;
     private Map<String, URStyle> formatterStyles = new HashMap<>();
+    private Map<String, URStyle> updatedStyles = new HashMap<>();
     private Optional<Date> timeLine = Optional.empty();
     private AtomicLong updateStylesTime = new AtomicLong(0);
     public AtomicBoolean updateStylesInProgress = new AtomicBoolean(false);
@@ -108,27 +110,38 @@ public class LineFormatter
         targetStyle.getForeground().ifPresent(fg -> myForeground = fg);
         targetStyle.getBackground().ifPresent(bg -> myBackground = bg);
 
-        timeStyle = defaultStyle(null, true);
-        lineStyle = defaultStyle(null, true);
-        nickStyle = nickStyle(true);
-        myStyle = myStyle(true);
-        channelStyle = channelStyle(true);
-        urlStyle = urlStyle(true);
-        highStyle = highStyle(true);
-        mediumStyle = mediumStyle(true);
-        lowStyle = lowStyle(true);
+        // URStyle timeStyle = defaultStyle(null, true);
+        // URStyle lineStyle = defaultStyle(null, true);
+        URStyle defaultStyle = defaultStyle(null, true);
+        URStyle nickStyle = nickStyle(true);
+        URStyle myStyle = myStyle(true);
+        URStyle channelStyle = channelStyle(true);
+        URStyle urlStyle = urlStyle(true);
+        URStyle highStyle = highStyle(true);
+        URStyle mediumStyle = mediumStyle(true);
+        URStyle lowStyle = lowStyle(true);
 
-        formatterStyles.put(timeStyle.getName(), timeStyle);
-        formatterStyles.put(lineStyle.getName(), lineStyle);
-        formatterStyles.put(nickStyle.getName(), nickStyle);
-        formatterStyles.put(myStyle.getName(), myStyle);
-        formatterStyles.put(channelStyle.getName(), channelStyle);
-        formatterStyles.put(urlStyle.getName(), urlStyle);
-        formatterStyles.put(highStyle.getName(), highStyle);
-        formatterStyles.put(mediumStyle.getName(), mediumStyle);
-        formatterStyles.put(lowStyle.getName(), lowStyle);
+        // updatedStyles.put(timeStyle.getName(), timeStyle);
+        // updatedStyles.put(lineStyle.getName(), lineStyle);
+        updatedStyles.put(defaultStyle.getName(), defaultStyle);
+        updatedStyles.put(nickStyle.getName(), nickStyle);
+        updatedStyles.put(myStyle.getName(), myStyle);
+        updatedStyles.put(channelStyle.getName(), channelStyle);
+        updatedStyles.put(urlStyle.getName(), urlStyle);
+        updatedStyles.put(highStyle.getName(), highStyle);
+        updatedStyles.put(mediumStyle.getName(), mediumStyle);
+        updatedStyles.put(lowStyle.getName(), lowStyle);
 
+        // TODO: Styles should be an enum
 
+        List<URStyle> changedStyles = new ArrayList<>(updatedStyles.values());
+
+        for (URStyle updatedStyle : updatedStyles.values()) {
+            if(formatterStyles.containsKey(updatedStyle.getName()) && formatterStyles.get(updatedStyle.getName()).equals(updatedStyle))
+                changedStyles.remove(updatedStyle);
+            else
+                formatterStyles.put(updatedStyle.getName(), updatedStyle);
+        }
     }
 
     public URStyle dateStyle(URStyle baseStyle, Date date, boolean load)
@@ -829,8 +842,8 @@ public class LineFormatter
             throws BadLocationException
     {
         HashMap<String, URStyle> regexStrings = new HashMap<>();
-        regexStrings.put(Constants.URL_REGEX, urlStyle);
-        regexStrings.put(Constants.CHANNEL_REGEX, channelStyle);
+        regexStrings.put(Constants.URL_REGEX, getStyle("urlStyle", false));
+        regexStrings.put(Constants.CHANNEL_REGEX, getStyle("channelStyle", false));
         // final String line = getLatestLine(doc);
         final int relativePosition = getLinePosition(getLatestLine());
 
@@ -919,16 +932,16 @@ public class LineFormatter
         if (fromUser != null && null != myNick && myNick.equals(fromUser.toString()))
         {
             // This message is from me
-            nickPositionStyle = myStyle.clone();
-            linePositionStyle = lineStyle.clone();
-            timePositionStyle =  timeStyle.clone();
+            nickPositionStyle = getStyle("myStyle", false);
+            linePositionStyle = getStyle("defaultStyle", false);
+            timePositionStyle =  getStyle("defaultStyle", false);
             nickParts = DriverGUI.gui.getNickFormatString(fromUser.getName());
         } else if (fromUser == null && fromString.equals(Constants.EVENT_USER))
         {
             // This is an event message
-            nickPositionStyle = lowStyle.clone();
-            linePositionStyle = lowStyle.clone();
-            timePositionStyle = lowStyle.clone();
+            nickPositionStyle = getStyle("lowStyle", false);
+            linePositionStyle = getStyle("lowStyle", false);
+            timePositionStyle = getStyle("lowStyle", false);
             nickParts = DriverGUI.gui.getNickFormatString(fromString);
         } else
         {
@@ -937,18 +950,18 @@ public class LineFormatter
             // This message is from someone else
             // Does this message have my nick in it?
             if (myNick != null && line.indexOf(myNick) > -1)
-                nickPositionStyle = highStyle.clone();
+                nickPositionStyle = getStyle("highStyle", false);
             else
-                nickPositionStyle = nickStyle.clone();
+                nickPositionStyle = getStyle("nickStyle", false);
 
-            linePositionStyle = lineStyle.clone();
-            timePositionStyle = timeStyle.clone();
+            linePositionStyle = getStyle("defaultStyle", false);
+            timePositionStyle = getStyle("defaultStyle", false);
         }
 
         try
         {
 
-            // doc.insertString(doc.getLength(), timeLine, timeStyle);
+            // doc.insertString(doc.getLength(), timeLine, defaultStyle);
             // if(null != timeLine && !timeLine.isBlank())
             if (((InterfacePanel) DriverGUI.gui.interfacePanel).isTimeStampsEnabled())
             {
@@ -963,7 +976,7 @@ public class LineFormatter
 
             if (fromUser != null)
             {
-                URStyle clickableNameStyle = nickPositionStyle.clone();
+                URStyle clickableNameStyle = nickPositionStyle;
                 clickableNameStyle.addAttribute("type", "IRCUser");
                 clickableNameStyle.addAttribute("clickableText",
                         new ClickableText(fromUser.toString(), nickPositionStyle, fromUser));

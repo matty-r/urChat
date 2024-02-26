@@ -74,7 +74,7 @@ public class LineFormatterTests
 
         while (testPubChannel.messageQueueWorking())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
 
         testGUI.tabbedPane.setSelectedIndex(1);

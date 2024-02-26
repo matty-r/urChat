@@ -29,19 +29,17 @@ public class URLogger
 
     public static void init () throws IOException, URISyntaxException
     {
+        // System.out.println("LOG CONFIG: "+ LOG4J_CONFIG_FILE);
         File logDir = new File(Constants.DIRECTORY_LOGS);
         if (!logDir.exists())
         {
             logDir.mkdir();
         }
 
-        File logConfigFile = new File(DriverGUI.class.getResource(LOG4J_CONFIG_FILE).toURI());
 
-        if(!logConfigFile.exists())
-            throw new IOException("LOG FILE NOT FOUND");
 
         // System.setProperty("log4j2.debug", "true");
-        System.setProperty("log4j2.configurationFile", logConfigFile.toString());
+        System.setProperty("log4j2.configurationFile", DriverGUI.class.getResource(LOG4J_CONFIG_FILE).toURI().toString());
 
         LOGGER = LoggerFactory.getLogger("urchat");
 

@@ -220,6 +220,10 @@ public class IRCChannelBase extends JPanel
         fontDialog.addFontSaveListener(new SaveFontListener());
 
         myActions = new IRCActions(this);
+
+        if(((InterfacePanel) gui.interfacePanel).isLoadChannelLogsEnabled())
+            loadChannelHistory();
+
     }
 
     private class ProfileChangeListener implements ActionListener
@@ -518,10 +522,15 @@ public class IRCChannelBase extends JPanel
         }
     }
 
-    public boolean messageQueueWorking()
+    public boolean messageQueueFull()
     {
 
         return (messageQueue.remainingCapacity() == 0);
+    }
+
+    public boolean messageQueueWorking()
+    {
+        return (!messageQueue.isEmpty() || messageQueueInProgress);
     }
 
     public void handleMessageQueue ()
@@ -944,25 +953,38 @@ public class IRCChannelBase extends JPanel
         @Override
         public void actionPerformed(ActionEvent arg0)
         {
-            Thread fileReadingThread = new Thread(() -> {
-                String logFilePath = URLogger.getLogFilePath(getMarker());
-                String line = "";
-                try (BufferedReader br = new BufferedReader (new InputStreamReader (new ReverseLineInputStream(new File(logFilePath))))) {
-                    int maxCount = ((InterfacePanel) gui.interfacePanel).getLimitChannelLinesCount();
-                    while ((line = br.readLine()) != null && lineFormatter.getLineCount() < maxCount) {
-                        if(messageQueueInProgress && messageQueue.remainingCapacity() == 0)
-                            Thread.sleep(10);
-
-                        Map<String, Object> parsedLine = parseLogLineFull(line);
-                        if(parsedLine.size() != 0)
-                            printText((Date) parsedLine.get("DATE"), parsedLine.get("MESSAGE").toString(), parsedLine.get("USER").toString());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-            fileReadingThread.start();
+            loadChannelHistory();
         }
+    }
+
+    private void loadChannelHistory ()
+    {
+        Thread fileReadingThread = new Thread(() -> {
+            String logFilePath = URLogger.getLogFilePath(getMarker());
+            String line = "";
+            try (BufferedReader br = new BufferedReader (new InputStreamReader (new ReverseLineInputStream(new File(logFilePath))))) {
+                int maxCount = ((InterfacePanel) gui.interfacePanel).getLimitChannelLinesCount();
+                Constants.LOGGER.info("Loading channel history, max line count [" + maxCount + "]");
+                int loadCount = 0;
+                while ((line = br.readLine()) != null && loadCount < maxCount) {
+                    if(messageQueueFull())
+                        Thread.sleep(10);
+
+                    Map<String, Object> parsedLine = parseLogLineFull(line);
+                    if(parsedLine.size() != 0)
+                    {
+                        printText((Date) parsedLine.get("DATE"), parsedLine.get("MESSAGE").toString(), parsedLine.get("USER").toString());
+                        loadCount++;
+                    }
+                }
+            } catch (NullPointerException npe)
+            {
+                Constants.LOGGER.info("Log File doesn't yet exist.");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        fileReadingThread.start();
     }
 
     private class QuitItem implements ActionListener
