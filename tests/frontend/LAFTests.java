@@ -2,6 +2,7 @@ package frontend;
 
 import static org.testng.AssertJUnit.*;
 import java.awt.Color;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
 import org.testng.Reporter;
@@ -27,6 +28,8 @@ public class LAFTests
     {
         testDriver = new TestDriverGUI();
         gui = DriverGUI.gui;
+        // start the gui and wait for it
+        SwingUtilities.invokeAndWait(gui);
     }
 
     @AfterClass(alwaysRun = true)

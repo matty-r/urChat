@@ -31,7 +31,7 @@ import urChatBasic.frontend.panels.InterfacePanel;
 
 public class TestDriverGUI extends DriverGUI
 {
-    final String testProfileName = "testingprofile" + (new SimpleDateFormat("yyMMddss")).format(new Date());
+    String testProfileName = "testingprofile" + (new SimpleDateFormat("yyMMddss")).format(new Date());
     static List<String> testProfiles = new ArrayList<>();
     static boolean loadingLogsInProgress = false;
 
@@ -50,7 +50,7 @@ public class TestDriverGUI extends DriverGUI
             public void run() {
                 frame = new JFrame("urChat");
                 log("Creating test profile [" + testProfileName + "]", true);
-                URProfilesUtil.createProfile(testProfileName);
+                testProfileName = URProfilesUtil.createProfile(testProfileName);
                 testProfiles.add(testProfileName);
                 // This will load the default profile
                 log("Initialize test gui using test profile", true);
@@ -72,7 +72,7 @@ public class TestDriverGUI extends DriverGUI
         while (wait)
         {
             wait = false;
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
 
             if (gui.previewLineFormatter != null && gui.previewLineFormatter.updateStylesInProgress.get())
             {

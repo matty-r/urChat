@@ -104,6 +104,7 @@ public class AppearanceTests
             assertEquals("<someuser> Welcome to " + pubChannelName, welcomeMessage);
 
             log("Check current style in the channel is correct.", true);
+            TestDriverGUI.waitForEverything(testGUI);
             URStyle channelStyle = pubChannel.getLineFormatter().getStyleAtPosition(22, welcomeMessage);
 
             assertTrue(guiStyle.equals(channelStyle));
@@ -122,6 +123,8 @@ public class AppearanceTests
 
         for (String pubChannelName : PUB_CHANNEL_NAMES)
         {
+            TestDriverGUI.waitForEverything(testGUI);
+
             IRCChannel pubChannel = testServer.getCreatedChannel(pubChannelName);
             String welcomeMessage = pubChannel.getLineFormatter().getLineAtPosition(13).split("] ")[1].trim();
             log("Check current style has updated.", true);
@@ -133,7 +136,6 @@ public class AppearanceTests
 
             String testStyleFont = guiStyle.getFamily().get();
             String channelStyleFont = channelStyle.getFamily().get();
-            TestDriverGUI.waitForEverything(testGUI);
             log("Checking "+pubChannelName+" formatting...", true);
 
             assertEquals(pubChannelName + " font family doesn't match GUI font family.", testStyleFont, channelStyleFont);
@@ -189,6 +191,8 @@ public class AppearanceTests
 
         for (String pubChannelName : PUB_CHANNEL_NAMES)
         {
+            TestDriverGUI.waitForEverything(testGUI);
+
             IRCChannel pubChannel = testServer.getCreatedChannel(pubChannelName);
             String welcomeMessage = pubChannel.getLineFormatter().getLineAtPosition(13).split("] ")[1].trim();
             log("Check current style has updated.", true);
