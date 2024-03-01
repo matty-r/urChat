@@ -54,6 +54,38 @@ Using the testng.xml - must be in the same directory as urchat.jar
 Without testng.xml
 *	java -jar urTestRunner.jar
 
+Update History
+======
+
+### Update - v0.6.1 (03 FEB 24)
+* Rename room to channel, everywhere
+
+### Update - v0.6.0 (02 FEB 24)
+* Improved updateStyles performance
+* Moved the Interface options panel to it's own InterfacePanel class. Rename Panels to URPanels. Move ProfilePanel and MainOptionsPanel from components to Panels. Created ConfigKeys which pairs the Preference Key to the default value in Constants. When AddToPanel is used, the appropriate preference key can be added which will then be associated with that component - this makes it easier to save the preferences instead of needing to add it for each individual component.
+* Added component-label associations and fixed setting the sizes of components
+* Adds a listener to Options Panels to grab the preferences as needed
+* Moved the Connection stuff into its own component
+* Added support for HTTP proxy, SOCKS and HTTP are now available
+* Better handling of connecting to favourites
+* Added an option to show tab icons
+* Improved disconnection handling when connection times out, can now reconnect to the server and all open channels.
+* Implemented log4j2. This raises the file size of the jar quite a bit - it may become optional at a later stage.
+* Shows an error dialog if an error is received when trying to connect.
+
+### Update - v0.5.1 (05 JAN 24)
+* Improvements made for updating styles which should lead to better performance on large chat histor
+
+### Update - v0.5.0 (03 JAN 24)
+* Fixed a bug where saving the font didn't automatically update the Font preview
+* Added an option to customise the nick format (Similar to the date format). The word nick in the Nick format text box will be replaced with the user nick, or it'll be split in half. For example: would result in the same format as <>, or <*>. But if you want a specific prefix and suffix, it's recommended to use the word nick.
+* Fixed a bug with updating styles in tabs (Servers/Channels)
+* Added a profiles page to better manage available profiles, such as cloning existing profiles, rename, and deleting
+* A default profile can now also be set
+* Saving changes to the font now only saves the difference
+* Fixed a bug where changing the LAF wasn't updating the dialogs
+* Add initial GitHub Actions build for Maven by @chabala in #77
+
 ### Update - v0.4.0 (12 DEC 23)
 * Added custom styling support for the different styles used in messages
 * Added custom Timestamp format
