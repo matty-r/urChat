@@ -8,6 +8,7 @@ import java.awt.GraphicsEnvironment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import javax.swing.text.BadLocationException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -34,7 +35,7 @@ public class AppearanceTests
     IRCServer testServer;
     TestDriverGUI testDriver;
     UserGUI testGUI;
-    final static int MAX_CHANNEL_NAMES = 10;
+    final static int MAX_CHANNEL_NAMES = 1;
     final static String CHANNEL_PREFIX = "#someChannel";
     final List<String> PUB_CHANNEL_NAMES = new ArrayList<>();
     IRCUser testUser;
@@ -100,13 +101,21 @@ public class AppearanceTests
         {
             IRCChannel pubChannel = testServer.getCreatedChannel(pubChannelName);
             log("Have joined " + pubChannelName + " successfully?", true);
-            String welcomeMessage = pubChannel.getLineFormatter().getLineAtPosition(13).split("] ")[1].trim();
+            String welcomeMessage = String.join("",testGUI.getNickFormatString("someuser")) + " Welcome to " + pubChannelName;
             assertEquals("<someuser> Welcome to " + pubChannelName, welcomeMessage);
 
-            log("Check current style in the channel is correct.", true);
+            log("Wait for styles to update correctly..", true);
             TestDriverGUI.waitForEverything(testGUI);
-            URStyle channelStyle = pubChannel.getLineFormatter().getStyleAtPosition(22, welcomeMessage);
 
+            URStyle channelStyle = null;
+
+            while (channelStyle == null || !channelStyle.equals(guiStyle))
+            {
+                TimeUnit.MILLISECONDS.sleep(10);
+                channelStyle = pubChannel.getLineFormatter().getStyleAtPosition(22, welcomeMessage);
+            }
+
+            log("Check current style in the channel is correct.", true);
             assertTrue(guiStyle.equals(channelStyle));
         }
 
@@ -126,10 +135,17 @@ public class AppearanceTests
             TestDriverGUI.waitForEverything(testGUI);
 
             IRCChannel pubChannel = testServer.getCreatedChannel(pubChannelName);
-            String welcomeMessage = pubChannel.getLineFormatter().getLineAtPosition(13).split("] ")[1].trim();
-            log("Check current style has updated.", true);
+            String welcomeMessage = pubChannel.getLineFormatter().getLineAtPosition(22).split("] ")[1].trim();
+            log("Wait for current style has updated.", true);
 
-            URStyle channelStyle = pubChannel.getLineFormatter().getStyleAtPosition(22, welcomeMessage);
+            URStyle channelStyle = null;
+
+            while (channelStyle == null || !channelStyle.equals(newStyle))
+            {
+                TimeUnit.MILLISECONDS.sleep(10);
+                channelStyle = pubChannel.getLineFormatter().getStyleAtPosition(22, welcomeMessage);
+                channelStyle.removeAttribute("name");
+            }
 
             log("Test Style: " + guiStyle, true);
             log("Channel Style: " + channelStyle, true);

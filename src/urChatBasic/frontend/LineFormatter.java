@@ -2,7 +2,9 @@ package urChatBasic.frontend;
 
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.time.Duration;
@@ -22,7 +24,9 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
@@ -56,6 +60,7 @@ public class LineFormatter
     // private URStyle mediumStyle;
     // private URStyle lowStyle;
     private JTextPane docOwner;
+    private JScrollPane docScroller;
     public StyledDocument doc;
     // public URStyle myStyle;
     private Map<String, URStyle> formatterStyles = new HashMap<>();
@@ -64,12 +69,13 @@ public class LineFormatter
     private AtomicLong updateStylesTime = new AtomicLong(0);
     public AtomicBoolean updateStylesInProgress = new AtomicBoolean(false);
 
-    public LineFormatter(URStyle baseStyle, JTextPane docOwner ,final IRCServerBase server, Preferences settingsPath)
+    public LineFormatter(URStyle baseStyle, JTextPane docOwner ,JScrollPane docScroller, final IRCServerBase server, Preferences settingsPath)
     {
         // TODO: Need to load attributes from formatterPrefs
         this.settingsPath = settingsPath;
 
         this.docOwner = docOwner;
+        this.docScroller = docScroller;
 
         // this.docOwner.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
         doc = this.docOwner.getStyledDocument();
@@ -141,6 +147,42 @@ public class LineFormatter
                 changedStyles.remove(updatedStyle);
             else
                 formatterStyles.put(updatedStyle.getName(), updatedStyle);
+        }
+    }
+
+    public int getStylesHash ()
+    {
+        int formatterStylesHash = formatterStyles.hashCode();
+        int nickFormatHash = String.join("", DriverGUI.gui.getNickFormatString("nick")).hashCode();
+        int timeStampHash = DriverGUI.gui.getTimeStampString(new Date(0L)).hashCode();
+
+
+        return formatterStylesHash + nickFormatHash + timeStampHash;
+    }
+
+    class ViewPortRange {
+        private int start;
+        private int end;
+
+        public ViewPortRange ()
+        {
+            JViewport viewport = docScroller.getViewport();
+            Point startPoint = viewport.getViewPosition();
+            Dimension size = viewport.getExtentSize();
+            Point endPoint = new Point(startPoint.x + size.width, startPoint.y + size.height);
+
+            start = docOwner.viewToModel2D(startPoint);
+            end = docOwner.viewToModel2D(endPoint);
+        }
+
+        public int getStart ()
+        {
+            return start;
+        }
+
+        public int getEnd ()
+        {
+            return end;
         }
     }
 
@@ -539,7 +581,13 @@ public class LineFormatter
      */
     public void updateStyles (URStyle newBaseStyle)
     {
+        int lastStylesHash = getStylesHash();
+
+        updateStylesInProgress.set(true);
+
         initStyles(newBaseStyle);
+
+        int currentStylesHash = getStylesHash();
 
         if (doc.getLength() > 0)
         {
@@ -549,13 +597,12 @@ public class LineFormatter
                 {
                     try
                     {
-                        if(!updateStylesInProgress.get())
+                        if (currentStylesHash != lastStylesHash)
                         {
                             Constants.LOGGER.info( "Updating styles for " + settingsPath.name());
-                            updateStylesTime.set(Instant.now().getEpochSecond());
-                            updateDocStyles(0);
+                            updateDocStyles(0, getStylesHash());
                         } else {
-                            Constants.LOGGER.info( "Update already in progress.");
+                            Constants.LOGGER.debug("NOT updating styles for " + settingsPath.name()+". Styles hash matches.");
                         }
                     } catch (BadLocationException e)
                     {
@@ -568,9 +615,9 @@ public class LineFormatter
         }
     }
 
-    private void updateDocStyles (int currentPosition) throws BadLocationException
+    private void updateDocStyles (int currentPosition, int updateHash) throws BadLocationException
     {
-        updateStylesInProgress.set(true);
+        updateStylesTime.set(Instant.now().getEpochSecond());
         Element root = doc.getDefaultRootElement();
         int lineCount = root.getElementCount();
         int lineIndex = 0;
@@ -593,6 +640,10 @@ public class LineFormatter
                 // Has style to update
                 if (currentStyle != null && currentStyle.getAttributeCount() > 0)
                 {
+                    // this line has already been updated
+                    if(currentStyle.getAttribute("stylesHash") != null && currentStyle.getAttribute("stylesHash").equals(updateHash))
+                        break;
+
                     int styleLength = Integer.parseInt(currentStyle.getAttribute("styleLength").toString());
                     String styleString = doc.getText(currentPosition, styleLength);
 
@@ -610,8 +661,10 @@ public class LineFormatter
                                 doc.remove(currentPosition, styleLength);
                                 currentStyle = dateStyle(currentStyle, lineDate, false);
                                 // Inserts the new timestamp, and updates the formatting
+                                currentStyle.addAttribute("stylesHash", getStylesHash());
                                 insertString(newTimeStamp, currentStyle, currentPosition);
                             } else {
+                                currentStyle.addAttribute("stylesHash", getStylesHash());
                                 setDocAttributes(currentPosition, styleLength, currentStyle);
                             }
                         } else
@@ -626,6 +679,7 @@ public class LineFormatter
 
                                 currentStyle = dateStyle(currentStyle, lineDate, false);
                                 // Inserts the new string, and updates the formatting
+                                currentStyle.addAttribute("stylesHash", getStylesHash());
                                 insertString(newTimeStamp, currentStyle, currentPosition);
                             }
                         }
@@ -773,6 +827,33 @@ public class LineFormatter
         return finalLine;
     }
 
+    public String getLine(int lineNumber) throws BadLocationException
+    {
+        Element root = doc.getDefaultRootElement();
+        int lines = root.getElementCount();
+
+        String finalLine = "";
+
+        while (finalLine.isEmpty())
+        {
+
+            if (lines < 0)
+                break;
+
+            Element line = root.getElement(lineNumber);
+
+            if (null == line)
+                continue;
+
+            int start = line.getStartOffset();
+            int end = line.getEndOffset();
+            String text = doc.getText(start, end - start);
+            finalLine = text.trim();
+        }
+
+        return finalLine;
+    }
+
      // New method to get line at position
     public String getLineAtPosition(int position) throws BadLocationException {
         Element root = doc.getDefaultRootElement();
@@ -798,29 +879,32 @@ public class LineFormatter
         return root.getElementCount();
     }
 
-    private int getLinePosition(String targetLine) throws BadLocationException
-    {
+    private int getLinePosition(String targetLine) throws BadLocationException {
         Element root = doc.getDefaultRootElement();
         int lines = root.getElementCount();
 
-        for (int i = 0; i < lines; i++)
-        {
+        // Create a regex pattern to match the target line
+        Pattern pattern = Pattern.compile(".*"+Pattern.quote(targetLine.trim())+"$");
+
+        for (int i = 0; i < lines; i++) {
             Element line = root.getElement(i);
 
-            if (null == line)
+            if (line == null)
                 continue;
 
             int start = line.getStartOffset();
             int end = line.getEndOffset();
             String text = doc.getText(start, end - start);
 
-            if (text.trim().equals(targetLine.trim()))
-            {
+            Matcher matcher = pattern.matcher(text.trim());
+
+            // If the pattern matches, return the start offset of the line
+            if (matcher.find()) {
                 return start;
             }
         }
 
-        return 0;
+        return -1; // Return -1 if the target line is not found
     }
 
     public URStyle getStyleAtPosition(int position, String relativeLine)
@@ -967,7 +1051,9 @@ public class LineFormatter
             {
                 // add the date to the end of the string to preserve the timestamp of the line
                 // when updating styles
-                insertPosition = addString(DriverGUI.gui.getTimeStampString(timeLine.get()) + " ", dateStyle(timePositionStyle, lineDate.get(), false), Optional.of(insertPosition));
+                URStyle lineDateStyle = dateStyle(timePositionStyle, lineDate.get(), false);
+                lineDateStyle.addAttribute("stylesHash", getStylesHash());
+                insertPosition = addString(DriverGUI.gui.getTimeStampString(timeLine.get()) + " ", lineDateStyle, Optional.of(insertPosition));
             }
 
             linePositionStyle.addAttribute("type", "nickPart0");

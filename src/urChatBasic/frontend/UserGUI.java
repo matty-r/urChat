@@ -334,7 +334,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // previewTextArea.setFont(clientFontPanel.getFont());
         if (previewLineFormatter == null)
         {
-            previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea, null, URProfilesUtil.getActiveProfilePath());
+            previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea, previewTextScroll, null, URProfilesUtil.getActiveProfilePath());
 
             URProfilesUtil.addListener(EventType.CHANGE, e -> {
                 previewLineFormatter.setSettingsPath(URProfilesUtil.getActiveProfilePath());

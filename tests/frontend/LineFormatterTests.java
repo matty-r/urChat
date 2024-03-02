@@ -103,7 +103,7 @@ public class LineFormatterTests
 
         while(!canContinue.get())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
 
         // Right-Click mouse event at the x-y coords of the caret in the text pane

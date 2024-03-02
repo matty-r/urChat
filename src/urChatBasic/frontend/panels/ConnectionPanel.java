@@ -243,6 +243,7 @@ public class ConnectionPanel extends UROptionsPanel {
         public void createPopUp ()
         {
             myMenu = new FavouritesPopUp();
+            myMenu.setUI(new JPopupMenu().getUI());
         }
 
         private class FavouritesPopUp extends JPopupMenu

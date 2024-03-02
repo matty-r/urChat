@@ -188,14 +188,14 @@ public class IRCChannelBase extends JPanel
 
             fontDialog = new FontDialog(channelName, gui.getStyle(), channelPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , getServer(), channelPrefs);
+            lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , channelScroll, getServer(), channelPrefs);
         } else
         {
             markerName = channelName;
             setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(channelName));
             fontDialog = new FontDialog(channelName, gui.getStyle(), channelPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, null, channelPrefs);
+            lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, channelScroll, null, channelPrefs);
         }
 
         // Add Logging Marker
