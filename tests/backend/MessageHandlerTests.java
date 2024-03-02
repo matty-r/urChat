@@ -63,7 +63,7 @@ public class MessageHandlerTests
     public void tearDown () throws Exception
     {
         // Reporter.log("Deleting testing profile.", true);
-        testServer.quitChannels();
+        // testServer.quitChannels();
         // URProfilesUtil.getActiveProfilePath().sync();
         // URProfilesUtil.getActiveProfilePath().sync();
         URProfilesUtil.deleteProfile(testDriver.getTestProfileName(), false);

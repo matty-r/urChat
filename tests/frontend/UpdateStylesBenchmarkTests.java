@@ -121,7 +121,7 @@ public class UpdateStylesBenchmarkTests {
 
     }
 
-    @Test
+    @Test(timeOut = 5000)
     public void changeColoursBenchmark () throws InterruptedException, BadLocationException
     {
         Instant startBenchmark = Instant.now();
@@ -149,7 +149,7 @@ public class UpdateStylesBenchmarkTests {
             log("Check current style has updated.", true);
 
             URStyle channelStyle = null;
-            
+
             while (channelStyle == null || !channelStyle.equals(newStyle))
             {
                 TimeUnit.MILLISECONDS.sleep(10);
