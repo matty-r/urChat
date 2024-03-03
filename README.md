@@ -1,3 +1,5 @@
+[![Build](https://github.com/matty-r/urChat/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/matty-r/urChat/actions/workflows/build.yml)
+
 urChat
 ======
 
