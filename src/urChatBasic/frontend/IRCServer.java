@@ -513,10 +513,16 @@ public class IRCServer extends IRCChannelBase implements IRCServerBase
 
         boolean tabExists = Arrays.stream(gui.tabbedPane.getComponents()).anyMatch(channel -> channel.equals(ircChannel));
 
+        try {
         if (tabExists && gui.tabbedPane.getSelectedComponent().equals(ircChannel))
             gui.tabbedPane.setSelectedComponent(gui.previousSelectedTab);
+        } catch (IllegalArgumentException iae)
+        {
+            Constants.LOGGER.debug("Previous Selected tab doesn't exist, unable to revert selection");
+        }
 
-        gui.tabbedPane.remove(ircChannel);
+        if (tabExists)
+            gui.tabbedPane.remove(ircChannel);
     }
 
     @Override
