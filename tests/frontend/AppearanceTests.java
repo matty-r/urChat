@@ -82,7 +82,7 @@ public class AppearanceTests
         testServer.quitChannels();
         // URProfilesUtil.getActiveProfilePath().sync();
         // URProfilesUtil.getActiveProfilePath().sync();
-        URProfilesUtil.deleteProfile(testDriver.getTestProfileName(), false);
+        TestDriverGUI.cleanupTestProfiles();
         TestDriverGUI.closeWindow();
     }
 

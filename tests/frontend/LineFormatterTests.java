@@ -58,7 +58,7 @@ public class LineFormatterTests
         log("Quit channels", true);
         testServer.quitChannels();
         log("Delete test profile", true);
-        URProfilesUtil.deleteProfile(testDriver.getTestProfileName(), false);
+        TestDriverGUI.cleanupTestProfiles();
         log("Close test window", true);
         TestDriverGUI.closeWindow();
     }
