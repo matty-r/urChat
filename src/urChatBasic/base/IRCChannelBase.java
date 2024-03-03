@@ -1,6 +1,7 @@
 package urChatBasic.base;
 
 import urChatBasic.backend.logging.URLogger;
+import urChatBasic.backend.utils.ReverseLineInputStream;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.base.IRCChannelBase;
 import urChatBasic.base.Constants.EventType;
@@ -18,6 +19,7 @@ import urChatBasic.frontend.utils.URColour;
 import urChatBasic.frontend.UserGUI;
 import urChatBasic.frontend.UsersListModel;
 import java.awt.event.*;
+import static urChatBasic.backend.utils.LogPatternParser.parseLogLineFull;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
@@ -88,7 +90,7 @@ public class IRCChannelBase extends JPanel
     // Text Area
     private JTextPane channelTextArea = new JTextPane();
     protected JScrollPane channelScroll = new JScrollPane(channelTextArea);
-    private BlockingQueue<MessagePair> messageQueue = new ArrayBlockingQueue<>(20);
+    private BlockingQueue<Message> messageQueue = new ArrayBlockingQueue<>(Constants.MAXIMUM_QUEUE_SIZE);
     public boolean messageQueueInProgress = false;
     private LineFormatter lineFormatter;
 
@@ -186,14 +188,14 @@ public class IRCChannelBase extends JPanel
 
             fontDialog = new FontDialog(channelName, gui.getStyle(), channelPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , getServer(), channelPrefs);
+            lineFormatter = new LineFormatter(getFontPanel().getStyle(), channelTextArea , channelScroll, getServer(), channelPrefs);
         } else
         {
             markerName = channelName;
             setSettingsPath(URProfilesUtil.getActiveFavouritesPath().node(channelName));
             fontDialog = new FontDialog(channelName, gui.getStyle(), channelPrefs);
 
-            lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, null, channelPrefs);
+            lineFormatter = new LineFormatter(getFontPanel().getStyle() , channelTextArea, channelScroll, null, channelPrefs);
         }
 
         // Add Logging Marker
@@ -218,6 +220,10 @@ public class IRCChannelBase extends JPanel
         fontDialog.addFontSaveListener(new SaveFontListener());
 
         myActions = new IRCActions(this);
+
+        if(((InterfacePanel) gui.interfacePanel).isLoadChannelLogsEnabled())
+            loadChannelHistory();
+
     }
 
     private class ProfileChangeListener implements ActionListener
@@ -458,28 +464,42 @@ public class IRCChannelBase extends JPanel
         return markerName;
     }
 
-    class MessagePair {
+    class Message {
+        private Optional<Date> date = Optional.empty();
         private String line;
         private String fromUser;
 
-        public MessagePair(String line, String fromUser) {
+        public Message(String line, String fromUser) {
             this.line = line;
             this.fromUser = fromUser;
         }
 
-        public String getLine() {
+        public Message(Date date, String line, String fromUser) {
+            this.date = Optional.of(date);
+            this.line = line;
+            this.fromUser = fromUser;
+        }
+
+        public String getLine () {
             return line;
         }
 
-        public String getUser() {
+        public String getUser () {
             return fromUser;
+        }
+
+        public Optional<Date> getDate ()
+        {
+            return date;
         }
     }
 
     // TODO: Change this to accept IRCUser instead
-    public void printText(String line, String fromUser) {
+    // TODO: Overload method with date object
+    public void printText(String line, String fromUser)
+    {
         try {
-            messageQueue.put(new MessagePair(line, fromUser));
+            messageQueue.put(new Message(line, fromUser));
 
             if(!messageQueueInProgress)
                 handleMessageQueue();
@@ -489,54 +509,61 @@ public class IRCChannelBase extends JPanel
         }
     }
 
+    public void printText(Date messageDate, String message, String fromUser)
+    {
+        try {
+            messageQueue.put(new Message(messageDate, message, fromUser));
+
+            if(!messageQueueInProgress)
+                handleMessageQueue();
+
+        } catch (InterruptedException e) {
+            Constants.LOGGER.warn(e.getLocalizedMessage(), e);
+        }
+    }
+
+    public boolean messageQueueFull()
+    {
+
+        return (messageQueue.remainingCapacity() == 0);
+    }
+
     public boolean messageQueueWorking()
     {
         return (!messageQueue.isEmpty() || messageQueueInProgress);
     }
 
-    public void handleMessageQueue()
+    public void handleMessageQueue ()
     {
         SwingUtilities.invokeLater(new Runnable()
         {
-            public void run()
+            public void run ()
             {
                 while (!messageQueue.isEmpty())
                 {
                     try
                     {
                         messageQueueInProgress = true;
-                        MessagePair messagePair = messageQueue.take();
+                        Message message = messageQueue.take();
 
-                        if(null == messagePair)
+                        if (null == message)
                         {
                             messageQueueInProgress = false;
                             continue;
                         }
 
-                        String line = messagePair.getLine();
-                        String fromUser = messagePair.getUser();
-
-                        Document document = lineFormatter.getDocument();
-                        Element root = lineFormatter.getDocument().getDefaultRootElement();
+                        Optional<Date> messageDate = message.getDate();
+                        String line = message.getLine();
+                        String fromUser = message.getUser();
 
                         int lineLimit = ((InterfacePanel) gui.interfacePanel).getLimitChannelLinesCount();
 
-                        if(IRCChannelBase.this instanceof IRCServer)
+                        if (IRCChannelBase.this instanceof IRCServer)
                             lineLimit = ((InterfacePanel) gui.interfacePanel).getLimitServerLinesCount();
 
-                        if(null != messagePair && root.getElementCount() > lineLimit)
+                        if (null != message && getLineFormatter().getLineCount() > lineLimit)
                         {
-                            Element firstLine = root.getElement(0);
-                            int endIndex = firstLine.getEndOffset();
-
-                            try
-                            {
-                                document.remove(0, endIndex);
-                            }
-                            catch(BadLocationException ble)
-                            {
-                                Constants.LOGGER.error(ble.getLocalizedMessage());
-                            }
+                            getLineFormatter().removeFirstLine();
                         }
 
                         if (null == channelTextArea)
@@ -545,12 +572,13 @@ public class IRCChannelBase extends JPanel
                             return;
                         }
 
+
                         // StyledDocument doc = channelTextArea.getStyledDocument();
                         IRCUser fromIRCUser = getCreatedUser(fromUser);
 
                         // If we received a message from a user that isn't in the channel
                         // then add them to the users list.
-                        // But don't add them if it's from the Event Ticker
+                        // But don't add them if it's from the Event Ticker or we're loading historical
                         if (fromIRCUser == null)
                         {
                             if (!fromUser.equals(Constants.EVENT_USER))
@@ -560,50 +588,56 @@ public class IRCChannelBase extends JPanel
                                 // fromIRCUser = getCreatedUsers(fromUser);
                                 // Constants.LOGGER.error("Message from a user that isn't in the user list!");
                                 fromIRCUser = server.getIRCUser(fromUser);
-                                addToUsersList(fromIRCUser);
+
+                                // Only add users if we haven't specified a date, which means we aren't loading historical messages
+                                if (messageDate.isEmpty())
+                                    addToUsersList(fromIRCUser);
                             }
                         }
-
 
                         if (fromUser.equals(Constants.EVENT_USER) || !fromIRCUser.isMuted())
                         {
-                            lineFormatter.formattedDocument(new Date(), fromIRCUser, fromUser, line);
+                            lineFormatter.appendMessage(messageDate, fromIRCUser, fromUser, line);
 
-                            if(IRCChannelBase.this instanceof IRCServerBase)
+                            // Only save history and call events if we aren't loading historical messages
+                            if (messageDate.isEmpty())
                             {
-                                if (((InterfacePanel) gui.interfacePanel).saveServerHistory())
-                                    URLogger.logChannelComms(IRCChannelBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
-                            } else if(!(IRCChannelBase.this instanceof IRCServerBase))
-                            {
-                                if (((InterfacePanel) gui.interfacePanel).saveChannelHistory())
-                                    URLogger.logChannelComms(IRCChannelBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                                if (IRCChannelBase.this instanceof IRCServerBase)
+                                {
+                                    if (((InterfacePanel) gui.interfacePanel).saveServerHistory())
+                                        URLogger.logChannelComms(IRCChannelBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                                } else if (!(IRCChannelBase.this instanceof IRCServerBase))
+                                {
+                                    if (((InterfacePanel) gui.interfacePanel).saveChannelHistory())
+                                        URLogger.logChannelComms(IRCChannelBase.this, (fromIRCUser != null ? fromIRCUser.getName() : fromUser) + ": " + line);
+                                }
+
+                                if (server.getNick() != null && line.indexOf(server.getNick()) > -1)
+                                {
+                                    callForAttention();
+                                }
+
+                                // Always alert on IRCPrivate messages
+                                if (IRCChannelBase.this instanceof IRCPrivate)
+                                {
+                                    callForAttention();
+                                }
+
+                                // TODO: Scrolls to the bottom of the channelTextArea on message received, this should be
+                                // disabled
+                                // when the user has scrolled up
+                                // channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
                             }
-
-                            if (server.getNick() != null && line.indexOf(server.getNick()) > -1)
-                            {
-                                callForAttention();
-                            }
-
-                            // Always alert on IRCPrivate messages
-                            if (IRCChannelBase.this instanceof IRCPrivate)
-                            {
-                                callForAttention();
-                            }
-
-                            // TODO: Scrolls to the bottom of the channelTextArea on message received, this should be
-                            // disabled
-                            // when the user has scrolled up
-                            channelTextArea.setCaretPosition(channelTextArea.getDocument().getLength());
-                            messageQueueInProgress = false;
                         }
+
                     } catch (InterruptedException e)
                     {
                         Constants.LOGGER.error(e.getLocalizedMessage());
                     }
                 }
+                messageQueueInProgress = false;
             }
         });
-
 
     }
 
@@ -841,6 +875,7 @@ public class IRCChannelBase extends JPanel
         private static final long serialVersionUID = 640768684923757684L;
         JMenuItem nameItem;
         JMenuItem quitItem;
+        JMenuItem loadChannelHistory;
         JMenuItem hideUsersItem;
         JMenuItem hideTickerItem;
         public JMenuItem addAsFavouriteItem;
@@ -855,6 +890,10 @@ public class IRCChannelBase extends JPanel
             quitItem = new JMenuItem("Quit");
             add(quitItem);
             quitItem.addActionListener(new QuitItem());
+            //
+            loadChannelHistory = new JMenuItem("Load Channel History");
+            add(loadChannelHistory);
+            loadChannelHistory.addActionListener(new LoadChannelHistory());
             //
             hideUsersItem = new JMenuItem("Toggle Users List");
             add(hideUsersItem);
@@ -907,6 +946,45 @@ public class IRCChannelBase extends JPanel
             //     }
             // }
         }
+    }
+
+    private class LoadChannelHistory implements ActionListener
+    {
+        @Override
+        public void actionPerformed(ActionEvent arg0)
+        {
+            loadChannelHistory();
+        }
+    }
+
+    private void loadChannelHistory ()
+    {
+        Thread fileReadingThread = new Thread(() -> {
+            String logFilePath = URLogger.getLogFilePath(getMarker());
+            String line = "";
+            try (BufferedReader br = new BufferedReader (new InputStreamReader (new ReverseLineInputStream(new File(logFilePath))))) {
+                int maxCount = ((InterfacePanel) gui.interfacePanel).getLimitChannelLinesCount();
+                Constants.LOGGER.info("Loading channel history, max line count [" + maxCount + "]");
+                int loadCount = 0;
+                while ((line = br.readLine()) != null && loadCount < maxCount) {
+                    if(messageQueueFull())
+                        Thread.sleep(10);
+
+                    Map<String, Object> parsedLine = parseLogLineFull(line);
+                    if(parsedLine.size() != 0)
+                    {
+                        printText((Date) parsedLine.get("DATE"), parsedLine.get("MESSAGE").toString(), parsedLine.get("USER").toString());
+                        loadCount++;
+                    }
+                }
+            } catch (NullPointerException npe)
+            {
+                Constants.LOGGER.info("Log File doesn't yet exist.");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        fileReadingThread.start();
     }
 
     private class QuitItem implements ActionListener

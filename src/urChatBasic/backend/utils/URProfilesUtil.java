@@ -82,6 +82,7 @@ public class URProfilesUtil
 
             if(allProfiles.length > 1)
             {
+                Constants.BASE_PREFS.node(profileName).clear();
                 Constants.LOGGER.info( "Deleting profile [" + profileName + "].");
                 Constants.BASE_PREFS.node(profileName).removeNode();
                 if(fireListeners)
@@ -271,7 +272,7 @@ public class URProfilesUtil
         BASE.put(Constants.KEY_DEFAULT_PROFILE_NAME, profileName);
     }
 
-    public static void createProfile (String profileName)
+    public static String createProfile (String profileName)
     {
         int newProfileNumber = 0;
         String newProfileName = profileName;
@@ -292,6 +293,8 @@ public class URProfilesUtil
         Constants.LOGGER.info( "Creating new profile [" + newProfileName + "]");
         setDefaultSettings(newProfileName);
         fireListeners(EventType.CREATE);
+
+        return newProfileName;
     }
 
     private static void setDefaultSettings (String profileName)

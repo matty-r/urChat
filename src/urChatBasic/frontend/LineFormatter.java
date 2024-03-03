@@ -2,7 +2,9 @@ package urChatBasic.frontend;
 
 import java.awt.Color;
 import java.awt.Desktop;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.time.Duration;
@@ -11,18 +13,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
@@ -41,33 +45,37 @@ import urChatBasic.frontend.utils.URColour;
 public class LineFormatter
 {
     private String myNick;
-    private URStyle targetStyle;
     private Color myForeground;
     private Color myBackground;
     private IRCServerBase myServer;
     private Preferences settingsPath;
-    private URStyle urlStyle;
-    private URStyle channelStyle;
-    private URStyle timeStyle;
-    private URStyle lineStyle;
-    private URStyle nickStyle;
-    private URStyle highStyle;
-    private URStyle mediumStyle;
-    private URStyle lowStyle;
+    // TODO: This should be an enum with all the styles
+    private URStyle targetStyle;
+    // private URStyle urlStyle;
+    // private URStyle channelStyle;
+    // private URStyle timeStyle;
+    // private URStyle lineStyle;
+    // private URStyle nickStyle;
+    // private URStyle highStyle;
+    // private URStyle mediumStyle;
+    // private URStyle lowStyle;
     private JTextPane docOwner;
+    private JScrollPane docScroller;
     public StyledDocument doc;
-    public URStyle myStyle;
+    // public URStyle myStyle;
     private Map<String, URStyle> formatterStyles = new HashMap<>();
+    private Map<String, URStyle> updatedStyles = new HashMap<>();
     private Optional<Date> timeLine = Optional.empty();
     private AtomicLong updateStylesTime = new AtomicLong(0);
     public AtomicBoolean updateStylesInProgress = new AtomicBoolean(false);
 
-    public LineFormatter(URStyle baseStyle, JTextPane docOwner ,final IRCServerBase server, Preferences settingsPath)
+    public LineFormatter(URStyle baseStyle, JTextPane docOwner ,JScrollPane docScroller, final IRCServerBase server, Preferences settingsPath)
     {
         // TODO: Need to load attributes from formatterPrefs
         this.settingsPath = settingsPath;
 
         this.docOwner = docOwner;
+        this.docScroller = docScroller;
 
         // this.docOwner.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
         doc = this.docOwner.getStyledDocument();
@@ -108,27 +116,74 @@ public class LineFormatter
         targetStyle.getForeground().ifPresent(fg -> myForeground = fg);
         targetStyle.getBackground().ifPresent(bg -> myBackground = bg);
 
-        timeStyle = defaultStyle(null, true);
-        lineStyle = defaultStyle(null, true);
-        nickStyle = nickStyle(true);
-        myStyle = myStyle(true);
-        channelStyle = channelStyle(true);
-        urlStyle = urlStyle(true);
-        highStyle = highStyle(true);
-        mediumStyle = mediumStyle(true);
-        lowStyle = lowStyle(true);
+        // URStyle timeStyle = defaultStyle(null, true);
+        // URStyle lineStyle = defaultStyle(null, true);
+        URStyle defaultStyle = defaultStyle(null, true);
+        URStyle nickStyle = nickStyle(true);
+        URStyle myStyle = myStyle(true);
+        URStyle channelStyle = channelStyle(true);
+        URStyle urlStyle = urlStyle(true);
+        URStyle highStyle = highStyle(true);
+        URStyle mediumStyle = mediumStyle(true);
+        URStyle lowStyle = lowStyle(true);
 
-        formatterStyles.put(timeStyle.getName(), timeStyle);
-        formatterStyles.put(lineStyle.getName(), lineStyle);
-        formatterStyles.put(nickStyle.getName(), nickStyle);
-        formatterStyles.put(myStyle.getName(), myStyle);
-        formatterStyles.put(channelStyle.getName(), channelStyle);
-        formatterStyles.put(urlStyle.getName(), urlStyle);
-        formatterStyles.put(highStyle.getName(), highStyle);
-        formatterStyles.put(mediumStyle.getName(), mediumStyle);
-        formatterStyles.put(lowStyle.getName(), lowStyle);
+        // updatedStyles.put(timeStyle.getName(), timeStyle);
+        // updatedStyles.put(lineStyle.getName(), lineStyle);
+        updatedStyles.put(defaultStyle.getName(), defaultStyle);
+        updatedStyles.put(nickStyle.getName(), nickStyle);
+        updatedStyles.put(myStyle.getName(), myStyle);
+        updatedStyles.put(channelStyle.getName(), channelStyle);
+        updatedStyles.put(urlStyle.getName(), urlStyle);
+        updatedStyles.put(highStyle.getName(), highStyle);
+        updatedStyles.put(mediumStyle.getName(), mediumStyle);
+        updatedStyles.put(lowStyle.getName(), lowStyle);
+
+        // TODO: Styles should be an enum
+
+        List<URStyle> changedStyles = new ArrayList<>(updatedStyles.values());
+
+        for (URStyle updatedStyle : updatedStyles.values()) {
+            if(formatterStyles.containsKey(updatedStyle.getName()) && formatterStyles.get(updatedStyle.getName()).equals(updatedStyle))
+                changedStyles.remove(updatedStyle);
+            else
+                formatterStyles.put(updatedStyle.getName(), updatedStyle);
+        }
+    }
+
+    public int getStylesHash ()
+    {
+        int formatterStylesHash = formatterStyles.hashCode();
+        int nickFormatHash = String.join("", DriverGUI.gui.getNickFormatString("nick")).hashCode();
+        int timeStampHash = DriverGUI.gui.getTimeStampString(new Date(0L)).hashCode();
 
 
+        return formatterStylesHash + nickFormatHash + timeStampHash;
+    }
+
+    class ViewPortRange {
+        private int start;
+        private int end;
+
+        public ViewPortRange ()
+        {
+            JViewport viewport = docScroller.getViewport();
+            Point startPoint = viewport.getViewPosition();
+            Dimension size = viewport.getExtentSize();
+            Point endPoint = new Point(startPoint.x + size.width, startPoint.y + size.height);
+
+            start = docOwner.viewToModel2D(startPoint);
+            end = docOwner.viewToModel2D(endPoint);
+        }
+
+        public int getStart ()
+        {
+            return start;
+        }
+
+        public int getEnd ()
+        {
+            return end;
+        }
     }
 
     public URStyle dateStyle(URStyle baseStyle, Date date, boolean load)
@@ -461,14 +516,26 @@ public class LineFormatter
         setDocAttributes(position, insertedString.length(), style);
     }
 
-    // Adds the string (with all needed attributes) to the end of the document
-    private void appendString(String insertedString, URStyle style)
+    /**
+     * Adds the string (with all needed attributes) to the document either at the end, or the docPosition.
+     * @param insertedString
+     * @param style
+     * @param docPosition
+     * @return doc position after inserted string
+     * @throws BadLocationException
+     */
+    private int addString(String insertedString, URStyle style, Optional<Integer> docPosition)
             throws BadLocationException
     {
         int position = doc.getLength();
 
+        if(docPosition.isPresent())
+            position = docPosition.get();
+
         if((myServer == null || !myServer.hasConnection()) || myServer.isConnected())
             insertString(insertedString, style, position);
+
+        return position + insertedString.length();
     }
 
     public URStyle getStyleDefault(String styleName)
@@ -514,7 +581,13 @@ public class LineFormatter
      */
     public void updateStyles (URStyle newBaseStyle)
     {
+        int lastStylesHash = getStylesHash();
+
+        updateStylesInProgress.set(true);
+
         initStyles(newBaseStyle);
+
+        int currentStylesHash = getStylesHash();
 
         if (doc.getLength() > 0)
         {
@@ -524,13 +597,12 @@ public class LineFormatter
                 {
                     try
                     {
-                        if(!updateStylesInProgress.get())
+                        if (currentStylesHash != lastStylesHash)
                         {
                             Constants.LOGGER.info( "Updating styles for " + settingsPath.name());
-                            updateStylesTime.set(Instant.now().getEpochSecond());
-                            updateDocStyles(0);
+                            updateDocStyles(0, getStylesHash());
                         } else {
-                            Constants.LOGGER.info( "Update already in progress.");
+                            Constants.LOGGER.debug("NOT updating styles for " + settingsPath.name()+". Styles hash matches.");
                         }
                     } catch (BadLocationException e)
                     {
@@ -543,9 +615,9 @@ public class LineFormatter
         }
     }
 
-    private void updateDocStyles (int currentPosition) throws BadLocationException
+    private void updateDocStyles (int currentPosition, int updateHash) throws BadLocationException
     {
-        updateStylesInProgress.set(true);
+        updateStylesTime.set(Instant.now().getEpochSecond());
         Element root = doc.getDefaultRootElement();
         int lineCount = root.getElementCount();
         int lineIndex = 0;
@@ -568,6 +640,10 @@ public class LineFormatter
                 // Has style to update
                 if (currentStyle != null && currentStyle.getAttributeCount() > 0)
                 {
+                    // this line has already been updated
+                    if(currentStyle.getAttribute("stylesHash") != null && currentStyle.getAttribute("stylesHash").equals(updateHash))
+                        break;
+
                     int styleLength = Integer.parseInt(currentStyle.getAttribute("styleLength").toString());
                     String styleString = doc.getText(currentPosition, styleLength);
 
@@ -585,8 +661,10 @@ public class LineFormatter
                                 doc.remove(currentPosition, styleLength);
                                 currentStyle = dateStyle(currentStyle, lineDate, false);
                                 // Inserts the new timestamp, and updates the formatting
+                                currentStyle.addAttribute("stylesHash", getStylesHash());
                                 insertString(newTimeStamp, currentStyle, currentPosition);
                             } else {
+                                currentStyle.addAttribute("stylesHash", getStylesHash());
                                 setDocAttributes(currentPosition, styleLength, currentStyle);
                             }
                         } else
@@ -601,6 +679,7 @@ public class LineFormatter
 
                                 currentStyle = dateStyle(currentStyle, lineDate, false);
                                 // Inserts the new string, and updates the formatting
+                                currentStyle.addAttribute("stylesHash", getStylesHash());
                                 insertString(newTimeStamp, currentStyle, currentPosition);
                             }
                         }
@@ -708,6 +787,19 @@ public class LineFormatter
         return finalLine;
     }
 
+    public void removeFirstLine ()
+    {
+        Element firstLine = doc.getDefaultRootElement().getElement(0);
+        int endIndex = firstLine.getEndOffset();
+        try {
+            doc.remove(0, endIndex);
+        } catch (BadLocationException ble)
+        {
+            // TODO:
+            ble.printStackTrace();
+        }
+    }
+
     public String getLatestLine() throws BadLocationException
     {
         Element root = doc.getDefaultRootElement();
@@ -722,6 +814,33 @@ public class LineFormatter
                 break;
 
             Element line = root.getElement(lines--);
+
+            if (null == line)
+                continue;
+
+            int start = line.getStartOffset();
+            int end = line.getEndOffset();
+            String text = doc.getText(start, end - start);
+            finalLine = text.trim();
+        }
+
+        return finalLine;
+    }
+
+    public String getLine(int lineNumber) throws BadLocationException
+    {
+        Element root = doc.getDefaultRootElement();
+        int lines = root.getElementCount();
+
+        String finalLine = "";
+
+        while (finalLine.isEmpty())
+        {
+
+            if (lines < 0)
+                break;
+
+            Element line = root.getElement(lineNumber);
 
             if (null == line)
                 continue;
@@ -754,29 +873,38 @@ public class LineFormatter
         return lineText;
     }
 
-    private int getLinePosition(String targetLine) throws BadLocationException
+    public int getLineCount ()
     {
+        Element root = doc.getDefaultRootElement();
+        return root.getElementCount();
+    }
+
+    private int getLinePosition(String targetLine) throws BadLocationException {
         Element root = doc.getDefaultRootElement();
         int lines = root.getElementCount();
 
-        for (int i = 0; i < lines; i++)
-        {
+        // Create a regex pattern to match the target line
+        Pattern pattern = Pattern.compile(".*"+Pattern.quote(targetLine.trim())+"$");
+
+        for (int i = 0; i < lines; i++) {
             Element line = root.getElement(i);
 
-            if (null == line)
+            if (line == null)
                 continue;
 
             int start = line.getStartOffset();
             int end = line.getEndOffset();
             String text = doc.getText(start, end - start);
 
-            if (text.trim().equals(targetLine.trim()))
-            {
+            Matcher matcher = pattern.matcher(text.trim());
+
+            // If the pattern matches, return the start offset of the line
+            if (matcher.find()) {
                 return start;
             }
         }
 
-        return 0;
+        return -1; // Return -1 if the target line is not found
     }
 
     public URStyle getStyleAtPosition(int position, String relativeLine)
@@ -794,12 +922,12 @@ public class LineFormatter
         return new URStyle(new SimpleAttributeSet(textStyle));
     }
 
-    private void parseClickableText(IRCUser fromUser, String line, URStyle defaultStyle)
+    private int parseClickableText(IRCUser fromUser, String line, URStyle defaultStyle, int position)
             throws BadLocationException
     {
         HashMap<String, URStyle> regexStrings = new HashMap<>();
-        regexStrings.put(Constants.URL_REGEX, urlStyle);
-        regexStrings.put(Constants.CHANNEL_REGEX, channelStyle);
+        regexStrings.put(Constants.URL_REGEX, getStyle("urlStyle", false));
+        regexStrings.put(Constants.CHANNEL_REGEX, getStyle("channelStyle", false));
         // final String line = getLatestLine(doc);
         final int relativePosition = getLinePosition(getLatestLine());
 
@@ -849,14 +977,16 @@ public class LineFormatter
             int nextLineLength = Integer.parseInt(nextLine.getAttribute("styleLength").toString());
 
             // Append the string that comes before the next clickable text
-            appendString(remainingLine.substring(0, nextLineStart - offset), defaultStyle);
+            position = addString(remainingLine.substring(0, nextLineStart - offset), defaultStyle, Optional.of(position));
 
-            appendString(nextLine.getAttribute("clickableText").toString(), nextLine);
+            position = addString(nextLine.getAttribute("clickableText").toString(), nextLine, Optional.of(position));
 
             remainingLine = remainingLine.substring((nextLineStart + nextLineLength) - offset);
         }
 
-        appendString(remainingLine, defaultStyle);
+        position = addString(remainingLine, defaultStyle, Optional.of(position));
+
+        return position;
     }
 
     /**
@@ -866,10 +996,17 @@ public class LineFormatter
      * @param fromString
      * @param line
      */
-    public void formattedDocument(Date lineDate, IRCUser fromUser, String fromString, String line)
+    public void appendMessage(Optional<Date> lineDate, IRCUser fromUser, String fromString, String line)
     {
+        int insertPosition = doc.getLength();
+
+        if(lineDate.isEmpty())
+            lineDate = Optional.of(new Date());
+        else
+            insertPosition = 0;
+
         // build the timeLine string
-        timeLine = Optional.of(lineDate);
+        timeLine = lineDate;
         String[] nickParts;
 
         final URStyle nickPositionStyle;
@@ -879,16 +1016,16 @@ public class LineFormatter
         if (fromUser != null && null != myNick && myNick.equals(fromUser.toString()))
         {
             // This message is from me
-            nickPositionStyle = myStyle.clone();
-            linePositionStyle = lineStyle.clone();
-            timePositionStyle =  timeStyle.clone();
+            nickPositionStyle = getStyle("myStyle", false);
+            linePositionStyle = getStyle("defaultStyle", false);
+            timePositionStyle =  getStyle("defaultStyle", false);
             nickParts = DriverGUI.gui.getNickFormatString(fromUser.getName());
         } else if (fromUser == null && fromString.equals(Constants.EVENT_USER))
         {
             // This is an event message
-            nickPositionStyle = lowStyle.clone();
-            linePositionStyle = lowStyle.clone();
-            timePositionStyle = lowStyle.clone();
+            nickPositionStyle = getStyle("lowStyle", false);
+            linePositionStyle = getStyle("lowStyle", false);
+            timePositionStyle = getStyle("lowStyle", false);
             nickParts = DriverGUI.gui.getNickFormatString(fromString);
         } else
         {
@@ -897,48 +1034,50 @@ public class LineFormatter
             // This message is from someone else
             // Does this message have my nick in it?
             if (myNick != null && line.indexOf(myNick) > -1)
-                nickPositionStyle = highStyle.clone();
+                nickPositionStyle = getStyle("highStyle", false);
             else
-                nickPositionStyle = nickStyle.clone();
+                nickPositionStyle = getStyle("nickStyle", false);
 
-            linePositionStyle = lineStyle.clone();
-            timePositionStyle = timeStyle.clone();
+            linePositionStyle = getStyle("defaultStyle", false);
+            timePositionStyle = getStyle("defaultStyle", false);
         }
 
         try
         {
 
-            // doc.insertString(doc.getLength(), timeLine, timeStyle);
+            // doc.insertString(doc.getLength(), timeLine, defaultStyle);
             // if(null != timeLine && !timeLine.isBlank())
             if (((InterfacePanel) DriverGUI.gui.interfacePanel).isTimeStampsEnabled())
             {
                 // add the date to the end of the string to preserve the timestamp of the line
                 // when updating styles
-                appendString(DriverGUI.gui.getTimeStampString(timeLine.get()) + " ", dateStyle(timePositionStyle, lineDate, false));
+                URStyle lineDateStyle = dateStyle(timePositionStyle, lineDate.get(), false);
+                lineDateStyle.addAttribute("stylesHash", getStylesHash());
+                insertPosition = addString(DriverGUI.gui.getTimeStampString(timeLine.get()) + " ", lineDateStyle, Optional.of(insertPosition));
             }
 
             linePositionStyle.addAttribute("type", "nickPart0");
             linePositionStyle.addAttribute("nickParts", nickParts);
-            appendString(nickParts[0], linePositionStyle);
+            insertPosition = addString(nickParts[0], linePositionStyle, Optional.of(insertPosition));
 
             if (fromUser != null)
             {
-                URStyle clickableNameStyle = nickPositionStyle.clone();
+                URStyle clickableNameStyle = nickPositionStyle;
                 clickableNameStyle.addAttribute("type", "IRCUser");
                 clickableNameStyle.addAttribute("clickableText",
                         new ClickableText(fromUser.toString(), nickPositionStyle, fromUser));
 
                 clickableNameStyle.addAttribute("nickParts", nickParts);
-                appendString(nickParts[1], clickableNameStyle);
+                insertPosition = addString(nickParts[1], clickableNameStyle, Optional.of(insertPosition));
             } else
             {
                 nickPositionStyle.addAttribute("type", "nick");
                 nickPositionStyle.addAttribute("nickParts", nickParts);
-                appendString(nickParts[1], nickPositionStyle);
+                insertPosition = addString(nickParts[1], nickPositionStyle, Optional.of(insertPosition));
             }
 
             linePositionStyle.addAttribute("type", "nickPart2");
-            appendString(nickParts[2], linePositionStyle);
+            insertPosition = addString(nickParts[2], linePositionStyle, Optional.of(insertPosition));
 
             linePositionStyle.removeAttribute("type");
             linePositionStyle.removeAttribute("nickParts");
@@ -947,8 +1086,8 @@ public class LineFormatter
             // appendString(doc, " "+line, lineStyle);
 
             // parse the outputted line for clickable text
-            parseClickableText(fromUser, " " + line, linePositionStyle);
-            appendString(System.getProperty("line.separator"), linePositionStyle);
+            insertPosition = parseClickableText(fromUser, " " + line, linePositionStyle, insertPosition);
+            insertPosition = addString(System.getProperty("line.separator"), linePositionStyle, Optional.of(insertPosition));
         } catch (BadLocationException e)
         {
             Constants.LOGGER.error( e.getLocalizedMessage());

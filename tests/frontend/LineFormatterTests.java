@@ -58,7 +58,7 @@ public class LineFormatterTests
         log("Quit channels", true);
         testServer.quitChannels();
         log("Delete test profile", true);
-        URProfilesUtil.deleteProfile(testDriver.getTestProfileName(), false);
+        TestDriverGUI.cleanupTestProfiles();
         log("Close test window", true);
         TestDriverGUI.closeWindow();
     }
@@ -74,7 +74,7 @@ public class LineFormatterTests
 
         while (testPubChannel.messageQueueWorking())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
 
         testGUI.tabbedPane.setSelectedIndex(1);
@@ -103,7 +103,7 @@ public class LineFormatterTests
 
         while(!canContinue.get())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
 
         // Right-Click mouse event at the x-y coords of the caret in the text pane

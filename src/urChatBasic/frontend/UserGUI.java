@@ -67,8 +67,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     private final UROptionsPanel profilePanel = new ProfilePanel((MainOptionsPanel) optionsMainPanel);
 
 
-    private final JComboBox<LookAndFeelInfo> lafOptions =
-            new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
+    private final JComboBox<LookAndFeelInfo> lafOptions = new JComboBox<LookAndFeelInfo>(UIManager.getInstalledLookAndFeels());
 
     // Appearance Panel
     private FontPanel clientFontPanel;
@@ -191,46 +190,46 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     }
 
     // /**
-    //  * Sets the current active profile - if the newProfileName doesn't exist it will be created.
-    //  * @param newProfileName
-    //  */
+    // * Sets the current active profile - if the newProfileName doesn't exist it will be created.
+    // * @param newProfileName
+    // */
     // public void setActiveProfile (String newProfileName)
     // {
-    //     // save the current profile settings, if it exists
-    //     if (URProfilesUtil.profileExists(URProfilesUtil.getActiveProfileName()))
-    //     {
-    //         setClientSettings();
-    //     }
+    // // save the current profile settings, if it exists
+    // if (URProfilesUtil.profileExists(URProfilesUtil.getActiveProfileName()))
+    // {
+    // setClientSettings();
+    // }
 
-    //     if(!URProfilesUtil.profileExists(newProfileName))
-    //     {
-    //         URProfilesUtil.createProfile(newProfileName);
-    //     }
+    // if(!URProfilesUtil.profileExists(newProfileName))
+    // {
+    // URProfilesUtil.createProfile(newProfileName);
+    // }
 
-    //     // change the profile name
-    //     URProfilesUtil.setActiveProfileName(newProfileName);
+    // // change the profile name
+    // URProfilesUtil.setActiveProfileName(newProfileName);
 
-    //     // now load the new profile settings
-    //     getClientSettings(false);
+    // // now load the new profile settings
+    // getClientSettings(false);
     // }
 
     // TODO: Is this needed any more or should we be adding IRCServer only?
     // @Override
     // public void addToCreatedServers (String serverName)
     // {
-    //     if (getCreatedServer(serverName) == null)
-    //     {
-    //         createdServers.add(new IRCServer(serverName.trim(), userNameTextField.getText().trim(),
-    //                 realNameTextField.getText().trim(), new String(passwordTextField.getPassword()),
-    //                 serverPortTextField.getText().trim(), serverTLSCheckBox.isSelected(),
-    //                 proxyHostNameTextField.getText(), proxyPortTextField.getText(), serverProxyCheckBox.isSelected()));
-    //     }
+    // if (getCreatedServer(serverName) == null)
+    // {
+    // createdServers.add(new IRCServer(serverName.trim(), userNameTextField.getText().trim(),
+    // realNameTextField.getText().trim(), new String(passwordTextField.getPassword()),
+    // serverPortTextField.getText().trim(), serverTLSCheckBox.isSelected(),
+    // proxyHostNameTextField.getText(), proxyPortTextField.getText(), serverProxyCheckBox.isSelected()));
+    // }
     // }
 
     @Override
     public void addToCreatedServers (IRCServerBase newServer)
     {
-        if(getCreatedServer(newServer.getName()) != null)
+        if (getCreatedServer(newServer.getName()) != null)
             createdServers.remove(newServer);
 
         createdServers.add(newServer);
@@ -255,8 +254,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         lafOptions.setRenderer(new DefaultListCellRenderer()
         {
             @Override
-            public Component getListCellRendererComponent (JList<?> list, Object value, int index, boolean isSelected,
-                    boolean cellHasFocus)
+            public Component getListCellRendererComponent (JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus)
             {
                 LookAndFeelInfo info = (LookAndFeelInfo) value;
                 return super.getListCellRendererComponent(list, info.getName(), index, isSelected, cellHasFocus);
@@ -336,7 +334,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // previewTextArea.setFont(clientFontPanel.getFont());
         if (previewLineFormatter == null)
         {
-            previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea, null, URProfilesUtil.getActiveProfilePath());
+            previewLineFormatter = new LineFormatter(clientFontPanel.getStyle(), previewTextArea, previewTextScroll, null, URProfilesUtil.getActiveProfilePath());
 
             URProfilesUtil.addListener(EventType.CHANGE, e -> {
                 previewLineFormatter.setSettingsPath(URProfilesUtil.getActiveProfilePath());
@@ -352,15 +350,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             IRCUser tempUser = new IRCUser(null, "matty_r");
             IRCUser tempUser2 = new IRCUser(null, System.getProperty("user.name"));
             previewLineFormatter.setNick(System.getProperty("user.name"));
-            previewLineFormatter.formattedDocument(new Date(), null, Constants.EVENT_USER,
-                    "urChat has loaded - this is an Event");
-            previewLineFormatter.formattedDocument(new Date(), tempUser, "matty_r", "Normal line. Hello, world!");
-            previewLineFormatter.formattedDocument(new Date(), tempUser, "matty_r",
+            previewLineFormatter.appendMessage(Optional.empty(), null, Constants.EVENT_USER, "urChat has loaded - this is an Event");
+            previewLineFormatter.appendMessage(Optional.empty(), tempUser, "matty_r", "Normal line. Hello, world!");
+            previewLineFormatter.appendMessage(Optional.empty(), tempUser, "matty_r",
                     "This is what it looks like when your nick is mentioned, " + System.getProperty("user.name") + "!");
-            previewLineFormatter.formattedDocument(new Date(), tempUser2, System.getProperty("user.name"),
-                    "Go to https://github.com/matty-r/urChat");
-            previewLineFormatter.formattedDocument(new Date(), tempUser2, System.getProperty("user.name"),
-                    "Join #urchat on irc.libera.chat");
+            previewLineFormatter.appendMessage(Optional.empty(), tempUser2, System.getProperty("user.name"), "Go to https://github.com/matty-r/urChat");
+            previewLineFormatter.appendMessage(Optional.empty(), tempUser2, System.getProperty("user.name"), "Join #urchat on irc.libera.chat");
         } else
         {
             previewLineFormatter.updateStyles(getStyle());
@@ -379,8 +374,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             if (SwingUtilities.isRightMouseButton(mouseEvent) && wordAttributeSet.getAttribute("name") != null)
             {
                 String styleName = styleLabel.getText();
-                FontDialog styleFontDialog =
-                        new FontDialog(styleName, previewLineFormatter.getStyleDefault(styleName), URProfilesUtil.getActiveProfilePath());
+                FontDialog styleFontDialog = new FontDialog(styleName, previewLineFormatter.getStyleDefault(styleName), URProfilesUtil.getActiveProfilePath());
 
                 styleFontDialog.addFontSaveListener(new SaveFontListener());
                 styleFontDialog.setVisible(true);
@@ -433,7 +427,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         nickParts[1] = nick;
         String nickString = nickFormatField.getText();
 
-        if(nickString.indexOf("nick") >= 0)
+        if (nickString.indexOf("nick") >= 0)
         {
             int nickIndex = nickString.indexOf("nick");
             String leftPart = nickString.substring(0, nickIndex);
@@ -441,7 +435,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
             nickParts[0] = leftPart;
             nickParts[2] = rightPart;
-        } else if(nickString.length() == 1)
+        } else if (nickString.length() == 1)
         {
             // both parts are the same
             nickParts[0] = nickString;
@@ -470,7 +464,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
      */
     public void setupServerTab (IRCServerBase server)
     {
-        SwingUtilities.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable()
+        {
 
             @Override
             public void run ()
@@ -479,7 +474,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 {
                     boolean iconsShown = (boolean) URPanels.getKeyComponentValue(Constants.KEY_SHOW_TAB_ICON);
                     int currentServerIndex = DriverGUI.gui.getTabIndex((IRCChannelBase) server);
-                    if(currentServerIndex < 0)
+                    if (currentServerIndex < 0)
                     {
                         tabbedPane.addTab(server.getName(), iconsShown ? ((IRCChannelBase) server).icon : null, ((IRCServer) server));
                         setCurrentTab(server.getName());
@@ -524,7 +519,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
 
         // if(createdServers.size() == 0)
-        //     profilePicker.setEnabled(true);
+        // profilePicker.setEnabled(true);
     }
 
     /*
@@ -540,7 +535,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         createdServers.remove(server);
 
         // if(createdServers.size() == 0)
-        //     profilePicker.setEnabled(true);
+        // profilePicker.setEnabled(true);
     }
 
     /**
@@ -549,7 +544,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     public void setClientSettings ()
     {
         URPreferencesUtil.putPref(Constants.KEY_TIME_STAMP_FORMAT, timeStampField.getText(), URProfilesUtil.getActiveProfilePath());
-        URPreferencesUtil.putPref(Constants.KEY_LAF_NAME, ((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName(), URProfilesUtil.getActiveProfilePath());
+        URPreferencesUtil.putPref(Constants.KEY_LAF_NAME, ((LookAndFeelInfo) lafOptions.getSelectedItem()).getClassName(),
+                URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.saveStyle(defaultStyle, clientFontPanel.getStyle(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_WINDOW_X, (int) DriverGUI.frame.getBounds().getX(), URProfilesUtil.getActiveProfilePath());
         URPreferencesUtil.putPref(Constants.KEY_WINDOW_Y, (int) DriverGUI.frame.getBounds().getY(), URProfilesUtil.getActiveProfilePath());
@@ -570,11 +566,9 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         clientFontPanel.loadStyle();
 
-        timeStampField
-                .setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, Constants.DEFAULT_TIME_STAMP_FORMAT));
+        timeStampField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_TIME_STAMP_FORMAT, Constants.DEFAULT_TIME_STAMP_FORMAT));
 
-        nickFormatField
-                .setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_NICK_FORMAT, Constants.DEFAULT_NICK_FORMAT));
+        nickFormatField.setText(URProfilesUtil.getActiveProfilePath().get(Constants.KEY_NICK_FORMAT, Constants.DEFAULT_NICK_FORMAT));
 
 
         updatePreviewTextArea();
@@ -586,9 +580,8 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                     URProfilesUtil.getActiveProfilePath().getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),
                     URProfilesUtil.getActiveProfilePath().getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT));
 
-            this.setPreferredSize(
-                    new Dimension(URProfilesUtil.getActiveProfilePath().getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),
-                            URProfilesUtil.getActiveProfilePath().getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT)));
+            this.setPreferredSize(new Dimension(URProfilesUtil.getActiveProfilePath().getInt(Constants.KEY_WINDOW_WIDTH, Constants.DEFAULT_WINDOW_WIDTH),
+                    URProfilesUtil.getActiveProfilePath().getInt(Constants.KEY_WINDOW_HEIGHT, Constants.DEFAULT_WINDOW_HEIGHT)));
         }
 
     }
@@ -622,8 +615,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
     }
 
     /**
-     * Used to listen to the right click on the tabs to determine what type we clicked on and pop up a
-     * menu or exit. I will add menus to all types eventually.
+     * Used to listen to the right click on the tabs to determine what type we clicked on and pop up a menu or exit. I will add menus to all types eventually.
      *
      * @author Matt
      *
@@ -694,7 +686,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         }
     }
 
-    protected class SaveFontListener implements ActionListener
+    public class SaveFontListener implements ActionListener
     {
         @Override
         public void actionPerformed (ActionEvent arg0)
@@ -715,12 +707,12 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             // TODO: Favourites handling to be done elsewhere
             // for (int index = 0; index < favouritesList.getModel().getSize(); index++)
             // {
-            //     FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
-            //     if(favouriteItem.favFontDialog != null)
-            //     {
-            //         favouriteItem.favFontDialog.getFontPanel().setDefaultStyle(getStyle());
-            //         favouriteItem.favFontDialog.getFontPanel().loadStyle();
-            //     }
+            // FavouritesItem favouriteItem = favouritesList.getModel().getElementAt(index);
+            // if(favouriteItem.favFontDialog != null)
+            // {
+            // favouriteItem.favFontDialog.getFontPanel().setDefaultStyle(getStyle());
+            // favouriteItem.favFontDialog.getFontPanel().loadStyle();
+            // }
             // }
 
             // defaultStyle = clientFontPanel.getStyle();
@@ -730,7 +722,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
     public UserGUI (Optional<String> initialProfile)
     {
-        if(initialProfile.isPresent())
+        if (initialProfile.isPresent())
             URProfilesUtil.setActiveProfileName(initialProfile.get());
         else
             URProfilesUtil.setActiveProfileName(URProfilesUtil.getDefaultProfile());
@@ -748,7 +740,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // this.setBackground(Color.gray);
         getClientSettings(true);
 
-        URProfilesUtil.addListener(EventType.CHANGE, e-> {
+        URProfilesUtil.addListener(EventType.CHANGE, e -> {
             getClientSettings(false);
         });
         lafOptions.addActionListener(new ChangeLAFListener());
@@ -814,7 +806,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
             }
         }
 
-        Constants.LOGGER.error( "Unable to set LAF to " + lafClassName);
+        Constants.LOGGER.error("Unable to set LAF to " + lafClassName);
 
         // Set to the System LAF if we've chosen an invalid/unavailable LAF theme
         return getLAF(UIManager.getSystemLookAndFeelClassName());
@@ -826,7 +818,7 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
         // String previousDefaultBackground = URColour.hexEncode(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
         // Font previousDefaultFont = getFont();
 
-        Constants.LOGGER.info( "Setting to LookAndFeel to " + newLAFname);
+        Constants.LOGGER.info("Setting to LookAndFeel to " + newLAFname);
         boolean flatLafAvailable = false;
         try
         {
@@ -869,29 +861,25 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
 
         defaultStyle.setFont(UIManager.getFont(Constants.DEFAULT_FONT_STRING));
 
-        // reset the defaults on the guiStyle if they were already at the default
-        // if (previousDefaultForeground.equals(URColour.hexEncode(guiStyle.getForeground())))
-            defaultStyle.setForeground(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
-
-        // if (previousDefaultBackground.equals(URColour.hexEncode(guiStyle.getBackground())))
-            defaultStyle.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
+        defaultStyle.setForeground(UIManager.getColor(Constants.DEFAULT_FOREGROUND_STRING));
+        defaultStyle.setBackground(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING));
 
         clientFontPanel.setDefaultStyle(defaultStyle);
 
-        if(DriverGUI.frame.isVisible())
+        if (DriverGUI.frame.isVisible())
             SwingUtilities.updateComponentTreeUI(DriverGUI.frame);
 
         updateExtras();
 
-        // DriverGUI.frame.dispose();
-        if(DriverGUI.frame.isVisible())
+        if (DriverGUI.frame.isVisible())
             DriverGUI.frame.validate();
     }
 
     // Update the fonts and popup menus - these aren't under the component tree
     private void updateExtras ()
     {
-        SwingUtilities.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable()
+        {
 
             @Override
             public void run ()

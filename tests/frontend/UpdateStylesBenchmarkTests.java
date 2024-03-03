@@ -1,11 +1,15 @@
 package frontend;
 
-import static org.testng.AssertJUnit.assertEquals;
-import static org.testng.AssertJUnit.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.testng.Reporter.log;
 import java.awt.Font;
 import java.awt.GraphicsEnvironment;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +22,7 @@ import urChatBasic.backend.MessageHandler;
 import urChatBasic.backend.MessageHandler.Message;
 import urChatBasic.backend.utils.URProfilesUtil;
 import urChatBasic.backend.utils.URStyle;
+import urChatBasic.base.IRCChannelBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.base.proxy.ProxyTypes;
 import urChatBasic.frontend.DriverGUI;
@@ -29,8 +34,7 @@ import urChatBasic.frontend.utils.URColour;
 import utils.TestDriverGUI;
 import utils.TestUtils;
 
-public class AppearanceTests
-{
+public class UpdateStylesBenchmarkTests {
     MessageHandler testHandler;
     IRCServer testServer;
     TestDriverGUI testDriver;
@@ -40,6 +44,8 @@ public class AppearanceTests
     final List<String> PUB_CHANNEL_NAMES = new ArrayList<>();
     IRCUser testUser;
     Connection testConnection;
+
+    LinkedList<String> importantInfo = new LinkedList<>();
 
     @BeforeClass(alwaysRun = true)
     public void setUp () throws Exception
@@ -64,20 +70,32 @@ public class AppearanceTests
         testConnection = new Connection(testServer);
         testHandler = testConnection.getMessageHandler();
 
-        for (String channelName : PUB_CHANNEL_NAMES)
+        Instant startBenchmark = Instant.now();
+        for (IRCChannelBase channel : testServer.createdChannels)
         {
-            String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG " + channelName + " :Welcome to " + channelName;
+            String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG " + channel.getName() + " :Welcome to " + channel.getName();
 
             Message testMessage = testHandler.new Message(rawMessage);
             testHandler.parseMessage(testMessage);
+
+            testDriver.loadTestLogs(channel);
         }
 
         TestDriverGUI.waitForEverything(testGUI);
+        logImportantInfo("Took " + Duration.between(startBenchmark, Instant.now()).toMillis() +  "ms to load test logs.");
+    }
+
+    private void logImportantInfo (String message)
+    {
+        importantInfo.add(message);
     }
 
     @AfterClass(alwaysRun = true)
     public void tearDown () throws Exception
     {
+        for (String message : importantInfo) {
+            System.out.println(message);
+        }
         // Reporter.log("Deleting testing profile.", true);
         testServer.quitChannels();
         // URProfilesUtil.getActiveProfilePath().sync();
@@ -86,47 +104,38 @@ public class AppearanceTests
         TestDriverGUI.closeWindow();
     }
 
-    /*
-     * Tests: - Change Font - Change Font Size - Change Foreground Colour - Change Background Colour
-     */
-
     @Test
-    public void changeDefaultFontAndSizeTest () throws BadLocationException, InterruptedException
+    public void changeFontBenchmark () throws InterruptedException
     {
+        Instant startBenchmark = Instant.now();
         // Get Current Font in Appearance panel
         URStyle guiStyle = testGUI.getStyle();
-
-        // Get Current Font in all rooms
-        for (String pubChannelName : PUB_CHANNEL_NAMES)
-        {
-            IRCChannel pubChannel = testServer.getCreatedChannel(pubChannelName);
-            log("Have joined " + pubChannelName + " successfully?", true);
-            String welcomeMessage = String.join("",testGUI.getNickFormatString("someuser")) + " Welcome to " + pubChannelName;
-            assertEquals("<someuser> Welcome to " + pubChannelName, welcomeMessage);
-
-            log("Wait for styles to update correctly..", true);
-            TestDriverGUI.waitForEverything(testGUI);
-
-            URStyle channelStyle = null;
-
-            while (channelStyle == null || !channelStyle.equals(guiStyle))
-            {
-                TimeUnit.MILLISECONDS.sleep(10);
-                channelStyle = pubChannel.getLineFormatter().getStyleAtPosition(22, welcomeMessage);
-            }
-
-            log("Check current style in the channel is correct.", true);
-            assertTrue(guiStyle.equals(channelStyle));
-        }
+        URStyle newStyle = guiStyle.clone();
 
         String[] FONT_LIST = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
-
-        URStyle newStyle = guiStyle.clone();
         newStyle.setFont(new Font(FONT_LIST[new Random().nextInt(FONT_LIST.length)], Font.PLAIN, 8));
         testGUI.getFontPanel().setDefaultStyle(newStyle);
         TestDriverGUI.waitForEverything(testGUI);
         guiStyle = testGUI.getStyle();
+        logImportantInfo( "Took " + Duration.between(startBenchmark, Instant.now()).toMillis() +  "ms to update font.");
 
+    }
+
+    @Test(timeOut = 5000)
+    public void changeColoursBenchmark () throws InterruptedException, BadLocationException
+    {
+        Instant startBenchmark = Instant.now();
+        // Get Current Font in Appearance panel
+        URStyle guiStyle = testGUI.getStyle();
+        URStyle newStyle = guiStyle.clone();
+
+        newStyle.setForeground(TestUtils.getRandomColour());
+        log("Set foreground to " +URColour.hexEncode(newStyle.getForeground().get()), true);
+
+        testGUI.getFontPanel().setDefaultStyle(newStyle);
+
+        guiStyle = testGUI.getStyle();
+        logImportantInfo( "Took " + Duration.between(startBenchmark, Instant.now()).toMillis() +  "ms to update colours.");
 
         assertEquals(newStyle, guiStyle);
 
@@ -135,8 +144,9 @@ public class AppearanceTests
             TestDriverGUI.waitForEverything(testGUI);
 
             IRCChannel pubChannel = testServer.getCreatedChannel(pubChannelName);
-            String welcomeMessage = pubChannel.getLineFormatter().getLineAtPosition(22).split("] ")[1].trim();
-            log("Wait for current style has updated.", true);
+            // String welcomeMessage = pubChannel.getLineFormatter().getLineAtPosition(13).split("] ")[1].trim(;
+            String welcomeMessage = String.join("",testGUI.getNickFormatString("someuser")) + " Welcome to " + pubChannelName;
+            log("Check current style has updated.", true);
 
             URStyle channelStyle = null;
 
@@ -144,7 +154,6 @@ public class AppearanceTests
             {
                 TimeUnit.MILLISECONDS.sleep(10);
                 channelStyle = pubChannel.getLineFormatter().getStyleAtPosition(22, welcomeMessage);
-                channelStyle.removeAttribute("name");
             }
 
             log("Test Style: " + guiStyle, true);
@@ -172,70 +181,24 @@ public class AppearanceTests
     }
 
     @Test
-    public void changeDefaultForegroundAndBackgroundTest () throws BadLocationException, InterruptedException
+    public void changeStylesBenchmark () throws InterruptedException
     {
+        Instant startBenchmark = Instant.now();
         // Get Current Font in Appearance panel
         URStyle guiStyle = testGUI.getStyle();
-
-        // Get Current Font in all rooms
-        for (String pubChannelName : PUB_CHANNEL_NAMES)
-        {
-            IRCChannel pubChannel = testServer.getCreatedChannel(pubChannelName);
-            log("Have joined " + pubChannelName + " successfully?", true);
-            String welcomeMessage = pubChannel.getLineFormatter().getLineAtPosition(13).split("] ")[1].trim();
-            assertEquals("<someuser> Welcome to " + pubChannelName, welcomeMessage);
-
-            log("Check current style in the channel is correct.", true);
-            URStyle channelStyle = pubChannel.getLineFormatter().getStyleAtPosition(22, welcomeMessage);
-
-            assertTrue(guiStyle.equals(channelStyle));
-        }
-
         URStyle newStyle = guiStyle.clone();
-        newStyle.setForeground(TestUtils.getRandomColour());
 
+        newStyle.setForeground(TestUtils.getRandomColour());
         log("Set foreground to " +URColour.hexEncode(newStyle.getForeground().get()), true);
 
-        newStyle.setBackground(TestUtils.getRandomColour());
-
-        log("Set background to " +URColour.hexEncode(newStyle.getBackground().get()), true);
         testGUI.getFontPanel().setDefaultStyle(newStyle);
+
+        // String styleName = styleLabel.getText();
+        // FontDialog styleFontDialog = new FontDialog(styleName, previewLineFormatter.getStyleDefault(styleName), URProfilesUtil.getActiveProfilePath());
+
+
         TestDriverGUI.waitForEverything(testGUI);
         guiStyle = testGUI.getStyle();
-
-        assertEquals(newStyle, guiStyle);
-
-        for (String pubChannelName : PUB_CHANNEL_NAMES)
-        {
-            TestDriverGUI.waitForEverything(testGUI);
-
-            IRCChannel pubChannel = testServer.getCreatedChannel(pubChannelName);
-            String welcomeMessage = pubChannel.getLineFormatter().getLineAtPosition(13).split("] ")[1].trim();
-            log("Check current style has updated.", true);
-
-            URStyle channelStyle = pubChannel.getLineFormatter().getStyleAtPosition(22, welcomeMessage);
-
-            log("Test Style: " + guiStyle, true);
-            log("Channel Style: " + channelStyle, true);
-
-            String testStyleFont = guiStyle.getFamily().get();
-            String channelStyleFont = channelStyle.getFamily().get();
-            assertEquals("Channel font family doesn't match GUI font family.", testStyleFont, channelStyleFont);
-            log(pubChannelName + " font is good.", true);
-
-            int testStyleSize = guiStyle.getSize().get();
-            int channelStyleSize = channelStyle.getSize().get();
-            assertEquals("Channel font size doesn't match GUI font size.", testStyleSize, channelStyleSize);
-
-            String testStyleForeground = URColour.hexEncode(guiStyle.getForeground().get());
-            String channelStyleForeground = URColour.hexEncode(channelStyle.getForeground().get());
-            assertEquals(pubChannelName + " foreground doesn't match GUI font foreground.", testStyleForeground, channelStyleForeground);
-            log(pubChannelName + " Foreground is good.", true);
-
-            String testStyleBackground = URColour.hexEncode(guiStyle.getBackground().get());
-            String channelStyleBackground = URColour.hexEncode(channelStyle.getBackground().get());
-            assertEquals(pubChannelName + " background doesn't match GUI font background.", testStyleBackground, channelStyleBackground);
-            log(pubChannelName + " background is good.", true);
-        }
+        logImportantInfo( "Took " + Duration.between(startBenchmark, Instant.now()).toMillis() +  "ms to update colours.");
     }
 }

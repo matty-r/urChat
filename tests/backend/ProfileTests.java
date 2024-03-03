@@ -70,7 +70,7 @@ public class ProfileTests
     {
         String anotherTestProfileName = "createProfileAndDeleteTest" + (new SimpleDateFormat("yyMMdd")).format(new Date());
         log("Create Profile ["+anotherTestProfileName+"]", true);
-        URProfilesUtil.createProfile(anotherTestProfileName);
+        anotherTestProfileName = URProfilesUtil.createProfile(anotherTestProfileName);
 
         log("Wait for stuff", true);
         TestDriverGUI.waitForEverything(TestDriverGUI.gui);
@@ -133,7 +133,7 @@ public class ProfileTests
         }
 
         // Delete the cloned profile
-        clonedProfileRoot.removeNode();
+        URProfilesUtil.deleteProfile(clonedProfileRoot.name(), false);
     }
 
     @Test
@@ -148,6 +148,6 @@ public class ProfileTests
 
         TestDriverGUI.waitForEverything(TestDriverGUI.gui);
         // Delete the cloned profile
-        clonedProfileRoot.removeNode();
+        URProfilesUtil.deleteProfile(clonedProfileRoot.name(), false);
     }
 }
