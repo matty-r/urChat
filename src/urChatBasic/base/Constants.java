@@ -27,7 +27,7 @@ import urChatBasic.frontend.utils.URColour;
  */
 public class Constants
 {
-    public static String UR_VERSION = "v0.6.0";
+    public static String UR_VERSION = "v0.7.0";
     public static String APP_NAME = "urChatClient" + UR_VERSION;
     public static String URL_SEPARATOR = "/";
     public static final String RESOURCES_PATH = URL_SEPARATOR + "resources" + URL_SEPARATOR;
@@ -130,7 +130,7 @@ public class Constants
     public static final Boolean DEFAULT_USERS_LIST_ACTIVE = true;
     public static final Boolean DEFAULT_EVENT_TICKER_JOINS_QUITS = true;
     public static final Boolean DEFAULT_MAIN_WINDOW_JOINS_QUITS = true;
-    public static final Boolean DEFAULT_LOAD_CHANNEL_LOGS_ON_JOIN = true;
+    public static final Boolean DEFAULT_LOAD_CHANNEL_LOGS_ON_JOIN = false;
     public static final Boolean DEFAULT_LOG_CHANNEL_ACTIVITY = true;
     public static final Boolean DEFAULT_LOG_SERVER_ACTIVITY = true;
     public static final Boolean DEFAULT_AUTO_CONNECT_FAVOURITES = false;

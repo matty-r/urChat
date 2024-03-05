@@ -531,7 +531,7 @@ public class IRCServer extends IRCChannelBase implements IRCServerBase
         IRCChannelBase returnChannel = null;
 
         for (IRCChannelBase tempChannel : createdChannels)
-            if (tempChannel.getName().equals(channelName))
+            if (tempChannel.getName().equalsIgnoreCase(channelName))
             {
                 if (asPrivate && tempChannel instanceof IRCPrivate || !asPrivate)
                     returnChannel = tempChannel;
