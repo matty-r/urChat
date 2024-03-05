@@ -684,8 +684,7 @@ public class MessageHandler
             // CAP ACK or CAP LS?
             switch (myMessage.subType)
             {
-                case "LS" ->
-                {
+                case "LS" -> {
                     printServerText(myMessage.body);
 
                     serverBase.setCapabilities(myMessage.body);
@@ -706,8 +705,7 @@ public class MessageHandler
                         serverBase.nickservRequestAuthentication();
                     }
                 }
-                case "ACK" ->
-                {
+                case "ACK" -> {
                     printServerText("Begin SASL Authentication");
                     serverBase.saslDoAuthentication();
                 }
@@ -733,20 +731,21 @@ public class MessageHandler
         @Override
         public void messageExec (Message myMessage)
         {
-            if (myMessage.nick != null && myMessage.nick.equalsIgnoreCase("NickServ"))
+            // Send the message to the Channel or Private Channel if that is where it needs to go
+            // otherwise just print it as server text
+            IRCChannelBase messageChannel = myMessage.messageHandler.serverBase.getCreatedChannel(myMessage.getChannel());
+
+            if (messageChannel == null)
             {
-                printPrivateText(myMessage.nick, myMessage.body, myMessage.nick);
-                serverBase.reconnectChannels();
+                messageChannel = myMessage.messageHandler.serverBase.getCreatedPrivateChannel(myMessage.getNick());
+            }
+
+            if (messageChannel != null)
+            {
+                messageChannel.printText(myMessage.getBody(), Constants.EVENT_USER);
             } else
             {
-                IRCChannelBase messageChannel = myMessage.messageHandler.serverBase.getCreatedChannel(myMessage.getChannel());
-                if (messageChannel != null)
-                {
-                    messageChannel.printText(myMessage.getBody(), Constants.EVENT_USER);
-                } else
-                {
-                    printServerText(myMessage.body);
-                }
+                printServerText(myMessage.body);
             }
         }
     }
@@ -818,10 +817,11 @@ public class MessageHandler
         public void messageExec (Message myMessage)
         {
             // Are we just quitting, then don't show an error message.
-            if(myMessage.getBody().contains("Goodbye cruel world"))
+            if (myMessage.getBody().contains("Goodbye cruel world"))
             {
                 gui.quitServer(myMessage.messageHandler.serverBase);
-            } else {
+            } else
+            {
                 Constants.LOGGER.error(myMessage.getBody());
                 MessageDialog dialog = new MessageDialog("startUp() failed! " + myMessage.getBody(), "Error", JOptionPane.ERROR_MESSAGE);
                 dialog.setVisible(true);
