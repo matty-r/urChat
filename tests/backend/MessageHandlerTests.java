@@ -282,7 +282,7 @@ public class MessageHandlerTests
             testHandler.parseMessage(testMessage);
         }
 
-        while (testServer.messageQueueInProgress)
+        while (testServer.messageQueueWorking())
         {
             TimeUnit.MILLISECONDS.sleep(10);
         }
