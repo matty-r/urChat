@@ -7,7 +7,7 @@ urChat is a Java based IRC Client designed around simplicity and minimal resourc
 
 Contributions
 ======
-**Currently targeting ![Milestone v0.7.0](https://github.com/matty-r/urChat/milestone/6)**
+**Currently targeting ![Milestone v0.8.0](https://github.com/matty-r/urChat/milestone/7)**
 
 If you would like to assist in the development of urChat take a look at the Issues associated with the project. Please let me know if you wish to tackle a certain issue.
 
