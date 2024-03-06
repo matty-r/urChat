@@ -42,7 +42,8 @@ import urChatBasic.frontend.dialogs.FontDialog;
 import urChatBasic.frontend.dialogs.MessageDialog;
 import urChatBasic.frontend.utils.URPanels;
 
-public class ConnectionPanel extends UROptionsPanel {
+public class ConnectionPanel extends UROptionsPanel
+{
     public static final String PANEL_DISPLAY_NAME = "Connection";
 
     // Identification
@@ -88,8 +89,8 @@ public class ConnectionPanel extends UROptionsPanel {
     }
 
     /**
-     * Adds all the components to the panel, with the related preference Keys for that component.
-     * i.e showEventTicker is set via the KEY_EVENT_TICKER_ACTIVE key ('show event ticker')
+     * Adds all the components to the panel, with the related preference Keys for that component. i.e showEventTicker is set via the KEY_EVENT_TICKER_ACTIVE key
+     * ('show event ticker')
      */
     private void setupConnectionPanel ()
     {
@@ -126,29 +127,22 @@ public class ConnectionPanel extends UROptionsPanel {
         SpringLayout connectionLayout = (SpringLayout) this.getLayout();
 
         // Puts the connect button further below Channel
-        connectionLayout.putConstraint(SpringLayout.NORTH, connectButton, TOP_SPACING * TOP_SPACING, SpringLayout.SOUTH,
-                firstChannelTextField);
-        connectionLayout.putConstraint(SpringLayout.WEST, connectButton, LEFT_ALIGNED, SpringLayout.WEST,
-                firstChannelTextField);
+        connectionLayout.putConstraint(SpringLayout.NORTH, connectButton, TOP_SPACING * TOP_SPACING, SpringLayout.SOUTH, firstChannelTextField);
+        connectionLayout.putConstraint(SpringLayout.WEST, connectButton, LEFT_ALIGNED, SpringLayout.WEST, firstChannelTextField);
 
 
         // Aligns the autoConnectToFavourites checkbox to the label of userNameTextField
         connectionLayout.putConstraint(SpringLayout.NORTH, autoConnectToFavourites, TOP_ALIGNED, SpringLayout.NORTH,
-                URPanels.getLabelForComponent(this,userNameTextField));
-        connectionLayout.putConstraint(SpringLayout.WEST, autoConnectToFavourites, LEFT_SPACING, SpringLayout.EAST,
-                proxyTypeChoice);
+                URPanels.getLabelForComponent(this, userNameTextField));
+        connectionLayout.putConstraint(SpringLayout.WEST, autoConnectToFavourites, LEFT_SPACING, SpringLayout.EAST, proxyTypeChoice);
 
         URPanels.addKeyAssociation(this, autoConnectToFavourites, Constants.KEY_AUTO_CONNECT_FAVOURITES);
 
         // Puts the Favourites box inline with the autoConnectToFavourites check box and the connect button
-        connectionLayout.putConstraint(SpringLayout.NORTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
-                autoConnectToFavourites);
-        connectionLayout.putConstraint(SpringLayout.WEST, favouritesScroller, LEFT_ALIGNED, SpringLayout.WEST,
-                autoConnectToFavourites);
-        connectionLayout.putConstraint(SpringLayout.EAST, favouritesScroller, LEFT_ALIGNED, SpringLayout.EAST,
-                autoConnectToFavourites);
-        connectionLayout.putConstraint(SpringLayout.SOUTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH,
-                connectButton);
+        connectionLayout.putConstraint(SpringLayout.NORTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH, autoConnectToFavourites);
+        connectionLayout.putConstraint(SpringLayout.WEST, favouritesScroller, LEFT_ALIGNED, SpringLayout.WEST, autoConnectToFavourites);
+        connectionLayout.putConstraint(SpringLayout.EAST, favouritesScroller, LEFT_ALIGNED, SpringLayout.EAST, autoConnectToFavourites);
+        connectionLayout.putConstraint(SpringLayout.SOUTH, favouritesScroller, TOP_SPACING, SpringLayout.SOUTH, connectButton);
 
         URProfilesUtil.addListener(EventType.CHANGE, e -> {
             loadFavouritesList();
@@ -169,7 +163,7 @@ public class ConnectionPanel extends UROptionsPanel {
         for (Object tempItem : favouritesListModel.toArray())
         {
             castItem = (FavouritesItem) tempItem;
-            if (castItem.favChannel.equals(channel.getName()) && castItem.favServer.equals(channel.getServer()))
+            if (castItem.favChannel.equals(channel.getName()) && castItem.favServer.equals(channel.getServer().toString()))
             {
                 return true;
             }
@@ -200,8 +194,7 @@ public class ConnectionPanel extends UROptionsPanel {
     }
 
     /**
-     * Create an element in the favourites list. Contains a constructor plus a pop up menu for the
-     * element.
+     * Create an element in the favourites list. Contains a constructor plus a pop up menu for the element.
      *
      * @author Matt
      * @param String server
@@ -243,6 +236,7 @@ public class ConnectionPanel extends UROptionsPanel {
         public void createPopUp ()
         {
             myMenu = new FavouritesPopUp();
+            myMenu.setUI(new JPopupMenu().getUI());
         }
 
         private class FavouritesPopUp extends JPopupMenu
@@ -277,7 +271,7 @@ public class ConnectionPanel extends UROptionsPanel {
             @Override
             public void actionPerformed (ActionEvent arg0)
             {
-                if(favFontDialog == null)
+                if (favFontDialog == null)
                 {
                     favFontDialog = new FontDialog(favChannel, DriverGUI.gui.getStyle(), settingsPath);
                     // favFontDialog.addSaveListener(new SaveChannelFontListener());
@@ -405,8 +399,7 @@ public class ConnectionPanel extends UROptionsPanel {
     public void connectFavourites (IRCServerBase server)
     {
         if (servernameTextField.getText().trim().equals(server.getName()))
-            server.sendClientText("/join " + firstChannelTextField.getText().trim(),
-                    servernameTextField.getText().trim());
+            server.sendClientText("/join " + firstChannelTextField.getText().trim(), servernameTextField.getText().trim());
 
         if (autoConnectToFavourites.isSelected())
         {
@@ -433,47 +426,43 @@ public class ConnectionPanel extends UROptionsPanel {
         @Override
         public void actionPerformed (ActionEvent arg0)
         {
-            if (!authenticationTypeChoice.getSelectedItem().equals(CapabilityTypes.NONE.getType()) && passwordTextField.getPassword().length == 0 )
+            if (!authenticationTypeChoice.getSelectedItem().equals(CapabilityTypes.NONE.getType()) && passwordTextField.getPassword().length == 0)
             {
-                MessageDialog dialog = new MessageDialog(
-                        "Password field is empty and is required for your chosen authentication method.", "Warning",
+                MessageDialog dialog = new MessageDialog("Password field is empty and is required for your chosen authentication method.", "Warning",
                         JOptionPane.WARNING_MESSAGE);
                 dialog.setVisible(true);
-            } else if (!proxyTypeChoice.getSelectedItem().equals(ProxyTypes.NONE.getType()) && (proxyHostNameTextField.getText().isBlank() ||
-                proxyPortTextField.getText().isBlank()) )
+            } else if (!proxyTypeChoice.getSelectedItem().equals(ProxyTypes.NONE.getType())
+                    && (proxyHostNameTextField.getText().isBlank() || proxyPortTextField.getText().isBlank()))
             {
-                MessageDialog dialog = new MessageDialog(
-                    "Hostname or Port field is empty which is required for your chosen Proxy method.", "Warning",
-                    JOptionPane.WARNING_MESSAGE);
+                MessageDialog dialog = new MessageDialog("Hostname or Port field is empty which is required for your chosen Proxy method.", "Warning",
+                        JOptionPane.WARNING_MESSAGE);
                 dialog.setVisible(true);
             } else
             {
                 // DriverGUI.gui.addToCreatedServers(servernameTextField.getText().trim());
 
                 IRCServerBase newServer = new IRCServer(servernameTextField.getText().trim(), userNameTextField.getText().trim(),
-                    realNameTextField.getText().trim(), new String(passwordTextField.getPassword()),
-                    serverPortTextField.getText().trim(), serverTLSCheckBox.isSelected(),
-                    proxyHostNameTextField.getText(), proxyPortTextField.getText(), proxyTypeChoice.getSelectedItem(), authenticationTypeChoice.getSelectedItem());
+                        realNameTextField.getText().trim(), new String(passwordTextField.getPassword()), serverPortTextField.getText().trim(),
+                        serverTLSCheckBox.isSelected(), proxyHostNameTextField.getText(), proxyPortTextField.getText(), proxyTypeChoice.getSelectedItem(),
+                        authenticationTypeChoice.getSelectedItem());
 
                 // TODO: Revisit when considering adding support for multiple servers
                 // if (autoConnectToFavourites.isSelected())
                 // {
-                //     FavouritesItem castItem;
-                //     for (Object tempItem : favouritesListModel.toArray())
-                //     {
-                //         castItem = (FavouritesItem) tempItem;
-                //         DriverGUI.gui.addToCreatedServers(castItem.favServer);
-                //     }
+                // FavouritesItem castItem;
+                // for (Object tempItem : favouritesListModel.toArray())
+                // {
+                // castItem = (FavouritesItem) tempItem;
+                // DriverGUI.gui.addToCreatedServers(castItem.favServer);
+                // }
                 // }
 
                 List<String> favouriteChannels = new ArrayList<>();
-                if(autoConnectToFavourites.isSelected())
-                    favouriteChannels = Collections.list(favouritesListModel.elements())
-                        .stream()
-                        .map(FavouritesItem::getChannelName)
-                        .collect(Collectors.toList());
+                if (autoConnectToFavourites.isSelected())
+                    favouriteChannels =
+                            Collections.list(favouritesListModel.elements()).stream().map(FavouritesItem::getChannelName).collect(Collectors.toList());
 
-                if(!firstChannelTextField.getText().isBlank())
+                if (!firstChannelTextField.getText().isBlank())
                     favouriteChannels.add(firstChannelTextField.getText());
 
                 newServer.connect(favouriteChannels.stream().toArray(size -> new String[size]));

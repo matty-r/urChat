@@ -21,6 +21,7 @@ public class InterfacePanel extends UROptionsPanel
     private final JCheckBox enableClickableLinks = new JCheckBox("Make links clickable");
     private final JCheckBox showJoinsQuitsEventTicker = new JCheckBox("Show Joins/Quits in the Event Ticker");
     private final JCheckBox showJoinsQuitsMainWindow = new JCheckBox("Show Joins/Quits in the Chat Window");
+    private final JCheckBox loadChannelLogsOnJoin = new JCheckBox("Load channel logs on join");
     private final JCheckBox logChannelText = new JCheckBox("Save and log all channel text");
     private final JCheckBox logServerActivity = new JCheckBox("Save and log all Server activity");
     private final JCheckBox logClientText = new JCheckBox("Log client text (Allows up or down history)");
@@ -60,6 +61,7 @@ public class InterfacePanel extends UROptionsPanel
         URPanels.addToPanel(this, enableClickableLinks, null, Placement.DEFAULT, null, Constants.KEY_CLICKABLE_LINKS_ENABLED);
         URPanels.addToPanel(this, showJoinsQuitsEventTicker, null, Placement.DEFAULT, null, Constants.KEY_EVENT_TICKER_JOINS_QUITS);
         URPanels.addToPanel(this, showJoinsQuitsMainWindow, null, Placement.DEFAULT, null, Constants.KEY_MAIN_WINDOW_JOINS_QUITS);
+        URPanels.addToPanel(this, loadChannelLogsOnJoin, null, Placement.DEFAULT, null, Constants.KEY_LOAD_CHANNEL_LOGS_ON_JOIN);
         URPanels.addToPanel(this, logChannelText, null, Placement.DEFAULT, null, Constants.KEY_LOG_CHANNEL_ACTIVITY);
         URPanels.addToPanel(this, logServerActivity, null, Placement.DEFAULT, null, Constants.KEY_LOG_SERVER_ACTIVITY);
         URPanels.addToPanel(this, logClientText, null, Placement.DEFAULT, null, Constants.KEY_LOG_CLIENT_TEXT);
@@ -190,6 +192,11 @@ public class InterfacePanel extends UROptionsPanel
     public Boolean isClickableLinksEnabled ()
     {
         return enableClickableLinks.isSelected();
+    }
+
+    public Boolean isLoadChannelLogsEnabled ()
+    {
+        return loadChannelLogsOnJoin.isSelected();
     }
 
     /*

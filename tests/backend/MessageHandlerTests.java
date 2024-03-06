@@ -1,6 +1,7 @@
 package backend;
 
 import static org.testng.AssertJUnit.*;
+import static org.testng.Reporter.log;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -65,7 +66,7 @@ public class MessageHandlerTests
         testServer.quitChannels();
         // URProfilesUtil.getActiveProfilePath().sync();
         // URProfilesUtil.getActiveProfilePath().sync();
-        URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
+        TestDriverGUI.cleanupTestProfiles();
         TestDriverGUI.closeWindow();
     }
 
@@ -77,12 +78,14 @@ public class MessageHandlerTests
         Message testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
         IRCPrivate someUserChannel = testServer.getCreatedPrivateChannel("someuser");
-        String testLine = someUserChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser> hello testUser!"
+
 
         while (someUserChannel.messageQueueWorking())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
+
+        String testLine = someUserChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser> hello testUser!"
 
         // Should be highStyle because someuser mentioned my nick, testUser
         assertEquals("highStyle",
@@ -120,12 +123,13 @@ public class MessageHandlerTests
         String rawMessage = ":someuser!~someuser@urchatclient PRIVMSG "+PUB_CHANNEL_NAME+" :Welcome to somechannel!";
         Message testMessage = testHandler.new Message(rawMessage);
         testHandler.parseMessage(testMessage);
-        String testLine = testPubChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser> hello world!"
 
         while (testPubChannel.messageQueueWorking())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
+
+        String testLine = "Welcome to somechannel!"; // "[0629] <someuser> Welcome to somechannel!"
 
         // Should be nickStyle because the user didn't mention testUser and is just a normal message
         assertEquals("nickStyle",
@@ -238,7 +242,7 @@ public class MessageHandlerTests
 
         while (testPubChannel.messageQueueWorking())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
 
         // for (int i = 0; i < serverLinesLimit+10; i++) {
@@ -250,8 +254,6 @@ public class MessageHandlerTests
         // testServer.getChannelTextPane().getStyledDocument().getDefaultRootElement().getElementCount();
         int channelLinesCount =
                 testPubChannel.getLineFormatter().getDocument().getDefaultRootElement().getElementCount();
-
-
 
         String firstLine = testPubChannel.getLineFormatter().getFirstLine();
         String lastLine = testPubChannel.getLineFormatter().getLatestLine(); // "<testUser> line # 509"
@@ -282,7 +284,7 @@ public class MessageHandlerTests
 
         while (testServer.messageQueueWorking())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
 
         int serverLinesCount =
@@ -321,7 +323,7 @@ public class MessageHandlerTests
 
         while (testPrivChannel.messageQueueWorking())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
 
         String testLine = testPrivChannel.getLineFormatter().getLatestLine(); // "[0629] <someuser>
@@ -369,7 +371,7 @@ public class MessageHandlerTests
 
         while (testPrivChannel.messageQueueWorking())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
 
         String testLine = testPrivChannel.getLineFormatter().getLatestLine();

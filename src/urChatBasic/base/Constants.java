@@ -27,7 +27,7 @@ import urChatBasic.frontend.utils.URColour;
  */
 public class Constants
 {
-    public static String UR_VERSION = "v0.6.0";
+    public static String UR_VERSION = "v0.7.0";
     public static String APP_NAME = "urChatClient" + UR_VERSION;
     public static String URL_SEPARATOR = "/";
     public static final String RESOURCES_PATH = URL_SEPARATOR + "resources" + URL_SEPARATOR;
@@ -83,6 +83,7 @@ public class Constants
     public static final String KEY_CLICKABLE_LINKS_ENABLED = "clickable links";
     public static final String KEY_EVENT_TICKER_JOINS_QUITS = "show events in ticker";
     public static final String KEY_MAIN_WINDOW_JOINS_QUITS = "show events in main window";
+    public static final String KEY_LOAD_CHANNEL_LOGS_ON_JOIN = "load channel logs on join";
     public static final String KEY_LOG_CHANNEL_ACTIVITY = "log channel history";
     public static final String KEY_LOG_SERVER_ACTIVITY = "log server activity";
     public static final String KEY_LIMIT_CHANNEL_LINES = "limit number of channel lines";
@@ -129,6 +130,7 @@ public class Constants
     public static final Boolean DEFAULT_USERS_LIST_ACTIVE = true;
     public static final Boolean DEFAULT_EVENT_TICKER_JOINS_QUITS = true;
     public static final Boolean DEFAULT_MAIN_WINDOW_JOINS_QUITS = true;
+    public static final Boolean DEFAULT_LOAD_CHANNEL_LOGS_ON_JOIN = false;
     public static final Boolean DEFAULT_LOG_CHANNEL_ACTIVITY = true;
     public static final Boolean DEFAULT_LOG_SERVER_ACTIVITY = true;
     public static final Boolean DEFAULT_AUTO_CONNECT_FAVOURITES = false;
@@ -152,6 +154,8 @@ public class Constants
     public static final char SPACES_AHEAD_DELIMITER = ':';
     public static final int MESSAGE_LIMIT = 510;
     public static final String END_MESSAGE = "\r\n";
+    public static final int MAXIMUM_QUEUE_SIZE = 100;
+
     // We 'must' match against http(s) in order to define the correct protocol to be used
     public static final String URL_REGEX = "((http:\\/\\/|https:\\/\\/)(www.)?(([a-zA-Z0-9-]){2,}\\.){1,4}([a-zA-Z]){2,6}(\\/([a-zA-Z-_\\/\\.0-9#:?=&;,]*)?)?)";
     public static final String CHANNEL_REGEX = "(?:^|\s)(#([^\s,]+)(?!,))(?:$|\s)";
@@ -263,6 +267,7 @@ public class Constants
         KEY_CLICKABLE_LINKS_ENABLED(Constants.KEY_CLICKABLE_LINKS_ENABLED, DEFAULT_CLICKABLE_LINKS_ENABLED),
         KEY_EVENT_TICKER_JOINS_QUITS(Constants.KEY_EVENT_TICKER_JOINS_QUITS, DEFAULT_EVENT_TICKER_JOINS_QUITS),
         KEY_MAIN_WINDOW_JOINS_QUITS(Constants.KEY_MAIN_WINDOW_JOINS_QUITS, DEFAULT_MAIN_WINDOW_JOINS_QUITS),
+        KEY_LOAD_CHANNEL_LOGS_ON_JOIN(Constants.KEY_LOAD_CHANNEL_LOGS_ON_JOIN, DEFAULT_LOAD_CHANNEL_LOGS_ON_JOIN),
         KEY_LOG_CHANNEL_ACTIVITY(Constants.KEY_LOG_CHANNEL_ACTIVITY, DEFAULT_LOG_CHANNEL_ACTIVITY),
         KEY_LOG_SERVER_ACTIVITY(Constants.KEY_LOG_SERVER_ACTIVITY, DEFAULT_LOG_SERVER_ACTIVITY),
         KEY_LIMIT_CHANNEL_LINES(Constants.KEY_LIMIT_CHANNEL_LINES, DEFAULT_LIMIT_CHANNEL_LINES),

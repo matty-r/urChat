@@ -24,6 +24,7 @@ import urChatBasic.frontend.IRCServer;
 import urChatBasic.frontend.IRCUser;
 import urChatBasic.frontend.UserGUI;
 import utils.TestDriverGUI;
+import static org.testng.Reporter.log;
 
 public class LineFormatterTests
 {
@@ -54,8 +55,11 @@ public class LineFormatterTests
     @AfterClass(alwaysRun = true)
     public void tearDown () throws Exception
     {
+        log("Quit channels", true);
         testServer.quitChannels();
-        URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
+        log("Delete test profile", true);
+        TestDriverGUI.cleanupTestProfiles();
+        log("Close test window", true);
         TestDriverGUI.closeWindow();
     }
 
@@ -70,7 +74,7 @@ public class LineFormatterTests
 
         while (testPubChannel.messageQueueWorking())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
 
         testGUI.tabbedPane.setSelectedIndex(1);
@@ -99,7 +103,7 @@ public class LineFormatterTests
 
         while(!canContinue.get())
         {
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.MILLISECONDS.sleep(10);
         }
 
         // Right-Click mouse event at the x-y coords of the caret in the text pane

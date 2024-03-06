@@ -2,6 +2,8 @@ package frontend;
 
 import static org.testng.AssertJUnit.*;
 import java.awt.Color;
+import java.util.concurrent.TimeUnit;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
 import org.testng.Reporter;
@@ -27,13 +29,15 @@ public class LAFTests
     {
         testDriver = new TestDriverGUI();
         gui = DriverGUI.gui;
+        // start the gui and wait for it
+        SwingUtilities.invokeAndWait(gui);
     }
 
     @AfterClass(alwaysRun = true)
     public void tearDown () throws Exception
     {
         Reporter.log("Deleting testing profile.", true);
-        URProfilesUtil.deleteProfile(testDriver.getTestProfileName());
+        URProfilesUtil.deleteProfile(testDriver.getTestProfileName(), false);
         TestDriverGUI.closeWindow();
     }
 
@@ -66,7 +70,14 @@ public class LAFTests
 
         TestDriverGUI.waitForEverything(gui);
 
-        Color newBackgroundColor = (Color) gui.previewLineFormatter.getStyleAtPosition(0, "urChat has loaded - this is an Event").getAttribute(StyleConstants.Background);
+        Color newBackgroundColor = null;
+
+        while (newBackgroundColor == null || !newBackgroundColor.equals(UIManager.getColor(Constants.DEFAULT_BACKGROUND_STRING)))
+        {
+            TimeUnit.MILLISECONDS.sleep(10);
+            newBackgroundColor = (Color) gui.previewLineFormatter.getStyleAtPosition(0, "urChat has loaded - this is an Event").getAttribute(StyleConstants.Background);
+        }
+
         Color lineFormatterBackground = gui.previewTextArea.getBackground();
 
 

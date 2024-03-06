@@ -91,7 +91,7 @@ public class IRCServer extends IRCChannelBase implements IRCServerBase
             icon = new ImageIcon(imgPath);
         } catch (IOException e)
         {
-            Constants.LOGGER.warn( "COULD NOT LOAD Server.png " + e.getLocalizedMessage());
+            Constants.LOGGER.warn("COULD NOT LOAD Server.png " + e.getLocalizedMessage());
         }
     }
 
@@ -118,7 +118,6 @@ public class IRCServer extends IRCChannelBase implements IRCServerBase
     public void saslCompleteAuthentication ()
     {
         sendClientText("CAP END", getName());
-        // TODO: gui.connectFavourites(this);
         reconnectChannels();
     }
 
@@ -336,7 +335,7 @@ public class IRCServer extends IRCChannelBase implements IRCServerBase
         {
             if (IRCServer.this.isConnected())
             {
-                Constants.LOGGER.info( "send quit message");
+                Constants.LOGGER.info("send quit message");
                 // Send the /quit message, which disconnects and remove the gui elements
                 sendClientText("/quit Goodbye cruel world", getName());
             } else
@@ -388,7 +387,7 @@ public class IRCServer extends IRCChannelBase implements IRCServerBase
 
         } catch (Exception e)
         {
-            Constants.LOGGER.error( "Failed to create backend! " + e.getLocalizedMessage());
+            Constants.LOGGER.error("Failed to create backend! " + e.getLocalizedMessage());
         }
 
         new Thread(serverConnection).start();
@@ -513,10 +512,17 @@ public class IRCServer extends IRCChannelBase implements IRCServerBase
 
         boolean tabExists = Arrays.stream(gui.tabbedPane.getComponents()).anyMatch(channel -> channel.equals(ircChannel));
 
-        if (tabExists && gui.tabbedPane.getSelectedComponent().equals(ircChannel))
-            gui.tabbedPane.setSelectedComponent(gui.previousSelectedTab);
+        try
+        {
+            if (tabExists && gui.tabbedPane.getSelectedComponent().equals(ircChannel))
+                gui.tabbedPane.setSelectedComponent(gui.previousSelectedTab);
+        } catch (IllegalArgumentException iae)
+        {
+            Constants.LOGGER.debug("Previous Selected tab doesn't exist, unable to revert selection");
+        }
 
-        gui.tabbedPane.remove(ircChannel);
+        if (tabExists)
+            gui.tabbedPane.remove(ircChannel);
     }
 
     @Override
@@ -525,7 +531,7 @@ public class IRCServer extends IRCChannelBase implements IRCServerBase
         IRCChannelBase returnChannel = null;
 
         for (IRCChannelBase tempChannel : createdChannels)
-            if (tempChannel.getName().equals(channelName))
+            if (tempChannel.getName().equalsIgnoreCase(channelName))
             {
                 if (asPrivate && tempChannel instanceof IRCPrivate || !asPrivate)
                     returnChannel = tempChannel;
@@ -552,42 +558,42 @@ public class IRCServer extends IRCChannelBase implements IRCServerBase
             boolean iconsShown = (boolean) URPanels.getKeyComponentValue(Constants.KEY_SHOW_TAB_ICON);
 
 
-            SwingUtilities.invokeLater(
-                new Runnable() {
+            SwingUtilities.invokeLater(new Runnable()
+            {
 
-                    @Override
-                    public void run ()
+                @Override
+                public void run ()
+                {
+                    IRCChannelBase tempChannel = getCreatedChannel(channelName, asPrivate);
+                    int newIndex = gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1;
+                    gui.tabbedPane.insertTab(channelName, iconsShown ? tempChannel.icon : null, tempChannel, null,
+                            gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1);
+
+                    // gui.tabbedPane.addTab(channelName, tempChannel.icon, tempChannel);
+                    Component currentTab = gui.tabbedPane.getSelectedComponent();
+                    if (currentTab instanceof IRCChannelBase)
                     {
-                        IRCChannelBase tempChannel = getCreatedChannel(channelName, asPrivate);
-                        int newIndex = gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1;
-                        gui.tabbedPane.insertTab(channelName, iconsShown ? tempChannel.icon : null, tempChannel, null, gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1);
-
-                        // gui.tabbedPane.addTab(channelName, tempChannel.icon, tempChannel);
-                        Component currentTab = gui.tabbedPane.getSelectedComponent();
-                        if (currentTab instanceof IRCChannelBase)
+                        if (!((IRCChannelBase) currentTab).userIsTyping())
                         {
-                            if (!((IRCChannelBase) currentTab).userIsTyping())
-                            {
-                                gui.tabbedPane.setSelectedIndex(newIndex);
-                                tempChannel.getUserTextBox().requestFocus();
-                            } else
-                            {
-                                tempChannel.callForAttention();
-                            }
-                        } else if (currentTab instanceof IRCServer)
+                            gui.tabbedPane.setSelectedIndex(newIndex);
+                            tempChannel.getUserTextBox().requestFocus();
+                        } else
                         {
-                            if (clientTextBox.getText().isEmpty())
-                            {
-                                gui.tabbedPane.setSelectedIndex(newIndex);
-                                tempChannel.getUserTextBox().requestFocus();
-                            } else
-                            {
-                                tempChannel.callForAttention();
-                            }
+                            tempChannel.callForAttention();
+                        }
+                    } else if (currentTab instanceof IRCServer)
+                    {
+                        if (clientTextBox.getText().isEmpty())
+                        {
+                            gui.tabbedPane.setSelectedIndex(newIndex);
+                            tempChannel.getUserTextBox().requestFocus();
+                        } else
+                        {
+                            tempChannel.callForAttention();
                         }
                     }
                 }
-            );
+            });
         }
     }
 
