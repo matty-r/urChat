@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
@@ -31,6 +32,7 @@ import urChatBasic.base.Constants.EventType;
 import urChatBasic.base.capabilities.CapTypeBase;
 import urChatBasic.base.capabilities.CapabilityTypes;
 import urChatBasic.base.proxy.ProxyTypeBase;
+import urChatBasic.frontend.components.UREnhancedTab;
 import urChatBasic.frontend.utils.URPanels;
 
 public class IRCServer extends IRCChannelBase implements IRCServerBase
@@ -568,12 +570,12 @@ public class IRCServer extends IRCChannelBase implements IRCServerBase
                     int newIndex = gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1;
                     gui.tabbedPane.insertTab(channelName, iconsShown ? tempChannel.icon : null, tempChannel, null,
                             gui.tabbedPane.indexOfComponent(gui.currentSelectedTab) + 1);
-
+                    gui.tabbedPane.setTabComponentAt(newIndex, new UREnhancedTab(gui.tabbedPane, channelName, iconsShown ? tempChannel.icon : null));
                     // gui.tabbedPane.addTab(channelName, tempChannel.icon, tempChannel);
                     Component currentTab = gui.tabbedPane.getSelectedComponent();
-                    if (currentTab instanceof IRCChannelBase)
+                    if (currentTab instanceof IRCChannelBase channelTab)
                     {
-                        if (!((IRCChannelBase) currentTab).userIsTyping())
+                        if (!channelTab.userIsTyping())
                         {
                             gui.tabbedPane.setSelectedIndex(newIndex);
                             tempChannel.getUserTextBox().requestFocus();

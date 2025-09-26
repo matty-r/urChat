@@ -4,4 +4,6 @@ public interface IRCActionsBase
 {
     // Will be used to ensure other classes contain these methods.
     public void callForAttention();
+
+    public boolean wantsAttention();
 }

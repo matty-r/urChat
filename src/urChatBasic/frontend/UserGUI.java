@@ -632,12 +632,15 @@ public class UserGUI extends JPanel implements Runnable, UserGUIBase
                 {
                     Component selectedComponent = tabbedPane.getComponentAt(index);
 
-                    if (selectedComponent instanceof IRCPrivate)
+                    if(selectedComponent instanceof IRCChannelBase asChannel)
                     {
-                        ((IRCChannelBase) selectedComponent).getServer().quitChannel((IRCChannelBase) selectedComponent);
-                    } else
-                    {
-                        ((IRCChannelBase) selectedComponent).myMenu.show(tabbedPane, e.getX(), e.getY());
+                        if (selectedComponent instanceof IRCPrivate)
+                        {
+                            (asChannel).getServer().quitChannel(asChannel);
+                        } else
+                        {
+                            (asChannel).myMenu.show(tabbedPane, e.getX(), e.getY());
+                        }
                     }
                 }
             }

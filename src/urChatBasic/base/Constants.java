@@ -27,7 +27,7 @@ import urChatBasic.frontend.utils.URColour;
  */
 public class Constants
 {
-    public static String UR_VERSION = "v0.7.0";
+    public static String UR_VERSION = "v0.8.0";
     public static String APP_NAME = "urChatClient" + UR_VERSION;
     public static String URL_SEPARATOR = "/";
     public static final String RESOURCES_PATH = URL_SEPARATOR + "resources" + URL_SEPARATOR;
@@ -200,16 +200,16 @@ public class Constants
         {
             switch (this) {
                 case LARGE:
-                    if(component instanceof JTextField)
-                        ((JTextField)component).setColumns(12);
+                    if(component instanceof JTextField newComponent)
+                    newComponent.setColumns(12);
                     break;
                 case MEDIUM:
-                    if(component instanceof JTextField)
-                        ((JTextField)component).setColumns(8);
+                    if(component instanceof JTextField newComponent)
+                    newComponent.setColumns(8);
                     break;
                 case SMALL:
-                    if(component instanceof JTextField)
-                        ((JTextField)component).setColumns(4);
+                    if(component instanceof JTextField newComponent)
+                    newComponent.setColumns(4);
                     break;
                 case CUSTOM:
                     component.setPreferredSize(getDimension());

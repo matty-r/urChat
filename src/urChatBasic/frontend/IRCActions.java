@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import urChatBasic.base.IRCActionsBase;
@@ -17,6 +18,7 @@ public class IRCActions implements IRCActionsBase {
     private Color originalColour;
     protected UserGUI gui = DriverGUI.gui;
     protected IRCChannelBase ircChannel;
+    protected AtomicInteger attentionCount = new AtomicInteger(0);
 
     public IRCActions(IRCChannelBase ircChannel)
     {
@@ -60,6 +62,7 @@ public class IRCActions implements IRCActionsBase {
                     gui.tabbedPane.setBackgroundAt(tabIndex, originalColour);
                 }
                 wantsAttentionTimer.stop();
+                attentionCount.set(0);
             }
         }
     }
@@ -67,10 +70,17 @@ public class IRCActions implements IRCActionsBase {
     @Override
     public void callForAttention()
     {
+        attentionCount.incrementAndGet();
         wantsAttentionTimer.setDelay(1000);
         wantsAttention = true;
 
         if (!(wantsAttentionTimer.isRunning()))
             wantsAttentionTimer.start();
+    }
+
+    @Override
+    public boolean wantsAttention ()
+    {
+        return attentionCount.get() > 0 && wantsAttentionTimer.isRunning();
     }
 }

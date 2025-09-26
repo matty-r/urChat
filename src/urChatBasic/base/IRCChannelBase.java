@@ -457,6 +457,11 @@ public class IRCChannelBase extends JPanel
         myActions.callForAttention();
     }
 
+    public boolean wantsAttention ()
+    {
+        return myActions.wantsAttention();
+    }
+
     public String getMarker ()
     {
         return markerName;

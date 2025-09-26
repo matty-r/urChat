@@ -238,12 +238,12 @@ public class URPreferencesUtil {
         if(optionalValue != null && optionalValue.isPresent())
         {
             Object value = optionalValue.get();
-            if (value instanceof String) {
-                path.put(name, (String) value);
-            } else if (value instanceof Integer) {
-                path.putInt(name, (int) value);
-            } else if (value instanceof Boolean) {
-                path.putBoolean(name, (boolean) value);
+            if (value instanceof String newValue) {
+                path.put(name, newValue);
+            } else if (value instanceof Integer newValue) {
+                path.putInt(name, newValue);
+            } else if (value instanceof Boolean newValue) {
+                path.putBoolean(name, newValue);
             } else {
                 path.put(name, (String) value.toString());
 
@@ -262,12 +262,12 @@ public class URPreferencesUtil {
         Object stringValue = path.get(name, null);
         if (stringValue != null && defaultValue != null) {
             // Check if the value exists in preferences
-            if (defaultValue instanceof String) {
-                return path.get(name, (String) defaultValue);
-            } else if (defaultValue instanceof Integer) {
-                return path.getInt(name, (int) defaultValue);
-            } else if (defaultValue instanceof Boolean) {
-                return path.getBoolean(name, (boolean) defaultValue);
+            if (defaultValue instanceof String newValue) {
+                return path.get(name, newValue);
+            } else if (defaultValue instanceof Integer newValue) {
+                return path.getInt(name, newValue);
+            } else if (defaultValue instanceof Boolean newValue) {
+                return path.getBoolean(name, newValue);
             }
         } else if (stringValue != null && defaultValue == null)
         {
